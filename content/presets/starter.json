@@ -1,0 +1,5 @@
+{
+  "name": "example-preset",
+  "description": "Replace with your own local JSON presets (chains, agent configs, etc.).",
+  "steps": []
+}
