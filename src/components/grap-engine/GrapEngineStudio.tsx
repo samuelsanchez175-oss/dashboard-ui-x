@@ -2,6 +2,7 @@ import getRhymingPart from 'rhyming-part'
 import { useCallback, useEffect, useId, useState } from 'react'
 import { Loader2, Sparkles, Wand2 } from 'lucide-react'
 import { findRhymesCmudict, ensureRhymeIndexBuilt, GRAP_THEME_RULES, type RhymeSuggestion } from '../../lib/grap-engine'
+import { Card, SectionHeader, Icon } from '../ui'
 
 export default function GrapEngineStudio() {
   const inputId = useId()
@@ -80,32 +81,32 @@ export default function GrapEngineStudio() {
   }, [word, includeSlant])
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 to-white">
-      <div className="max-w-[1200px] mx-auto p-6 space-y-4">
+    <div className="flex-1 overflow-y-auto" style={{ background: 'var(--bg-card)' }}>
+      <div className="max-w-[1200px] mx-auto p-8 space-y-4">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Sparkles size={22} className="text-purple-600" aria-hidden />
-              <h1 className="text-[22px] font-semibold text-gray-900 tracking-tight">
+              <Icon icon={Sparkles} size="md" style={{ color: 'var(--accent-fg)' }} />
+              <h1 className="text-[22px] font-semibold tracking-tight" style={{ color: 'var(--text-1)' }}>
                 G Rap Engine
               </h1>
             </div>
-            <p className="text-[12px] text-gray-500 max-w-xl">
+            <p className="text-[12px] max-w-xl" style={{ color: 'var(--text-3)' }}>
               Journal-grade rhyme discovery: CMUdict ARPAbet keys grouped with the{' '}
-              <span className="font-mono text-gray-700">rhyming-part</span> tonic nucleus + optional stress-stripped
+              <span className="font-mono" style={{ color: 'var(--text-2)' }}>rhyming-part</span> tonic nucleus + optional stress-stripped
               “slant” relatives. Mirrors the lyric journal flow (phonetic-first, pocket-aware).
             </p>
           </div>
-          <div className="text-right text-[10px] font-mono text-gray-400 uppercase tracking-wider space-y-1">
+          <div className="text-right text-[10px] font-mono uppercase tracking-wider space-y-1" style={{ color: 'var(--text-4)' }}>
             <div>{indexReady ? 'CMU index ready' : indexError ?? 'Hydrating phoneme index…'}</div>
-            {previewKey && <div className="text-purple-600 normal-case">live key: {previewKey}</div>}
+            {previewKey && <div className="normal-case" style={{ color: 'var(--accent-fg)' }}>live key: {previewKey}</div>}
           </div>
         </div>
 
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm space-y-3">
+        <Card padding="sm" className="space-y-3">
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex-1 min-w-[200px]">
-              <label htmlFor={inputId} className="block text-[11px] font-medium text-gray-500 uppercase tracking-wide mb-1">
+              <label htmlFor={inputId} className="block text-[11px] font-medium uppercase tracking-wide mb-1" style={{ color: 'var(--text-3)' }}>
                 Headword
               </label>
               <input
@@ -114,19 +115,28 @@ export default function GrapEngineStudio() {
                 value={word}
                 onChange={e => setWord(e.target.value)}
                 placeholder="flow, cosmos, violet…"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-purple-500 focus:ring-1 focus:ring-purple-400 outline-none"
+                className="w-full rounded-lg px-3 py-2 text-sm placeholder:opacity-60 outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
+                style={{
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-1)',
+                  background: 'var(--bg-card)',
+                }}
                 onKeyDown={e => {
                   if (e.key === 'Enter') void runSearch()
                 }}
                 disabled={!indexReady}
               />
             </div>
-            <label className="flex items-center gap-2 cursor-pointer pb-2 text-xs text-gray-600">
+            <label className="flex items-center gap-2 cursor-pointer pb-2 text-xs" style={{ color: 'var(--text-2)' }}>
               <input
                 type="checkbox"
                 checked={includeSlant}
                 onChange={e => setIncludeSlant(e.target.checked)}
-                className="rounded border-gray-300 text-purple-600 focus:ring-purple-400"
+                className="rounded"
+                style={{
+                  borderColor: 'var(--border)',
+                  accentColor: 'var(--accent)',
+                }}
               />
               Include slant (stress-less family)
             </label>
@@ -134,9 +144,20 @@ export default function GrapEngineStudio() {
               type="button"
               onClick={() => void runSearch()}
               disabled={!indexReady || loading}
-              className="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              style={{
+                background: 'var(--accent)',
+                color: 'var(--accent-fg)',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+              onMouseEnter={e => {
+                if (!e.currentTarget.disabled) e.currentTarget.style.background = 'var(--accent-hover)'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'var(--accent)'
+              }}
             >
-              {loading ? <Loader2 className="animate-spin size-4" /> : <Wand2 size={16} />}
+              {loading ? <Loader2 className="animate-spin size-4" /> : <Icon icon={Wand2} size="sm" />}
               Find rhymes
             </button>
           </div>
@@ -146,21 +167,24 @@ export default function GrapEngineStudio() {
             </p>
           )}
           {rhymeKeys.length > 0 && (
-            <p className="text-[11px] text-gray-400 font-mono">
+            <p className="text-[11px] font-mono" style={{ color: 'var(--text-4)' }}>
               rhyme keys ({rhymeKeys.length}):{' '}
-              <span className="text-gray-600">{rhymeKeys.join(' · ')}</span>
+              <span style={{ color: 'var(--text-2)' }}>{rhymeKeys.join(' · ')}</span>
             </p>
           )}
-        </div>
+        </Card>
 
         <div className="grid gap-4 lg:grid-cols-[1fr,minmax(220px,.35fr)]">
-          <section className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-            <h2 className="text-[13px] font-semibold text-gray-800 flex items-center justify-between mb-3">
+          <Card padding="sm" role="region" aria-label="Suggestions">
+            <SectionHeader
+              size="sm"
+              trailing={<span className="text-[10px] font-mono uppercase" style={{ color: 'var(--text-4)' }}>{rhymes.length} items</span>}
+              className="mb-3"
+            >
               Suggestions
-              <span className="text-[10px] font-mono text-gray-400 uppercase">{rhymes.length} items</span>
-            </h2>
+            </SectionHeader>
             {!rhymes.length && !hint && (
-              <p className="text-sm text-gray-400">Try a CMU-listed word above — clusters update instantly.</p>
+              <p className="text-sm" style={{ color: 'var(--text-4)' }}>Try a CMU-listed word above — clusters update instantly.</p>
             )}
             {rhymes.length > 0 && (
               <ul className="flex flex-wrap gap-2">
@@ -179,8 +203,17 @@ export default function GrapEngineStudio() {
                           ? 'border-amber-200 bg-amber-50 text-amber-900'
                           : r.tier === 'near'
                             ? 'border-blue-200 bg-blue-50 text-blue-900'
-                            : 'border-purple-200 bg-purple-50 text-purple-900'
+                            : ''
                       }`}
+                      style={
+                        r.tier === 'perfect'
+                          ? {
+                              borderColor: 'var(--accent-soft-2)',
+                              background: 'var(--accent-soft)',
+                              color: 'var(--accent-fg)',
+                            }
+                          : undefined
+                      }
                     >
                       {r.word}
                       {r.tier !== 'perfect' && (
@@ -191,19 +224,23 @@ export default function GrapEngineStudio() {
                 ))}
               </ul>
             )}
-          </section>
+          </Card>
 
-          <aside className="rounded-xl border border-gray-200 bg-gradient-to-b from-white to-purple-50/40 p-4 shadow-sm space-y-3">
-            <h3 className="text-[12px] font-semibold text-gray-800 uppercase tracking-wide">Theme cues (static RAG)</h3>
+          <Card padding="sm" role="complementary" aria-label="Theme cues" className="space-y-3">
+            <SectionHeader size="sm">Theme cues (static RAG)</SectionHeader>
             <ul className="space-y-2">
               {GRAP_THEME_RULES.map(rule => (
-                <li key={rule.id} className="text-[11px] text-gray-600 leading-snug border-l-2 border-purple-200 pl-2">
-                  <span className="font-semibold text-gray-800">{rule.title}: </span>
+                <li
+                  key={rule.id}
+                  className="text-[11px] leading-snug pl-2"
+                  style={{ color: 'var(--text-3)', borderLeft: '2px solid var(--accent-soft-2)' }}
+                >
+                  <span className="font-semibold" style={{ color: 'var(--text-2)' }}>{rule.title}: </span>
                   {rule.detail}
                 </li>
               ))}
             </ul>
-          </aside>
+          </Card>
         </div>
       </div>
     </div>

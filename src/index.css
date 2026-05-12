@@ -27,7 +27,7 @@
   --text-1: #111827;
   --text-2: #374151;
   --text-3: #6b7280;
-  --text-4: #9ca3af;
+  --text-4: #767e8d; /* bumped from #9ca3af for WCAG AA contrast on --bg-card */
 
   /* Accent (purple default) */
   --accent:        #7c3aed;
@@ -54,6 +54,66 @@
   --pad-row:   14px;
   --grid-gap:  16px;
   --tile-min:  240px;
+
+  /* ── Typography — one source of truth ──────────────────────────────────── */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --font-size-2xs: 10px;   /* badge/count text */
+  --font-size-xs:  11px;   /* section labels (uppercase) */
+  --font-size-sm:  13px;   /* body small, secondary */
+  --font-size-base:14px;   /* body */
+  --font-size-md:  15px;   /* emphasis body */
+  --font-size-lg:  17px;   /* card titles */
+  --font-size-xl:  20px;   /* section titles */
+  --font-size-2xl: 24px;   /* zone titles */
+  --font-size-display: 32px; /* page hero */
+
+  --font-weight-regular:  400;
+  --font-weight-medium:   500;
+  --font-weight-semibold: 600;
+
+  --tracking-tight:   -0.02em;
+  --tracking-normal:  0;
+  --tracking-wide:    0.05em;
+  --tracking-section: 0.08em;  /* standardized section-header tracking */
+
+  --leading-tight:  1.1;
+  --leading-snug:   1.25;
+  --leading-normal: 1.5;
+
+  /* ── Radii ─────────────────────────────────────────────────────────────── */
+  --radius-sm:   6px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-full: 9999px;
+
+  /* ── Spacing scale ─────────────────────────────────────────────────────── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* ── Icon sizing — the only three allowed ──────────────────────────────── */
+  --icon-sm: 16px;
+  --icon-md: 20px;
+  --icon-lg: 24px;
+
+  /* ── Zone accents — CDL palette as theme tokens ────────────────────────── */
+  --zone-hazmat:        #39ff14;
+  --zone-air-brakes:    #f0c040;
+  --zone-tanker:        #00b8d4;
+  --zone-doubles:       #ff7b29;
+  --zone-tanker-hazmat: #ef4444;
+  --zone-passenger:     #3b82f6;
+  --zone-school-bus:    #facc15;
+  --zone-combination:   #a855f7;
 }
 
 [data-theme="dark"] {
@@ -311,7 +371,9 @@
     padding: 0;
   }
   body {
-    font-family: 'Sora', sans-serif;
+    font-family: var(--font-sans);
+    font-size: var(--font-size-base);
+    line-height: var(--leading-normal);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background: var(--bg-app);
@@ -429,7 +491,7 @@
 }
 
 .mono {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 /* ── Mobile sidebar ───────────────────────────────────────────────────────── */

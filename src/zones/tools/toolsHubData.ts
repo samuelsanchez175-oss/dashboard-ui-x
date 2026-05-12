@@ -1,34 +1,15 @@
 import type { LucideIcon } from 'lucide-react'
-import {
-  Activity,
-  AudioWaveform,
-  Crop,
-  Disc,
-  Drum,
-  FileMusic,
-  LayoutList,
-  MonitorPlay,
-  Music,
-  Radio,
-  SlidersVertical,
-  Timer,
-  Volume2,
-  WholeWord,
-} from 'lucide-react'
+import { Activity, MonitorPlay, Radio, SlidersVertical } from 'lucide-react'
 
-export type HubAccentTone =
-  | 'red'
-  | 'violet'
-  | 'blue'
-  | 'amber'
-  | 'green'
-  | 'cyan'
-  | 'slate'
-  | 'teal'
-  | 'fuchsia'
-  | 'indigo'
+import { TOOLS_REGISTRY, type ToolEntry, type ToolStatus, type ToolTone } from '../../data/tools-registry'
 
-export type HubToolStatus = 'ready' | 'beta' | 'soon'
+/**
+ * Hub-side type re-exports. These keep the public surface identical for
+ * existing consumers (ToolsHubZone, ToolsHubToolCard) while the underlying
+ * data now flows from the shared registry.
+ */
+export type HubAccentTone = ToolTone
+export type HubToolStatus = ToolStatus
 
 export type HubToolDef = {
   id: string
@@ -44,172 +25,22 @@ export type HubToolDef = {
   navigateRouteId?: string
 }
 
-export const HUB_TOOLS: HubToolDef[] = [
-  {
-    id: 'yt-downloader',
-    name: 'YouTube Downloader',
-    desc: 'Pull audio from any YouTube link as MP3.',
-    icon: MonitorPlay,
-    category: 'Capture',
-    accentTone: 'red',
-    status: 'ready',
-    lastUsed: '2h ago',
-    badge: 'Popular',
-    navigateRouteId: 'tools-youtube-downloader',
-  },
-  {
-    id: 'key-finder',
-    name: 'Key & BPM Finder',
-    desc: 'Detect musical key, tempo, and Camelot code.',
-    icon: Radio,
-    category: 'Analysis',
-    accentTone: 'violet',
-    status: 'ready',
-    lastUsed: 'Yesterday',
-    badge: null,
-    navigateRouteId: 'tools-key-finder',
-  },
-  {
-    id: 'stem-splitter',
-    name: 'Stem Splitter',
-    desc: 'Crossover “brightness vs body” split — not ML isolation.',
-    icon: SlidersVertical,
-    category: 'Utility',
-    accentTone: 'blue',
-    status: 'beta',
-    lastUsed: '3d ago',
-    badge: 'Beta',
-    navigateRouteId: 'tools-stem-splitter',
-  },
-  {
-    id: 'sample-chopper',
-    name: 'Sample / loop slicer',
-    desc: 'Waveform trim handles and export selection as WAV.',
-    icon: Crop,
-    category: 'Production',
-    accentTone: 'amber',
-    status: 'ready',
-    lastUsed: '—',
-    badge: null,
-    navigateRouteId: 'tools-sample-slicer',
-  },
-  {
-    id: 'tempo-tap',
-    name: 'Tempo Tap',
-    desc: 'Tap-to-BPM and clickable metronome.',
-    icon: Activity,
-    category: 'Utility',
-    accentTone: 'green',
-    status: 'ready',
-    lastUsed: '1w ago',
-    badge: null,
-    navigateRouteId: 'tools-tempo-tap',
-  },
-  {
-    id: 'metronome-export',
-    name: 'Metronome export',
-    desc: 'Live click + downloadable WAV / MIDI for practice.',
-    icon: Drum,
-    category: 'Utility',
-    accentTone: 'green',
-    status: 'ready',
-    lastUsed: '—',
-    badge: null,
-    navigateRouteId: 'tools-metronome-export',
-  },
-  {
-    id: 'phonetics-inspector',
-    name: 'Phonetics inspector',
-    desc: 'CMU dictionary ARPAbet lookup for lyric words.',
-    icon: WholeWord,
-    category: 'Utility',
-    accentTone: 'indigo',
-    status: 'ready',
-    lastUsed: '—',
-    badge: null,
-    navigateRouteId: 'tools-phonetics-inspector',
-  },
-  {
-    id: 'session-timer',
-    name: 'Session timer',
-    desc: 'Running clock, named cues, Markdown / text export.',
-    icon: Timer,
-    category: 'Production',
-    accentTone: 'violet',
-    status: 'ready',
-    lastUsed: '—',
-    badge: null,
-    navigateRouteId: 'tools-session-timer',
-  },
-  {
-    id: 'arrangement-pad',
-    name: 'Arrangement pad',
-    desc: 'Sketch sections with bar counts; export outline.',
-    icon: LayoutList,
-    category: 'Production',
-    accentTone: 'fuchsia',
-    status: 'ready',
-    lastUsed: '—',
-    badge: null,
-    navigateRouteId: 'tools-arrangement-pad',
-  },
-  {
-    id: 'lufs-meter',
-    name: 'Loudness Meter',
-    desc: 'Integrated LUFS / true peak / dynamic range.',
-    icon: Volume2,
-    category: 'Mastering',
-    accentTone: 'cyan',
-    status: 'ready',
-    lastUsed: '—',
-    badge: null,
-  },
-  {
-    id: 'format-converter',
-    name: 'Format Converter',
-    desc: 'WAV ↔ MP3 ↔ FLAC ↔ AAC, batch.',
-    icon: FileMusic,
-    category: 'Utility',
-    accentTone: 'slate',
-    status: 'ready',
-    lastUsed: '5d ago',
-    badge: null,
-  },
-  {
-    id: 'silence-trim',
-    name: 'Silence Trimmer',
-    desc: 'Auto-trim leading/trailing silence.',
-    icon: AudioWaveform,
-    category: 'Utility',
-    accentTone: 'teal',
-    status: 'ready',
-    lastUsed: '—',
-    badge: null,
-  },
-  {
-    id: 'chord-detect',
-    name: 'Chord Detector',
-    desc: 'Transcribe chord progression from audio.',
-    icon: Music,
-    category: 'Analysis',
-    accentTone: 'fuchsia',
-    status: 'beta',
-    lastUsed: '—',
-    badge: 'Beta',
-    navigateRouteId: 'tools-chord-detector',
-  },
-  {
-    id: 'ab-ref',
-    name: 'Reference A/B',
-    desc: 'Loudness-matched A/B against a reference.',
-    icon: Disc,
-    category: 'Mastering',
-    accentTone: 'indigo',
-    status: 'soon',
-    lastUsed: '—',
-    badge: 'Soon',
-  },
-]
+function toHubToolDef(entry: ToolEntry): HubToolDef {
+  return {
+    id: entry.id,
+    name: entry.label,
+    desc: entry.description,
+    icon: entry.icon,
+    category: entry.category,
+    accentTone: entry.tone,
+    status: entry.status,
+    lastUsed: entry.lastUsed,
+    badge: entry.badge,
+    navigateRouteId: entry.route,
+  }
+}
+
+export const HUB_TOOLS: HubToolDef[] = TOOLS_REGISTRY.map(toHubToolDef)
 
 export const HUB_CATEGORIES = ['All', 'Capture', 'Analysis', 'Production', 'Mastering', 'Utility'] as const
 
