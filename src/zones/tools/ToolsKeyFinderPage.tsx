@@ -2,6 +2,7 @@ import { ArrowLeft, ExternalLink, Loader2, Trash2, Upload } from 'lucide-react'
 import { useCallback, useId, useMemo, useState, type ChangeEvent, type CSSProperties } from 'react'
 
 import type { MixClipMeta } from '../mixing/mixing-audio-idb'
+import { dispatchFileDownload, receiveDockOrFileDrop } from '../../components/files-dock/files-store'
 import {
   appendKeyFinderHistory,
   clearKeyFinderHistory,
@@ -140,6 +141,8 @@ export default function ToolsKeyFinderPage({ onNavigate }: ToolsKeyFinderPagePro
           scale: m.scale, source: m.source, analyzedAt: m.analyzedAt,
         }))
       }
+      // Surface in the global Files Dock so the user can re-open / delete it.
+      dispatchFileDownload({ blob: file, name: file.name, source: 'Key finder' })
     } catch { setError('Could not decode that file. Try WAV or MP3.')
     } finally { setBusy(false) }
   }, [])
@@ -149,7 +152,14 @@ export default function ToolsKeyFinderPage({ onNavigate }: ToolsKeyFinderPagePro
   }, [runFile])
 
   const onDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) void runFile(f)
+    e.preventDefault()
+    void (async () => {
+      const f = await receiveDockOrFileDrop(e)
+      if (f) {
+        // receiveDockOrFileDrop returns a File when the dock supplied a name; cast safely.
+        await runFile(f instanceof File ? f : new File([f], 'dock-clip', { type: f.type || 'audio/*' }))
+      }
+    })()
   }, [runFile])
 
   const card: React.CSSProperties = {

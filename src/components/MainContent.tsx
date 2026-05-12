@@ -5,6 +5,15 @@ import ProductionZone from '../zones/production/ProductionZone'
 import MixingZone from '../zones/mixing/MixingZone'
 import MixingAudioGrabPage from '../zones/mixing/MixingAudioGrabPage'
 import PulseDigest from '../zones/pulse/PulseDigest'
+import CdlHubZone from '../zones/cdl/CdlHubZone'
+import CdlHazmatPage from '../zones/cdl/CdlHazmatPage'
+import CdlAirBrakesPage from '../zones/cdl/CdlAirBrakesPage'
+import CdlTankerPage from '../zones/cdl/CdlTankerPage'
+import CdlDoublesTriplesPage from '../zones/cdl/CdlDoublesTriplesPage'
+import CdlTankerDoublesPage from '../zones/cdl/CdlTankerDoublesPage'
+import CdlTankerHazmatPage from '../zones/cdl/CdlTankerHazmatPage'
+import CdlPassengerPage from '../zones/cdl/CdlPassengerPage'
+import CdlSchoolBusPage from '../zones/cdl/CdlSchoolBusPage'
 import DevSettings from '../zones/dev/DevSettings'
 import DiagnosticsZone from '../zones/dev/DiagnosticsZone'
 import TeslaMock from '../zones/tesla/TeslaMock'
@@ -13,10 +22,18 @@ import ToolsYoutubePage from '../zones/tools/ToolsYoutubePage'
 import ToolsKeyFinderPage from '../zones/tools/ToolsKeyFinderPage'
 import ToolsChordDetectorPage from '../zones/tools/ToolsChordDetectorPage'
 import ToolsTempoTapPage from '../zones/tools/ToolsTempoTapPage'
+import ToolsMetronomeExportPage from '../zones/tools/ToolsMetronomeExportPage'
+import ToolsPhoneticsInspectorPage from '../zones/tools/ToolsPhoneticsInspectorPage'
+import ToolsSessionTimerPage from '../zones/tools/ToolsSessionTimerPage'
+import ToolsArrangementPadPage from '../zones/tools/ToolsArrangementPadPage'
+import ToolsSampleSlicerPage from '../zones/tools/ToolsSampleSlicerPage'
+import ToolsStemSplitterPage from '../zones/tools/ToolsStemSplitterPage'
 import HarmonyStackZone from '../zones/harmony/HarmonyStackZone'
 import CpwZone from '../zones/cpw/CpwZone'
 import NewZonePage from '../zones/builder/NewZonePage'
 import CustomZonePage from '../zones/builder/CustomZonePage'
+import WebDesignerZone from '../zones/web-designer/WebDesignerZone'
+import { parseWebDesignerBookmarkNavId } from '../lib/web-designer-bookmarks'
 
 import ConnectionPill from './ConnectionPill'
 import type { ReactNode } from 'react'
@@ -43,6 +60,24 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
       break
     case 'tools-tempo-tap':
       body = <ToolsTempoTapPage onNavigate={onNavigate} />
+      break
+    case 'tools-metronome-export':
+      body = <ToolsMetronomeExportPage onNavigate={onNavigate} />
+      break
+    case 'tools-phonetics-inspector':
+      body = <ToolsPhoneticsInspectorPage onNavigate={onNavigate} />
+      break
+    case 'tools-session-timer':
+      body = <ToolsSessionTimerPage onNavigate={onNavigate} />
+      break
+    case 'tools-arrangement-pad':
+      body = <ToolsArrangementPadPage onNavigate={onNavigate} />
+      break
+    case 'tools-sample-slicer':
+      body = <ToolsSampleSlicerPage onNavigate={onNavigate} />
+      break
+    case 'tools-stem-splitter':
+      body = <ToolsStemSplitterPage onNavigate={onNavigate} />
       break
     case 'production-overview':
       body = <ProductionZone />
@@ -72,6 +107,36 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
     case 'pulse':
       body = <PulseDigest />
       break
+    case 'cdl-hub':
+      body = <CdlHubZone onNavigate={onNavigate} />
+      break
+    case 'cdl-hazmat':
+      body = <CdlHazmatPage />
+      break
+    case 'cdl-air-brakes':
+      body = <CdlAirBrakesPage />
+      break
+    case 'cdl-tanker':
+      body = <CdlTankerPage />
+      break
+    case 'cdl-doubles-triples':
+      body = <CdlDoublesTriplesPage />
+      break
+    case 'cdl-tanker-doubles':
+      body = <CdlTankerDoublesPage />
+      break
+    case 'cdl-tanker-hazmat':
+      body = <CdlTankerHazmatPage />
+      break
+    case 'cdl-passenger':
+      body = <CdlPassengerPage />
+      break
+    case 'cdl-school-bus':
+      body = <CdlSchoolBusPage />
+      break
+    case 'web-designer':
+      body = <WebDesignerZone key="web-designer-main" onNavigate={onNavigate} />
+      break
     case 'dev-diagnostics':
       body = <DiagnosticsZone />
       break
@@ -89,7 +154,12 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
         />
       )
       break
-    default:
+    default: {
+      const webBm = parseWebDesignerBookmarkNavId(activeRouteId)
+      if (webBm) {
+        body = <WebDesignerZone key={webBm} onNavigate={onNavigate} initialBookmarkId={webBm} />
+        break
+      }
       if (activeRouteId.startsWith('custom-')) {
         body = (
           <CustomZonePage
@@ -105,6 +175,8 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
           </div>
         )
       }
+      break
+    }
   }
 
   return (

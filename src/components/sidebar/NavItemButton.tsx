@@ -1,10 +1,14 @@
 import type { NavItem } from './navigation'
 
 interface NavItemButtonProps {
-  item:              NavItem
-  isActive:          boolean
-  onSelect:          (id: string) => void
+  item:               NavItem
+  isActive:           boolean
+  onSelect:           (id: string) => void
   animationDelayMs?: number
+  layoutEditMode?:   boolean
+  draggable?:        boolean
+  onDragStart?:      () => void
+  onDragEnd?:       () => void
 }
 
 export default function NavItemButton({
@@ -12,23 +16,49 @@ export default function NavItemButton({
   isActive,
   onSelect,
   animationDelayMs = 0,
+  layoutEditMode = false,
+  draggable = false,
+  onDragStart,
+  onDragEnd,
 }: NavItemButtonProps) {
   const Icon = item.icon
 
   return (
     <button
-      onClick={() => onSelect(item.id)}
+      type="button"
+      draggable={draggable}
+      onDragStart={e => {
+        if (!draggable) return
+        e.dataTransfer.effectAllowed = 'move'
+        e.dataTransfer.setData('text/plain', item.id)
+        onDragStart?.()
+      }}
+      onDragEnd={() => onDragEnd?.()}
+      onClick={() => {
+        if (layoutEditMode) return
+        onSelect(item.id)
+      }}
       aria-current={isActive ? 'page' : undefined}
-      className="nav-item-animate relative w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[13px] font-medium transition-all duration-150 text-left"
+      className={
+        'nav-wiggle-target relative w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[13px] font-medium transition-all duration-150 text-left'
+        + (layoutEditMode ? '' : ' nav-item-animate')
+      }
       style={{
         animationDelay: `${animationDelayMs}ms`,
-        background: isActive ? 'var(--accent-soft)' : 'transparent',
-        color:      isActive ? 'var(--accent-fg)'   : 'var(--text-3)',
+        background: isActive && !layoutEditMode ? 'var(--accent-soft)' : 'transparent',
+        color:      isActive && !layoutEditMode ? 'var(--accent-fg)'   : 'var(--text-3)',
+        cursor:     layoutEditMode ? 'grab' : undefined,
       }}
-      onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--bg-hover)' }}
-      onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
+      onMouseEnter={e => {
+        if (layoutEditMode) return
+        if (!isActive) e.currentTarget.style.background = 'var(--bg-hover)'
+      }}
+      onMouseLeave={e => {
+        if (layoutEditMode) return
+        if (!isActive) e.currentTarget.style.background = 'transparent'
+      }}
     >
-      {isActive && (
+      {isActive && !layoutEditMode && (
         <span
           className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full"
           style={{ background: 'var(--accent)' }}
@@ -37,15 +67,15 @@ export default function NavItemButton({
 
       <Icon
         size={15}
-        strokeWidth={isActive ? 2.2 : 1.8}
+        strokeWidth={isActive && !layoutEditMode ? 2.2 : 1.8}
         style={{
           flexShrink: 0,
-          color:      isActive ? 'var(--accent)' : 'var(--text-4)',
+          color:      isActive && !layoutEditMode ? 'var(--accent)' : 'var(--text-4)',
           transition: 'color 150ms',
         }}
       />
 
-      <span className="flex-1 leading-none">{item.label}</span>
+      <span className="flex-1 min-w-0 leading-none truncate text-left">{item.label}</span>
 
       {item.badge !== undefined && (
         <span

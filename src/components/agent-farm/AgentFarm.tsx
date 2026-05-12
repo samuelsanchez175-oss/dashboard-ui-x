@@ -704,7 +704,8 @@ function IntegrationsPanel() {
   const [probeBusy, setProbeBusy] = useState(false)
 
   const load = useCallback(async () => {
-    const r = await fetch('/api/config/status')
+    const { fetchWithKeys } = await import('../../lib/api-keys')
+    const r = await fetchWithKeys('/api/config/status')
     if (!r.ok) throw new Error(`HTTP ${r.status}`)
     return (await r.json()) as ConfigStatus
   }, [])
@@ -745,7 +746,8 @@ function IntegrationsPanel() {
     setProbeLabel(label)
     setProbeBody(null)
     try {
-      const r = await fetch(url, init)
+      const { fetchWithKeys } = await import('../../lib/api-keys')
+      const r = await fetchWithKeys(url, init)
       const text = await r.text()
       let formatted = text
       try {

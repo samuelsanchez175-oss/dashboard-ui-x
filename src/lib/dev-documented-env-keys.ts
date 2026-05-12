@@ -92,6 +92,14 @@ export const BUILT_IN_DOCUMENTED_ENV_ROWS: readonly BuiltInDocRow[] = [
   },
   {
     builtIn: true,
+    envKey: 'VITE_STEM_SERVICE_URL',
+    scope: 'client',
+    description:
+      'Optional multipart stem service URL for Tools → Stem splitter stub (POST field `file`; JSON with stem download URLs — see `ToolsStemSplitterPage` comments).',
+    inputKind: 'text',
+  },
+  {
+    builtIn: true,
     envKey: 'VITE_GOOGLE_MAPS_EMBED_API_KEY',
     scope: 'client',
     description:

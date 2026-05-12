@@ -50,7 +50,8 @@ export default function MixingBoardPanel() {
     if (!trimmed) return
     setBusy(true); setError(null)
     try {
-      const res  = await fetch('/api/gemini/generate', {
+      const { fetchWithKeys } = await import('../../lib/api-keys')
+      const res  = await fetchWithKeys('/api/gemini/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: buildMixNotesPrompt(trimmed), maxOutputTokens: 220 }),

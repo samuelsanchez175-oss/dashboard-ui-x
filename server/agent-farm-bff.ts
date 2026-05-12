@@ -16,6 +16,30 @@ const integrationLastError = {
   rss: null as string | null,
 }
 
+/**
+ * Read an API key with user-supplied header precedence.
+ *
+ * Order:
+ *   1. `x-user-key-<envname>` request header (what the user typed into the
+ *      dashboard's Settings page, sent via `fetchWithKeys`)
+ *   2. `process.env.<envname>` (the traditional `.env.local` value)
+ *   3. `''`
+ *
+ * Keeps user-typed keys local-only — they never leave the dev server.
+ */
+function pickKey(envName: string, req: IncomingMessage, env: NodeJS.ProcessEnv): string {
+  const header = `x-user-key-${envName.toLowerCase().replace(/_/g, '-')}`
+  const fromHeader = req.headers[header]
+  if (typeof fromHeader === 'string' && fromHeader.trim()) return fromHeader.trim()
+  if (Array.isArray(fromHeader) && fromHeader[0]?.trim())  return fromHeader[0]!.trim()
+  return env[envName]?.trim() ?? ''
+}
+
+/** Effective YouTube data API key — request-aware. */
+function youtubeDataKeyForReq(req: IncomingMessage, env: NodeJS.ProcessEnv): string {
+  return pickKey('YOUTUBE_API_KEY', req, env) || pickKey('GOOGLE_API_KEY', req, env)
+}
+
 export type ConfigStatusResponse = {
   YOUTUBE_API_KEY: boolean
   GEMINI_API_KEY: boolean
@@ -622,33 +646,30 @@ export function attachAgentFarmBff(
     }
 
     if (method === 'GET' && path === '/api/integrations/status') {
-      const feedCount = env.RSS_FEED_URLS
-        ? env.RSS_FEED_URLS.split(',')
-            .map(s => s.trim())
-            .filter(Boolean).length
+      // `configured` = env OR user-typed key from the Settings page.
+      const googleKey  = pickKey('GOOGLE_API_KEY',  req, env)
+      const geminiKey  = pickKey('GEMINI_API_KEY',  req, env)
+      const youtubeKey = pickKey('YOUTUBE_API_KEY', req, env)
+      const rssRaw     = pickKey('RSS_FEED_URLS',   req, env)
+      const feedCount = rssRaw
+        ? rssRaw.split(',').map(s => s.trim()).filter(Boolean).length
         : 0
       jsonRes(res, 200, {
         googleApi: {
-          configured: envBool(env.GOOGLE_API_KEY),
+          configured: Boolean(googleKey),
           lastError: integrationLastError.google,
           note: 'Generic Google API key. YouTube prefers YOUTUBE_API_KEY then falls back to GOOGLE_API_KEY. Gemini uses GEMINI_API_KEY (often distinct from GCP console keys).',
         },
-        gemini: { configured: envBool(env.GEMINI_API_KEY), lastError: integrationLastError.gemini },
-        youtube: {
-          configured: envBool(env.YOUTUBE_API_KEY) || envBool(env.GOOGLE_API_KEY),
-          lastError: integrationLastError.youtube,
-        },
-        rss: {
-          configured: feedCount > 0,
-          feedCount,
-          lastError: integrationLastError.rss,
-        },
+        gemini:  { configured: Boolean(geminiKey),  lastError: integrationLastError.gemini },
+        youtube: { configured: Boolean(youtubeKey) || Boolean(googleKey), lastError: integrationLastError.youtube },
+        rss:     { configured: feedCount > 0, feedCount, lastError: integrationLastError.rss },
       })
       return
     }
 
     if (method === 'GET' && path === '/api/google/health') {
-      if (!envBool(env.GOOGLE_API_KEY)) {
+      const googleKey = pickKey('GOOGLE_API_KEY', req, env)
+      if (!googleKey) {
         integrationLastError.google = 'missing_GOOGLE_API_KEY'
         jsonRes(res, 200, {
           ok: false,
@@ -664,7 +685,7 @@ export function attachAgentFarmBff(
     }
 
     if (method === 'GET' && path === '/api/gemini/health') {
-      const result = await geminiPing(env.GEMINI_API_KEY)
+      const result = await geminiPing(pickKey('GEMINI_API_KEY', req, env))
       if (result.ok) integrationLastError.gemini = null
       else integrationLastError.gemini = result.message.slice(0, 200)
       jsonRes(res, 200, result)
@@ -679,7 +700,7 @@ export function attachAgentFarmBff(
         jsonRes(res, 400, { ok: false, error: 'BAD_REQUEST', message: 'Invalid JSON body.' })
         return
       }
-      const result = await geminiGenerate(env.GEMINI_API_KEY, parsed)
+      const result = await geminiGenerate(pickKey('GEMINI_API_KEY', req, env), parsed)
       if (result.ok) {
         integrationLastError.gemini = null
         jsonRes(res, 200, result)
@@ -692,10 +713,11 @@ export function attachAgentFarmBff(
 
     if (method === 'GET' && path === '/api/youtube/channel') {
       const handle = u.searchParams.get('handle')?.trim() ?? ''
-      const key = youtubeDataKey(env)
+      const key = youtubeDataKeyForReq(req, env)
+      const channelId = pickKey('AGENT_FARM_YOUTUBE_CHANNEL_ID', req, env)
       const result = handle
         ? await youtubeChannelByHandle(key, handle)
-        : await youtubeChannelById(key, env.AGENT_FARM_YOUTUBE_CHANNEL_ID?.trim())
+        : await youtubeChannelById(key, channelId || undefined)
       if (result.ok) integrationLastError.youtube = null
       else integrationLastError.youtube = result.message.slice(0, 200)
       jsonRes(res, 200, result)
@@ -703,11 +725,12 @@ export function attachAgentFarmBff(
     }
 
     if (method === 'GET' && path === '/api/config/status') {
+      // Each flag is true if EITHER the env or the user-typed key is set.
       const body: ConfigStatusResponse = {
-        YOUTUBE_API_KEY: envBool(env.YOUTUBE_API_KEY),
-        GEMINI_API_KEY: envBool(env.GEMINI_API_KEY),
-        GOOGLE_API_KEY: envBool(env.GOGLE_API_KEY),
-        RSS_FEED_URLS: envBool(env.RSS_FEED_URLS),
+        YOUTUBE_API_KEY: Boolean(pickKey('YOUTUBE_API_KEY', req, env)),
+        GEMINI_API_KEY:  Boolean(pickKey('GEMINI_API_KEY',  req, env)),
+        GOOGLE_API_KEY:  Boolean(pickKey('GOOGLE_API_KEY',  req, env)),
+        RSS_FEED_URLS:   Boolean(pickKey('RSS_FEED_URLS',   req, env)),
       }
       jsonRes(res, 200, body)
       return
@@ -715,7 +738,7 @@ export function attachAgentFarmBff(
 
     if (method === 'GET' && path === '/api/youtube/search') {
       const q = u.searchParams.get('q')
-      const result = await youtubeSearch(youtubeDataKey(env), q)
+      const result = await youtubeSearch(youtubeDataKeyForReq(req, env), q)
       if (result.ok) integrationLastError.youtube = null
       else integrationLastError.youtube = result.message.slice(0, 200)
       jsonRes(res, 200, result)
@@ -723,14 +746,17 @@ export function attachAgentFarmBff(
     }
 
     if (method === 'GET' && path === '/api/openai/ping') {
-      const result = await openAiPing(env.OPENAI_API_KEY, env.OPENAI_BASE_URL)
+      const result = await openAiPing(
+        pickKey('OPENAI_API_KEY',  req, env),
+        pickKey('OPENAI_BASE_URL', req, env) || undefined,
+      )
       jsonRes(res, 200, result)
       return
     }
 
     if (method === 'POST' && path === '/api/gemini/ping') {
       await drainRequestBody(req)
-      const result = await geminiPing(env.GEMINI_API_KEY)
+      const result = await geminiPing(pickKey('GEMINI_API_KEY', req, env))
       if (result.ok) integrationLastError.gemini = null
       else integrationLastError.gemini = result.message.slice(0, 200)
       jsonRes(res, 200, result)
@@ -741,7 +767,12 @@ export function attachAgentFarmBff(
       const limitRaw = u.searchParams.get('limit')
       const limit = Math.min(100, Math.max(1, limitRaw ? Number.parseInt(limitRaw, 10) || 30 : 30))
       const onlyUrl = u.searchParams.get('url')
-      const result = await aggregateRss(env, { onlyUrl })
+      // Pass an env-like overlay so aggregateRss() sees the per-request RSS feeds.
+      const reqRssFeeds = pickKey('RSS_FEED_URLS', req, env)
+      const envOverlay = reqRssFeeds
+        ? { ...env, RSS_FEED_URLS: reqRssFeeds } as NodeJS.ProcessEnv
+        : env
+      const result = await aggregateRss(envOverlay, { onlyUrl })
       if (!result.ok) {
         integrationLastError.rss = result.message.slice(0, 200)
         jsonRes(res, 200, result)

@@ -263,8 +263,13 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
   const onDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault()
-      const f = e.dataTransfer.files?.[0]
-      if (f) void runFile(f)
+      void (async () => {
+        const { receiveDockOrFileDrop } = await import('../../components/files-dock/files-store')
+        const f = await receiveDockOrFileDrop(e)
+        if (f) {
+          await runFile(f instanceof File ? f : new File([f], 'dock-clip', { type: f.type || 'audio/*' }))
+        }
+      })()
     },
     [runFile],
   )

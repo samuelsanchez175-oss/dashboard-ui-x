@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { ChevronDown, ChevronUp, Download, Loader2, Music2, MonitorPlay, RefreshCw, Trash2 } from 'lucide-react'
 
 import { deleteMixClip, loadAllMixClips, patchMixClip, saveMixClip, type MixClipMeta } from './mixing-audio-idb'
+import { dispatchFileDownload } from '../../components/files-dock/files-store'
 
 type DockItem = {
   videoId: string
@@ -13,15 +14,49 @@ type DockItem = {
 }
 
 function triggerFileDownload(blob: Blob, filename: string) {
+  const safeName = filename.endsWith('.mp3') ? filename : `${filename}.mp3`
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = filename.endsWith('.mp3') ? filename : `${filename}.mp3`
+  a.download = safeName
   a.rel = 'noopener'
   document.body.appendChild(a)
   a.click()
   a.remove()
   URL.revokeObjectURL(url)
+  // Also surface in the global Files Dock.
+  dispatchFileDownload({ blob, name: safeName, source: 'YouTube grab' })
+}
+
+/**
+ * Best-effort YouTube thumbnail fetch. Tries `maxresdefault.jpg` first (1280×720
+ * when available) and falls back to `hqdefault.jpg` (480×360, always present).
+ * Saves the result through the Files Dock event bridge — never blocks audio.
+ */
+async function fetchYoutubeThumbnail(videoId: string, title: string): Promise<void> {
+  const safeTitle = title.replace(/[/\\?%*:|"<>]/g, '_').trim() || `youtube-${videoId}`
+  const candidates = [
+    `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`,
+    `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+  ]
+  for (const url of candidates) {
+    try {
+      const res = await fetch(url)
+      if (!res.ok) continue
+      const blob = await res.blob()
+      // YouTube returns a tiny 120×90 placeholder when the variant is missing;
+      // skip those (typical size < 1500 bytes).
+      if (blob.size < 1500) continue
+      dispatchFileDownload({
+        blob,
+        name:   `${safeTitle}.jpg`,
+        source: 'YouTube thumbnail',
+      })
+      return
+    } catch {
+      /* try next variant */
+    }
+  }
 }
 
 function formatDateAdded(ts: number): string {
@@ -141,7 +176,8 @@ export default function MixingAudioGrabber() {
     setBusy(true)
     setError(null)
     try {
-      const res = await fetch('/api/mixing/youtube-audio', {
+      const { fetchWithKeys } = await import('../../lib/api-keys')
+      const res = await fetchWithKeys('/api/mixing/youtube-audio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: raw }),
@@ -171,6 +207,7 @@ export default function MixingAudioGrabber() {
 
       await saveMixClip({ videoId: vid, title, blob })
       triggerFileDownload(blob, `${title}.mp3`)
+      void fetchYoutubeThumbnail(vid, title)
       setDockEpoch(e => e + 1)
       runClipAnalysis(vid, blob)
       setUrl('')

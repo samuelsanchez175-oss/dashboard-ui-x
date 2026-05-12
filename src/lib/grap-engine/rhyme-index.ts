@@ -256,3 +256,81 @@ export async function findRhymesCmudict(opts: {
     rhymeKeys,
   }
 }
+
+/** ARPAbet tokens that carry a stress digit are vowels (CMU convention). */
+function isArpabetVowelToken(token: string): boolean {
+  return /\d$/.test(token)
+}
+
+/** Up to two consonant bases (stress digits stripped) from the **end** of the pronunciation. */
+function consonantBasesFromWordEnd(tokens: string[]): string[] {
+  const bases: string[] = []
+  for (let i = tokens.length - 1; i >= 0 && bases.length < 2; i--) {
+    const t = tokens[i]!
+    if (isArpabetVowelToken(t)) continue
+    bases.push(t.replace(/\d/g, ''))
+  }
+  return bases
+}
+
+/** Keys for “shared final consonant cluster”: last symbol, then second-from-last; `_` if only one trailing consonant. */
+function consonantTailMatchKeysForPronunciation(pronunciation: string): Set<string> {
+  const tokens = splitPronTokens(pronunciation)
+  const bases = consonantBasesFromWordEnd(tokens)
+  const keys = new Set<string>()
+  if (bases.length >= 2) keys.add(`${bases[0]!}|${bases[1]!}`)
+  else if (bases.length === 1) keys.add(`${bases[0]!}|_`)
+  return keys
+}
+
+/**
+ * Words whose CMU pronunciation shares the same **final one or two consonant symbols**
+ * (ARPAbet bases, read backward from the word end, vowels skipped). Not rhyme-tier scoring.
+ */
+export async function findSharedFinalConsonantClusterCmudict(opts: {
+  inputWord: string
+  max?: number
+  excludeExact?: boolean
+}): Promise<{ words: string[]; matchKeys: string[]; unknownWord: boolean }> {
+  await ensureRhymeIndexBuilt()
+  const dict = await loadDictionary()
+
+  const normalized = opts.inputWord.toLowerCase().trim().replace(/[^\w']/g, '')
+  if (!normalized.length) return { words: [], matchKeys: [], unknownWord: false }
+
+  const inputDictKeys = dictKeysForWord(dict, normalized)
+  if (!inputDictKeys.length) return { words: [], matchKeys: [], unknownWord: true }
+
+  const keySet = new Set<string>()
+  for (const k of inputDictKeys) {
+    const p = dict[k]
+    if (!p) continue
+    for (const kk of consonantTailMatchKeysForPronunciation(p)) keySet.add(kk)
+  }
+
+  if (!keySet.size) {
+    return { words: [], matchKeys: [], unknownWord: false }
+  }
+
+  const canonicalInput = canonicalFromDictKey(normalized)
+  const max = opts.max ?? 48
+  const found = new Set<string>()
+
+  for (const [dictKey, pronunciation] of Object.entries(dict)) {
+    const canon = canonicalFromDictKey(dictKey)
+    if (opts.excludeExact !== false && canon === canonicalInput) continue
+    for (const pk of consonantTailMatchKeysForPronunciation(pronunciation)) {
+      if (keySet.has(pk)) {
+        found.add(canon)
+        break
+      }
+    }
+  }
+
+  const words = [...found].sort((a, b) => a.localeCompare(b)).slice(0, max)
+  return {
+    words,
+    matchKeys: [...keySet].sort(),
+    unknownWord: false,
+  }
+}

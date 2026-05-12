@@ -1,6 +1,14 @@
-/** Browser calls to the Vite BFF (`/api/*`). Never contains secrets — only booleans / public API payloads. */
+/**
+ * Browser calls to the Vite BFF (`/api/*`).
+ *
+ * Every fetch goes through `fetchWithKeys` so the user-typed API keys from
+ * Settings are sent as `x-user-key-*` headers — the BFF prefers those over
+ * `process.env`. Response payloads still contain no secrets (only booleans
+ * and public API data).
+ */
 
 import type { ApiResult } from '../components/agent-farm/api-stubs'
+import { fetchWithKeys } from './api-keys'
 
 export type ConfigStatus = {
   YOUTUBE_API_KEY: boolean
@@ -33,7 +41,7 @@ export type RssItem = {
 
 export async function fetchConfigStatus(): Promise<ConfigStatus | null> {
   try {
-    const res = await fetch('/api/config/status')
+    const res = await fetchWithKeys('/api/config/status')
     if (!res.ok) return null
     return (await res.json()) as ConfigStatus
   } catch {
@@ -42,19 +50,19 @@ export async function fetchConfigStatus(): Promise<ConfigStatus | null> {
 }
 
 export async function fetchYoutubeSearch(q: string): Promise<ApiResult<YoutubeSearchPayload>> {
-  const res = await fetch(`/api/youtube/search?${new URLSearchParams({ q })}`)
+  const res = await fetchWithKeys(`/api/youtube/search?${new URLSearchParams({ q })}`)
   return (await res.json()) as ApiResult<YoutubeSearchPayload>
 }
 
 export async function postGeminiPing(): Promise<ApiResult<GeminiPingPayload>> {
-  const res = await fetch('/api/gemini/ping', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+  const res = await fetchWithKeys('/api/gemini/ping', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
   return (await res.json()) as ApiResult<GeminiPingPayload>
 }
 
 export async function fetchRssHeadlines(limit = 12): Promise<
   ApiResult<{ items: RssItem[]; errors?: ReadonlyArray<{ feedUrl: string; message: string }> }>
 > {
-  const res = await fetch(`/api/rss?${new URLSearchParams({ limit: String(limit) })}`)
+  const res = await fetchWithKeys(`/api/rss?${new URLSearchParams({ limit: String(limit) })}`)
   return (await res.json()) as ApiResult<{
     items: RssItem[]
     errors?: ReadonlyArray<{ feedUrl: string; message: string }>

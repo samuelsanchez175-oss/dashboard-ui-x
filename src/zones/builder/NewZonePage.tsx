@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import {
   ArrowLeft, Check, Copy, FileText, Folder, Layers, Music, Radio,
   Sparkles, Star, Wrench, X, Zap,
 } from 'lucide-react'
 import { useCustomZones } from '../../context/CustomZonesContext'
+import { buildNewZoneCodePrompt } from './buildNewZoneCodePrompt'
 
 const ICON_OPTIONS = [
   { name: 'Folder',    Icon: Folder },
@@ -29,46 +30,58 @@ export default function NewZonePage({ onBack, onNavigate }: Props) {
   const [description, setDescription] = useState('')
   const [content,     setContent]     = useState('')
   const [iconName,    setIconName]    = useState('Folder')
-  const [promptOpen,  setPromptOpen]  = useState(false)
-  const [copied,      setCopied]      = useState(false)
-  const [saved,       setSaved]       = useState(false)
+  const [promptOpen,    setPromptOpen]    = useState(false)
+  const [copied,        setCopied]        = useState(false)
+  const [copyHint,      setCopyHint]      = useState<string | null>(null)
+  const [generateError, setGenerateError]  = useState<string | null>(null)
+  const [saved,         setSaved]         = useState(false)
+
+  const titleRef = useRef<HTMLInputElement>(null)
+  const promptBodyRef = useRef<HTMLTextAreaElement>(null)
 
   const isValid = title.trim().length > 0
 
-  function buildPrompt() {
-    const slug    = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-    const pascal  = title.replace(/(?:^|\s)\S/g, c => c.toUpperCase()).replace(/\s+/g, '')
-    return `I'm building a new dashboard zone called "${title}" for my UI Dashboard X app (React 19 + TypeScript + Tailwind CSS v4 + Vite 8).
+  const promptText = buildNewZoneCodePrompt({ title, iconName, description, content })
 
-Zone description: ${description || '(no description provided)'}
-Additional notes / context:
-${content || '(none)'}
+  /** Generate stays enabled so users discover the flow; title is validated on click (slug + filenames need it). */
+  function handleGenerateClick() {
+    if (!title.trim()) {
+      setGenerateError('Add a zone title first — it drives the route id and suggested file names in the prompt.')
+      titleRef.current?.focus()
+      return
+    }
+    setGenerateError(null)
+    setCopied(false)
+    setCopyHint(null)
+    setPromptOpen(true)
+  }
 
-Please create a production-ready React component at:
-  src/zones/${slug}/${pascal}Zone.tsx
-
-Requirements:
-- TypeScript with proper types, no \`any\`
-- Tailwind CSS v4 classes for styling (the project uses Sora + DM Mono fonts)
-- Use the global CSS variables already defined: var(--bg-card), var(--border), var(--text-1), var(--text-3), var(--accent), etc.
-- Follows existing dashboard patterns — a \`<div className="zone-canvas">\` outer wrapper, \`<div className="zone-inner">\` inner container (max 1100 px, padded)
-- Mobile-responsive
-
-After creating the component, also:
-1. Add it to \`src/components/sidebar/navigation.ts\` under a new or appropriate section
-2. Import it in \`src/components/MainContent.tsx\` and add a \`case '${slug}'\` to the switch
-
-Reference existing zones for patterns:
-- src/zones/production/ProductionZone.tsx (simple overview with cards)
-- src/zones/harmony/HarmonyStackZone.tsx (tabs + todo list)
-- src/zones/cpw/CpwZone.tsx (kanban project board)
-`
+  function closePromptModal() {
+    setPromptOpen(false)
+    setCopied(false)
+    setCopyHint(null)
   }
 
   async function copyPrompt() {
-    await navigator.clipboard.writeText(buildPrompt())
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    try {
+      await navigator.clipboard.writeText(promptText)
+      setCopied(true)
+      setCopyHint(null)
+      window.setTimeout(() => setCopied(false), 2200)
+    } catch {
+      setCopied(false)
+      setCopyHint('Clipboard unavailable — use Select all, then copy (⌘A / Ctrl+A).')
+      const el = promptBodyRef.current
+      el?.focus()
+      el?.select()
+    }
+  }
+
+  function selectAllPrompt() {
+    const el = promptBodyRef.current
+    if (!el) return
+    el.focus()
+    el.select()
   }
 
   function handleCreate() {
@@ -101,17 +114,17 @@ Reference existing zones for patterns:
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Generate Prompt */}
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {/* Generate Prompt — always clickable; validates title on click (see handleGenerateClick). */}
           <button
-            onClick={() => setPromptOpen(true)}
-            disabled={!isValid}
+            type="button"
+            onClick={handleGenerateClick}
             className="flex items-center gap-2 rounded-lg px-3 py-2 text-[12px] font-semibold transition-all"
             style={{
               background: isValid ? 'var(--accent-soft)' : 'var(--bg-muted)',
-              color:      isValid ? 'var(--accent-fg)'   : 'var(--text-4)',
+              color:      isValid ? 'var(--accent-fg)'   : 'var(--text-3)',
               border:     '1px solid ' + (isValid ? 'color-mix(in oklab, var(--accent) 30%, transparent)' : 'var(--border)'),
-              cursor:     isValid ? 'pointer' : 'not-allowed',
+              cursor:     'pointer',
             }}
           >
             <Sparkles size={13} />
@@ -137,6 +150,19 @@ Reference existing zones for patterns:
 
       {/* Form */}
       <div className="zone-inner" style={{ maxWidth: 680 }}>
+        {generateError ? (
+          <div
+            className="mb-4 rounded-lg px-3 py-2.5 text-[12px]"
+            role="alert"
+            style={{
+              background: 'color-mix(in oklab, var(--warn) 12%, var(--bg-card))',
+              border: '1px solid color-mix(in oklab, var(--warn) 35%, var(--border))',
+              color: 'var(--text-1)',
+            }}
+          >
+            {generateError}
+          </div>
+        ) : null}
         <div className="mb-8">
           <p className="mono text-[10px] mb-2" style={{ color: 'var(--text-4)', letterSpacing: '0.1em' }}>
             NEW ZONE
@@ -156,9 +182,13 @@ Reference existing zones for patterns:
               Zone Title *
             </label>
             <input
+              ref={titleRef}
               type="text"
               value={title}
-              onChange={e => setTitle(e.target.value)}
+              onChange={e => {
+                setTitle(e.target.value)
+                setGenerateError(null)
+              }}
               placeholder="e.g. Client Hub, Release Tracker, Beat Library…"
               className="w-full rounded-lg px-3 py-2.5 text-[13px] transition-colors"
               style={{
@@ -258,46 +288,91 @@ Reference existing zones for patterns:
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
-          onClick={() => setPromptOpen(false)}
+          onClick={closePromptModal}
+          role="presentation"
         >
           <div
             className="w-full max-w-2xl rounded-2xl overflow-hidden fade-in"
             style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-lg)' }}
             onClick={e => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="new-zone-prompt-title"
           >
             {/* Modal header */}
             <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--border)' }}>
               <div className="flex items-center gap-2">
                 <Sparkles size={15} style={{ color: 'var(--accent)' }} />
-                <span className="text-[14px] font-semibold" style={{ color: 'var(--text-1)' }}>
-                  Claude Code Prompt — "{title}"
+                <span id="new-zone-prompt-title" className="text-[14px] font-semibold" style={{ color: 'var(--text-1)' }}>
+                  Cursor / Claude prompt — “{title.trim()}”
                 </span>
               </div>
-              <button onClick={() => setPromptOpen(false)} style={{ color: 'var(--text-3)' }}>
+              <button type="button" onClick={closePromptModal} style={{ color: 'var(--text-3)' }} aria-label="Close">
                 <X size={16} />
               </button>
             </div>
 
-            {/* Prompt text */}
-            <pre
-              className="text-[11px] leading-relaxed p-5 overflow-auto"
-              style={{ color: 'var(--text-2)', fontFamily: "'DM Mono', monospace", maxHeight: 420, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
-            >
-              {buildPrompt()}
-            </pre>
+            {/* Prompt text — textarea so Select-all works when clipboard API is blocked */}
+            <div className="p-5 pt-3">
+              <textarea
+                ref={promptBodyRef}
+                readOnly
+                value={promptText}
+                rows={18}
+                className="w-full rounded-lg px-3 py-2.5 text-[11px] leading-relaxed resize-y"
+                style={{
+                  color: 'var(--text-2)',
+                  fontFamily: "'DM Mono', monospace",
+                  maxHeight: 440,
+                  minHeight: 200,
+                  background: 'var(--bg-muted)',
+                  border: '1px solid var(--border)',
+                  outline: 'none',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                }}
+                aria-label="Generated implementation prompt"
+              />
+            </div>
 
             {/* Modal footer */}
-            <div className="flex items-center justify-between px-5 py-3" style={{ borderTop: '1px solid var(--border)' }}>
-              <p className="text-[11px]" style={{ color: 'var(--text-4)' }}>
-                Paste this into Claude Code to generate the full zone component.
-              </p>
-              <button
-                onClick={copyPrompt}
-                className="flex items-center gap-2 rounded-lg px-3 py-2 text-[12px] font-semibold transition-all"
-                style={{ background: copied ? 'var(--good-soft)' : 'var(--accent)', color: copied ? 'var(--good)' : 'white' }}
-              >
-                {copied ? <><Check size={13} /> Copied!</> : <><Copy size={13} /> Copy Prompt</>}
-              </button>
+            <div className="flex flex-wrap items-center justify-between gap-2 px-5 py-3" style={{ borderTop: '1px solid var(--border)' }}>
+              <div className="flex flex-col gap-1">
+                <p className="text-[11px]" style={{ color: 'var(--text-4)' }}>
+                  Paste into Cursor or Claude to implement the zone (tool and/or section).
+                </p>
+                {copyHint ? (
+                  <p className="text-[11px]" style={{ color: 'var(--warn)' }} role="status">
+                    {copyHint}
+                  </p>
+                ) : null}
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={selectAllPrompt}
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-[12px] font-semibold transition-all"
+                  style={{
+                    background: 'var(--bg-muted)',
+                    color: 'var(--text-2)',
+                    border: '1px solid var(--border)',
+                  }}
+                >
+                  Select all
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void copyPrompt()}
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-[12px] font-semibold transition-all"
+                  style={{
+                    background: copied ? 'var(--good-soft)' : 'var(--accent)',
+                    color: copied ? 'var(--good)' : 'white',
+                    border: '1px solid transparent',
+                  }}
+                >
+                  {copied ? <><Check size={13} /> Copied!</> : <><Copy size={13} /> Copy prompt</>}
+                </button>
+              </div>
             </div>
           </div>
         </div>

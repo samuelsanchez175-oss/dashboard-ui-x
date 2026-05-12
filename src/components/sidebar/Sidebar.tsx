@@ -1,13 +1,24 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Folder, Moon, Plus, Sun, X } from 'lucide-react'
-import { useDiagnostics } from '../../context/DiagnosticsContext'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Moon, Plus, Sun, X } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
-import { useCustomZones } from '../../context/CustomZonesContext'
 import SidebarBrand from './SidebarBrand'
 import NavSectionGroup from './NavSectionGroup'
 import ProfileWidget from './ProfileWidget'
-import { NAV_SECTIONS, DEFAULT_ACTIVE_ID } from './navigation'
+import { DEFAULT_ACTIVE_ID } from './navigation'
 import type { NavSection } from './navigation'
+import { useSidebarNavModel } from './useSidebarNavModel'
+import {
+  hideNavItem,
+  loadSidebarNavLayout,
+  moveNavItemInLayout,
+  orderedSectionIds,
+  resetSidebarNavLayout,
+  saveSidebarNavLayout,
+  sectionForEdit,
+  toggleSectionCollapsed,
+  toggleSectionHidden,
+  type SidebarNavLayoutPersist,
+} from './sidebarNavLayout'
 
 interface SidebarProps {
   onRouteChange?:  (id: string) => void
@@ -17,41 +28,47 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ onRouteChange, activeRouteId, mobileOpen, onMobileClose }: SidebarProps) {
-  const { openBadgeCount, badgeTone } = useDiagnostics()
   const { theme, setTheme }           = useTheme()
-  const { zones }                     = useCustomZones()
   const [activeId, setActiveId]       = useState<string>(activeRouteId ?? DEFAULT_ACTIVE_ID)
-  const [collapsed, setCollapsed]     = useState<Set<string>>(new Set())
+  const [layout, setLayout]           = useState<SidebarNavLayoutPersist>(() => loadSidebarNavLayout())
+  const [layoutEditMode, setLayoutEditMode] = useState(false)
+  const dragRef                       = useRef<{ fromSectionId: string, itemId: string } | null>(null)
+  const {
+    sourceSections: navSections,
+    visibleSections: standardNav,
+    customZonesSection,
+  } = useSidebarNavModel(layout)
 
   useEffect(() => {
-    if (activeRouteId != null && activeRouteId !== '') setActiveId(activeRouteId)
+    if (activeRouteId != null && activeRouteId !== '') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- mirror App route into sidebar selection
+      setActiveId(activeRouteId)
+    }
   }, [activeRouteId])
 
-  const navSections = useMemo<NavSection[]>(() => {
-    if (openBadgeCount <= 0) return NAV_SECTIONS
-    const diagBadgeClass =
-      badgeTone === 'critical' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'
-    return NAV_SECTIONS.map(sec =>
-      sec.id !== 'dev'
-        ? sec
-        : {
-            ...sec,
-            items: sec.items.map(item =>
-              item.id === 'dev-diagnostics'
-                ? { ...item, badge: openBadgeCount, badgeClass: diagBadgeClass }
-                : item,
-            ),
-          },
-    )
-  }, [openBadgeCount, badgeTone])
+  useEffect(() => {
+    saveSidebarNavLayout(layout)
+  }, [layout])
+
+  const editNavGroups = useMemo(() => {
+    if (!layoutEditMode) return null
+    const ids = orderedSectionIds(navSections, layout)
+    const hidden = new Set(layout.hiddenSectionIds)
+    const byId = new Map(navSections.map(s => [s.id, s] as const))
+    const onSidebar: NavSection[] = []
+    const offSidebar: NavSection[] = []
+    for (const id of ids) {
+      const raw = byId.get(id)
+      if (!raw) continue
+      const sec = sectionForEdit(raw, layout)
+      if (hidden.has(id)) offSidebar.push(sec)
+      else onSidebar.push(sec)
+    }
+    return { onSidebar, offSidebar }
+  }, [navSections, layout, layoutEditMode])
 
   const toggleSection = useCallback((sectionId: string) => {
-    setCollapsed(prev => {
-      const next = new Set(prev)
-      if (next.has(sectionId)) next.delete(sectionId)
-      else next.add(sectionId)
-      return next
-    })
+    setLayout(prev => toggleSectionCollapsed(prev, sectionId))
   }, [])
 
   const selectItem = useCallback(
@@ -62,7 +79,68 @@ export default function Sidebar({ onRouteChange, activeRouteId, mobileOpen, onMo
     [onRouteChange],
   )
 
+  const enterLayoutEdit = useCallback(() => {
+    setLayoutEditMode(true)
+  }, [])
+
+  const exitLayoutEdit = useCallback(() => {
+    setLayoutEditMode(false)
+    dragRef.current = null
+  }, [])
+
+  const handleSectionPinToggle = useCallback((sectionId: string) => {
+    setLayout(prev => toggleSectionHidden(prev, sectionId))
+  }, [])
+
+  const handleRemoveItem = useCallback((itemId: string) => {
+    setLayout(prev => hideNavItem(prev, itemId))
+  }, [])
+
+  const handleDragItemStart = useCallback((sectionId: string, itemId: string) => {
+    dragRef.current = { fromSectionId: sectionId, itemId }
+  }, [])
+
+  const handleItemDragEnd = useCallback(() => {
+    dragRef.current = null
+  }, [])
+
+  const handleDropBeforeItem = useCallback(
+    (toSectionId: string, beforeItemId: string | null) => {
+      const d = dragRef.current
+      if (!d) return
+      if (d.fromSectionId === toSectionId && beforeItemId === d.itemId) return
+      setLayout(prev => moveNavItemInLayout(prev, navSections, d.fromSectionId, toSectionId, d.itemId, beforeItemId))
+      dragRef.current = null
+    },
+    [navSections],
+  )
+
+  const handleResetLayout = useCallback(() => {
+    setLayout(resetSidebarNavLayout())
+    dragRef.current = null
+  }, [])
+
   const isDark = theme === 'dark'
+
+  const renderSection = (section: NavSection, i: number, offSidebar: boolean) => (
+    <NavSectionGroup
+      key={section.id}
+      section={section}
+      collapsed={!layoutEditMode && layout.collapsedSectionIds.includes(section.id)}
+      onToggle={toggleSection}
+      activeItemId={activeId}
+      onSelectItem={selectItem}
+      baseAnimationDelayMs={i * 40}
+      layoutEditMode={layoutEditMode}
+      sectionHidden={offSidebar}
+      onPinPress={enterLayoutEdit}
+      onSectionPinToggle={() => handleSectionPinToggle(section.id)}
+      onRemoveItem={handleRemoveItem}
+      onDragItemStart={handleDragItemStart}
+      onItemDragEnd={handleItemDragEnd}
+      onDropBeforeItem={handleDropBeforeItem}
+    />
+  )
 
   return (
     <aside
@@ -82,6 +160,7 @@ export default function Sidebar({ onRouteChange, activeRouteId, mobileOpen, onMo
           style={{ borderBottom: '1px solid var(--border-soft)' }}
         >
           <button
+            type="button"
             onClick={onMobileClose}
             className="flex items-center justify-center w-7 h-7 rounded-lg transition-colors"
             style={{ color: 'var(--text-3)', background: 'var(--bg-hover)' }}
@@ -92,27 +171,76 @@ export default function Sidebar({ onRouteChange, activeRouteId, mobileOpen, onMo
       )}
 
       <nav
-        className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5"
+        className={
+          'flex-1 overflow-y-auto px-3 py-3 space-y-0.5'
+          + (layoutEditMode ? ' sidebar-nav-wiggle' : '')
+        }
         aria-label="Primary navigation"
       >
-        {navSections.map((section, i) => (
-          <NavSectionGroup
-            key={section.id}
-            section={section}
-            collapsed={collapsed.has(section.id)}
-            onToggle={toggleSection}
-            activeItemId={activeId}
-            onSelectItem={selectItem}
-            baseAnimationDelayMs={i * 40}
-          />
-        ))}
+        {layoutEditMode && (
+          <div
+            className="sticky top-0 z-10 -mx-1 px-1 pb-2 mb-1 flex gap-2"
+            style={{
+              background: 'linear-gradient(180deg, var(--bg-sidebar) 85%, transparent)',
+            }}
+          >
+            <button
+              type="button"
+              onClick={exitLayoutEdit}
+              className="flex-1 rounded-lg py-2 text-[12px] font-semibold transition-colors"
+              style={{
+                background: 'var(--accent)',
+                color:      'var(--accent-on, #fff)',
+              }}
+            >
+              Done
+            </button>
+            <button
+              type="button"
+              onClick={handleResetLayout}
+              className="shrink-0 rounded-lg px-2.5 py-2 text-[11px] font-medium transition-colors"
+              style={{
+                background: 'var(--bg-hover)',
+                color:      'var(--text-3)',
+                border:     '1px solid var(--border)',
+              }}
+              title="Restore default navigation"
+            >
+              Reset
+            </button>
+          </div>
+        )}
+
+        {layoutEditMode && editNavGroups
+          ? (
+              <>
+                {editNavGroups.onSidebar.map((section, i) => renderSection(section, i, false))}
+                {editNavGroups.offSidebar.length > 0 && (
+                  <div
+                    className="pt-3 mt-1 space-y-0.5"
+                    style={{ borderTop: '1px solid var(--border-soft)' }}
+                  >
+                    <div
+                      className="px-2 pb-1 text-[10px] font-semibold tracking-wider uppercase"
+                      style={{ fontFamily: "'DM Mono', monospace", color: 'var(--text-4)' }}
+                    >
+                      Off sidebar
+                    </div>
+                    {editNavGroups.offSidebar.map((section, i) =>
+                      renderSection(section, editNavGroups.onSidebar.length + i, true),
+                    )}
+                  </div>
+                )}
+              </>
+            )
+          : (
+              standardNav.map((section, i) => renderSection(section, i, false))
+            )}
 
         {/* ── Custom zones ── */}
-        {zones.length > 0 && (
+        {!layoutEditMode && customZonesSection && (
           <div className="pt-2">
-            <div
-              className="px-2 pb-1 flex items-center justify-between"
-            >
+            <div className="px-2 pb-1 flex items-center justify-between">
               <span
                 className="text-[10px] font-semibold tracking-wider uppercase"
                 style={{ fontFamily: "'DM Mono', monospace", color: 'var(--text-4)' }}
@@ -120,12 +248,14 @@ export default function Sidebar({ onRouteChange, activeRouteId, mobileOpen, onMo
                 MY ZONES
               </span>
             </div>
-            {zones.map((zone, i) => {
-              const isActive = activeId === zone.id
+            {customZonesSection.items.map((item, i) => {
+              const isActive = activeId === item.id
+              const ItemIcon = item.icon
               return (
                 <button
-                  key={zone.id}
-                  onClick={() => selectItem(zone.id)}
+                  key={item.id}
+                  type="button"
+                  onClick={() => selectItem(item.id)}
                   className="nav-item-animate relative w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[13px] font-medium transition-all duration-150 text-left"
                   style={{
                     animationDelay: `${i * 30}ms`,
@@ -141,12 +271,12 @@ export default function Sidebar({ onRouteChange, activeRouteId, mobileOpen, onMo
                       style={{ background: 'var(--accent)' }}
                     />
                   )}
-                  <Folder
+                  <ItemIcon
                     size={15}
                     strokeWidth={isActive ? 2.2 : 1.8}
                     style={{ flexShrink: 0, color: isActive ? 'var(--accent)' : 'var(--text-4)' }}
                   />
-                  <span className="flex-1 leading-none truncate">{zone.title}</span>
+                  <span className="flex-1 leading-none truncate">{item.label}</span>
                 </button>
               )
             })}
@@ -159,8 +289,8 @@ export default function Sidebar({ onRouteChange, activeRouteId, mobileOpen, onMo
         className="px-3 py-2 flex items-center gap-2"
         style={{ borderTop: '1px solid var(--border)' }}
       >
-        {/* New Zone button */}
         <button
+          type="button"
           onClick={() => selectItem('zone-builder')}
           className="flex flex-1 items-center gap-2 rounded-lg px-2.5 py-2 text-[12px] font-medium transition-all"
           style={{
@@ -175,8 +305,8 @@ export default function Sidebar({ onRouteChange, activeRouteId, mobileOpen, onMo
           New Zone
         </button>
 
-        {/* Theme toggle */}
         <button
+          type="button"
           onClick={() => setTheme(isDark ? 'light' : 'dark')}
           className="flex items-center justify-center rounded-lg p-2 transition-all"
           style={{

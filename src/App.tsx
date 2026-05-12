@@ -3,12 +3,14 @@ import { Menu } from 'lucide-react'
 import Sidebar, { DEFAULT_ACTIVE_ID } from './components/sidebar'
 import MainContent from './components/MainContent'
 import TweaksPanel from './components/TweaksPanel'
+import FilesDock from './components/files-dock/FilesDock'
 import { BffConfigProvider } from './context/BffConfigContext'
 import { DiagnosticsProvider } from './context/DiagnosticsContext'
 import { MockDataProvider } from './context/MockDataContext'
 import { UiChromeProvider } from './context/UiChromeContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { CustomZonesProvider } from './context/CustomZonesContext'
+import { WebDesignerBookmarksProvider } from './context/WebDesignerBookmarksContext'
 
 function App() {
   const [activeRouteId, setActiveRouteId] = useState<string>(DEFAULT_ACTIVE_ID)
@@ -22,7 +24,8 @@ function App() {
   return (
     <ThemeProvider>
       <CustomZonesProvider>
-        <BffConfigProvider>
+        <WebDesignerBookmarksProvider>
+          <BffConfigProvider>
           <DiagnosticsProvider>
             <MockDataProvider>
               <UiChromeProvider>
@@ -73,11 +76,13 @@ function App() {
                   </div>
 
                   <TweaksPanel />
+                  <FilesDock />
                 </div>
               </UiChromeProvider>
             </MockDataProvider>
           </DiagnosticsProvider>
         </BffConfigProvider>
+        </WebDesignerBookmarksProvider>
       </CustomZonesProvider>
     </ThemeProvider>
   )

@@ -193,7 +193,11 @@ function probeSessionStorage(): DiagnosticCheck {
 
 async function timedFetch(path: string, init?: RequestInit): Promise<{ ms: number; res: Response }> {
   const t0 = performance.now()
-  const res = await fetch(path, { cache: 'no-store', credentials: 'same-origin', ...init })
+  // Use fetchWithKeys so the per-route diagnostics also honor user-typed keys
+  // from Settings — otherwise a Gemini key only in localStorage would still
+  // show as "missing" in the dev-server probe.
+  const { fetchWithKeys } = await import('./api-keys')
+  const res = await fetchWithKeys(path, { cache: 'no-store', credentials: 'same-origin', ...init })
   return { ms: Math.round(performance.now() - t0), res }
 }
 
@@ -593,7 +597,8 @@ export async function runDashboardDiagnostics(opts?: RunDiagnosticsOptions): Pro
   const t0 = performance.now()
   let bffReachable = false
   try {
-    const res = await fetch('/api/config/status', { cache: 'no-store', credentials: 'same-origin' })
+    const { fetchWithKeys } = await import('./api-keys')
+    const res = await fetchWithKeys('/api/config/status', { cache: 'no-store', credentials: 'same-origin' })
     bffLatencyMs = Math.round(performance.now() - t0)
 
     if (!res.ok) {

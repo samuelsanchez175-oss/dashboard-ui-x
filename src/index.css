@@ -373,6 +373,21 @@
   opacity: 0;
 }
 
+@keyframes nav-wiggle {
+  0%,
+  100% {
+    transform: rotate(-0.65deg);
+  }
+  50% {
+    transform: rotate(0.65deg);
+  }
+}
+
+.sidebar-nav-wiggle .nav-wiggle-target {
+  animation: nav-wiggle 0.24s ease-in-out infinite;
+  transform-origin: 50% 50%;
+}
+
 .fade-in {
   animation: fadeIn 0.28s ease forwards;
 }
