@@ -1,4 +1,6 @@
 import { Biohazard, Bus, ChevronRight, Container, Disc, Droplets, Fuel, GraduationCap, School, Workflow } from 'lucide-react'
+import { SectionHeader } from '../../components/ui'
+import { zoneAccent } from '../../styles/tokens'
 
 interface CdlHubZoneProps {
   onNavigate: (routeId: string) => void
@@ -22,8 +24,8 @@ const TILES: CdlTile[] = [
     desc:       'Hazardous Materials endorsement — placards, shipping papers, leaks, segregation. 66 questions.',
     count:      66,
     endorse:    'H',
-    accent:     '#39ff14',
-    accentSoft: 'color-mix(in oklab, #39ff14 12%, var(--bg-card))',
+    accent:     zoneAccent.hazmat,
+    accentSoft: `color-mix(in oklab, ${zoneAccent.hazmat} 12%, var(--bg-card))`,
     icon:       Biohazard,
   },
   {
@@ -32,8 +34,8 @@ const TILES: CdlTile[] = [
     desc:       'Service / parking / emergency systems, slack adjusters, pressure warnings. 66 questions.',
     count:      66,
     endorse:    'AB',
-    accent:     '#f0c040',
-    accentSoft: 'color-mix(in oklab, #f0c040 14%, var(--bg-card))',
+    accent:     zoneAccent.airBrakes,
+    accentSoft: `color-mix(in oklab, ${zoneAccent.airBrakes} 14%, var(--bg-card))`,
     icon:       Disc,
   },
   {
@@ -42,8 +44,8 @@ const TILES: CdlTile[] = [
     desc:       'Liquid surge, outage, baffled vs smooth-bore tanks, rollover physics, loading and unloading. 66 questions.',
     count:      66,
     endorse:    'N',
-    accent:     '#00b8d4',
-    accentSoft: 'color-mix(in oklab, #00b8d4 12%, var(--bg-card))',
+    accent:     zoneAccent.tanker,
+    accentSoft: `color-mix(in oklab, ${zoneAccent.tanker} 12%, var(--bg-card))`,
     icon:       Droplets,
   },
   {
@@ -52,8 +54,8 @@ const TILES: CdlTile[] = [
     desc:       'Coupling, converter dollies, off-tracking, crack-the-whip amplification, brake lag across multiple trailers. 66 questions.',
     count:      66,
     endorse:    'T',
-    accent:     '#ff7b29',
-    accentSoft: 'color-mix(in oklab, #ff7b29 13%, var(--bg-card))',
+    accent:     zoneAccent.doubles,
+    accentSoft: `color-mix(in oklab, ${zoneAccent.doubles} 13%, var(--bg-card))`,
     icon:       Container,
   },
   {
@@ -62,8 +64,8 @@ const TILES: CdlTile[] = [
     desc:       'Combination N + H — cargo-tank specs, bonding/grounding, fuel hauling, vapor recovery, retest dates, placarding. 66 questions.',
     count:      66,
     endorse:    'X',
-    accent:     '#ef4444',
-    accentSoft: 'color-mix(in oklab, #ef4444 13%, var(--bg-card))',
+    accent:     zoneAccent.tankerHazmat,
+    accentSoft: `color-mix(in oklab, ${zoneAccent.tankerHazmat} 13%, var(--bg-card))`,
     icon:       Fuel,
   },
   {
@@ -72,8 +74,8 @@ const TILES: CdlTile[] = [
     desc:       '16+ passenger vehicles — compartment inspection, RR crossings, fueling rules, disruptive passengers, after-trip checks. 66 questions.',
     count:      66,
     endorse:    'P',
-    accent:     '#3b82f6',
-    accentSoft: 'color-mix(in oklab, #3b82f6 13%, var(--bg-card))',
+    accent:     zoneAccent.passenger,
+    accentSoft: `color-mix(in oklab, ${zoneAccent.passenger} 13%, var(--bg-card))`,
     icon:       Bus,
   },
   {
@@ -82,19 +84,9 @@ const TILES: CdlTile[] = [
     desc:       'Danger zones, 10-step crossing procedure, mirror types, evacuation drills, post-trip child check. Requires P. 66 questions.',
     count:      66,
     endorse:    'S',
-    accent:     '#facc15',
-    accentSoft: 'color-mix(in oklab, #facc15 13%, var(--bg-card))',
+    accent:     zoneAccent.schoolBus,
+    accentSoft: `color-mix(in oklab, ${zoneAccent.schoolBus} 13%, var(--bg-card))`,
     icon:       School,
-  },
-  {
-    routeId:    'cdl-doubles-triples',
-    label:      'Doubles / Triples (T)',
-    desc:       'Coupling, converter dollies, off-tracking, crack-the-whip amplification, brake lag across multiple trailers. 66 questions.',
-    count:      66,
-    endorse:    'T',
-    accent:     '#ff7b29',
-    accentSoft: 'color-mix(in oklab, #ff7b29 13%, var(--bg-card))',
-    icon:       Container,
   },
   {
     routeId:    'cdl-tanker-doubles',
@@ -102,8 +94,8 @@ const TILES: CdlTile[] = [
     desc:       'Bonus combo — liquid surge × multiple trailers, LCV rules, compounded rollover, vapor recovery across tanks. 66 questions.',
     count:      66,
     endorse:    'N+T',
-    accent:     '#a855f7',
-    accentSoft: 'color-mix(in oklab, #a855f7 13%, var(--bg-card))',
+    accent:     zoneAccent.combination,
+    accentSoft: `color-mix(in oklab, ${zoneAccent.combination} 13%, var(--bg-card))`,
     icon:       Workflow,
   },
 ]
@@ -115,10 +107,15 @@ export default function CdlHubZone({ onNavigate }: CdlHubZoneProps) {
       style={{ background: 'var(--bg-canvas)', color: 'var(--text-1)' }}
     >
       <div className="mx-auto w-full max-w-[1080px] px-8 pb-20 pt-10">
-        <div className="mono mb-2 flex items-center gap-2 text-[11px] uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>
-          <GraduationCap className="size-3.5" aria-hidden />
-          CDL practice tests
-        </div>
+        <SectionHeader
+          size="sm"
+          className="mb-2"
+        >
+          <span className="inline-flex items-center gap-2">
+            <GraduationCap className="size-4" aria-hidden />
+            CDL practice tests
+          </span>
+        </SectionHeader>
         <h1 className="mb-2 text-[32px] font-semibold leading-tight tracking-tight" style={{ color: 'var(--text-1)' }}>
           CDL PRAC
         </h1>
@@ -148,10 +145,14 @@ export default function CdlHubZone({ onNavigate }: CdlHubZoneProps) {
                 <div className="flex w-full items-start justify-between gap-3">
                   <div
                     className="grid size-12 shrink-0 place-items-center rounded-xl shadow-lg"
-                    style={{ background: tile.accent, color: '#000', boxShadow: `0 10px 24px -10px ${tile.accent}80` }}
+                    style={{
+                      background: tile.accent,
+                      color:      '#000',
+                      boxShadow:  `0 10px 24px -10px color-mix(in oklab, ${tile.accent} 50%, transparent)`,
+                    }}
                     aria-hidden
                   >
-                    <Icon className="size-6" strokeWidth={2} />
+                    <Icon className="size-5" strokeWidth={2} />
                   </div>
                   <span
                     className="mono rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
@@ -175,7 +176,7 @@ export default function CdlHubZone({ onNavigate }: CdlHubZoneProps) {
                     style={{ background: 'var(--text-1)', color: 'var(--bg-canvas)' }}
                   >
                     Open
-                    <ChevronRight className="size-3.5" strokeWidth={2} aria-hidden />
+                    <ChevronRight className="size-4" strokeWidth={2} aria-hidden />
                   </span>
                 </div>
               </button>

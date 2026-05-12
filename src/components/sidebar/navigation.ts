@@ -1,40 +1,32 @@
 import {
-  Activity,
-  AudioWaveform,
   Biohazard,
   Bus,
   Car,
   CheckSquare,
-  Columns2,
   Container,
   Cpu,
-  Crop,
   Disc,
   Droplets,
   Fuel,
-  Drum,
   Globe,
   GraduationCap,
   Grid2X2,
   Headphones,
   KeyRound,
   LayoutGrid,
-  LayoutList,
-  MonitorPlay,
   Music,
   Paintbrush,
   Piano,
-  Radio,
   Rss,
   School,
   SlidersHorizontal,
   Stethoscope,
-  Timer,
   Wand2,
-  WholeWord,
   Workflow,
   type LucideIcon,
 } from 'lucide-react'
+
+import { HUB_TOOL_COUNT, TOOLS_REGISTRY } from '../../data/tools-registry'
 
 export interface NavItem {
   id: string
@@ -50,22 +42,26 @@ export interface NavSection {
   items: NavItem[]
 }
 
+/**
+ * The TOOLS section is rebuilt from the shared registry so the sidebar
+ * and the Tools Hub never drift. Only tools that have an in-app route
+ * (`showInSidebar: true`) appear here.
+ */
+const toolsNavItems: NavItem[] = TOOLS_REGISTRY
+  .filter((tool): tool is typeof tool & { route: string } => tool.showInSidebar && Boolean(tool.route))
+  .map((tool) => ({
+    id: tool.route,
+    label: tool.label,
+    icon: tool.icon,
+  }))
+
 export const NAV_SECTIONS: NavSection[] = [
   {
     id: 'tools',
     title: 'TOOLS',
     items: [
-      { id: 'tools-hub', label: 'All tools', icon: LayoutGrid, badge: 14 },
-      { id: 'tools-youtube-downloader', label: 'YouTube downloader', icon: MonitorPlay },
-      { id: 'tools-key-finder', label: 'Key & BPM finder', icon: Radio },
-      { id: 'tools-chord-detector', label: 'Chord Detector', icon: AudioWaveform },
-      { id: 'tools-tempo-tap', label: 'Tempo Tap', icon: Activity },
-      { id: 'tools-metronome-export', label: 'Metronome export', icon: Drum },
-      { id: 'tools-phonetics-inspector', label: 'Phonetics inspector', icon: WholeWord },
-      { id: 'tools-session-timer', label: 'Session timer', icon: Timer },
-      { id: 'tools-arrangement-pad', label: 'Arrangement pad', icon: LayoutList },
-      { id: 'tools-sample-slicer', label: 'Sample slicer', icon: Crop },
-      { id: 'tools-stem-splitter', label: 'Stem splitter', icon: Columns2 },
+      { id: 'tools-hub', label: 'All tools', icon: LayoutGrid, badge: HUB_TOOL_COUNT },
+      ...toolsNavItems,
     ],
   },
   {
