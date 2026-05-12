@@ -106,15 +106,6 @@ function jsonRes(res: ServerResponse, status: number, payload: unknown) {
   res.end(body)
 }
 
-function envBool(v: string | undefined): boolean {
-  return typeof v === 'string' && v.trim().length > 0
-}
-
-function youtubeDataKey(env: NodeJS.ProcessEnv): string | undefined {
-  const y = env.YOUTUBE_API_KEY?.trim()
-  const g = env.GOOGLE_API_KEY?.trim()
-  return y && y.length > 0 ? y : g && g.length > 0 ? g : undefined
-}
 
 function parseRequestUrl(req: IncomingMessage): URL {
   return new URL(req.url ?? '/', 'http://localhost')
