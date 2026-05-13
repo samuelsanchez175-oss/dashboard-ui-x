@@ -1,5 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "cleanUrls": true,
   "functions": {
     "api/**/*.ts": {
       "memory": 256,
@@ -7,6 +11,7 @@
     }
   },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/[...path]" }
+    { "source": "/api/(.*)", "destination": "/api/[...path]" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
