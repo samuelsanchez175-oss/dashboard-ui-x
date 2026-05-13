@@ -295,21 +295,8 @@ export default function TeslaSetupChecklist() {
       })
     }
 
-    list.push({
-      id: 'pairing',
-      num: 7,
-      title: 'Vehicle paired with virtual key',
-      state: virtualKey?.hasKey && !isLocal && oauthOk ? 'warn' : 'pending',
-      detail:
-        virtualKey?.hasKey && !isLocal
-          ? `Open https://www.tesla.com/_ak/${hostname} on your phone (Tesla app installed). Required only for *signed* commands on newer cars — REST commands (lock/unlock/honk/flash/climate) work without pairing on older fleet vehicles.`
-          : 'Complete steps 1, 2, and 5 first.',
-      cta:
-        virtualKey?.hasKey && !isLocal
-          ? { label: 'Open pairing URL', href: `https://www.tesla.com/_ak/${hostname}`, external: true }
-          : undefined,
-    })
-
+    // Vehicle pairing (signed commands) is now OPTIONAL and lives in its own
+    // panel below — it's not part of the read-only happy path.
     return list
   }, [
     virtualKey,

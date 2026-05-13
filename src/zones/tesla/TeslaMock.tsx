@@ -149,7 +149,17 @@ export default function TeslaMock() {
 
           <TeslaSetupChecklist />
 
-          <TeslaVirtualKeyPairing />
+          <details className="w-full">
+            <summary
+              className="cursor-pointer font-mono text-[10px] uppercase tracking-wide"
+              style={{ color: 'var(--text-3)' }}
+            >
+              Tesla virtual key (optional — for signed commands only)
+            </summary>
+            <div className="mt-3">
+              <TeslaVirtualKeyPairing />
+            </div>
+          </details>
 
           <section
             className="w-full rounded-xl border p-4 shadow-sm"

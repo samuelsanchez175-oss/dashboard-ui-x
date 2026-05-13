@@ -924,12 +924,20 @@ function SingleVehicleHero({
         </p>
       ) : null}
 
-      <div className="mt-5 border-t pt-4" style={{ borderColor: 'var(--border-soft)' }}>
-        <p className="mb-2 font-mono text-[10px] uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>
-          Commands
-        </p>
-        <CommandButtonRow vin={v.vin} isDemoData={isDemoData} />
-      </div>
+      <details
+        className="mt-5 border-t pt-3"
+        style={{ borderColor: 'var(--border-soft)' }}
+      >
+        <summary
+          className="cursor-pointer font-mono text-[10px] uppercase tracking-wide"
+          style={{ color: 'var(--text-3)' }}
+        >
+          Commands (optional — requires virtual key pairing on 2024+ vehicles)
+        </summary>
+        <div className="mt-3">
+          <CommandButtonRow vin={v.vin} isDemoData={isDemoData} />
+        </div>
+      </details>
 
       {isDemoData ? (
         <p className="mt-4 font-mono text-[9px] uppercase tracking-wide" style={{ color: 'var(--text-4)' }}>
