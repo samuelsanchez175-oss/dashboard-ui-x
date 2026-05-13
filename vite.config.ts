@@ -21,6 +21,17 @@ export default defineConfig({
     strictPort: false,
     host: true,
   },
+  build: {
+    /**
+     * Use esbuild for minification instead of the default rolldown minifier.
+     * Rolldown's name-mangler (Vite 8 default) was picking short identifiers
+     * that collided with React-internal symbols (`kt`) in some builds, which
+     * caused `TypeError: i is not a function` at module load on Vercel while
+     * working fine locally (different mangler heuristics per host).
+     * esbuild's mangler is more conservative and ships proven-stable output.
+     */
+    minify: 'esbuild',
+  },
   plugins: [
     react(),
     tailwindcss(),
