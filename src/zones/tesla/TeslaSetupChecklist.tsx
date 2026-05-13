@@ -57,7 +57,45 @@ export default function TeslaSetupChecklist() {
   const [lastCheckedAt, setLastCheckedAt] = useState<number | null>(null)
   const [nowTick, setNowTick] = useState(() => Date.now())
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
+  const [partnerStatus, setPartnerStatus] = useState<'unknown' | 'registered' | 'not-registered'>('unknown')
+  const [partnerBusy, setPartnerBusy] = useState(false)
+  const [partnerMsg, setPartnerMsg] = useState<string | null>(null)
   const abortRef = useRef<AbortController | null>(null)
+
+  const checkPartnerStatus = useCallback(async () => {
+    try {
+      const r = await fetch('/api/tesla/partner-status')
+      const j = (await r.json()) as { status?: string }
+      if (j.status === 'registered') setPartnerStatus('registered')
+      else if (j.status === 'not-registered') setPartnerStatus('not-registered')
+      else setPartnerStatus('unknown')
+    } catch {
+      setPartnerStatus('unknown')
+    }
+  }, [])
+
+  const registerPartner = useCallback(async () => {
+    setPartnerBusy(true)
+    setPartnerMsg(null)
+    try {
+      const r = await fetch('/api/tesla/partner-register', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+      const j = (await r.json()) as { status?: string; message?: string }
+      if (j.status === 'ok') {
+        setPartnerStatus('registered')
+        setPartnerMsg(j.message ?? 'Registered with Tesla.')
+      } else {
+        setPartnerMsg(j.message ?? 'Registration failed. See network tab for details.')
+      }
+    } catch (e) {
+      setPartnerMsg(e instanceof Error ? e.message : String(e))
+    } finally {
+      setPartnerBusy(false)
+    }
+  }, [])
 
   const copy = useCallback(async (key: string, text: string) => {
     try {
@@ -120,7 +158,10 @@ export default function TeslaSetupChecklist() {
       window.clearTimeout(timeoutId)
       setOauthProbing(false)
     }
-  }, [])
+
+    // STAGE 3 — partner status (fire-and-forget; doesn't block UI).
+    void checkPartnerStatus()
+  }, [checkPartnerStatus])
 
   useEffect(() => {
     void refresh()
@@ -185,13 +226,41 @@ export default function TeslaSetupChecklist() {
         : 'Paste your Tesla Client Secret into the Fleet API credentials card and click Save.',
     })
 
+    // Partner registration — Tesla REQUIRES this before OAuth + data calls work.
+    // One-click action: BFF does the client_credentials grant + posts to
+    // /api/1/partner_accounts. Custom render below shows the "Register" button.
+    const partnerKnown = partnerStatus !== 'unknown'
+    const partnerOk = partnerStatus === 'registered'
+    list.push({
+      id: 'partner',
+      num: 5,
+      title: 'Registered with Tesla as partner',
+      state: !clientIdSaved || !clientSecretSaved || isLocal
+        ? 'pending'
+        : partnerOk
+          ? 'ok'
+          : partnerKnown
+            ? 'todo'
+            : 'pending',
+      detail: !clientIdSaved || !clientSecretSaved
+        ? 'Save client ID + secret first.'
+        : isLocal
+          ? 'Open this dashboard from the deployed domain to register.'
+          : partnerOk
+            ? `Domain ${hostname} is registered with Tesla. OAuth + Fleet data calls should now be accepted.`
+            : partnerBusy
+              ? 'Registering with Tesla…'
+              : partnerMsg ??
+                `One-time registration. Click the button to POST your domain (${hostname}) to /api/1/partner_accounts. Tesla will fetch the .pem file you hosted in step 2 to verify ownership.`,
+    })
+
     // OAuth step: primarily driven by refresh_token presence in saved keys
     // (instant), with the fleet probe only used to surface authorizeUrl.
     const oauthOk = refreshTokenSaved
     const redirectUri = probe?.redirectUri ?? probe?.redirect_uri ?? ''
     list.push({
       id: 'oauth',
-      num: 5,
+      num: 6,
       title: 'OAuth completed (refresh_token saved)',
       state: oauthOk
         ? 'ok'
@@ -219,7 +288,7 @@ export default function TeslaSetupChecklist() {
     if (!oauthOk && redirectUri && clientIdSaved && clientSecretSaved) {
       list.push({
         id: 'oauth-redirect-uri',
-        num: 5,
+        num: 6,
         title: 'Tesla developer-portal redirect URI (copy → paste)',
         state: 'todo',
         detail: redirectUri,
@@ -228,7 +297,7 @@ export default function TeslaSetupChecklist() {
 
     list.push({
       id: 'pairing',
-      num: 6,
+      num: 7,
       title: 'Vehicle paired with virtual key',
       state: virtualKey?.hasKey && !isLocal && oauthOk ? 'warn' : 'pending',
       detail:
@@ -253,6 +322,9 @@ export default function TeslaSetupChecklist() {
     isLocal,
     hostname,
     keys,
+    partnerStatus,
+    partnerBusy,
+    partnerMsg,
   ])
 
   const okCount = steps.filter(s => s.state === 'ok').length
@@ -370,6 +442,17 @@ export default function TeslaSetupChecklist() {
                   {step.detail}
                 </p>
               )}
+              {step.id === 'partner' && step.state === 'todo' ? (
+                <button
+                  type="button"
+                  onClick={registerPartner}
+                  disabled={partnerBusy}
+                  className="mt-2 inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm disabled:opacity-50"
+                  style={{ background: 'var(--accent)' }}
+                >
+                  {partnerBusy ? 'Registering…' : 'Register with Tesla'}
+                </button>
+              ) : null}
             </div>
             {step.cta ? (
               step.cta.href ? (

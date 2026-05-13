@@ -833,6 +833,174 @@ async function handlePostCommand(req: IncomingMessage, res: ServerResponse): Pro
   }
 }
 
+/**
+ * POST /api/tesla/partner-register — one-time Tesla Fleet partner registration.
+ *
+ * Tesla requires every third-party Fleet API app to register the domain that
+ * hosts its public key BEFORE OAuth and data calls work. Without this step,
+ * Tesla returns generic auth errors that don't tell you what's missing.
+ *
+ * The flow:
+ *   1. Get a "partner token" via `client_credentials` grant (scopes are the
+ *      same as the OAuth scopes, but no user is involved).
+ *   2. POST `/api/1/partner_accounts` with the bare domain (no protocol/path).
+ *      Tesla fetches `https://<domain>/.well-known/appspecific/com.tesla.3p.public-key.pem`
+ *      to verify ownership.
+ *
+ * Body: `{ domain?: string }` — defaults to the request's host.
+ */
+async function handlePostPartnerRegister(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  try {
+    const body = (await readJsonBody(req).catch(() => null)) as { domain?: string } | null
+    const env = process.env
+    const clientId = pickHeader(req, 'TESLA_CLIENT_ID') || env.TESLA_CLIENT_ID || ''
+    const clientSecret = pickHeader(req, 'TESLA_CLIENT_SECRET') || env.TESLA_CLIENT_SECRET || ''
+    const region = pickHeader(req, 'TESLA_REGION') || env.TESLA_REGION || 'na'
+    if (!clientId || !clientSecret) {
+      jsonRes(res, 200, {
+        status: 'error',
+        message: 'Save TESLA_CLIENT_ID and TESLA_CLIENT_SECRET first.',
+        detail: 'missing_client_credentials',
+      })
+      return
+    }
+
+    // Default to the request's host so the partner record matches the public-key URL.
+    let domain = (body?.domain ?? '').trim()
+    if (!domain) {
+      const host = (req.headers.host ?? '').trim()
+      if (host) domain = host.split(':')[0]!
+    }
+    if (!domain) {
+      jsonRes(res, 200, { status: 'error', message: 'Could not determine domain to register.', detail: '' })
+      return
+    }
+    // Strip any accidental scheme/path the user pasted.
+    domain = domain
+      .replace(/^https?:\/\//i, '')
+      .replace(/\/.*$/, '')
+      .trim()
+
+    const fleetBase = fleetHostForRegion(region)
+
+    // Step 1 — partner (client_credentials) token.
+    const tokenRes = await postForm(TESLA_AUTH_TOKEN, {
+      grant_type: 'client_credentials',
+      client_id: clientId,
+      client_secret: clientSecret,
+      scope: 'openid vehicle_device_data vehicle_cmds vehicle_charging_cmds',
+      audience: fleetBase,
+    })
+    if (!tokenRes.ok) {
+      jsonRes(res, 200, {
+        status: 'error',
+        message: `Tesla refused the partner token request (HTTP ${tokenRes.status}).`,
+        detail: tokenRes.text,
+      })
+      return
+    }
+    const parsed = parseTokenResponse(tokenRes.json)
+    if (!parsed) {
+      jsonRes(res, 200, {
+        status: 'error',
+        message: 'Tesla partner-token response missing access_token.',
+        detail: JSON.stringify(tokenRes.json).slice(0, 400),
+      })
+      return
+    }
+
+    // Step 2 — register the partner account with the bare domain.
+    const regUrl = `${fleetBase}/api/1/partner_accounts`
+    const regRes = await fetch(regUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${parsed.access_token}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'User-Agent': 'UI-Dashboard-X/0.1 (dev; Tesla partner register)',
+      },
+      body: JSON.stringify({ domain }),
+    })
+    const regText = await regRes.text()
+    let regJson: unknown = null
+    try {
+      regJson = JSON.parse(regText)
+    } catch {
+      regJson = { raw: regText.slice(0, 800) }
+    }
+    jsonRes(res, 200, {
+      status: regRes.ok ? 'ok' : 'error',
+      httpStatus: regRes.status,
+      domain,
+      audience: fleetBase,
+      tesla: regJson,
+      message: regRes.ok
+        ? `Partner registered for ${domain}. OAuth + Fleet data calls should now work.`
+        : `Tesla rejected the partner registration (HTTP ${regRes.status}). See tesla.* for details.`,
+    })
+  } catch (e) {
+    jsonRes(res, 200, errPayload('Tesla partner registration failed.', e))
+  }
+}
+
+/**
+ * GET /api/tesla/partner-status — checks whether the domain is already
+ * registered with Tesla as a partner. Hits `/api/1/partner_accounts/public_key`
+ * which returns 200 with the registered public key if registered, or 404 if not.
+ */
+async function handleGetPartnerStatus(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  try {
+    const env = process.env
+    const clientId = pickHeader(req, 'TESLA_CLIENT_ID') || env.TESLA_CLIENT_ID || ''
+    const clientSecret = pickHeader(req, 'TESLA_CLIENT_SECRET') || env.TESLA_CLIENT_SECRET || ''
+    const region = pickHeader(req, 'TESLA_REGION') || env.TESLA_REGION || 'na'
+    if (!clientId || !clientSecret) {
+      jsonRes(res, 200, { status: 'unknown', reason: 'no-credentials' })
+      return
+    }
+    const fleetBase = fleetHostForRegion(region)
+    const host = (req.headers.host ?? '').split(':')[0] ?? ''
+
+    const tokenRes = await postForm(TESLA_AUTH_TOKEN, {
+      grant_type: 'client_credentials',
+      client_id: clientId,
+      client_secret: clientSecret,
+      scope: 'openid vehicle_device_data vehicle_cmds vehicle_charging_cmds',
+      audience: fleetBase,
+    })
+    if (!tokenRes.ok) {
+      jsonRes(res, 200, { status: 'unknown', reason: 'partner-token-failed', detail: tokenRes.text })
+      return
+    }
+    const parsed = parseTokenResponse(tokenRes.json)
+    if (!parsed) {
+      jsonRes(res, 200, { status: 'unknown', reason: 'no-token' })
+      return
+    }
+    const url = `${fleetBase}/api/1/partner_accounts/public_key?domain=${encodeURIComponent(host)}`
+    const r = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${parsed.access_token}`,
+        Accept: 'application/json',
+      },
+    })
+    const text = await r.text()
+    let body: unknown = null
+    try {
+      body = JSON.parse(text)
+    } catch {
+      body = { raw: text.slice(0, 200) }
+    }
+    if (r.ok) {
+      jsonRes(res, 200, { status: 'registered', domain: host, tesla: body })
+    } else {
+      jsonRes(res, 200, { status: 'not-registered', httpStatus: r.status, domain: host, tesla: body })
+    }
+  } catch (e) {
+    jsonRes(res, 200, errPayload('Partner status check failed.', e))
+  }
+}
+
 /** GET /api/tesla/virtual-key/info — returns presence + public PEM fingerprint. */
 function handleGetVirtualKeyInfo(_req: IncomingMessage, res: ServerResponse): void {
   try {
@@ -915,6 +1083,24 @@ export function tryHandleTeslaFleetRoutes(req: IncomingMessage, res: ServerRespo
       return true
     }
     void handlePostCommand(req, res)
+    return true
+  }
+
+  if (pathName === '/api/tesla/partner-register') {
+    if (method !== 'POST') {
+      jsonRes(res, 405, { status: 'error', message: 'Method not allowed', detail: 'use POST' })
+      return true
+    }
+    void handlePostPartnerRegister(req, res)
+    return true
+  }
+
+  if (pathName === '/api/tesla/partner-status' || pathName.startsWith('/api/tesla/partner-status?')) {
+    if (method !== 'GET') {
+      jsonRes(res, 405, { status: 'error', message: 'Method not allowed', detail: 'use GET' })
+      return true
+    }
+    void handleGetPartnerStatus(req, res)
     return true
   }
 
