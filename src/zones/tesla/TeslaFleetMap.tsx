@@ -1,15 +1,21 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Activity,
   BatteryCharging,
   ChevronRight,
   Compass,
   Cog,
+  Crosshair,
   Gauge,
   Layers,
   Lock,
   LockOpen,
+  Maximize2,
+  Minimize2,
+  Minus,
+  Plus,
   MapPin,
+  Search,
   ShieldCheck,
   Snowflake,
   Thermometer,
@@ -415,19 +421,43 @@ function VehicleDetailPanel({
 
 /* ── Main map view ────────────────────────────────────────────────────────────── */
 
-/** Google Maps Embed API URL builder — `view` mode centered on a lat/lng.
- *  Requires GOOGLE_API_KEY (or YOUTUBE_API_KEY as fallback) with the Maps
- *  Embed API enabled on the Google Cloud project. */
+type MapType = 'roadmap' | 'satellite' | 'hybrid' | 'terrain'
+const MAP_TYPE_CYCLE: readonly MapType[] = ['roadmap', 'satellite', 'hybrid', 'terrain']
+const MAP_TYPE_LABEL: Record<MapType, string> = {
+  roadmap: 'Road',
+  satellite: 'Satellite',
+  hybrid: 'Hybrid',
+  terrain: 'Terrain',
+}
+
+/** Google Maps Embed API URL builder. Uses `view` mode when no search query is
+ *  active; switches to `search` mode (handles addresses, POIs, lat/lng strings)
+ *  when the user submits a search. The same Embed API key works for both. */
 function mapEmbedUrl(opts: {
   apiKey: string
   lat: number
   lng: number
-  zoom?: number
-  mapType?: 'roadmap' | 'satellite'
+  zoom: number
+  mapType: MapType
+  searchQuery: string
 }): string {
-  const z = opts.zoom ?? 14
-  const t = opts.mapType ?? 'roadmap'
-  return `https://www.google.com/maps/embed/v1/view?key=${encodeURIComponent(opts.apiKey)}&center=${opts.lat},${opts.lng}&zoom=${z}&maptype=${t}`
+  const t = opts.mapType
+  if (opts.searchQuery.trim()) {
+    return `https://www.google.com/maps/embed/v1/search?key=${encodeURIComponent(opts.apiKey)}&q=${encodeURIComponent(opts.searchQuery)}&center=${opts.lat},${opts.lng}&zoom=${opts.zoom}&maptype=${t}`
+  }
+  return `https://www.google.com/maps/embed/v1/view?key=${encodeURIComponent(opts.apiKey)}&center=${opts.lat},${opts.lng}&zoom=${opts.zoom}&maptype=${t}`
+}
+
+/** Short relative-time formatter — "12s ago" / "5 min ago" / "2h ago". */
+function relativeAgo(ms: number): string {
+  const s = Math.max(0, Math.floor(ms / 1000))
+  if (s < 5) return 'Just synced'
+  if (s < 60) return `${s}s ago`
+  const m = Math.floor(s / 60)
+  if (m < 60) return `${m} min ago`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h}h ago`
+  return `${Math.floor(h / 24)}d ago`
 }
 
 export default function TeslaFleetMap({
@@ -440,7 +470,14 @@ export default function TeslaFleetMap({
   isDemoData: boolean
 }) {
   const [detailOpen, setDetailOpen] = useState(false)
-  const [mapType, setMapType] = useState<'roadmap' | 'satellite'>('satellite')
+  const [mapType, setMapType] = useState<MapType>('satellite')
+  const [zoom, setZoom] = useState<number>(14)
+  const [searchDraft, setSearchDraft] = useState<string>('')
+  const [searchQuery, setSearchQuery] = useState<string>('')
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false)
+  const [syncedAt, setSyncedAt] = useState<number>(() => Date.now())
+  const [nowTick, setNowTick] = useState<number>(() => Date.now())
+  const sectionRef = useRef<HTMLDivElement>(null)
   const [googleKey, setGoogleKey] = useState<string>(
     () => getApiKey('GOOGLE_MAPS_API_KEY') || getApiKey('GOOGLE_API_KEY') || '',
   )
@@ -451,6 +488,56 @@ export default function TeslaFleetMap({
       const next = snapshot['GOOGLE_MAPS_API_KEY'] || snapshot['GOOGLE_API_KEY'] || ''
       setGoogleKey(prev => (prev === next ? prev : next))
     })
+  }, [])
+
+  // Bump the "synced at" timestamp whenever a meaningful Tesla field changes —
+  // gives the user honest feedback that data is fresh.
+  useEffect(() => {
+    setSyncedAt(Date.now())
+  }, [v.batteryPercent, v.rangeMiles, v.charging, v.lat, v.lng, v.chargingState])
+
+  // Tick once every 30s so the "X min ago" chip stays current without re-renders elsewhere.
+  useEffect(() => {
+    const id = window.setInterval(() => setNowTick(Date.now()), 30000)
+    return () => window.clearInterval(id)
+  }, [])
+
+  const cycleMapType = useCallback(() => {
+    setMapType(t => MAP_TYPE_CYCLE[(MAP_TYPE_CYCLE.indexOf(t) + 1) % MAP_TYPE_CYCLE.length]!)
+  }, [])
+
+  const zoomIn = useCallback(() => setZoom(z => Math.min(21, z + 1)), [])
+  const zoomOut = useCallback(() => setZoom(z => Math.max(1, z - 1)), [])
+
+  const recenter = useCallback(() => {
+    setSearchQuery('')
+    setSearchDraft('')
+    setZoom(14)
+  }, [])
+
+  const submitSearch = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault()
+      const q = searchDraft.trim()
+      setSearchQuery(q)
+    },
+    [searchDraft],
+  )
+
+  const toggleFullscreen = useCallback(() => {
+    const el = sectionRef.current
+    if (!el) return
+    if (!document.fullscreenElement) {
+      el.requestFullscreen?.().then(() => setIsFullscreen(true)).catch(() => {})
+    } else {
+      document.exitFullscreen?.().then(() => setIsFullscreen(false)).catch(() => {})
+    }
+  }, [])
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement))
+    document.addEventListener('fullscreenchange', onChange)
+    return () => document.removeEventListener('fullscreenchange', onChange)
   }, [])
 
   const model = modelFromVin(v.vin)
@@ -465,12 +552,24 @@ export default function TeslaFleetMap({
   const centerLat = hasCoords ? v.lat : 37.4419
   const centerLng = hasCoords ? v.lng : -122.143
 
+  // Recompute the iframe URL whenever any input changes.
+  const iframeSrc = useMemo(
+    () =>
+      googleKey
+        ? mapEmbedUrl({ apiKey: googleKey, lat: centerLat, lng: centerLng, zoom, mapType, searchQuery })
+        : '',
+    [googleKey, centerLat, centerLng, zoom, mapType, searchQuery],
+  )
+
+  const lastSyncLabel = relativeAgo(nowTick - syncedAt)
+
   return (
     <section
+      ref={sectionRef}
       className="relative w-full overflow-hidden rounded-3xl border text-[#333333]"
       style={{
         borderColor: 'var(--border-soft)',
-        height: 'min(820px, 88vh)',
+        height: isFullscreen ? '100vh' : 'min(820px, 88vh)',
         minHeight: 600,
         background: '#f0f4f8',
       }}
@@ -481,7 +580,7 @@ export default function TeslaFleetMap({
         {googleKey ? (
           <iframe
             title={`Live map of ${v.displayName}`}
-            src={mapEmbedUrl({ apiKey: googleKey, lat: centerLat, lng: centerLng, zoom: 14, mapType })}
+            src={iframeSrc}
             className="h-full w-full"
             style={{ border: 0 }}
             loading="lazy"
@@ -516,42 +615,171 @@ export default function TeslaFleetMap({
               <path d="M-100 550 C 300 500 500 700 800 650 S 1200 800 1500 700" fill="none" stroke="#94a3b8" strokeWidth="1" opacity="0.4" />
               <path d="M-100 580 C 300 530 500 730 800 680 S 1200 830 1500 730" fill="none" stroke="#94a3b8" strokeWidth="1" opacity="0.4" />
             </svg>
-            {/* No-key hint */}
-            {!isDemoData && hasCoords ? (
-              <div
-                className="absolute left-1/2 top-1/2 max-w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-2xl px-5 py-4 text-center text-[12px] text-gray-700"
-                style={GLASS_PANEL_STYLE}
+            {/* No-key hint — visible whenever the iframe can't render. */}
+            <div
+              className="absolute left-1/2 top-1/2 max-w-[440px] -translate-x-1/2 -translate-y-1/2 rounded-2xl px-5 py-4 text-center text-[12px] text-gray-700"
+              style={GLASS_PANEL_STYLE}
+            >
+              <p className="font-semibold">Add a Google Maps API key for the live map</p>
+              <p className="mt-1 text-[11px] text-gray-500">
+                Save <code className="font-mono">GOOGLE_MAPS_API_KEY</code> (or reuse{' '}
+                <code className="font-mono">GOOGLE_API_KEY</code>) in Settings → API keys. Make sure{' '}
+                <span className="font-semibold">Maps Embed API</span> is enabled on the key in Google Cloud Console.
+              </p>
+              <button
+                type="button"
+                onClick={() =>
+                  window.dispatchEvent(new CustomEvent('dashboard:set-route', { detail: { id: 'dev' } }))
+                }
+                className="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm"
+                style={{ background: ACCENT_ORANGE }}
               >
-                <p className="font-semibold">Add a Google Maps API key</p>
-                <p className="mt-1 text-[11px] text-gray-500">
-                  Save <code className="font-mono">GOOGLE_MAPS_API_KEY</code> (or reuse{' '}
-                  <code className="font-mono">GOOGLE_API_KEY</code>) in Settings → API keys to swap this topo placeholder for the live satellite/road map centered on your car.
-                </p>
-              </div>
-            ) : null}
+                Open Settings → API keys
+              </button>
+            </div>
           </div>
         )}
 
-        {/* Vehicle location pin — overlaid on the map, always visible */}
+        {/* Vehicle location pin — overlaid on the map. Pulses faster + brighter while charging. */}
         <div
           className="pointer-events-none absolute z-10"
           style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}
         >
           <span
-            className="absolute left-1/2 top-1/2 size-9 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-40"
-            style={{ background: battColor, animation: 'ping 2s cubic-bezier(0,0,0.2,1) infinite' }}
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+            style={{
+              background: battColor,
+              opacity: isCharging ? 0.55 : 0.4,
+              width: isCharging ? 56 : 36,
+              height: isCharging ? 56 : 36,
+              animation: `ping ${isCharging ? '1.2s' : '2s'} cubic-bezier(0,0,0.2,1) infinite`,
+            }}
             aria-hidden
           />
           <span
-            className="relative block size-5 rounded-full border-2 border-white shadow-[0_2px_6px_rgba(0,0,0,0.35)]"
-            style={{ background: battColor }}
+            className="relative block rounded-full border-2 border-white shadow-[0_2px_6px_rgba(0,0,0,0.35)]"
+            style={{
+              background: battColor,
+              width: isCharging ? 22 : 20,
+              height: isCharging ? 22 : 20,
+            }}
             aria-hidden
           />
         </div>
       </div>
 
-      {/* Top pill — vehicle hero */}
-      <div className="absolute left-1/2 top-4 z-30 -translate-x-1/2 px-4">
+      {/* ── Search bar (top-left, glass) ─────────────────────────────────────── */}
+      <form
+        onSubmit={submitSearch}
+        className="absolute left-4 top-4 z-40 sm:left-6"
+        role="search"
+      >
+        <div
+          className="flex h-11 items-center gap-2 rounded-full pl-4 pr-1.5"
+          style={GLASS_PANEL_STYLE}
+        >
+          <Search className="size-4 shrink-0" aria-hidden style={{ color: '#6b7280' }} />
+          <input
+            type="search"
+            value={searchDraft}
+            onChange={e => setSearchDraft(e.target.value)}
+            placeholder="Search places, addresses…"
+            className="w-44 bg-transparent text-[12px] text-gray-800 placeholder:text-gray-400 focus:outline-none sm:w-56"
+            aria-label="Search the map"
+          />
+          {searchDraft || searchQuery ? (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchDraft('')
+                setSearchQuery('')
+              }}
+              className="flex size-7 items-center justify-center rounded-full text-gray-500 hover:bg-white/80 hover:text-gray-900"
+              aria-label="Clear search"
+              title="Clear"
+            >
+              <X className="size-3.5" />
+            </button>
+          ) : null}
+          <button
+            type="submit"
+            className="flex h-8 items-center gap-1 rounded-full px-3 text-[11px] font-semibold text-white"
+            style={{ background: ACCENT_ORANGE }}
+            disabled={!googleKey}
+            title={googleKey ? 'Go' : 'Add a Google Maps API key first'}
+          >
+            Go
+          </button>
+        </div>
+        {searchQuery ? (
+          <p
+            className="ml-3 mt-1 inline-block rounded-full bg-white/80 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wide shadow-sm"
+            style={{ color: '#6b7280' }}
+          >
+            Searching: {searchQuery}
+          </p>
+        ) : null}
+      </form>
+
+      {/* ── Map controls cluster (top-right above the bubble stack) ─────────── */}
+      <div className="absolute right-4 top-4 z-40 flex flex-col gap-2 sm:right-6">
+        {/* Zoom in / zoom out — stacked pill */}
+        <div
+          className="flex flex-col overflow-hidden rounded-full"
+          style={GLASS_PANEL_STYLE}
+          aria-label="Map zoom controls"
+        >
+          <button
+            type="button"
+            onClick={zoomIn}
+            className="flex h-10 w-10 items-center justify-center text-gray-700 transition hover:bg-white/80"
+            aria-label="Zoom in"
+            title={`Zoom in (current ${zoom})`}
+            disabled={!googleKey || zoom >= 21}
+          >
+            <Plus className="size-4" />
+          </button>
+          <div className="mx-auto h-px w-7" style={{ background: 'rgba(0,0,0,0.08)' }} aria-hidden />
+          <button
+            type="button"
+            onClick={zoomOut}
+            className="flex h-10 w-10 items-center justify-center text-gray-700 transition hover:bg-white/80"
+            aria-label="Zoom out"
+            title={`Zoom out (current ${zoom})`}
+            disabled={!googleKey || zoom <= 1}
+          >
+            <Minus className="size-4" />
+          </button>
+        </div>
+
+        {/* Re-center on vehicle */}
+        <button
+          type="button"
+          onClick={recenter}
+          className="flex h-10 w-10 items-center justify-center rounded-full text-gray-700 transition hover:scale-105"
+          style={GLASS_BUBBLE_STYLE}
+          aria-label="Re-center on vehicle"
+          title="Re-center on vehicle + reset search"
+        >
+          <Crosshair className="size-4" />
+        </button>
+
+        {/* Fullscreen toggle */}
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          className="flex h-10 w-10 items-center justify-center rounded-full text-gray-700 transition hover:scale-105"
+          style={GLASS_BUBBLE_STYLE}
+          aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+          title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+        >
+          {isFullscreen ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
+        </button>
+      </div>
+
+      {/* Top pill — vehicle hero. Pushed down on small screens so it doesn't
+          collide with the search bar / zoom cluster at the corners. */}
+      <div className="absolute left-1/2 top-20 z-30 -translate-x-1/2 px-4 sm:top-4">
         <div
           className="flex h-[72px] items-center rounded-full pl-2 pr-6 sm:pr-8"
           style={GLASS_PANEL_STYLE}
@@ -609,13 +837,13 @@ export default function TeslaFleetMap({
 
       {/* Right-side stat bubbles */}
       <div className="absolute right-4 top-1/2 z-30 flex -translate-y-1/2 flex-col gap-3 sm:right-6 sm:gap-4">
-        {/* Map layer toggle — roadmap vs satellite */}
+        {/* Map layer cycle — Roadmap → Satellite → Hybrid → Terrain */}
         <StatBubble
           icon={<Layers className="size-6" />}
           label="Map layer"
-          value={mapType === 'satellite' ? 'Satellite' : 'Roadmap'}
-          tooltipDetail={googleKey ? 'Click to toggle' : 'Add GOOGLE_MAPS_API_KEY to enable'}
-          onClick={() => setMapType(t => (t === 'satellite' ? 'roadmap' : 'satellite'))}
+          value={MAP_TYPE_LABEL[mapType]}
+          tooltipDetail={googleKey ? 'Tap to cycle layers' : 'Add GOOGLE_MAPS_API_KEY to enable'}
+          onClick={cycleMapType}
         />
 
         {/* Online / state */}
@@ -700,6 +928,17 @@ export default function TeslaFleetMap({
             </span>
             <span className="whitespace-nowrap text-sm font-semibold text-gray-800">
               {isDemoData ? 'Demo data' : 'Live Fleet API'}
+            </span>
+            <span
+              className="mt-0.5 inline-flex items-center gap-1 whitespace-nowrap font-mono text-[9px] uppercase tracking-wide text-gray-500"
+              title={`Last refreshed at ${new Date(syncedAt).toLocaleTimeString()}`}
+            >
+              <span
+                className="size-1.5 rounded-full"
+                style={{ background: isCharging ? ACCENT_ORANGE : ACCENT_GREEN }}
+                aria-hidden
+              />
+              Synced {lastSyncLabel}
             </span>
           </div>
 
