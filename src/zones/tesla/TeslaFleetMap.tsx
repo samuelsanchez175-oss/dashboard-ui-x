@@ -3,6 +3,7 @@ import {
   Activity,
   BatteryCharging,
   ChevronRight,
+  Circle,
   Compass,
   Cog,
   Crosshair,
@@ -24,6 +25,9 @@ import {
 } from 'lucide-react'
 
 import { getApiKey, subscribeApiKeys } from '../../lib/api-keys'
+import MapRangeCircle from './map/MapRangeCircle'
+import MapRecentSearches, { recordMapSearch } from './map/MapRecentSearches'
+import MapShortcutHint, { useMapKeyboardShortcuts } from './map/useMapKeyboardShortcuts'
 import type { TeslaUnits, TeslaVehicleRow } from './useTeslaFleetData'
 
 /* ── Color palette (intentional — Tesla map view has its own visual identity) ──── */
@@ -448,16 +452,44 @@ function mapEmbedUrl(opts: {
   return `https://www.google.com/maps/embed/v1/view?key=${encodeURIComponent(opts.apiKey)}&center=${opts.lat},${opts.lng}&zoom=${opts.zoom}&maptype=${t}`
 }
 
-/** Short relative-time formatter — "12s ago" / "5 min ago" / "2h ago". */
+/** Short relative-time formatter — "just now" / "5 min ago" / "2h ago".
+ *  The prefix "Synced" is rendered by the caller, so this returns only the time. */
 function relativeAgo(ms: number): string {
   const s = Math.max(0, Math.floor(ms / 1000))
-  if (s < 5) return 'Just synced'
+  if (s < 5) return 'just now'
   if (s < 60) return `${s}s ago`
   const m = Math.floor(s / 60)
   if (m < 60) return `${m} min ago`
   const h = Math.floor(m / 60)
   if (h < 24) return `${h}h ago`
   return `${Math.floor(h / 24)}d ago`
+}
+
+/** localStorage keys for the map view's user preferences. Persisting them lets
+ *  the dashboard remember zoom / map type / range-circle visibility between
+ *  sessions instead of resetting to defaults each visit. */
+const LS_PREFS_KEY = 'tesla-map-prefs-v1'
+type MapPrefs = {
+  mapType?: MapType
+  zoom?: number
+  showRangeCircle?: boolean
+}
+function loadMapPrefs(): MapPrefs {
+  try {
+    const raw = localStorage.getItem(LS_PREFS_KEY)
+    if (!raw) return {}
+    const parsed = JSON.parse(raw) as MapPrefs
+    return parsed && typeof parsed === 'object' ? parsed : {}
+  } catch {
+    return {}
+  }
+}
+function saveMapPrefs(prefs: MapPrefs): void {
+  try {
+    localStorage.setItem(LS_PREFS_KEY, JSON.stringify(prefs))
+  } catch {
+    // Ignore quota/privacy errors.
+  }
 }
 
 export default function TeslaFleetMap({
@@ -470,17 +502,30 @@ export default function TeslaFleetMap({
   isDemoData: boolean
 }) {
   const [detailOpen, setDetailOpen] = useState(false)
-  const [mapType, setMapType] = useState<MapType>('satellite')
-  const [zoom, setZoom] = useState<number>(14)
+  // Hydrate user prefs from localStorage on first render; persist on change.
+  const initialPrefs = useMemo(() => loadMapPrefs(), [])
+  const [mapType, setMapType] = useState<MapType>(initialPrefs.mapType ?? 'satellite')
+  const [zoom, setZoom] = useState<number>(initialPrefs.zoom ?? 14)
+  const [showRangeCircle, setShowRangeCircle] = useState<boolean>(
+    initialPrefs.showRangeCircle ?? true,
+  )
   const [searchDraft, setSearchDraft] = useState<string>('')
   const [searchQuery, setSearchQuery] = useState<string>('')
+  const [recentOpen, setRecentOpen] = useState<boolean>(false)
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false)
+  const [iframeLoaded, setIframeLoaded] = useState<boolean>(false)
   const [syncedAt, setSyncedAt] = useState<number>(() => Date.now())
   const [nowTick, setNowTick] = useState<number>(() => Date.now())
   const sectionRef = useRef<HTMLDivElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
   const [googleKey, setGoogleKey] = useState<string>(
     () => getApiKey('GOOGLE_MAPS_API_KEY') || getApiKey('GOOGLE_API_KEY') || '',
   )
+
+  // Persist prefs when they change.
+  useEffect(() => {
+    saveMapPrefs({ mapType, zoom, showRangeCircle })
+  }, [mapType, zoom, showRangeCircle])
 
   // Keep Maps key reactive to Settings changes — no full reload needed.
   useEffect(() => {
@@ -520,9 +565,53 @@ export default function TeslaFleetMap({
       e.preventDefault()
       const q = searchDraft.trim()
       setSearchQuery(q)
+      setRecentOpen(false)
+      if (q) recordMapSearch(q)
     },
     [searchDraft],
   )
+
+  const pickRecentSearch = useCallback((term: string) => {
+    setSearchDraft(term)
+    setSearchQuery(term)
+    setRecentOpen(false)
+  }, [])
+
+  const focusSearch = useCallback(() => {
+    searchInputRef.current?.focus()
+    searchInputRef.current?.select()
+  }, [])
+
+  // Wire keyboard shortcuts (`/` to search, R to recenter, F fullscreen, L cycle,
+  // +/- zoom, D open detail, Esc close detail).
+  useMapKeyboardShortcuts({
+    zoomIn: () => setZoom(z => Math.min(21, z + 1)),
+    zoomOut: () => setZoom(z => Math.max(1, z - 1)),
+    recenter: () => {
+      setSearchQuery('')
+      setSearchDraft('')
+      setZoom(14)
+    },
+    toggleFullscreen: () => {
+      // Inline copy of toggleFullscreen logic — references the latest sectionRef.
+      const el = sectionRef.current
+      if (!el) return
+      if (!document.fullscreenElement) {
+        el.requestFullscreen?.().then(() => setIsFullscreen(true)).catch(() => {})
+      } else {
+        document.exitFullscreen?.().then(() => setIsFullscreen(false)).catch(() => {})
+      }
+    },
+    cycleMapType: () => setMapType(t => MAP_TYPE_CYCLE[(MAP_TYPE_CYCLE.indexOf(t) + 1) % MAP_TYPE_CYCLE.length]!),
+    focusSearch,
+    openDetail: () => setDetailOpen(true),
+    closeDetail: () => setDetailOpen(false),
+  })
+
+  // Reset iframe loaded flag whenever the URL changes — show skeleton during reload.
+  useEffect(() => {
+    setIframeLoaded(false)
+  }, [googleKey, mapType, zoom, searchQuery])
 
   const toggleFullscreen = useCallback(() => {
     const el = sectionRef.current
@@ -578,15 +667,43 @@ export default function TeslaFleetMap({
       {/* Map base layer — real Google Maps when a key is saved, topo fallback otherwise. */}
       <div className="absolute inset-0 z-0 cursor-default">
         {googleKey ? (
-          <iframe
-            title={`Live map of ${v.displayName}`}
-            src={iframeSrc}
-            className="h-full w-full"
-            style={{ border: 0 }}
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            allowFullScreen
-          />
+          <>
+            {!iframeLoaded ? (
+              <div
+                className="absolute inset-0 z-[1] flex items-center justify-center"
+                style={{
+                  background:
+                    'linear-gradient(120deg, #eef2f7 0%, #f8fafc 30%, #eef2f7 60%, #f8fafc 100%)',
+                  backgroundSize: '200% 100%',
+                  animation: 'tesla-map-shimmer 2s linear infinite',
+                }}
+                aria-hidden
+              >
+                <div
+                  className="flex items-center gap-2 rounded-full px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-gray-600"
+                  style={GLASS_PANEL_STYLE}
+                >
+                  <span
+                    className="size-2 animate-pulse rounded-full"
+                    style={{ background: ACCENT_ORANGE }}
+                    aria-hidden
+                  />
+                  Loading map…
+                </div>
+                <style>{`@keyframes tesla-map-shimmer { 0%{background-position:0% 0;} 100%{background-position:200% 0;} }`}</style>
+              </div>
+            ) : null}
+            <iframe
+              title={`Live map of ${v.displayName}`}
+              src={iframeSrc}
+              onLoad={() => setIframeLoaded(true)}
+              className="h-full w-full"
+              style={{ border: 0 }}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              allowFullScreen
+            />
+          </>
         ) : (
           <div
             className="h-full w-full"
@@ -640,6 +757,15 @@ export default function TeslaFleetMap({
           </div>
         )}
 
+        {/* Reachable-range circles overlay — toggle via the Range bubble. */}
+        <MapRangeCircle
+          rangeMiles={v.rangeMiles}
+          batteryPercent={v.batteryPercent}
+          chargeLimitPct={v.chargeLimitPct ?? null}
+          isCharging={isCharging}
+          visible={showRangeCircle}
+        />
+
         {/* Vehicle location pin — overlaid on the map. Pulses faster + brighter while charging. */}
         <div
           className="pointer-events-none absolute z-10"
@@ -680,10 +806,13 @@ export default function TeslaFleetMap({
         >
           <Search className="size-4 shrink-0" aria-hidden style={{ color: '#6b7280' }} />
           <input
+            ref={searchInputRef}
             type="search"
             value={searchDraft}
             onChange={e => setSearchDraft(e.target.value)}
-            placeholder="Search places, addresses…"
+            onFocus={() => setRecentOpen(true)}
+            onBlur={() => window.setTimeout(() => setRecentOpen(false), 200)}
+            placeholder="Search places, addresses…  (press /)"
             className="w-44 bg-transparent text-[12px] text-gray-800 placeholder:text-gray-400 focus:outline-none sm:w-56"
             aria-label="Search the map"
           />
@@ -719,6 +848,8 @@ export default function TeslaFleetMap({
             Searching: {searchQuery}
           </p>
         ) : null}
+        {/* Recent-searches dropdown — opens on input focus, click to recall. */}
+        <MapRecentSearches open={recentOpen} onPick={pickRecentSearch} className="mt-2" />
       </form>
 
       {/* ── Map controls cluster (top-right above the bubble stack) ─────────── */}
@@ -735,17 +866,27 @@ export default function TeslaFleetMap({
             className="flex h-10 w-10 items-center justify-center text-gray-700 transition hover:bg-white/80"
             aria-label="Zoom in"
             title={`Zoom in (current ${zoom})`}
+            aria-keyshortcuts="+"
             disabled={!googleKey || zoom >= 21}
           >
             <Plus className="size-4" />
           </button>
-          <div className="mx-auto h-px w-7" style={{ background: 'rgba(0,0,0,0.08)' }} aria-hidden />
+          {/* Zoom level indicator — shows the current Google Maps zoom (1–21). */}
+          <div
+            className="flex h-5 items-center justify-center font-mono text-[9px] font-semibold tabular-nums"
+            style={{ color: '#6b7280', background: 'rgba(0,0,0,0.04)' }}
+            aria-label={`Current zoom level: ${zoom}`}
+            title={`Zoom level ${zoom}/21`}
+          >
+            z{zoom}
+          </div>
           <button
             type="button"
             onClick={zoomOut}
             className="flex h-10 w-10 items-center justify-center text-gray-700 transition hover:bg-white/80"
             aria-label="Zoom out"
             title={`Zoom out (current ${zoom})`}
+            aria-keyshortcuts="-"
             disabled={!googleKey || zoom <= 1}
           >
             <Minus className="size-4" />
@@ -759,9 +900,26 @@ export default function TeslaFleetMap({
           className="flex h-10 w-10 items-center justify-center rounded-full text-gray-700 transition hover:scale-105"
           style={GLASS_BUBBLE_STYLE}
           aria-label="Re-center on vehicle"
-          title="Re-center on vehicle + reset search"
+          aria-keyshortcuts="R"
+          title="Re-center on vehicle + reset search (R)"
         >
           <Crosshair className="size-4" />
+        </button>
+
+        {/* Range circle toggle — hide/show the on-map reachable-area visualization. */}
+        <button
+          type="button"
+          onClick={() => setShowRangeCircle(prev => !prev)}
+          aria-pressed={showRangeCircle}
+          className="flex h-10 w-10 items-center justify-center rounded-full transition hover:scale-105"
+          style={{
+            ...GLASS_BUBBLE_STYLE,
+            color: showRangeCircle ? batteryColor(v.batteryPercent, v.charging) : '#6b7280',
+          }}
+          aria-label={showRangeCircle ? 'Hide range circle' : 'Show range circle'}
+          title={showRangeCircle ? 'Hide range overlay' : 'Show range overlay'}
+        >
+          <Circle className="size-4" />
         </button>
 
         {/* Fullscreen toggle */}
@@ -771,11 +929,15 @@ export default function TeslaFleetMap({
           className="flex h-10 w-10 items-center justify-center rounded-full text-gray-700 transition hover:scale-105"
           style={GLASS_BUBBLE_STYLE}
           aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-          title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+          aria-keyshortcuts="F"
+          title={isFullscreen ? 'Exit fullscreen (F)' : 'Fullscreen (F)'}
         >
           {isFullscreen ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
         </button>
       </div>
+
+      {/* Keyboard shortcut hint — bottom-right, collapsed by default. */}
+      <MapShortcutHint className="absolute bottom-4 right-4 z-30 sm:bottom-6 sm:right-6" />
 
       {/* Top pill — vehicle hero. Pushed down on small screens so it doesn't
           collide with the search bar / zoom cluster at the corners. */}
@@ -938,7 +1100,7 @@ export default function TeslaFleetMap({
                 style={{ background: isCharging ? ACCENT_ORANGE : ACCENT_GREEN }}
                 aria-hidden
               />
-              Synced {lastSyncLabel}
+              {lastSyncLabel === 'just now' ? 'Just synced' : `Synced ${lastSyncLabel}`}
             </span>
           </div>
 
