@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Car, Eye, EyeOff, FlaskConical } from 'lucide-react'
-import ZoneHeader from '../../components/ZoneHeader'
 import { useMockData } from '../../context/MockDataContext'
 import { CONTAINERS } from '../../lib/design-tokens'
 import { getAllStoredApiKeys, getApiKey, setApiKey, subscribeApiKeys } from '../../lib/api-keys'
@@ -110,42 +109,83 @@ export default function TeslaMock() {
 
   return (
     <div className="flex-1 overflow-auto" style={{ background: 'var(--bg-canvas)', color: 'var(--text-1)' }}>
-      <div className={`${CONTAINERS.page} space-y-8 pt-8 pb-16`}>
-        <div className="flex flex-col gap-4">
-          <ZoneHeader
-            title="Tesla Fleet"
-            icon={Car}
-            description="Scratch keys + dev BFF: GET /api/tesla/fleet pulls live Fleet data when a refresh token is saved; without it, use Connect Tesla to complete OAuth once."
-            actions={
-              <>
-                {connectionBadge}
-                <button
-                  type="button"
-                  onClick={() => toggleMockData()}
-                  aria-pressed={mockDataEnabled}
-                  aria-label={mockDataEnabled ? 'Mock data on, click to turn off' : 'Mock data off, click to turn on'}
-                  title={mockDataEnabled ? 'Turn off mock/sample data for the dashboard' : 'Turn on mock/sample data for the dashboard'}
-                  className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--bg-canvas)]"
-                  style={
-                    mockDataEnabled
-                      ? {
-                          background: 'color-mix(in oklab, var(--accent) 14%, var(--bg-card))',
-                          borderColor: 'var(--accent)',
-                          color: 'var(--accent)',
-                        }
-                      : {
-                          background: 'var(--bg-card)',
-                          borderColor: 'var(--border-strong)',
-                          color: 'var(--text-2)',
-                        }
-                  }
-                >
-                  <FlaskConical className="size-3.5 shrink-0" aria-hidden />
-                  {mockDataEnabled ? 'Mock data: ON' : 'Mock data: OFF'}
-                </button>
-              </>
-            }
-          />
+      <div className={`${CONTAINERS.page} space-y-6 pt-6 pb-16`}>
+        {/* Compact header — just the title + status pill + mock toggle.
+            Verbose description moved into the Setup drawer to maximize the
+            map's vertical real estate. */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <Car className="size-5 shrink-0" aria-hidden style={{ color: 'var(--text-2)' }} />
+            <h1 className="text-xl font-semibold tracking-tight" style={{ color: 'var(--text-1)' }}>
+              Tesla Fleet
+            </h1>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {connectionBadge}
+            <button
+              type="button"
+              onClick={() => toggleMockData()}
+              aria-pressed={mockDataEnabled}
+              aria-label={mockDataEnabled ? 'Mock data on, click to turn off' : 'Mock data off, click to turn on'}
+              title={mockDataEnabled ? 'Turn off mock/sample data for the dashboard' : 'Turn on mock/sample data for the dashboard'}
+              className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--bg-canvas)]"
+              style={
+                mockDataEnabled
+                  ? {
+                      background: 'color-mix(in oklab, var(--accent) 14%, var(--bg-card))',
+                      borderColor: 'var(--accent)',
+                      color: 'var(--accent)',
+                    }
+                  : {
+                      background: 'var(--bg-card)',
+                      borderColor: 'var(--border-strong)',
+                      color: 'var(--text-2)',
+                    }
+              }
+            >
+              <FlaskConical className="size-3.5 shrink-0" aria-hidden />
+              {mockDataEnabled ? 'Mock data: ON' : 'Mock data: OFF'}
+            </button>
+          </div>
+        </div>
+
+        {/* PRIMARY: live map view comes first */}
+        <TeslaFleetVisuals
+          loading={fleet.loading}
+          isDemoData={fleet.isDemoData}
+          status={fleet.status}
+          liveFallbackToDemo={fleet.liveFallbackToDemo}
+          lastError={fleet.lastError}
+          authorizeUrl={fleet.authorizeUrl}
+          units={fleet.units}
+          vehicles={fleet.vehicles}
+          kpis={fleet.kpis}
+          charging={fleet.charging}
+          telemetry={fleet.telemetry}
+          socSeriesByVehicle={fleet.socSeriesByVehicle}
+          lastTripRoute={fleet.lastTripRoute}
+        />
+
+        {/* SECONDARY: everything else (setup checklist, credentials, virtual key,
+            ground-truth) lives below the map inside a collapsible drawer so it
+            doesn't visually compete with the map. */}
+        <details
+          className="w-full rounded-2xl border bg-white/40 backdrop-blur-md"
+          style={{ borderColor: 'var(--border-soft)' }}
+        >
+          <summary
+            className="flex cursor-pointer items-center justify-between gap-3 px-5 py-3 text-sm font-semibold tracking-tight"
+            style={{ color: 'var(--text-1)' }}
+          >
+            <span>Setup &amp; diagnostics</span>
+            <span className="font-mono text-[10px] uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>
+              expand to configure
+            </span>
+          </summary>
+          <div className="flex flex-col gap-4 border-t px-5 py-5" style={{ borderColor: 'var(--border-soft)' }}>
+            <p className="text-[11px] leading-relaxed" style={{ color: 'var(--text-3)' }}>
+              Scratch keys + dev BFF: <code className="font-mono">GET /api/tesla/fleet</code> pulls live Fleet data when a refresh token is saved; without it, use Connect Tesla to complete OAuth once.
+            </p>
 
           <TeslaSetupChecklist />
 
@@ -286,25 +326,10 @@ export default function TeslaMock() {
               ) : null}
             </div>
           </section>
-        </div>
 
-        <TeslaFleetVisuals
-          loading={fleet.loading}
-          isDemoData={fleet.isDemoData}
-          status={fleet.status}
-          liveFallbackToDemo={fleet.liveFallbackToDemo}
-          lastError={fleet.lastError}
-          authorizeUrl={fleet.authorizeUrl}
-          units={fleet.units}
-          vehicles={fleet.vehicles}
-          kpis={fleet.kpis}
-          charging={fleet.charging}
-          telemetry={fleet.telemetry}
-          socSeriesByVehicle={fleet.socSeriesByVehicle}
-          lastTripRoute={fleet.lastTripRoute}
-        />
-
-        <TeslaFleetGroundTruthChecklist />
+          <TeslaFleetGroundTruthChecklist />
+          </div>
+        </details>
       </div>
     </div>
   )

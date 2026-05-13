@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Activity,
   BatteryCharging,
@@ -6,6 +6,7 @@ import {
   Compass,
   Cog,
   Gauge,
+  Layers,
   Lock,
   LockOpen,
   MapPin,
@@ -16,6 +17,7 @@ import {
   Zap,
 } from 'lucide-react'
 
+import { getApiKey, subscribeApiKeys } from '../../lib/api-keys'
 import type { TeslaUnits, TeslaVehicleRow } from './useTeslaFleetData'
 
 /* ── Color palette (intentional — Tesla map view has its own visual identity) ──── */
@@ -413,6 +415,21 @@ function VehicleDetailPanel({
 
 /* ── Main map view ────────────────────────────────────────────────────────────── */
 
+/** Google Maps Embed API URL builder — `view` mode centered on a lat/lng.
+ *  Requires GOOGLE_API_KEY (or YOUTUBE_API_KEY as fallback) with the Maps
+ *  Embed API enabled on the Google Cloud project. */
+function mapEmbedUrl(opts: {
+  apiKey: string
+  lat: number
+  lng: number
+  zoom?: number
+  mapType?: 'roadmap' | 'satellite'
+}): string {
+  const z = opts.zoom ?? 14
+  const t = opts.mapType ?? 'roadmap'
+  return `https://www.google.com/maps/embed/v1/view?key=${encodeURIComponent(opts.apiKey)}&center=${opts.lat},${opts.lng}&zoom=${z}&maptype=${t}`
+}
+
 export default function TeslaFleetMap({
   v,
   units,
@@ -423,65 +440,114 @@ export default function TeslaFleetMap({
   isDemoData: boolean
 }) {
   const [detailOpen, setDetailOpen] = useState(false)
+  const [mapType, setMapType] = useState<'roadmap' | 'satellite'>('satellite')
+  const [googleKey, setGoogleKey] = useState<string>(
+    () => getApiKey('GOOGLE_MAPS_API_KEY') || getApiKey('GOOGLE_API_KEY') || '',
+  )
+
+  // Keep Maps key reactive to Settings changes — no full reload needed.
+  useEffect(() => {
+    return subscribeApiKeys(snapshot => {
+      const next = snapshot['GOOGLE_MAPS_API_KEY'] || snapshot['GOOGLE_API_KEY'] || ''
+      setGoogleKey(prev => (prev === next ? prev : next))
+    })
+  }, [])
+
   const model = modelFromVin(v.vin)
   const range = formatRange(v.rangeMiles, units)
   const battColor = batteryColor(v.batteryPercent, v.charging)
   const state = deriveStateLabel(v)
   const isCharging = v.charging || v.chargingState === 'Charging'
 
+  // Default center: vehicle lat/lng if non-zero, else a sensible fallback so
+  // the iframe still renders something useful.
+  const hasCoords = Number.isFinite(v.lat) && Number.isFinite(v.lng) && (v.lat !== 0 || v.lng !== 0)
+  const centerLat = hasCoords ? v.lat : 37.4419
+  const centerLng = hasCoords ? v.lng : -122.143
+
   return (
     <section
       className="relative w-full overflow-hidden rounded-3xl border text-[#333333]"
       style={{
         borderColor: 'var(--border-soft)',
-        height: 'min(720px, 80vh)',
-        minHeight: 560,
+        height: 'min(820px, 88vh)',
+        minHeight: 600,
         background: '#f0f4f8',
       }}
       aria-label={`Live map view for ${v.displayName}`}
     >
-      {/* Topo background */}
-      <div
-        className="absolute inset-0 z-0 cursor-default"
-        style={{ backgroundColor: '#f0f4f8', backgroundImage: TOPO_BG_DATA_URL }}
-      >
-        {/* Subtle hill shapes + contour lines */}
-        <svg
-          className="pointer-events-none absolute inset-0 h-full w-full opacity-40"
-          viewBox="0 0 1440 900"
-          preserveAspectRatio="xMidYMid slice"
-          aria-hidden
-        >
-          <path
-            d="M0 200 Q 300 150 500 350 T 1000 400 T 1500 200 L 1500 900 L 0 900 Z"
-            fill="#e2e8f0"
-            opacity="0.5"
+      {/* Map base layer — real Google Maps when a key is saved, topo fallback otherwise. */}
+      <div className="absolute inset-0 z-0 cursor-default">
+        {googleKey ? (
+          <iframe
+            title={`Live map of ${v.displayName}`}
+            src={mapEmbedUrl({ apiKey: googleKey, lat: centerLat, lng: centerLng, zoom: 14, mapType })}
+            className="h-full w-full"
+            style={{ border: 0 }}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            allowFullScreen
           />
-          <path
-            d="M0 400 Q 400 300 600 500 T 1200 600 T 1500 450 L 1500 900 L 0 900 Z"
-            fill="#cbd5e1"
-            opacity="0.3"
-          />
-          <path d="M-100 150 C 200 100 400 300 700 250 S 1100 400 1500 300" fill="none" stroke="#94a3b8" strokeWidth="1" opacity="0.4" />
-          <path d="M-100 180 C 200 130 400 330 700 280 S 1100 430 1500 330" fill="none" stroke="#94a3b8" strokeWidth="1" opacity="0.4" />
-          <path d="M-100 210 C 200 160 400 360 700 310 S 1100 460 1500 360" fill="none" stroke="#94a3b8" strokeWidth="1" opacity="0.4" />
-          <path d="M-100 550 C 300 500 500 700 800 650 S 1200 800 1500 700" fill="none" stroke="#94a3b8" strokeWidth="1" opacity="0.4" />
-          <path d="M-100 580 C 300 530 500 730 800 680 S 1200 830 1500 730" fill="none" stroke="#94a3b8" strokeWidth="1" opacity="0.4" />
-        </svg>
+        ) : (
+          <div
+            className="h-full w-full"
+            style={{ backgroundColor: '#f0f4f8', backgroundImage: TOPO_BG_DATA_URL }}
+          >
+            {/* Subtle hill shapes + contour lines (fallback when no Google key) */}
+            <svg
+              className="pointer-events-none absolute inset-0 h-full w-full opacity-40"
+              viewBox="0 0 1440 900"
+              preserveAspectRatio="xMidYMid slice"
+              aria-hidden
+            >
+              <path
+                d="M0 200 Q 300 150 500 350 T 1000 400 T 1500 200 L 1500 900 L 0 900 Z"
+                fill="#e2e8f0"
+                opacity="0.5"
+              />
+              <path
+                d="M0 400 Q 400 300 600 500 T 1200 600 T 1500 450 L 1500 900 L 0 900 Z"
+                fill="#cbd5e1"
+                opacity="0.3"
+              />
+              <path d="M-100 150 C 200 100 400 300 700 250 S 1100 400 1500 300" fill="none" stroke="#94a3b8" strokeWidth="1" opacity="0.4" />
+              <path d="M-100 180 C 200 130 400 330 700 280 S 1100 430 1500 330" fill="none" stroke="#94a3b8" strokeWidth="1" opacity="0.4" />
+              <path d="M-100 210 C 200 160 400 360 700 310 S 1100 460 1500 360" fill="none" stroke="#94a3b8" strokeWidth="1" opacity="0.4" />
+              <path d="M-100 550 C 300 500 500 700 800 650 S 1200 800 1500 700" fill="none" stroke="#94a3b8" strokeWidth="1" opacity="0.4" />
+              <path d="M-100 580 C 300 530 500 730 800 680 S 1200 830 1500 730" fill="none" stroke="#94a3b8" strokeWidth="1" opacity="0.4" />
+            </svg>
+            {/* No-key hint */}
+            {!isDemoData && hasCoords ? (
+              <div
+                className="absolute left-1/2 top-1/2 max-w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-2xl px-5 py-4 text-center text-[12px] text-gray-700"
+                style={GLASS_PANEL_STYLE}
+              >
+                <p className="font-semibold">Add a Google Maps API key</p>
+                <p className="mt-1 text-[11px] text-gray-500">
+                  Save <code className="font-mono">GOOGLE_MAPS_API_KEY</code> (or reuse{' '}
+                  <code className="font-mono">GOOGLE_API_KEY</code>) in Settings → API keys to swap this topo placeholder for the live satellite/road map centered on your car.
+                </p>
+              </div>
+            ) : null}
+          </div>
+        )}
 
-        {/* Vehicle location pin — uses real lat/lng to position roughly within the viewBox */}
-        <svg
-          className="pointer-events-none absolute inset-0 z-10 h-full w-full"
-          viewBox="0 0 1440 900"
-          preserveAspectRatio="xMidYMid slice"
-          aria-hidden
+        {/* Vehicle location pin — overlaid on the map, always visible */}
+        <div
+          className="pointer-events-none absolute z-10"
+          style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}
         >
-          <g transform={`translate(${720}, ${450})`}>
-            <circle cx="0" cy="0" r="18" fill={`${battColor}33`} className="animate-ping" />
-            <circle cx="0" cy="0" r="10" fill="#ffffff" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.3))" />
-            <circle cx="0" cy="0" r="5" fill={battColor} />
-          </g>
-        </svg>
+          <span
+            className="absolute left-1/2 top-1/2 size-9 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-40"
+            style={{ background: battColor, animation: 'ping 2s cubic-bezier(0,0,0.2,1) infinite' }}
+            aria-hidden
+          />
+          <span
+            className="relative block size-5 rounded-full border-2 border-white shadow-[0_2px_6px_rgba(0,0,0,0.35)]"
+            style={{ background: battColor }}
+            aria-hidden
+          />
+        </div>
       </div>
 
       {/* Top pill — vehicle hero */}
@@ -543,6 +609,15 @@ export default function TeslaFleetMap({
 
       {/* Right-side stat bubbles */}
       <div className="absolute right-4 top-1/2 z-30 flex -translate-y-1/2 flex-col gap-3 sm:right-6 sm:gap-4">
+        {/* Map layer toggle — roadmap vs satellite */}
+        <StatBubble
+          icon={<Layers className="size-6" />}
+          label="Map layer"
+          value={mapType === 'satellite' ? 'Satellite' : 'Roadmap'}
+          tooltipDetail={googleKey ? 'Click to toggle' : 'Add GOOGLE_MAPS_API_KEY to enable'}
+          onClick={() => setMapType(t => (t === 'satellite' ? 'roadmap' : 'satellite'))}
+        />
+
         {/* Online / state */}
         <StatBubble
           icon={<Activity className="size-6" />}
