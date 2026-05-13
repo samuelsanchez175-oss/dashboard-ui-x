@@ -5,17 +5,14 @@ import {
   ChevronRight,
   ExternalLink,
   Gauge,
-  Lightbulb,
   Lock,
-  LockOpen,
   MapPin,
-  Power,
   Radio,
-  Snowflake,
   Thermometer,
-  Volume2,
   Zap,
 } from 'lucide-react'
+
+import TeslaFleetMap from './TeslaFleetMap'
 
 import { EmptyState, ErrorState, LoadingState } from '../../components/ui/states'
 import type {
@@ -715,238 +712,11 @@ function VehicleHeroGrid({
   )
 }
 
-/* ── Single-vehicle hero (rendered when fleet has exactly one car) ─────── */
-
-type CommandSpec = {
-  id: 'door_lock' | 'door_unlock' | 'auto_conditioning_start' | 'auto_conditioning_stop' | 'honk_horn' | 'flash_lights' | 'wake_up'
-  label: string
-  Icon: typeof Lock
-  destructive?: boolean
-}
-
-const COMMANDS: readonly CommandSpec[] = [
-  { id: 'door_lock', label: 'Lock', Icon: Lock },
-  { id: 'door_unlock', label: 'Unlock', Icon: LockOpen, destructive: true },
-  { id: 'auto_conditioning_start', label: 'Climate on', Icon: Snowflake },
-  { id: 'auto_conditioning_stop', label: 'Climate off', Icon: Power },
-  { id: 'honk_horn', label: 'Honk', Icon: Volume2 },
-  { id: 'flash_lights', label: 'Flash', Icon: Lightbulb },
-] as const
-
-function CommandButtonRow({ vin, isDemoData }: { vin: string; isDemoData: boolean }) {
-  const [busyId, setBusyId] = useState<string | null>(null)
-  const [result, setResult] = useState<{ kind: 'ok' | 'err'; message: string } | null>(null)
-
-  const runCommand = async (command: string) => {
-    setBusyId(command)
-    setResult(null)
-    try {
-      const r = await fetch('/api/tesla/command', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ vehicleId: vin, command }),
-      })
-      const json = (await r.json().catch(() => null)) as { status?: string; message?: string } | null
-      if (json?.status === 'ok') {
-        setResult({ kind: 'ok', message: `${command} sent` })
-      } else {
-        setResult({
-          kind: 'err',
-          message: json?.message ?? `Command ${command} failed (${r.status})`,
-        })
-      }
-    } catch (e) {
-      setResult({ kind: 'err', message: e instanceof Error ? e.message : String(e) })
-    } finally {
-      setBusyId(null)
-      // Auto-clear after a few seconds.
-      window.setTimeout(() => setResult(null), 4000)
-    }
-  }
-
-  return (
-    <div className="space-y-2">
-      <div className="flex flex-wrap gap-2">
-        {COMMANDS.map(({ id, label, Icon, destructive }) => {
-          const busy = busyId === id
-          return (
-            <button
-              key={id}
-              type="button"
-              onClick={() => runCommand(id)}
-              disabled={!!busyId || isDemoData}
-              title={isDemoData ? 'Save real Tesla credentials to enable commands' : `Send ${label} to vehicle`}
-              className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
-              style={{
-                borderColor: destructive ? 'var(--bad)' : 'var(--border-strong)',
-                background: 'var(--bg-card)',
-                color: destructive ? 'var(--bad)' : 'var(--text-1)',
-              }}
-            >
-              <Icon className="size-3.5" aria-hidden />
-              {busy ? 'Sending…' : label}
-            </button>
-          )
-        })}
-      </div>
-      {result ? (
-        <p
-          className="font-mono text-[10px] uppercase tracking-wide"
-          style={{ color: result.kind === 'ok' ? 'var(--good)' : 'var(--bad)' }}
-          role="status"
-        >
-          {result.message}
-        </p>
-      ) : null}
-      {isDemoData ? (
-        <p className="font-mono text-[10px]" style={{ color: 'var(--text-4)' }}>
-          Demo mode — commands disabled. Save Tesla client ID + secret to enable.
-        </p>
-      ) : null}
-    </div>
-  )
-}
-
-function SingleVehicleHero({
-  v,
-  units,
-  isDemoData,
-}: {
-  v: TeslaVehicleRow
-  units: TeslaUnits
-  isDemoData: boolean
-}) {
-  const { label: stateLabel, color: stateColor } = deriveStateLabel(v)
-  const showChargeLine = v.charging && (v.chargerPowerKw ?? 0) > 0
-  const showEta = v.charging && v.minutesToFullCharge != null && v.minutesToFullCharge > 0
-  return (
-    <section
-      className="rounded-xl border p-5 shadow-[var(--shadow-sm)]"
-      style={CARD_BORDER}
-      aria-label={`Vehicle ${v.displayName}, ${stateLabel}, ${v.batteryPercent}% battery`}
-    >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <h2 className="truncate text-lg font-semibold" style={{ color: 'var(--text-1)' }}>
-              {v.displayName}
-            </h2>
-            <span
-              className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wide"
-              style={{ borderColor: stateColor, color: stateColor }}
-            >
-              <span className="size-1.5 rounded-full" style={{ background: stateColor }} aria-hidden />
-              {stateLabel}
-            </span>
-          </div>
-          <p className="mt-1 font-mono text-[10px] uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>
-            VIN …{vinSuffix(v.vin)} · Software v{v.softwareVersion}
-          </p>
-        </div>
-        {v.locked === false ? (
-          <span
-            className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wide"
-            style={{ borderColor: 'var(--warn)', color: 'var(--warn)' }}
-          >
-            <LockOpen className="size-2.5" aria-hidden />
-            Unlocked
-          </span>
-        ) : null}
-      </div>
-
-      <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-[auto_1fr]">
-        <div className="flex justify-center sm:justify-start">
-          <BatteryGauge percent={v.batteryPercent} charging={v.charging} size={96} />
-        </div>
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-[12px] sm:grid-cols-3">
-          <div className="space-y-0.5">
-            <dt className="font-mono text-[9px] uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>
-              Range
-            </dt>
-            <dd className="font-mono text-base font-semibold tabular-nums" style={{ color: 'var(--text-1)' }}>
-              {formatRangeMiles(v.rangeMiles, units)}
-            </dd>
-          </div>
-          {showChargeLine ? (
-            <div className="space-y-0.5">
-              <dt className="font-mono text-[9px] uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>
-                Charging
-              </dt>
-              <dd className="font-mono text-base font-semibold tabular-nums" style={{ color: 'var(--accent)' }}>
-                {(v.chargerPowerKw ?? 0).toFixed(1)} kW
-              </dd>
-            </div>
-          ) : null}
-          {v.chargeLimitPct != null ? (
-            <div className="space-y-0.5">
-              <dt className="font-mono text-[9px] uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>
-                Charge limit
-              </dt>
-              <dd className="font-mono text-base font-semibold tabular-nums" style={{ color: 'var(--text-1)' }}>
-                {v.chargeLimitPct}%
-              </dd>
-            </div>
-          ) : null}
-          {v.interiorTempF != null ? (
-            <div className="space-y-0.5">
-              <dt className="font-mono text-[9px] uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>
-                Cabin
-              </dt>
-              <dd className="font-mono tabular-nums" style={{ color: 'var(--text-1)' }}>
-                {Math.round(v.interiorTempF)}°F
-              </dd>
-            </div>
-          ) : null}
-          {v.outsideTempF != null ? (
-            <div className="space-y-0.5">
-              <dt className="font-mono text-[9px] uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>
-                Outside
-              </dt>
-              <dd className="font-mono tabular-nums" style={{ color: 'var(--text-2)' }}>
-                {Math.round(v.outsideTempF)}°F
-              </dd>
-            </div>
-          ) : null}
-          <div className="space-y-0.5">
-            <dt className="font-mono text-[9px] uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>
-              Odometer
-            </dt>
-            <dd className="font-mono tabular-nums" style={{ color: 'var(--text-1)' }}>
-              {formatMiles(v.odometerMiles, units)}
-            </dd>
-          </div>
-        </dl>
-      </div>
-
-      {showEta ? (
-        <p className="mt-3 font-mono text-[11px]" style={{ color: 'var(--text-2)' }}>
-          {formatMinutesToEta(v.minutesToFullCharge as number)}
-        </p>
-      ) : null}
-
-      <details
-        className="mt-5 border-t pt-3"
-        style={{ borderColor: 'var(--border-soft)' }}
-      >
-        <summary
-          className="cursor-pointer font-mono text-[10px] uppercase tracking-wide"
-          style={{ color: 'var(--text-3)' }}
-        >
-          Commands (optional — requires virtual key pairing on 2024+ vehicles)
-        </summary>
-        <div className="mt-3">
-          <CommandButtonRow vin={v.vin} isDemoData={isDemoData} />
-        </div>
-      </details>
-
-      {isDemoData ? (
-        <p className="mt-4 font-mono text-[9px] uppercase tracking-wide" style={{ color: 'var(--text-4)' }}>
-          Demo data — wire real credentials to drive these tiles from `vehicle_data`.
-        </p>
-      ) : null}
-    </section>
-  )
-}
+// Per-vehicle hero card + REST-command UI was removed when the user opted into
+// read-only Tesla data only. The new `TeslaFleetMap` (Apple-style topo view)
+// replaces it for single-vehicle accounts; multi-vehicle accounts fall back to
+// `VehicleHeroGrid` above. The /api/tesla/command BFF endpoint is still wired
+// — flip the user preference and re-add a UI consumer when needed.
 
 export type TeslaFleetVisualsProps = {
   loading: boolean
@@ -1050,7 +820,7 @@ export function TeslaFleetVisuals(props: TeslaFleetVisualsProps) {
       )}
 
       {vehicles.length === 1 ? (
-        <SingleVehicleHero v={vehicles[0]!} units={units} isDemoData={isDemoData} />
+        <TeslaFleetMap v={vehicles[0]!} units={units} isDemoData={isDemoData} />
       ) : (
         <VehicleHeroGrid vehicles={vehicles} units={units} isDemoData={isDemoData} />
       )}
