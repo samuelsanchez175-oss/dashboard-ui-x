@@ -26,6 +26,7 @@ export default function CdlHazmatPage() {
       endorseLetter="H"
       questions={HAZMAT_QUESTIONS}
       theme={HAZMAT_THEME}
+      officialCount={30}
     />
   )
 }

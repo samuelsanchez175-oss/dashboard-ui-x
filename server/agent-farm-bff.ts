@@ -7,6 +7,13 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 
 import { XMLParser } from 'fast-xml-parser'
 
+import {
+  SERVER_DIAGNOSTIC_ENV_ENTRIES,
+  classifyEnvPresence,
+  type EnvPresence,
+} from '../src/lib/diagnostics-env-contract'
+import { handleMixingYoutubeAudioPost } from './mixing-youtube-audio'
+
 type Next = () => void
 
 const integrationLastError = {
@@ -45,6 +52,11 @@ export type ConfigStatusResponse = {
   GEMINI_API_KEY: boolean
   GOOGLE_API_KEY: boolean
   RSS_FEED_URLS: boolean
+  /** Dedicated key for Harmony Stack → Client Projects prompt builder (see `/api/harmony/client-projects/build-prompt`). */
+  HARMONY_CLIENT_PROJECTS_AI_KEY: boolean
+  /** Server-only paths for mixing / YouTube audio (`process.env`, not browser headers). */
+  FFMPEG_PATH: boolean
+  YT_DLP_PATH: boolean
 }
 
 export type YoutubeSearchItem = {
@@ -636,6 +648,16 @@ export function attachAgentFarmBff(
       return
     }
 
+    /** Booleans / presence labels only — allowlisted keys from `diagnostics-env-contract.ts`. */
+    if (method === 'GET' && path === '/api/diagnostics/env-keys') {
+      const server: Record<string, EnvPresence> = {}
+      for (const e of SERVER_DIAGNOSTIC_ENV_ENTRIES) {
+        server[e.envKey] = classifyEnvPresence(pickKey(e.envKey, req, env))
+      }
+      jsonRes(res, 200, { server })
+      return
+    }
+
     if (method === 'GET' && path === '/api/integrations/status') {
       // `configured` = env OR user-typed key from the Settings page.
       const googleKey  = pickKey('GOOGLE_API_KEY',  req, env)
@@ -722,8 +744,54 @@ export function attachAgentFarmBff(
         GEMINI_API_KEY:  Boolean(pickKey('GEMINI_API_KEY',  req, env)),
         GOOGLE_API_KEY:  Boolean(pickKey('GOOGLE_API_KEY',  req, env)),
         RSS_FEED_URLS:   Boolean(pickKey('RSS_FEED_URLS',   req, env)),
+        HARMONY_CLIENT_PROJECTS_AI_KEY: Boolean(pickKey('HARMONY_CLIENT_PROJECTS_AI_KEY', req, env)),
+        FFMPEG_PATH: Boolean(env.FFMPEG_PATH?.trim()),
+        YT_DLP_PATH: Boolean(env.YT_DLP_PATH?.trim()),
       }
       jsonRes(res, 200, body)
+      return
+    }
+
+    if (method === 'GET' && path === '/api/harmony/client-projects/ai-health') {
+      const harmony = pickKey('HARMONY_CLIENT_PROJECTS_AI_KEY', req, env)
+      const gemini = pickKey('GEMINI_API_KEY', req, env)
+      const source: 'harmony' | 'gemini' | 'none' = harmony
+        ? 'harmony'
+        : gemini
+          ? 'gemini'
+          : 'none'
+      jsonRes(res, 200, {
+        ok: true,
+        configured: Boolean(harmony || gemini),
+        source,
+      })
+      return
+    }
+
+    if (method === 'POST' && path === '/api/harmony/client-projects/build-prompt') {
+      let parsed: unknown
+      try {
+        parsed = await readJsonBody(req)
+      } catch {
+        jsonRes(res, 400, { ok: false, error: 'BAD_REQUEST', message: 'Invalid JSON body.' })
+        return
+      }
+      const apiKey =
+        pickKey('HARMONY_CLIENT_PROJECTS_AI_KEY', req, env) || pickKey('GEMINI_API_KEY', req, env)
+      if (!apiKey.trim()) {
+        jsonRes(res, 502, {
+          ok: false,
+          error: 'MISSING_CONFIG',
+          message: 'Set HARMONY_CLIENT_PROJECTS_AI_KEY or GEMINI_API_KEY.',
+        })
+        return
+      }
+      const result = await geminiGenerate(apiKey, parsed)
+      if (result.ok) {
+        jsonRes(res, 200, result)
+      } else {
+        jsonRes(res, 502, result)
+      }
       return
     }
 
@@ -751,6 +819,106 @@ export function attachAgentFarmBff(
       if (result.ok) integrationLastError.gemini = null
       else integrationLastError.gemini = result.message.slice(0, 200)
       jsonRes(res, 200, result)
+      return
+    }
+
+    /**
+     * Canonical unified entry point for all YouTube media operations.
+     *
+     * Single POST takes `{ mode, q?, channelId?, videoId?, handle? }` and dispatches
+     * to the same named helpers the legacy routes use (`youtubeSearch`,
+     * `youtubeChannelById` / `youtubeChannelByHandle`, `handleMixingYoutubeAudioPost`)
+     * — no logic is duplicated.
+     *
+     * The legacy routes (`GET /api/youtube/search`, `GET /api/youtube/channel`,
+     * `POST /api/mixing/youtube-audio`) are retained for backward compatibility;
+     * consumers will migrate to this alias gradually.
+     */
+    if (method === 'POST' && path === '/api/media/youtube') {
+      let parsed: unknown
+      try {
+        parsed = await readJsonBody(req)
+      } catch {
+        jsonRes(res, 400, { ok: false, error: 'BAD_REQUEST', message: 'Invalid JSON body.' })
+        return
+      }
+      const body = (parsed && typeof parsed === 'object' ? parsed : {}) as {
+        mode?: unknown
+        q?: unknown
+        channelId?: unknown
+        handle?: unknown
+        videoId?: unknown
+        url?: unknown
+      }
+      const mode = typeof body.mode === 'string' ? body.mode.trim() : ''
+
+      if (mode === 'search') {
+        const q = typeof body.q === 'string' ? body.q : null
+        const result = await youtubeSearch(youtubeDataKeyForReq(req, env), q)
+        if (result.ok) integrationLastError.youtube = null
+        else integrationLastError.youtube = result.message.slice(0, 200)
+        jsonRes(res, 200, result)
+        return
+      }
+
+      if (mode === 'channel') {
+        const key = youtubeDataKeyForReq(req, env)
+        const handle = typeof body.handle === 'string' ? body.handle.trim() : ''
+        const channelId =
+          typeof body.channelId === 'string' && body.channelId.trim()
+            ? body.channelId.trim()
+            : pickKey('AGENT_FARM_YOUTUBE_CHANNEL_ID', req, env)
+        const result = handle
+          ? await youtubeChannelByHandle(key, handle)
+          : await youtubeChannelById(key, channelId || undefined)
+        if (result.ok) integrationLastError.youtube = null
+        else integrationLastError.youtube = result.message.slice(0, 200)
+        jsonRes(res, 200, result)
+        return
+      }
+
+      if (mode === 'download') {
+        // The download handler reads `{ url }` from the body, so synthesise a
+        // body-bearing request that wraps either an incoming `url` field or a
+        // `videoId` shorthand. We delegate to the existing exported handler so
+        // there is no duplication of yt-dlp / yt2mp3 logic.
+        const url =
+          typeof body.url === 'string' && body.url.trim()
+            ? body.url.trim()
+            : typeof body.videoId === 'string' && body.videoId.trim()
+              ? `https://www.youtube.com/watch?v=${body.videoId.trim()}`
+              : ''
+        if (!url) {
+          jsonRes(res, 400, {
+            ok: false,
+            error: 'MISSING_URL',
+            message: 'Send { mode: "download", url | videoId }.',
+          })
+          return
+        }
+        const payload = Buffer.from(JSON.stringify({ url }), 'utf8')
+        const proxyReq = Object.create(req) as IncomingMessage & {
+          headers: NodeJS.Dict<string | string[]>
+        }
+        proxyReq.headers = { ...req.headers, 'content-type': 'application/json' }
+        let yielded = false
+        const iter = (async function* () {
+          if (yielded) return
+          yielded = true
+          yield payload
+        })()
+        ;(proxyReq as unknown as { [Symbol.asyncIterator]: () => AsyncIterator<Buffer> })[
+          Symbol.asyncIterator
+        ] = () => iter
+        await handleMixingYoutubeAudioPost(proxyReq, res)
+        return
+      }
+
+      jsonRes(res, 400, {
+        ok: false,
+        error: 'BAD_REQUEST',
+        message: 'mode must be "search" | "channel" | "download".',
+      })
       return
     }
 

@@ -20,6 +20,13 @@ export type ConnectionBadgeState = {
   label: string
   detail: string
   className: string
+  /**
+   * `quick-keys` — open scratch API modal (localStorage + x-user-key headers).
+   * `settings-only` — BFF unreachable; jump to Settings for troubleshooting.
+   */
+  interaction?: 'quick-keys' | 'settings-only'
+  /** When `interaction` is `quick-keys`, optional focus hint for the modal. */
+  quickKeysHighlight?: 'none' | 'gemini'
 }
 
 /**
@@ -46,6 +53,7 @@ export function getRouteConnectionBadge(
       detail:
         'The dev BFF is not reachable (start `npm run dev` or check that /api/config/status returns JSON).',
       className: 'bg-rose-950/90 text-rose-100 border-rose-400/40',
+      interaction: 'settings-only',
     }
   }
 
@@ -56,6 +64,8 @@ export function getRouteConnectionBadge(
       detail:
         'Server is up but no integration keys are set (YOUTUBE_API_KEY, GOOGLE_API_KEY, GEMINI_API_KEY, or RSS_FEED_URLS).',
       className: 'bg-amber-950/90 text-amber-100 border-amber-400/40',
+      interaction: 'quick-keys',
+      quickKeysHighlight: 'none',
     }
   }
 
@@ -65,6 +75,8 @@ export function getRouteConnectionBadge(
       label: 'Gemini not set',
       detail: 'Usage tab live checks need GEMINI_API_KEY in server .env.',
       className: 'bg-amber-950/90 text-amber-100 border-amber-400/40',
+      interaction: 'quick-keys',
+      quickKeysHighlight: 'gemini',
     }
   }
 

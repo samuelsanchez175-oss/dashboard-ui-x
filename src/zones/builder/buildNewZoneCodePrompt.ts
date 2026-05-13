@@ -49,7 +49,7 @@ If this zone is meant to appear as a **user-created custom zone** in the app she
 - [ ] No new lint/type errors; build passes.
 
 ## Reference implementations (patterns to mirror)
-- \`src/zones/production/ProductionZone.tsx\` — cards / overview
+- \`src/zones/production/ProductionOverviewSnapshot.tsx\` — production snapshot cards (embedded in Agent Farm Overview)
 - \`src/zones/harmony/HarmonyStackZone.tsx\` — tabs + lists
 - \`src/zones/cpw/CpwZone.tsx\` — denser interactive board
 

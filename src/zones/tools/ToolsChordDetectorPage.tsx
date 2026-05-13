@@ -1,5 +1,6 @@
 import {
   ArrowLeft,
+  AudioWaveform,
   Copy,
   Download,
   Loader2,
@@ -16,9 +17,13 @@ import {
   useRef,
   useState,
   type ChangeEvent,
+  type CSSProperties,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
 
+import Button from '../../components/ui/Button'
+import ZoneHeader from '../../components/ZoneHeader'
+import { getFileById } from '../../components/files-dock/files-store'
 import {
   analyzeChordProgressionFromBlob,
   buildChordMidiBlob,
@@ -109,10 +114,10 @@ function ChordTrimTimeline({
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h3 id={timelineHeadingId} className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+        <h3 id={timelineHeadingId} className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>
           Chord timeline
         </h3>
-        <span className="mono text-[10px] text-slate-400">drag handles · trimmed MIDI</span>
+        <span className="mono text-[10px]" style={{ color: 'var(--text-4)' }}>drag handles · trimmed MIDI</span>
       </div>
 
       <div
@@ -120,7 +125,8 @@ function ChordTrimTimeline({
         role="group"
         aria-labelledby={timelineHeadingId}
         aria-describedby={trimRangeId}
-        className="relative h-14 w-full select-none rounded-xl ring-1 ring-slate-200 touch-none"
+        className="relative h-14 w-full touch-none select-none rounded-xl"
+        style={{ border: '1px solid var(--border)' }}
       >
         <div className="flex h-full w-full overflow-hidden rounded-[inherit]">
           {result.segments.map((seg, idx) => {
@@ -143,12 +149,12 @@ function ChordTrimTimeline({
         </div>
 
         <div
-          className="pointer-events-none absolute inset-y-0 left-0 bg-slate-950/55"
+          className="pointer-events-none absolute inset-y-0 left-0 bg-black/55"
           style={{ width: `${sp * 100}%` }}
           aria-hidden
         />
         <div
-          className="pointer-events-none absolute inset-y-0 right-0 bg-slate-950/55"
+          className="pointer-events-none absolute inset-y-0 right-0 bg-black/55"
           style={{ width: `${(1 - ep) * 100}%` }}
           aria-hidden
         />
@@ -161,8 +167,13 @@ function ChordTrimTimeline({
         <button
           type="button"
           aria-label={`Trim start ${formatMmSs(trimStart)}`}
-          className="absolute inset-y-0 z-10 flex w-4 cursor-ew-resize items-center justify-center -translate-x-1/2 rounded-sm bg-white shadow-md ring-1 ring-slate-300 hover:bg-fuchsia-50"
-          style={{ left: `${sp * 100}%` }}
+          className="absolute inset-y-0 z-10 flex w-4 -translate-x-1/2 cursor-ew-resize items-center justify-center rounded-sm transition"
+          style={{
+            left: `${sp * 100}%`,
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border)',
+            boxShadow: 'var(--shadow-sm)',
+          }}
           onPointerDown={(e: ReactPointerEvent) => {
             e.preventDefault()
             ;(e.target as HTMLButtonElement).setPointerCapture(e.pointerId)
@@ -174,8 +185,13 @@ function ChordTrimTimeline({
         <button
           type="button"
           aria-label={`Trim end ${formatMmSs(trimEnd)}`}
-          className="absolute inset-y-0 z-10 flex w-4 cursor-ew-resize items-center justify-center -translate-x-1/2 rounded-sm bg-white shadow-md ring-1 ring-slate-300 hover:bg-fuchsia-50"
-          style={{ left: `${ep * 100}%` }}
+          className="absolute inset-y-0 z-10 flex w-4 -translate-x-1/2 cursor-ew-resize items-center justify-center rounded-sm transition"
+          style={{
+            left: `${ep * 100}%`,
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border)',
+            boxShadow: 'var(--shadow-sm)',
+          }}
           onPointerDown={(e: ReactPointerEvent) => {
             e.preventDefault()
             ;(e.target as HTMLButtonElement).setPointerCapture(e.pointerId)
@@ -186,12 +202,12 @@ function ChordTrimTimeline({
         </button>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]" style={{ color: 'var(--text-3)' }}>
         <span id={trimRangeId} className="mono tabular-nums">
-          <span className="text-slate-700">{formatMmSs(trimStart)}</span>
-          <span className="mx-1.5 text-slate-300">→</span>
-          <span className="text-slate-700">{formatMmSs(trimEnd)}</span>
-          <span className="ml-2 font-medium text-fuchsia-700">
+          <span style={{ color: 'var(--text-1)' }}>{formatMmSs(trimStart)}</span>
+          <span className="mx-1.5" style={{ color: 'var(--text-4)' }}>→</span>
+          <span style={{ color: 'var(--text-1)' }}>{formatMmSs(trimEnd)}</span>
+          <span className="ml-2 font-medium" style={{ color: 'var(--accent-fg)' }}>
             ({(trimEnd - trimStart).toFixed(1)}s window)
           </span>
         </span>
@@ -206,6 +222,8 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
   const [error, setError] = useState<string | null>(null)
   const [fileName, setFileName] = useState<string | null>(null)
   const [result, setResult] = useState<ChordAnalysisResult | null>(null)
+  /** Inbound clip relayed from another tool (Audio grabber, Recent clips tray). */
+  const [inboundNotice, setInboundNotice] = useState<string | null>(null)
 
   const [trimStart, setTrimStart] = useState(0)
   const [trimEnd, setTrimEnd] = useState(0)
@@ -249,6 +267,32 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
     } finally {
       setBusy(false)
     }
+  }, [])
+
+  // Receive a clip handed off from the Mixing Audio Grabber (or any other
+  // sender that writes the agreed `inbound-clip-<routeId>` sessionStorage key).
+  // The pickup is one-shot — the key is cleared as soon as it's consumed so
+  // refresh / re-navigation doesn't re-import the clip.
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      let id: string | null = null
+      try {
+        id = sessionStorage.getItem('inbound-clip-tools-chord-detector')
+        if (id) sessionStorage.removeItem('inbound-clip-tools-chord-detector')
+      } catch {
+        id = null
+      }
+      if (!id || cancelled) return
+      const stored = await getFileById(id)
+      if (!stored || cancelled) return
+      const f = new File([stored.blob], stored.name, { type: stored.mime || 'audio/mpeg' })
+      setInboundNotice(`Loaded clip “${stored.name}” from grabber`)
+      void runFile(f)
+    })()
+    return () => { cancelled = true }
+    // Intentionally only on mount: clip pickup is one-shot per route entry.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const onInputChange = useCallback(
@@ -314,15 +358,29 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
     }
   }, [progressionTextExport, progressionTextFull])
 
+  const card: CSSProperties = {
+    background: 'var(--bg-card)',
+    border: '1px solid var(--border)',
+    boxShadow: 'var(--shadow-sm)',
+  }
+  const label: CSSProperties = { color: 'var(--text-4)', fontFamily: "'DM Mono', monospace" }
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-slate-50">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden" style={{ background: 'var(--bg-canvas)' }}>
       <StudioToolsHeader
+        toolId="tools-chord-detector"
         crumbs={[{ label: 'Workspace' }, { label: 'Tools' }, { label: 'Chord Detector', emphasis: true }]}
         leftExtra={
           <button
             type="button"
             onClick={() => onNavigate('tools-hub')}
-            className="mr-2 rounded-lg border border-slate-200 bg-white p-2 text-slate-600 shadow-sm transition hover:bg-slate-50"
+            className="mr-2 rounded-lg p-2 transition"
+            style={{
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border)',
+              color: 'var(--text-2)',
+              boxShadow: 'var(--shadow-sm)',
+            }}
             aria-label="Back to Tools Hub"
           >
             <ArrowLeft className="size-4" strokeWidth={2} />
@@ -331,18 +389,27 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
       />
 
       <div className="flex-1 overflow-auto px-8 pb-16 pt-8">
-        <div className="mx-auto max-w-3xl">
-          <div className="mono mb-2 text-[11px] uppercase tracking-wide text-slate-500">Analysis</div>
-          <h1 className="mb-2 text-2xl font-semibold tracking-tight text-slate-900">Chord Detector</h1>
-          <p className="mb-3 text-sm leading-relaxed text-slate-500">
-            Offline chromagram + triad templates per beat — same BPM engine as Key &amp; BPM Finder (energy autocorrelation +
-            embedded TBPM when present). Export a compact MIDI sketch of block chords for your DAW.
-          </p>
-          <p className="mb-8 rounded-xl border border-fuchsia-100 bg-fuchsia-50/60 px-4 py-3 text-xs leading-relaxed text-fuchsia-950/80">
+        <div className="mx-auto w-full max-w-3xl">
+          <ZoneHeader
+            eyebrow="ANALYSIS"
+            title="Chord Detector"
+            icon={AudioWaveform}
+            description="Offline chromagram + triad templates per beat — same BPM engine as Key & BPM Finder (energy autocorrelation + embedded TBPM when present). Export a compact MIDI sketch of block chords for your DAW."
+            className="mb-3"
+          />
+          <p
+            className="mb-8 mt-3 rounded-xl px-4 py-3 text-xs leading-relaxed"
+            style={{
+              background: 'var(--accent-soft)',
+              border: '1px solid var(--border)',
+              color: 'var(--text-2)',
+            }}
+          >
             Heuristic only: dense mixes, borrowed chords, and jazz voicings confuse template matchers. For ML-grade
             transcription in production, pair this UI with models such as{' '}
             <a
-              className="font-medium underline decoration-fuchsia-300 underline-offset-2 hover:text-fuchsia-900"
+              className="font-medium underline underline-offset-2"
+              style={{ color: 'var(--accent-fg)', textDecorationColor: 'var(--accent)' }}
               href="https://github.com/spotify/basic-pitch"
               target="_blank"
               rel="noreferrer"
@@ -357,55 +424,83 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
             <div
               onDragOver={e => e.preventDefault()}
               onDrop={onDrop}
-              className="flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-slate-300 bg-white px-6 py-14 text-center shadow-sm transition hover:border-fuchsia-300 hover:bg-fuchsia-50/30"
+              className="flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-6 py-14 text-center transition"
+              style={{
+                background: 'var(--bg-card)',
+                borderColor: 'var(--border-strong)',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = 'var(--accent)'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = 'var(--border-strong)'
+              }}
             >
               {busy ? (
-                <Loader2 className="size-8 animate-spin text-fuchsia-600" aria-hidden />
+                <Loader2 className="size-8 animate-spin" style={{ color: 'var(--accent)' }} aria-hidden />
               ) : (
-                <Upload className="size-8 text-slate-400" strokeWidth={1.5} aria-hidden />
+                <Upload className="size-8" style={{ color: 'var(--text-4)' }} strokeWidth={1.5} aria-hidden />
               )}
               <div>
-                <span className="text-sm font-medium text-slate-900">
+                <span className="text-sm font-medium" style={{ color: 'var(--text-1)' }}>
                   {busy ? 'Analyzing chords…' : 'Drop audio here or click to browse'}
                 </span>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs" style={{ color: 'var(--text-3)' }}>
                   First ~96s analyzed in-browser — WAV/MP3/M4A/FLAC.
                 </p>
               </div>
             </div>
           </label>
 
+          {inboundNotice && (
+            <p
+              className="mt-4 inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium"
+              style={{
+                background: 'var(--accent-soft)',
+                border: '1px solid var(--border)',
+                color: 'var(--accent-fg)',
+              }}
+              role="status"
+            >
+              {inboundNotice}
+            </p>
+          )}
+
           {error && (
-            <p className="mt-4 text-sm text-rose-600" role="alert">
+            <p className="mt-4 text-sm" role="alert" style={{ color: 'var(--bad)' }}>
               {error}
             </p>
           )}
 
           {result && (
             <div className="mt-8 space-y-6">
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 pb-4">
+              <div className="rounded-2xl p-6" style={card}>
+                <div
+                  className="flex flex-wrap items-start justify-between gap-4 pb-4"
+                  style={{ borderBottom: '1px solid var(--border)' }}
+                >
                   <div>
-                    <div className="text-sm font-medium text-slate-900">{fileName ?? 'Clip'}</div>
+                    <div className="text-sm font-medium" style={{ color: 'var(--text-1)' }}>{fileName ?? 'Clip'}</div>
                     {trimCommitted ? (
                       <div className="mt-2 space-y-1">
-                        <p className="text-lg font-semibold tabular-nums text-slate-900">
+                        <p className="text-lg font-semibold tabular-nums" style={{ color: 'var(--text-1)' }}>
                           {exportDurationSec.toFixed(1)}s{' '}
-                          <span className="text-sm font-medium text-fuchsia-700">export duration</span>
+                          <span className="text-sm font-medium" style={{ color: 'var(--accent-fg)' }}>export duration</span>
                         </p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs" style={{ color: 'var(--text-3)' }}>
                           Full analyzed clip{' '}
-                          <span className="tabular-nums font-medium text-slate-700">{result.durationSec.toFixed(1)}s</span>
+                          <span className="tabular-nums font-medium" style={{ color: 'var(--text-2)' }}>{result.durationSec.toFixed(1)}s</span>
                         </p>
                       </div>
                     ) : (
                       <div className="mt-1 space-y-1">
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs" style={{ color: 'var(--text-3)' }}>
                           Analyzed duration{' '}
-                          <span className="tabular-nums font-medium text-slate-800">{result.durationSec.toFixed(1)}s</span>
+                          <span className="tabular-nums font-medium" style={{ color: 'var(--text-1)' }}>{result.durationSec.toFixed(1)}s</span>
                         </p>
                         {isSelectionTrimmed ? (
-                          <p className="text-xs font-medium text-fuchsia-800">
+                          <p className="text-xs font-medium" style={{ color: 'var(--accent-fg)' }}>
                             Selection {(trimEnd - trimStart).toFixed(1)}s — tap{' '}
                             <span className="font-semibold">Apply trim</span> to lock this as the export length shown above.
                           </p>
@@ -415,9 +510,9 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                   </div>
                   <dl className="flex gap-6 text-right">
                     <div>
-                      <dt className="mono text-[10px] uppercase tracking-wide text-slate-400">BPM</dt>
-                      <dd className="text-xl font-semibold tabular-nums text-slate-900">{result.bpm}</dd>
-                      <dd className="text-[10px] text-slate-400">{result.bpmSource === 'tags' ? 'From tags' : 'Estimated'}</dd>
+                      <dt className="mono text-[10px] uppercase tracking-wide" style={label}>BPM</dt>
+                      <dd className="text-xl font-semibold tabular-nums" style={{ color: 'var(--text-1)' }}>{result.bpm}</dd>
+                      <dd className="text-[10px]" style={{ color: 'var(--text-4)' }}>{result.bpmSource === 'tags' ? 'From tags' : 'Estimated'}</dd>
                     </div>
                   </dl>
                 </div>
@@ -431,7 +526,13 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                     type="button"
                     onClick={applyTrim}
                     disabled={!isSelectionTrimmed}
-                    className="inline-flex items-center gap-2 rounded-xl border border-fuchsia-200 bg-fuchsia-50 px-3 py-2 text-xs font-semibold text-fuchsia-900 shadow-sm transition hover:bg-fuchsia-100 disabled:pointer-events-none disabled:opacity-40"
+                    className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition disabled:pointer-events-none disabled:opacity-40"
+                    style={{
+                      background: 'var(--accent-soft)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--accent-fg)',
+                      boxShadow: 'var(--shadow-sm)',
+                    }}
                   >
                     <Scissors className="size-3.5 shrink-0" aria-hidden />
                     Apply trim
@@ -439,7 +540,13 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                   <button
                     type="button"
                     onClick={resetTrim}
-                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+                    className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium transition"
+                    style={{
+                      background: 'var(--bg-card)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--text-2)',
+                      boxShadow: 'var(--shadow-sm)',
+                    }}
                   >
                     <RotateCcw className="size-3.5 shrink-0" aria-hidden />
                     Reset range
@@ -447,20 +554,25 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 </div>
 
                 <div className="mt-6 flex flex-wrap gap-2">
-                  <button
-                    type="button"
+                  <Button
+                    variant="primary"
                     onClick={downloadMidi}
                     disabled={clippedSegments.length === 0}
-                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-900 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 disabled:opacity-45"
+                    leading={<Download className="size-4 shrink-0" aria-hidden />}
                   >
-                    <Download className="size-4 shrink-0" aria-hidden />
                     Export MIDI
-                  </button>
+                  </Button>
                   <button
                     type="button"
                     onClick={copyProgression}
                     disabled={!progressionTextExport && !progressionTextFull}
-                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50"
+                    className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition disabled:opacity-50"
+                    style={{
+                      background: 'var(--bg-card)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--text-2)',
+                      boxShadow: 'var(--shadow-sm)',
+                    }}
                   >
                     <Copy className="size-4 shrink-0" aria-hidden />
                     Copy progression
@@ -468,17 +580,23 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 </div>
 
                 {(progressionTextExport || progressionTextFull) ? (
-                  <p className="mono mt-4 rounded-lg bg-slate-50 px-3 py-2 text-xs leading-relaxed text-slate-700">
+                  <p
+                    className="mono mt-4 rounded-lg px-3 py-2 text-xs leading-relaxed"
+                    style={{ background: 'var(--bg-muted)', color: 'var(--text-2)' }}
+                  >
                     {progressionTextExport || progressionTextFull}
                   </p>
                 ) : null}
               </div>
 
-              <div className="rounded-2xl border border-dashed border-slate-200 bg-white/90 px-5 py-4 text-xs leading-relaxed text-slate-600">
+              <div
+                className="rounded-2xl border border-dashed px-5 py-4 text-xs leading-relaxed"
+                style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-3)' }}
+              >
                 <div className="flex items-start gap-2">
-                  <Music className="mt-0.5 size-4 shrink-0 text-fuchsia-600" aria-hidden />
+                  <Music className="mt-0.5 size-4 shrink-0" style={{ color: 'var(--accent)' }} aria-hidden />
                   <div>
-                    <strong className="font-medium text-slate-800">MIDI export</strong> uses the trimmed window only.
+                    <strong className="font-medium" style={{ color: 'var(--text-1)' }}>MIDI export</strong> uses the trimmed window only.
                     Notes are re-zeroed at the selection start. Import into Logic, Ableton, Reaper, etc., then swap instruments
                     or voice-lead.
                   </div>

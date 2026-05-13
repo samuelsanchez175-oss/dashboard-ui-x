@@ -7,9 +7,17 @@
  *
  * A custom-event bridge (`dashboard:file-downloaded`) lets any module trigger
  * an add without importing this file directly, keeping coupling loose.
+ *
+ * **Tool ↔ dock contract:** which tools push or consume dock files is described
+ * by `ToolDef.dock` in `src/lib/toolsRegistry.ts` (`toolsWithDock()`). Lane tabs
+ * are defined in `dock-lanes.ts` (`LANES`) from registry `pinTab` values plus a
+ * virtual `all` lane; `filesDockShell.setPinTab()` syncs the active lane when the
+ * shell route changes (`MainContent`).
  */
 
 import type React from 'react'
+
+import { isDockLaneTabId, LANES } from './dock-lanes'
 
 const DB_NAME = 'dashboard-files-dock-v1'
 const STORE   = 'files'
@@ -40,6 +48,8 @@ export type StoredFile = {
   serial:    number
   /** Optional context (source page, subtitle text). */
   source?:   string
+  /** Optional dock lane id (`downloads`, `analysis`, …) — see `LANES` / `dock.pinTab`. */
+  lane?:     string
 }
 
 const SERIAL_KEY = 'dashboard-files-dock-serial-v1'
@@ -65,6 +75,11 @@ export type FileEventDetail = {
   name:    string
   /** Optional descriptive source — e.g. "YouTube grab", "Key finder". */
   source?: string
+  /**
+   * Optional lane id aligned with `dock.pinTab` / `LANES`.
+   * When omitted, lane matching uses `source` heuristics until callers pass `lane`.
+   */
+  lane?:   string
 }
 
 /* ── IDB plumbing ────────────────────────────────────────────────────────── */
@@ -200,6 +215,7 @@ export async function addDownloadedFile(opts: FileEventDetail): Promise<StoredFi
     addedAt: Date.now(),
     serial:  nextSerial(),
     source:  opts.source,
+    ...(opts.lane ? { lane: opts.lane } : {}),
   }
   await txPut(row)
 
@@ -292,4 +308,86 @@ if (typeof window !== 'undefined') {
 export function dispatchFileDownload(detail: FileEventDetail): void {
   if (typeof window === 'undefined') return
   window.dispatchEvent(new CustomEvent<FileEventDetail>(FILE_EVENT, { detail }))
+}
+
+/* ── Dock shell (visibility + future tab intent) ───────────────────────── */
+
+type DockShellListener = () => void
+const dockShellListeners = new Set<DockShellListener>()
+
+/** When true, `FilesDock` shows its chrome even with zero files (tool `openOnLaunch`). */
+let dockForcedOpen = false
+/** Canonical lane/tab id for a future tabbed dock; stored per active tool route. */
+let dockPinTab: string | undefined
+
+/** Active lane tab in the dock UI (`all` or a registry `pinTab` id). */
+let activeLane = 'all'
+
+function emitDockShell(): void {
+  for (const cb of dockShellListeners) cb()
+}
+
+export function getActiveLane(): string {
+  return activeLane
+}
+
+/** User-selected lane from the dock tab strip. */
+export function setDockActiveLane(id: string): void {
+  if (!LANES.some(l => l.id === id)) return
+  if (activeLane === id) return
+  activeLane = id
+  emitDockShell()
+}
+
+export function subscribeDockShell(cb: DockShellListener): () => void {
+  dockShellListeners.add(cb)
+  cb()
+  return () => { dockShellListeners.delete(cb) }
+}
+
+export function getDockForcedOpen(): boolean {
+  return dockForcedOpen
+}
+
+export function getDockPinTab(): string | undefined {
+  return dockPinTab
+}
+
+/** Show the dock chrome (empty drop zone) until `closeFilesDock` or a route change clears it. */
+export function openFilesDock(): void {
+  if (dockForcedOpen) return
+  dockForcedOpen = true
+  if (dockPinTab && isDockLaneTabId(dockPinTab) && activeLane !== dockPinTab) {
+    activeLane = dockPinTab
+  }
+  emitDockShell()
+}
+
+export function closeFilesDock(): void {
+  if (!dockForcedOpen) return
+  dockForcedOpen = false
+  emitDockShell()
+}
+
+export function setDockPinTab(tab: string | undefined): void {
+  const pinChanged = dockPinTab !== tab
+  if (!pinChanged && !(tab && isDockLaneTabId(tab) && activeLane !== tab)) return
+  if (pinChanged) dockPinTab = tab
+  if (tab && isDockLaneTabId(tab) && activeLane !== tab) {
+    activeLane = tab
+  }
+  emitDockShell()
+}
+
+/**
+ * Imperative dock UI control for route/tool consumers (`MainContent`, etc.).
+ */
+export const filesDockShell = {
+  open:  openFilesDock,
+  close: closeFilesDock,
+  setPinTab: setDockPinTab,
+  getPinTab:  getDockPinTab,
+  getForcedOpen: getDockForcedOpen,
+  getActiveLane,
+  setActiveLane: setDockActiveLane,
 }

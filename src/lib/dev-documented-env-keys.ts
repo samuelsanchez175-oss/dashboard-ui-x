@@ -1,7 +1,12 @@
 /**
  * Shared manifest for Settings → Documented keys (built-ins + user-added rows).
  * Scratch values use localStorage prefix — never ship values to diagnostics.
+ *
+ * Built-in rows are derived from `dev-settings-env-model.ts` (single data model)
+ * plus the informational `VITE_*` placeholder row.
  */
+
+import { DEV_SETTINGS_ENV_MODEL } from './dev-settings-env-model'
 
 export type DocRowScope = 'server' | 'client'
 
@@ -22,6 +27,11 @@ export type CustomDocRow = {
   scope: DocRowScope
   description: string
   inputKind: 'secret' | 'text'
+  /** Rows created as a Client ID + Client Secret pair share this id */
+  oauthPairId?: string
+  oauthPairPart?: 'client_id' | 'client_secret'
+  /** Shown above the paired rows in Settings / Diagnostics */
+  oauthPairLabel?: string
 }
 
 export type MergedDocRow = BuiltInDocRow | CustomDocRow
@@ -32,79 +42,42 @@ export const DEV_SETTINGS_CUSTOM_ROWS_STORAGE_KEY = 'dev-settings-custom-doc-row
 
 export const MAX_CUSTOM_DOC_ROWS = 48
 
-/** Known keys — extend here when the app gains new first-party env vars. */
+/** Known keys — built-ins come from `DEV_SETTINGS_ENV_MODEL` + `VITE_*` info row. */
 export const BUILT_IN_DOCUMENTED_ENV_ROWS: readonly BuiltInDocRow[] = [
+  ...DEV_SETTINGS_ENV_MODEL.map(
+    (r): BuiltInDocRow => ({
+      builtIn: true,
+      envKey: r.storageKey,
+      scope: r.scope,
+      description: r.oneLinePurpose,
+      inputKind: r.inputKind,
+    }),
+  ),
+  // ── AI plumbing (Item 5 / Item 9): opt-in gateway + optional Anthropic key ──
+  // VITE_AI_GATEWAY_URL is Vite-inlined at build time; surfacing it here lets the
+  // Settings UI advertise the key, but the actual value must live in `.env.local`
+  // (a restart is required for Vite to pick it up). When unset, `fetchAi()` falls
+  // back to the existing BFF routes (no behavior change).
   {
     builtIn: true,
-    envKey: 'YOUTUBE_API_KEY',
-    scope: 'server',
-    description: 'YouTube Data API v3 — used by `/api/youtube/search` (see also GOOGLE_API_KEY fallback).',
-    inputKind: 'secret',
-  },
-  {
-    builtIn: true,
-    envKey: 'GOOGLE_API_KEY',
-    scope: 'server',
-    description: 'Generic Google key — `GET /api/google/health`; BFF falls back here when YOUTUBE_API_KEY is unset.',
-    inputKind: 'secret',
-  },
-  {
-    builtIn: true,
-    envKey: 'GEMINI_API_KEY',
-    scope: 'server',
-    description: 'Google AI (Gemini) — `GET /api/gemini/health`, `POST /api/gemini/generate`, `POST /api/gemini/ping`.',
-    inputKind: 'secret',
-  },
-  {
-    builtIn: true,
-    envKey: 'RSS_FEED_URLS',
-    scope: 'server',
-    description: 'Comma-separated feed URLs for `GET /api/rss` (optional `?url=` must match an entry).',
+    envKey: 'VITE_AI_GATEWAY_URL',
+    scope: 'client',
+    description: 'Optional Vercel AI Gateway base URL. When set, fetchAi() routes provider calls to ${url}/<provider>; otherwise the existing BFF routes are used.',
     inputKind: 'text',
   },
   {
     builtIn: true,
-    envKey: 'AGENT_FARM_YOUTUBE_CHANNEL_ID',
+    envKey: 'ANTHROPIC_API_KEY',
     scope: 'server',
-    description: 'Channel id (UC…) when calling `GET /api/youtube/channel` without `?handle=`.',
-    inputKind: 'text',
-  },
-  {
-    builtIn: true,
-    envKey: 'OPENAI_API_KEY',
-    scope: 'server',
-    description: 'OpenAI or compatible key for `GET /api/openai/ping`.',
+    description: 'Optional Anthropic API key. Forwarded as x-user-key-anthropic-api-key by fetchAi() so a future BFF / gateway can pick it up. Not consumed by any built-in route yet.',
     inputKind: 'secret',
-  },
-  {
-    builtIn: true,
-    envKey: 'OPENAI_BASE_URL',
-    scope: 'server',
-    description: 'Optional OpenAI-compatible API base (defaults to api.openai.com/v1).',
-    inputKind: 'text',
   },
   {
     builtIn: true,
     envKey: 'VITE_*',
     scope: 'client',
-    description: 'Only variables prefixed with VITE_ are visible to the browser via import.meta.env.',
+    description: 'Only names prefixed with VITE_ are exposed to the browser via import.meta.env (see Client section above).',
     inputKind: 'none',
-  },
-  {
-    builtIn: true,
-    envKey: 'VITE_STEM_SERVICE_URL',
-    scope: 'client',
-    description:
-      'Optional multipart stem service URL for Tools → Stem splitter stub (POST field `file`; JSON with stem download URLs — see `ToolsStemSplitterPage` comments).',
-    inputKind: 'text',
-  },
-  {
-    builtIn: true,
-    envKey: 'VITE_GOOGLE_MAPS_EMBED_API_KEY',
-    scope: 'client',
-    description:
-      'Google Maps Embed API — Tesla trip route iframe (`src/lib/google-maps-trips.ts`). Restrict key by HTTP referrer.',
-    inputKind: 'secret',
   },
 ] as const
 
@@ -158,6 +131,8 @@ export function loadCustomDocRows(): CustomDocRow[] {
         typeof o.description === 'string' &&
         (o.inputKind === 'secret' || o.inputKind === 'text')
       ) {
+        const pairPart = o.oauthPairPart
+        if (pairPart != null && pairPart !== 'client_id' && pairPart !== 'client_secret') continue
         out.push({
           builtIn: false,
           id: o.id,
@@ -165,6 +140,9 @@ export function loadCustomDocRows(): CustomDocRow[] {
           scope: o.scope,
           description: o.description.slice(0, 500),
           inputKind: o.inputKind,
+          oauthPairId: typeof o.oauthPairId === 'string' ? o.oauthPairId : undefined,
+          oauthPairPart: pairPart === 'client_id' || pairPart === 'client_secret' ? pairPart : undefined,
+          oauthPairLabel: typeof o.oauthPairLabel === 'string' ? o.oauthPairLabel.slice(0, 120) : undefined,
         })
       }
     }
@@ -178,6 +156,9 @@ export function saveCustomDocRows(rows: CustomDocRow[]): void {
   try {
     const next = rows.slice(-MAX_CUSTOM_DOC_ROWS)
     localStorage.setItem(DEV_SETTINGS_CUSTOM_ROWS_STORAGE_KEY, JSON.stringify(next))
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('dev-custom-doc-rows-changed'))
+    }
   } catch {
     /* quota */
   }
@@ -185,6 +166,50 @@ export function saveCustomDocRows(rows: CustomDocRow[]): void {
 
 export function mergeDocumentedEnvRows(custom: CustomDocRow[]): MergedDocRow[] {
   return [...BUILT_IN_DOCUMENTED_ENV_ROWS, ...custom]
+}
+
+export type DisplayDocGroup =
+  | { kind: 'single'; row: MergedDocRow }
+  | { kind: 'oauth'; pairId: string; label: string; clientId: CustomDocRow; clientSecret: CustomDocRow }
+
+/** Groups OAuth client_id + client_secret pairs for table display (built-ins stay single rows). */
+export function buildDisplayDocGroups(merged: MergedDocRow[]): DisplayDocGroup[] {
+  const customs = merged.filter((r): r is CustomDocRow => !r.builtIn)
+  const byPair = new Map<string, CustomDocRow[]>()
+  for (const c of customs) {
+    if (c.oauthPairId) {
+      const arr = byPair.get(c.oauthPairId) ?? []
+      arr.push(c)
+      byPair.set(c.oauthPairId, arr)
+    }
+  }
+  const emittedPair = new Set<string>()
+  const out: DisplayDocGroup[] = []
+
+  for (const row of merged) {
+    if (row.builtIn) {
+      out.push({ kind: 'single', row })
+      continue
+    }
+    const c = row
+    if (!c.oauthPairId) {
+      out.push({ kind: 'single', row: c })
+      continue
+    }
+    if (emittedPair.has(c.oauthPairId)) continue
+    const g = byPair.get(c.oauthPairId) ?? []
+    const cid = g.find(x => x.oauthPairPart === 'client_id')
+    const csec = g.find(x => x.oauthPairPart === 'client_secret')
+    if (cid && csec && g.length === 2) {
+      emittedPair.add(c.oauthPairId)
+      const label = cid.oauthPairLabel ?? csec.oauthPairLabel ?? 'OAuth client'
+      out.push({ kind: 'oauth', pairId: c.oauthPairId, label, clientId: cid, clientSecret: csec })
+    } else {
+      emittedPair.add(c.oauthPairId)
+      for (const x of g) out.push({ kind: 'single', row: x })
+    }
+  }
+  return out
 }
 
 export function createCustomDocRow(input: {
@@ -203,6 +228,75 @@ export function createCustomDocRow(input: {
     description: input.description.trim().slice(0, 500) || 'User-defined variable.',
     inputKind: input.inputKind,
   }
+}
+
+/**
+ * Normalizes a short API name for env prefixes, e.g. "Tesla Fleet" → "TESLA_FLEET".
+ * Result is used as `{PREFIX}_CLIENT_ID` and `{PREFIX}_CLIENT_SECRET`.
+ */
+export function normalizeApiPrefixForOAuth(raw: string): string | null {
+  const s = raw
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .replace(/_+/g, '_')
+  if (!s || s.length > 56) return null
+  if (!/^[A-Z][A-Z0-9_]*$/.test(s)) return null
+  const idKey = `${s}_CLIENT_ID`
+  const secKey = `${s}_CLIENT_SECRET`
+  if (!normalizeEnvKeyName(idKey) || !normalizeEnvKeyName(secKey)) return null
+  if (RESERVED_KEYS.has(idKey) || RESERVED_KEYS.has(secKey)) return null
+  return s
+}
+
+/** Two documented rows: `{prefix}_CLIENT_ID` (text) and `{prefix}_CLIENT_SECRET` (secret). */
+export function createOAuthClientPairRows(input: {
+  prefix: string
+  scope: DocRowScope
+  /** Shown in UI grouping; falls back to prefix */
+  pairLabel: string
+  /** Optional longer notes; row descriptions reference exact env key names */
+  notes?: string
+  /** Built-in + existing custom env key names */
+  takenKeys: Set<string>
+}): CustomDocRow[] | null {
+  const prefix = normalizeApiPrefixForOAuth(input.prefix)
+  if (!prefix) return null
+  const idKey = `${prefix}_CLIENT_ID`
+  const secKey = `${prefix}_CLIENT_SECRET`
+  if (RESERVED_KEYS.has(idKey) || RESERVED_KEYS.has(secKey)) return null
+  if (input.takenKeys.has(idKey) || input.takenKeys.has(secKey)) return null
+  const pairId = newCustomId()
+  const label = input.pairLabel.trim().slice(0, 120) || prefix
+  const note = input.notes?.trim().slice(0, 400)
+  const baseDesc = note ? `${note} ` : ''
+  return [
+    {
+      builtIn: false,
+      id: newCustomId(),
+      envKey: idKey,
+      scope: input.scope,
+      description:
+        `${baseDesc}OAuth client identifier — the variable name must be exactly \`${idKey}\` for headers and server code to match.`.trim(),
+      inputKind: 'text',
+      oauthPairId: pairId,
+      oauthPairPart: 'client_id',
+      oauthPairLabel: label,
+    },
+    {
+      builtIn: false,
+      id: newCustomId(),
+      envKey: secKey,
+      scope: input.scope,
+      description:
+        `${baseDesc}OAuth client secret — the variable name must be exactly \`${secKey}\`; never commit real values to git.`.trim(),
+      inputKind: 'secret',
+      oauthPairId: pairId,
+      oauthPairPart: 'client_secret',
+      oauthPairLabel: label,
+    },
+  ]
 }
 
 /** Keys that already exist (built-in or custom). */

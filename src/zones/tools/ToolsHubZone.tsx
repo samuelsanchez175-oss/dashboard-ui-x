@@ -2,12 +2,17 @@ import { ChevronRight, Search, Wrench, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
 import StudioToolsHeader from './StudioToolsHeader'
+import HeroBand from '../../components/HeroBand'
+import ZoneHeader from '../../components/ZoneHeader'
 import { loadSidebarNavLayout, SIDEBAR_NAV_LAYOUT_EVENT } from '../../components/sidebar/sidebarNavLayout'
 import { useSidebarNavModel } from '../../components/sidebar/useSidebarNavModel'
 import type { NavItem, NavSection } from '../../components/sidebar/navigation'
 import {
   TONE_DARK,
 } from './toolsHubData'
+
+const TOOLS_HUB_HERO_GRADIENT =
+  'radial-gradient(115% 90% at 0% 0%, color-mix(in oklab, var(--accent) 24%, transparent) 0%, color-mix(in oklab, var(--accent) 12%, transparent) 30%, transparent 66%), radial-gradient(90% 70% at 100% 100%, color-mix(in oklab, #38bdf8 28%, transparent) 0%, color-mix(in oklab, #7dd3fc 14%, transparent) 38%, transparent 72%), radial-gradient(65% 42% at 42% 0%, color-mix(in oklab, white 8%, transparent) 0%, transparent 58%), linear-gradient(135deg, color-mix(in oklab, var(--accent) 11%, var(--bg-canvas)) 0%, color-mix(in oklab, #38bdf8 8%, var(--bg-canvas)) 100%)'
 
 interface ToolsHubZoneProps {
   onNavigate: (routeId: string) => void
@@ -66,7 +71,7 @@ function ToolRow({
       }}
       onMouseEnter={e => {
         e.currentTarget.style.borderColor = 'var(--border-strong)'
-        e.currentTarget.style.background = 'var(--bg-hover)'
+        e.currentTarget.style.background = 'linear-gradient(to right, var(--bg-hover), color-mix(in oklab, var(--accent) 8%, var(--bg-hover)))'
       }}
       onMouseLeave={e => {
         e.currentTarget.style.borderColor = 'var(--border)'
@@ -112,7 +117,11 @@ function NavSectionCard({
   return (
     <section
       className="rounded-2xl p-4"
-      style={{ background: 'var(--bg-muted)', border: '1px solid var(--border)' }}
+      style={{
+        background: 'var(--bg-muted)',
+        border:     '1px solid var(--border)',
+        borderTop:  '1px solid color-mix(in oklab, var(--accent) 24%, var(--border))',
+      }}
     >
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
@@ -148,6 +157,7 @@ function NavSectionCard({
 export default function ToolsHubZone({ onNavigate }: ToolsHubZoneProps) {
   const [layout, setLayout] = useState(() => loadSidebarNavLayout())
   const [query, setQuery]   = useState('')
+  const [isSearchFocused, setIsSearchFocused] = useState(false)
   const { allToolsSections, allToolsItemCount } = useSidebarNavModel(layout)
 
   useEffect(() => {
@@ -165,7 +175,6 @@ export default function ToolsHubZone({ onNavigate }: ToolsHubZoneProps) {
     [allToolsSections, query],
   )
   const filteredCount = useMemo(() => countItems(sections), [sections])
-  const palette = TONE_DARK.slate
 
   return (
     <div
@@ -175,47 +184,53 @@ export default function ToolsHubZone({ onNavigate }: ToolsHubZoneProps) {
       <StudioToolsHeader crumbs={[{ label: 'Workspace' }, { label: 'Tools', emphasis: true }]} />
 
       <div className="flex-1 overflow-auto pb-20">
-        <div className="mx-auto max-w-[1280px] px-8 pt-8">
-          <div className="mb-7 flex flex-wrap items-end justify-between gap-5">
-            <div className="max-w-xl">
-              <div className="mono mb-2 flex items-center gap-2 text-[11px] uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>
-                <Wrench className="size-3" style={{ color: 'var(--text-4)' }} strokeWidth={2} aria-hidden />
-                Sidebar mirror
-              </div>
-              <h1 className="mb-2 text-balance text-[32px] font-semibold leading-tight tracking-tight" style={{ color: 'var(--text-1)' }}>
-                All tools, one alternate entry point.
-              </h1>
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-3)' }}>
-                Everything visible in the left rail is grouped here with the same route IDs, including starred Web Designer pages, custom zones, and pinned actions.
-              </p>
-            </div>
-            <div
-              className="rounded-2xl px-5 py-4"
-              style={{
-                background: `linear-gradient(135deg, ${palette.bg}, var(--bg-card))`,
-                border:     '1px solid var(--border)',
-                boxShadow:  'var(--shadow-sm)',
-              }}
-            >
-              <div className="mono text-[10px] uppercase tracking-wide" style={{ color: 'var(--text-4)' }}>
-                Current index
-              </div>
-              <div className="mt-1 flex items-baseline gap-2">
-                <span className="mono text-3xl font-semibold tracking-tight" style={{ color: 'var(--text-1)' }}>
-                  {allToolsItemCount}
-                </span>
-                <span className="text-xs" style={{ color: 'var(--text-3)' }}>reachable destinations</span>
-              </div>
-            </div>
+        <HeroBand gradient={TOOLS_HUB_HERO_GRADIENT}>
+          <div className="mx-auto max-w-[1280px] px-[var(--pad-card)] py-8">
+            <ZoneHeader
+              eyebrow="SIDEBAR MIRROR"
+              title="All tools, one alternate entry point."
+              icon={Wrench}
+              scale="hero"
+              description="Everything visible in the left rail is grouped here with the same route IDs, including starred Web Designer pages, custom zones, and pinned actions."
+              actions={
+                <div
+                  className="relative overflow-hidden rounded-2xl px-5 py-4"
+                  style={{
+                    background: 'var(--bg-card)',
+                    border:     '1px solid var(--border-soft)',
+                    boxShadow:  'var(--shadow-sm)',
+                  }}
+                >
+                  <span
+                    aria-hidden
+                    className="absolute bottom-3 left-0 top-3 w-px rounded-full"
+                    style={{ background: 'var(--accent)' }}
+                  />
+                  <div className="mono text-[10px] uppercase tracking-wide" style={{ color: 'var(--text-4)' }}>
+                    Current index
+                  </div>
+                  <div className="mt-1 flex items-baseline gap-2">
+                    <span className="mono text-3xl font-semibold tracking-tight" style={{ color: 'var(--text-1)' }}>
+                      {allToolsItemCount}
+                    </span>
+                    <span className="text-xs" style={{ color: 'var(--text-3)' }}>reachable destinations</span>
+                  </div>
+                </div>
+              }
+            />
           </div>
+        </HeroBand>
+        <div className="mx-auto max-w-[1280px] px-[var(--pad-card)] pt-[var(--pad-card)]">
 
           <div className="mb-5 flex flex-wrap items-center gap-3">
             <div
-              className="flex min-w-[220px] max-w-[380px] flex-1 items-center gap-2 rounded-[10px] px-3 py-2"
+              className="flex min-w-[220px] max-w-[380px] flex-1 items-center gap-2 rounded-[10px] px-3 py-2 transition-shadow"
               style={{
                 background: 'var(--bg-card)',
                 border:     '1px solid var(--border)',
-                boxShadow:  'var(--shadow-sm)',
+                boxShadow:  isSearchFocused
+                  ? 'var(--shadow-sm), 0 0 0 2px color-mix(in oklab, var(--accent) 30%, transparent)'
+                  : 'var(--shadow-sm)',
               }}
             >
               <Search className="size-[15px] shrink-0" style={{ color: 'var(--text-4)' }} strokeWidth={2} aria-hidden />
@@ -226,6 +241,8 @@ export default function ToolsHubZone({ onNavigate }: ToolsHubZoneProps) {
                 placeholder="Search tools, zones, sections..."
                 className="min-w-0 flex-1 bg-transparent text-[13px] outline-none"
                 style={{ color: 'var(--text-1)' }}
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setIsSearchFocused(false)}
               />
               {query && (
                 <button
@@ -258,7 +275,7 @@ export default function ToolsHubZone({ onNavigate }: ToolsHubZoneProps) {
               </div>
             </div>
           ) : (
-            <div className="grid gap-4">
+            <div className="grid gap-[var(--grid-gap)]">
               {sections.map((section, sectionIndex) => (
                 <NavSectionCard
                   key={section.id}

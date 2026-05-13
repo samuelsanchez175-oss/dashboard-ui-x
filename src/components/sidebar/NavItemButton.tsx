@@ -1,3 +1,7 @@
+import { resolveRouteTitle } from '../../lib/routeTitles'
+import { useUpdatesStore } from '../../lib/updatesStore'
+import SidebarUpdateBadge from './SidebarUpdateBadge'
+import UpdateDot from '../ui/UpdateDot'
 import type { NavItem } from './navigation'
 
 interface NavItemButtonProps {
@@ -22,6 +26,7 @@ export default function NavItemButton({
   onDragEnd,
 }: NavItemButtonProps) {
   const Icon = item.icon
+  const displayLabel = resolveRouteTitle(item.id) || item.label
 
   return (
     <button
@@ -36,6 +41,7 @@ export default function NavItemButton({
       onDragEnd={() => onDragEnd?.()}
       onClick={() => {
         if (layoutEditMode) return
+        useUpdatesStore.getState().clear(item.id)
         onSelect(item.id)
       }}
       aria-current={isActive ? 'page' : undefined}
@@ -75,24 +81,29 @@ export default function NavItemButton({
         }}
       />
 
-      <span className="flex-1 min-w-0 leading-none truncate text-left">{item.label}</span>
+      <span className="flex-1 min-w-0 leading-none truncate text-left">{displayLabel}</span>
 
-      {item.badge !== undefined && (
-        <span
-          className={
-            item.badgeClass
-              ? `ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${item.badgeClass}`
-              : 'ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full'
-          }
-          style={
-            item.badgeClass
-              ? { fontFamily: "'DM Mono', monospace" }
-              : { fontFamily: "'DM Mono', monospace", background: 'var(--good-soft)', color: 'var(--good)' }
-          }
-        >
-          {item.badge}
-        </span>
-      )}
+      <span className="ml-auto flex items-center justify-end gap-1.5 shrink-0">
+        {item.badge !== undefined && (
+          <span
+            title={item.badgeTitle}
+            className={
+              item.badgeClass
+                ? `pointer-events-none text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${item.badgeClass}`
+                : 'pointer-events-none text-[10px] font-semibold px-1.5 py-0.5 rounded-full'
+            }
+            style={
+              item.badgeClass
+                ? { fontFamily: "'DM Mono', monospace" }
+                : { fontFamily: "'DM Mono', monospace", background: 'var(--good-soft)', color: 'var(--good)' }
+            }
+          >
+            {item.badge}
+          </span>
+        )}
+        <SidebarUpdateBadge zoneId={item.id} />
+        <UpdateDot zoneId={item.id} />
+      </span>
     </button>
   )
 }

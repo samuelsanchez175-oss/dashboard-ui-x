@@ -68,3 +68,7 @@ npm run preview
 ```
 
 **Note:** `vite preview` runs the same middleware as dev for `/api/*`, but production static hosting would need an equivalent server for RSS and local file routes.
+
+Release QA: see [RELEASE.md](./RELEASE.md).
+
+See [design fidelity](docs/design-fidelity.md) for zone family rules.

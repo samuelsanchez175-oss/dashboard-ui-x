@@ -10,14 +10,14 @@ export default function SidebarBrand() {
             className="text-[11px] font-semibold tracking-tight"
             style={{ color: '#fff', fontFamily: "'DM Mono', monospace" }}
           >
-            G
+            S
           </span>
         </div>
         <span
           className="text-[14px] font-semibold tracking-tight"
           style={{ color: 'var(--text-1)' }}
         >
-          Game Studio
+          Samuel x Dashboard
         </span>
       </div>
     </div>

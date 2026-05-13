@@ -1,6 +1,8 @@
-import { ArrowLeft, ClipboardList, Download, Pause, Play, RotateCcw } from 'lucide-react'
+import { ArrowLeft, Download, Pause, Play, RotateCcw, Timer } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import Button from '../../components/ui/Button'
+import ZoneHeader from '../../components/ZoneHeader'
 import { triggerDownload } from '../../lib/pcm-wav'
 import StudioToolsHeader from './StudioToolsHeader'
 
@@ -97,8 +99,12 @@ export default function ToolsSessionTimerPage({ onNavigate }: ToolsSessionTimerP
   }, [cues, elapsedMs])
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-slate-50">
+    <div
+      className="flex min-h-0 flex-1 flex-col overflow-hidden"
+      style={{ background: 'var(--bg-canvas)', color: 'var(--text-1)' }}
+    >
       <StudioToolsHeader
+        toolId="tools-session-timer"
         crumbs={[{ label: 'Workspace' }, { label: 'Tools' }, { label: 'Session timer', emphasis: true }]}
         leftExtra={
           <button
@@ -113,21 +119,24 @@ export default function ToolsSessionTimerPage({ onNavigate }: ToolsSessionTimerP
       />
 
       <div className="flex-1 overflow-auto px-8 pb-16 pt-8">
-        <div className="mx-auto max-w-lg">
-          <div className="mono mb-2 text-[11px] uppercase tracking-wide text-slate-500">Production</div>
-          <h1 className="mb-2 flex items-center gap-2 text-2xl font-semibold tracking-tight text-slate-900">
-            <ClipboardList className="size-7 text-sky-500" aria-hidden />
-            Session timer / cue sheet
-          </h1>
-          <p className="mb-8 text-sm leading-relaxed text-slate-500">
-            Running clock with markers you can export as Markdown or plain text for notes or rehearsals.
-          </p>
+        <div className="mx-auto w-full max-w-3xl">
+          <ZoneHeader
+            eyebrow="PRODUCTION"
+            title="Session timer / cue sheet"
+            icon={Timer}
+            description="Running clock with markers you can export as Markdown or plain text for notes or rehearsals."
+            className="mb-8"
+          />
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+          <div
+            className="rounded-2xl p-8 text-center"
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}
+          >
             <div className="mono text-5xl font-semibold tabular-nums tracking-tight text-slate-900">{msToClock(elapsedMs)}</div>
             <div className="mt-6 flex flex-wrap justify-center gap-2">
-              <button
-                type="button"
+              <Button
+                variant="primary"
+                size="lg"
                 onClick={() => {
                   if (running) pause()
                   else {
@@ -135,14 +144,10 @@ export default function ToolsSessionTimerPage({ onNavigate }: ToolsSessionTimerP
                     setRunning(true)
                   }
                 }}
-                className={[
-                  'inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold shadow-sm transition',
-                  running ? 'bg-amber-500 text-white hover:bg-amber-600' : 'bg-sky-600 text-white hover:bg-sky-700',
-                ].join(' ')}
+                leading={running ? <Pause className="size-4" /> : <Play className="size-4" />}
               >
-                {running ? <Pause className="size-4" /> : <Play className="size-4" />}
                 {running ? 'Pause' : 'Start'}
-              </button>
+              </Button>
               <button
                 type="button"
                 onClick={reset}

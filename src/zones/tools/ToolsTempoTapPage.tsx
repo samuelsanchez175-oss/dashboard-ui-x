@@ -1,6 +1,8 @@
 import { ArrowLeft, Activity, Minus, Plus, RotateCcw, Volume2 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import Button from '../../components/ui/Button'
+import ZoneHeader from '../../components/ZoneHeader'
 import StudioToolsHeader from './StudioToolsHeader'
 
 interface ToolsTempoTapPageProps {
@@ -149,8 +151,12 @@ export default function ToolsTempoTapPage({ onNavigate }: ToolsTempoTapPageProps
   }, [registerTap])
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-slate-50">
+    <div
+      className="flex min-h-0 flex-1 flex-col overflow-hidden"
+      style={{ background: 'var(--bg-canvas)', color: 'var(--text-1)' }}
+    >
       <StudioToolsHeader
+        toolId="tools-tempo-tap"
         crumbs={[{ label: 'Workspace' }, { label: 'Tools' }, { label: 'Tempo Tap', emphasis: true }]}
         leftExtra={
           <button
@@ -165,15 +171,19 @@ export default function ToolsTempoTapPage({ onNavigate }: ToolsTempoTapPageProps
       />
 
       <div className="flex-1 overflow-auto px-8 pb-16 pt-8">
-        <div className="mx-auto max-w-lg">
-          <div className="mono mb-2 text-[11px] uppercase tracking-wide text-slate-500">Utility</div>
-          <h1 className="mb-2 text-2xl font-semibold tracking-tight text-slate-900">Tempo Tap</h1>
-          <p className="mb-8 text-sm leading-relaxed text-slate-500">
-            Tap the pulse or press Space — BPM settles from your last few beats. Start the metronome for a steady 4/4 click
-            with an accented downbeat.
-          </p>
+        <div className="mx-auto w-full max-w-3xl">
+          <ZoneHeader
+            eyebrow="UTILITY"
+            title="Tempo Tap"
+            icon={Activity}
+            description="Tap the pulse or press Space — BPM settles from your last few beats. Start the metronome for a steady 4/4 click with an accented downbeat."
+            className="mb-8"
+          />
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+          <div
+            className="rounded-2xl p-8"
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}
+          >
             <div className="mb-6 text-center">
               <div className="mono text-[11px] uppercase tracking-wide text-slate-400">BPM</div>
               <div className="mt-1 text-5xl font-semibold tabular-nums tracking-tight text-slate-900">{bpm}</div>
@@ -209,8 +219,9 @@ export default function ToolsTempoTapPage({ onNavigate }: ToolsTempoTapPageProps
                 Metronome · 4/4
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
+                <Button
+                  variant={metronomeOn ? 'destructive' : 'primary'}
+                  size="lg"
                   onClick={() => {
                     if (metronomeOn) stopMetronome()
                     else {
@@ -218,15 +229,9 @@ export default function ToolsTempoTapPage({ onNavigate }: ToolsTempoTapPageProps
                       setMetronomeOn(true)
                     }
                   }}
-                  className={[
-                    'rounded-xl px-5 py-3 text-sm font-semibold shadow-sm transition',
-                    metronomeOn
-                      ? 'bg-rose-600 text-white hover:bg-rose-700'
-                      : 'bg-emerald-600 text-white hover:bg-emerald-700',
-                  ].join(' ')}
                 >
                   {metronomeOn ? 'Stop' : 'Start'}
-                </button>
+                </Button>
                 <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1">
                   <button
                     type="button"

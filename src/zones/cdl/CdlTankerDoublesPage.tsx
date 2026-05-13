@@ -32,6 +32,10 @@ export default function CdlTankerDoublesPage() {
       endorseLetter="N+T"
       questions={TANKER_DOUBLES_QUESTIONS}
       theme={TANKER_DOUBLES_THEME}
+      // 40 = Tanker (20) + Doubles/Triples (20); pass at 80% = 32 correct.
+      // NJ MVC issues N and T separately — this is combined practice only.
+      officialCount={40}
+      combinedNotice="Combined practice — not an official NJ MVC exam. The state issues Tanker (N) and Doubles/Triples (T) as two separate tests."
     />
   )
 }

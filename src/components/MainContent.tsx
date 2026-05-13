@@ -1,26 +1,9 @@
-import AgentFarm from './agent-farm'
-import { RhymeStudio } from './rhyme-studio'
-import VocalsZone from '../zones/vocals/VocalsZone'
-import ProductionZone from '../zones/production/ProductionZone'
+import { lazy, Suspense, useEffect, type ReactNode } from 'react'
 import MixingZone from '../zones/mixing/MixingZone'
 import MixingAudioGrabPage from '../zones/mixing/MixingAudioGrabPage'
-import PulseDigest from '../zones/pulse/PulseDigest'
-import CdlHubZone from '../zones/cdl/CdlHubZone'
-import CdlHazmatPage from '../zones/cdl/CdlHazmatPage'
-import CdlAirBrakesPage from '../zones/cdl/CdlAirBrakesPage'
-import CdlTankerPage from '../zones/cdl/CdlTankerPage'
-import CdlDoublesTriplesPage from '../zones/cdl/CdlDoublesTriplesPage'
-import CdlTankerDoublesPage from '../zones/cdl/CdlTankerDoublesPage'
-import CdlTankerHazmatPage from '../zones/cdl/CdlTankerHazmatPage'
-import CdlPassengerPage from '../zones/cdl/CdlPassengerPage'
-import CdlSchoolBusPage from '../zones/cdl/CdlSchoolBusPage'
-import DevSettings from '../zones/dev/DevSettings'
-import DiagnosticsZone from '../zones/dev/DiagnosticsZone'
-import TeslaMock from '../zones/tesla/TeslaMock'
 import ToolsHubZone from '../zones/tools/ToolsHubZone'
 import ToolsYoutubePage from '../zones/tools/ToolsYoutubePage'
 import ToolsKeyFinderPage from '../zones/tools/ToolsKeyFinderPage'
-import ToolsChordDetectorPage from '../zones/tools/ToolsChordDetectorPage'
 import ToolsTempoTapPage from '../zones/tools/ToolsTempoTapPage'
 import ToolsMetronomeExportPage from '../zones/tools/ToolsMetronomeExportPage'
 import ToolsPhoneticsInspectorPage from '../zones/tools/ToolsPhoneticsInspectorPage'
@@ -30,13 +13,35 @@ import ToolsSampleSlicerPage from '../zones/tools/ToolsSampleSlicerPage'
 import ToolsStemSplitterPage from '../zones/tools/ToolsStemSplitterPage'
 import HarmonyStackZone from '../zones/harmony/HarmonyStackZone'
 import CpwZone from '../zones/cpw/CpwZone'
-import NewZonePage from '../zones/builder/NewZonePage'
-import CustomZonePage from '../zones/builder/CustomZonePage'
-import WebDesignerZone from '../zones/web-designer/WebDesignerZone'
 import { parseWebDesignerBookmarkNavId } from '../lib/web-designer-bookmarks'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
+import { getToolById } from '../lib/toolsRegistry'
+import { resolveRouteTitle } from '../lib/routeTitles'
+import { filesDockShell } from './files-dock/files-store'
 
 import ConnectionPill from './ConnectionPill'
-import type { ReactNode } from 'react'
+import { LoadingState } from './ui/states'
+
+const VocalsZone = lazy(() => import('../zones/vocals/VocalsZone'))
+const AgentFarm = lazy(() => import('./agent-farm'))
+const RhymeStudio = lazy(() => import('./rhyme-studio/RhymeStudio'))
+const ToolsChordDetectorPage = lazy(() => import('../zones/tools/ToolsChordDetectorPage'))
+const WebDesignerZone = lazy(() => import('../zones/web-designer/WebDesignerZone'))
+const TeslaFleet = lazy(() => import('../zones/tesla/TeslaMock'))
+const PulseDigest = lazy(() => import('../zones/pulse/PulseDigest'))
+const CdlHubZone = lazy(() => import('../zones/cdl/CdlHubZone'))
+const CdlHazmatPage = lazy(() => import('../zones/cdl/CdlHazmatPage'))
+const CdlAirBrakesPage = lazy(() => import('../zones/cdl/CdlAirBrakesPage'))
+const CdlTankerPage = lazy(() => import('../zones/cdl/CdlTankerPage'))
+const CdlDoublesTriplesPage = lazy(() => import('../zones/cdl/CdlDoublesTriplesPage'))
+const CdlTankerDoublesPage = lazy(() => import('../zones/cdl/CdlTankerDoublesPage'))
+const CdlTankerHazmatPage = lazy(() => import('../zones/cdl/CdlTankerHazmatPage'))
+const CdlPassengerPage = lazy(() => import('../zones/cdl/CdlPassengerPage'))
+const CdlSchoolBusPage = lazy(() => import('../zones/cdl/CdlSchoolBusPage'))
+const DevSettings = lazy(() => import('../zones/dev/DevSettings'))
+const DiagnosticsZone = lazy(() => import('../zones/dev/DiagnosticsZone'))
+const NewZonePage = lazy(() => import('../zones/builder/NewZonePage'))
+const CustomZonePage = lazy(() => import('../zones/builder/CustomZonePage'))
 
 interface MainContentProps {
   activeRouteId: string
@@ -44,8 +49,20 @@ interface MainContentProps {
 }
 
 export default function MainContent({ activeRouteId, onNavigate }: MainContentProps) {
+  const routeId = activeRouteId === 'production-overview' ? 'agent-farm' : activeRouteId
+
+  useEffect(() => {
+    const id = activeRouteId === 'production-overview' ? 'agent-farm' : activeRouteId
+    const dock = getToolById(id)?.dock
+    if (dock?.openOnLaunch) filesDockShell.open()
+    else filesDockShell.close()
+    filesDockShell.setPinTab(dock?.pinTab)
+  }, [activeRouteId])
+
+  useDocumentTitle(resolveRouteTitle(routeId))
+
   let body: ReactNode
-  switch (activeRouteId) {
+  switch (routeId) {
     case 'tools-hub':
       body = <ToolsHubZone onNavigate={onNavigate} />
       break
@@ -79,9 +96,6 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
     case 'tools-stem-splitter':
       body = <ToolsStemSplitterPage onNavigate={onNavigate} />
       break
-    case 'production-overview':
-      body = <ProductionZone />
-      break
     case 'agent-farm':
       body = <AgentFarm />
       break
@@ -99,7 +113,17 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
       break
     case 'harmony-services':
     case 'harmony-todos':
-      body = <HarmonyStackZone defaultTab={activeRouteId === 'harmony-todos' ? 'projects' : 'services'} />
+    case 'harmony-portfolio':
+      body = (
+        <HarmonyStackZone
+          key={activeRouteId}
+          defaultTab={
+            activeRouteId === 'harmony-todos' ? 'projects'
+              : activeRouteId === 'harmony-portfolio' ? 'portfolio'
+              : 'services'
+          }
+        />
+      )
       break
     case 'cpw-projects':
       body = <CpwZone />
@@ -138,18 +162,18 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
       body = <WebDesignerZone key="web-designer-main" onNavigate={onNavigate} />
       break
     case 'dev-diagnostics':
-      body = <DiagnosticsZone />
+      body = <DiagnosticsZone onNavigate={onNavigate} />
       break
     case 'dev':
-      body = <DevSettings />
+      body = <DevSettings onNavigate={onNavigate} />
       break
     case 'tesla':
-      body = <TeslaMock />
+      body = <TeslaFleet />
       break
     case 'zone-builder':
       body = (
         <NewZonePage
-          onBack={() => onNavigate('production-overview')}
+          onBack={() => onNavigate('agent-farm')}
           onNavigate={onNavigate}
         />
       )
@@ -164,7 +188,7 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
         body = (
           <CustomZonePage
             zoneId={activeRouteId}
-            onBack={() => onNavigate('production-overview')}
+            onBack={() => onNavigate('agent-farm')}
             onNavigate={onNavigate}
           />
         )
@@ -181,8 +205,10 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
 
   return (
     <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
-      <ConnectionPill activeRouteId={activeRouteId} />
-      {body}
+      <ConnectionPill activeRouteId={routeId} onNavigate={onNavigate} />
+      <Suspense fallback={<LoadingState label="Loading…" />}>
+        {body}
+      </Suspense>
     </div>
   )
 }

@@ -31,6 +31,7 @@ export default function CdlTankerPage() {
       endorseLetter="N"
       questions={TANKER_QUESTIONS}
       theme={TANKER_THEME}
+      officialCount={20}
     />
   )
 }

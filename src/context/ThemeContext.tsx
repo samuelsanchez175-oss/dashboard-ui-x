@@ -49,7 +49,8 @@ function applyTheme(theme: Theme, accent: Accent, density: Density) {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme,   setThemeState]   = useState<Theme>(()   => (localStorage.getItem('ui-theme')   as Theme)   ?? 'light')
+  // Default dark reflects the artist-first studio aesthetic when no theme is stored yet.
+  const [theme,   setThemeState]   = useState<Theme>(()   => (localStorage.getItem('ui-theme')   as Theme)   ?? 'dark')
   const [accent,  setAccentState]  = useState<Accent>(()  => (localStorage.getItem('ui-accent')  as Accent)  ?? 'purple')
   const [density, setDensityState] = useState<Density>(() => (localStorage.getItem('ui-density') as Density) ?? 'comfy')
 

@@ -7,6 +7,42 @@ import Transport from './Transport'
 import { CHORD_QUALITIES, ROOTS, SCALES, scalePitchClasses, buildChordFromTriggerMidi } from './chords'
 import { piano, type RecordedNote } from './engine'
 import { exportMidi } from './midi'
+import { fetchWithKeys } from '../../lib/api-keys/fetch-with-keys'
+import { getApiKey } from '../../lib/api-keys/api-keys-store'
+
+const MIDI_NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+
+function midiToName(midi: number): string {
+  const pc = ((midi % 12) + 12) % 12
+  const oct = Math.floor(midi / 12) - 1
+  return `${MIDI_NOTE_NAMES[pc]}${oct}`
+}
+
+type GeminiGenerateResponse =
+  | { ok: true; preview: string | null; model: string }
+  | { ok: false; error: string; message: string }
+
+function parseHintsResponse(raw: string | null): string[] {
+  if (!raw) return []
+  // Strip ``` fences if present.
+  const cleaned = raw.replace(/```(?:json)?\s*([\s\S]*?)```/g, '$1').trim()
+  // Try strict JSON first, then a relaxed brace-extract.
+  const candidates: string[] = [cleaned]
+  const braceMatch = cleaned.match(/\{[\s\S]*\}/)
+  if (braceMatch && braceMatch[0] !== cleaned) candidates.push(braceMatch[0])
+  for (const c of candidates) {
+    try {
+      const parsed = JSON.parse(c) as { hints?: unknown }
+      if (parsed && Array.isArray(parsed.hints)) {
+        const hints = parsed.hints.filter((h): h is string => typeof h === 'string' && h.trim().length > 0)
+        if (hints.length) return hints.slice(0, 3)
+      }
+    } catch {
+      /* try next candidate */
+    }
+  }
+  return []
+}
 
 const KEYBOARD_OCTAVES = 3
 const MIN_START_MIDI = 12  // C0
@@ -38,6 +74,14 @@ export default function PianoStudio() {
 
   const playheadRef = useRef<number | null>(null)
 
+  // ── AI hint state (Item 10) ──────────────────────────────────────────────
+  /** Last few user-played notes (MIDI), most recent last. Capped to 8. */
+  const lastNotesRef = useRef<number[]>([])
+  const [hintLoading, setHintLoading] = useState(false)
+  const [hintError, setHintError] = useState<string | null>(null)
+  const [hintItems, setHintItems] = useState<string[] | null>(null)
+  const [hintOpen, setHintOpen] = useState(false)
+
   // Derived: which pitch classes belong to the active scale
   const scaleRoot = useMemo(
     () => ROOTS.find(r => r.id === scaleRootId) ?? ROOTS[0],
@@ -62,6 +106,11 @@ export default function PianoStudio() {
 
   const press = useCallback(
     (midi: number) => {
+      // Track recent triggers (root keys, not chord stacks) for AI hint context.
+      const recent = lastNotesRef.current
+      recent.push(midi)
+      if (recent.length > 8) recent.splice(0, recent.length - 8)
+
       if (chordVoicingEnabled) {
         if (chordStacksRef.current.has(midi)) return
         const midis = buildChordFromTriggerMidi(midi, chordQuality.intervals, chordInversion)
@@ -209,6 +258,67 @@ export default function PianoStudio() {
 
   useEffect(() => () => piano.stopMetronome(), [])
 
+  /* ── AI hint handler (Item 10) ── */
+  const requestAiHint = useCallback(async () => {
+    if (hintLoading) return
+    setHintOpen(true)
+
+    if (!getApiKey('GEMINI_API_KEY')) {
+      setHintError(
+        'No GEMINI_API_KEY configured. Add it in Settings → API keys to enable AI hints.',
+      )
+      setHintItems(null)
+      return
+    }
+
+    setHintLoading(true)
+    setHintError(null)
+    setHintItems(null)
+
+    const recentNames = lastNotesRef.current.map(midiToName)
+    const recentLabel = recentNames.length ? recentNames.join(', ') : '(none played yet)'
+    const scaleLabel = `${scaleRoot.label} ${scale.label}`
+    const chordLabel = `${chordQuality.label} (inversion ${chordInversion})`
+
+    const system =
+      'You are a concise music-theory assistant for a piano UI. ' +
+      'Always reply with ONLY valid JSON of the shape {"hints": string[]}. ' +
+      'Each hint must be a short, actionable suggestion (under 100 chars).'
+    const prompt =
+      `Current key/scale: ${scaleLabel}\n` +
+      `Active chord voicing: ${chordLabel}\n` +
+      `Last notes played: ${recentLabel}\n\n` +
+      'Suggest 3 short progression options or theory hints for this context. ' +
+      'Return JSON: { "hints": string[] } with exactly 3 entries.'
+
+    try {
+      const res = await fetchWithKeys('/api/gemini/generate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ prompt, system, maxOutputTokens: 256 }),
+      })
+      const payload = (await res.json().catch(() => null)) as GeminiGenerateResponse | null
+      if (!payload) {
+        setHintError('Could not parse response from /api/gemini/generate.')
+        return
+      }
+      if (!payload.ok) {
+        setHintError(payload.message || payload.error || 'Unknown error.')
+        return
+      }
+      const hints = parseHintsResponse(payload.preview)
+      if (!hints.length) {
+        setHintError('Model did not return parseable hints. Try again.')
+        return
+      }
+      setHintItems(hints)
+    } catch (e) {
+      setHintError(e instanceof Error ? e.message : 'Network error.')
+    } finally {
+      setHintLoading(false)
+    }
+  }, [hintLoading, scaleRoot, scale, chordQuality, chordInversion])
+
   /* ── Octave shift: − / + (also Shift+= and numpad − / +) ── */
   useEffect(() => {
     const octaveDown = (e: KeyboardEvent) =>
@@ -241,25 +351,25 @@ export default function PianoStudio() {
         {/* Header */}
         <div className="flex items-end justify-between">
           <div>
-            <h1 className="text-[22px] font-semibold text-gray-900 tracking-tight">
+            <h1 className="text-[22px] font-semibold text-[var(--text-1)] tracking-tight">
               Piano Studio
             </h1>
-            <p className="text-[12px] text-gray-500 mt-0.5">
-              Play with mouse or Logic-style Musical Typing (<span className="font-mono text-gray-700">ASDF</span> row = naturals,
-              <span className="font-mono text-gray-700">QWER</span> row = sharps).
-              Use <span className="font-mono text-gray-700">-</span> / <span className="font-mono text-gray-700">+</span>{' '}
-              (<span className="font-mono text-gray-700">Shift</span>+<span className="font-mono text-gray-700">=</span> on US layouts) or numpad +/- to shift down / up an octave.
-              With <strong className="text-gray-700">Chord shapes on keyboard</strong>, the chord palette follows each key you press as the root.
+            <p className="text-[12px] text-[var(--text-3)] mt-0.5">
+              Play with mouse or Logic-style Musical Typing (<span className="font-mono text-[var(--text-2)]">ASDF</span> row = naturals,
+              <span className="font-mono text-[var(--text-2)]">QWER</span> row = sharps).
+              Use <span className="font-mono text-[var(--text-2)]">-</span> / <span className="font-mono text-[var(--text-2)]">+</span>{' '}
+              (<span className="font-mono text-[var(--text-2)]">Shift</span>+<span className="font-mono text-[var(--text-2)]">=</span> on US layouts) or numpad +/- to shift down / up an octave.
+              With <strong className="text-[var(--text-2)]">Chord shapes on keyboard</strong>, the chord palette follows each key you press as the root.
               Record, then export as a .mid file.
             </p>
           </div>
           <div className="text-right">
-            <div className="text-[10px] font-mono text-gray-400 uppercase tracking-wider">
+            <div className="text-[10px] font-mono text-[var(--text-4)] uppercase tracking-wider">
               {recorded.length
                 ? `${recorded.length} notes captured`
                 : 'No recording yet'}
             </div>
-            <div className="text-[10px] font-mono text-purple-500 mt-0.5">
+            <div className="text-[10px] font-mono text-[var(--accent)] mt-0.5">
               keyboard: {Math.floor(startMidi / 12) - 1} → {Math.floor(startMidi / 12) + KEYBOARD_OCTAVES - 1}
             </div>
           </div>
@@ -282,7 +392,13 @@ export default function PianoStudio() {
         />
 
         {/* Keyboard */}
-        <div className="bg-gradient-to-b from-gray-200 to-gray-100 rounded-xl border border-gray-300 p-4 shadow-inner">
+        <div
+          className="rounded-xl border p-4 shadow-inner"
+          style={{
+            background: 'linear-gradient(to bottom, var(--bg-hover), var(--bg-muted))',
+            borderColor: 'var(--border-strong)',
+          }}
+        >
           <Keyboard
             startMidi={startMidi}
             octaves={KEYBOARD_OCTAVES}
@@ -312,11 +428,60 @@ export default function PianoStudio() {
           />
         </div>
 
+        {/* AI hint affordance (Item 10) — uses Gemini via /api/gemini/generate */}
+        <div
+          className="rounded-xl border p-3"
+          style={{ background: 'var(--bg-muted)', borderColor: 'var(--border-strong)' }}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-[12px] font-semibold text-[var(--text-1)]">Theory hint</div>
+              <div className="text-[10px] text-[var(--text-3)] mt-0.5">
+                Ask Gemini for 3 progression suggestions based on your current scale, chord voicing,
+                and last notes played.
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={requestAiHint}
+              disabled={hintLoading}
+              className="text-[11px] font-mono uppercase tracking-wider px-3 py-1.5 rounded-md border disabled:opacity-50"
+              style={{
+                background: 'var(--bg-canvas)',
+                color: 'var(--text-1)',
+                borderColor: 'var(--border-strong)',
+              }}
+            >
+              {hintLoading ? 'Thinking…' : 'AI hint'}
+            </button>
+          </div>
+
+          {hintOpen && (
+            <div className="mt-3 text-[12px]">
+              {hintError && (
+                <div className="text-[var(--text-2)]" style={{ color: 'var(--danger, #c33)' }}>
+                  {hintError}
+                </div>
+              )}
+              {!hintError && hintLoading && (
+                <div className="text-[var(--text-3)]">Asking Gemini…</div>
+              )}
+              {!hintError && !hintLoading && hintItems && hintItems.length > 0 && (
+                <ul className="space-y-1 list-disc pl-5 text-[var(--text-2)]">
+                  {hintItems.map((h, i) => (
+                    <li key={i}>{h}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* Timeline */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-[13px] font-semibold text-gray-800">Timeline</h3>
-            <span className="text-[10px] font-mono text-gray-400 uppercase tracking-wider">
+            <h3 className="text-[13px] font-semibold text-[var(--text-1)]">Timeline</h3>
+            <span className="text-[10px] font-mono text-[var(--text-4)] uppercase tracking-wider">
               piano roll
             </span>
           </div>

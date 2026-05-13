@@ -1,8 +1,9 @@
-import { ArrowLeft, ExternalLink, Loader2, Trash2, Upload } from 'lucide-react'
-import { useCallback, useId, useMemo, useState, type ChangeEvent, type CSSProperties } from 'react'
+import { ArrowLeft, ExternalLink, Loader2, Radio, Trash2, Upload } from 'lucide-react'
+import { useCallback, useEffect, useId, useMemo, useState, type ChangeEvent, type CSSProperties } from 'react'
 
 import type { MixClipMeta } from '../mixing/mixing-audio-idb'
-import { dispatchFileDownload, receiveDockOrFileDrop } from '../../components/files-dock/files-store'
+import { dispatchFileDownload, getFileById, receiveDockOrFileDrop } from '../../components/files-dock/files-store'
+import ZoneHeader from '../../components/ZoneHeader'
 import {
   appendKeyFinderHistory,
   clearKeyFinderHistory,
@@ -126,6 +127,8 @@ export default function ToolsKeyFinderPage({ onNavigate }: ToolsKeyFinderPagePro
   const [fileName, setFileName] = useState<string | null>(null)
   const [meta,     setMeta]     = useState<MixClipMeta | null>(null)
   const [history,  setHistory]  = useState<KeyFinderHistoryEntry[]>(() => loadKeyFinderHistory())
+  /** Inbound clip relayed from another tool (Audio grabber, Recent clips tray). */
+  const [inboundNotice, setInboundNotice] = useState<string | null>(null)
 
   const historyAscending = useMemo(() => [...history].sort((a, b) => a.analyzedAt - b.analyzedAt), [history])
 
@@ -145,6 +148,32 @@ export default function ToolsKeyFinderPage({ onNavigate }: ToolsKeyFinderPagePro
       dispatchFileDownload({ blob: file, name: file.name, source: 'Key finder' })
     } catch { setError('Could not decode that file. Try WAV or MP3.')
     } finally { setBusy(false) }
+  }, [])
+
+  // Receive a clip handed off from the Mixing Audio Grabber (or any other
+  // sender that writes the agreed `inbound-clip-<routeId>` sessionStorage key).
+  // The contract is one-shot: we clear the key as soon as we've read it so a
+  // refresh / navigation doesn't re-trigger the import.
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      let id: string | null = null
+      try {
+        id = sessionStorage.getItem('inbound-clip-tools-key-finder')
+        if (id) sessionStorage.removeItem('inbound-clip-tools-key-finder')
+      } catch {
+        id = null
+      }
+      if (!id || cancelled) return
+      const stored = await getFileById(id)
+      if (!stored || cancelled) return
+      const f = new File([stored.blob], stored.name, { type: stored.mime || 'audio/mpeg' })
+      setInboundNotice(`Loaded clip “${stored.name}” from grabber`)
+      void runFile(f)
+    })()
+    return () => { cancelled = true }
+    // Intentionally only on mount: clip pickup is one-shot per route entry.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const onInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -170,6 +199,7 @@ export default function ToolsKeyFinderPage({ onNavigate }: ToolsKeyFinderPagePro
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden" style={{ background: 'var(--bg-canvas)' }}>
       <StudioToolsHeader
+        toolId="tools-key-finder"
         crumbs={[{ label: 'Workspace' }, { label: 'Tools' }, { label: 'Key & BPM finder', emphasis: true }]}
         leftExtra={
           <button
@@ -185,12 +215,14 @@ export default function ToolsKeyFinderPage({ onNavigate }: ToolsKeyFinderPagePro
       />
 
       <div className="flex-1 overflow-auto px-8 pb-16 pt-8">
-        <div className="mx-auto max-w-2xl">
-          <div className="mono mb-2 text-[11px] uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>Analysis</div>
-          <h1 className="mb-2 text-2xl font-semibold tracking-tight" style={{ color: 'var(--text-1)' }}>Key & BPM finder</h1>
-          <p className="mb-8 text-sm leading-relaxed" style={{ color: 'var(--text-3)' }}>
-            Offline-first decode using embedded tags when present, plus local tempo + chromagram key estimation.
-          </p>
+        <div className="mx-auto w-full max-w-3xl">
+          <ZoneHeader
+            eyebrow="ANALYSIS"
+            title="Key & BPM finder"
+            icon={Radio}
+            description="Offline-first decode using embedded tags when present, plus local tempo + chromagram key estimation."
+            className="mb-8"
+          />
 
           {/* Drop zone */}
           <label htmlFor={inputId} className="block cursor-pointer">
@@ -219,6 +251,20 @@ export default function ToolsKeyFinderPage({ onNavigate }: ToolsKeyFinderPagePro
               </div>
             </div>
           </label>
+
+          {inboundNotice && (
+            <p
+              className="mt-4 inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium"
+              style={{
+                background: 'var(--accent-soft)',
+                border: '1px solid var(--border)',
+                color: 'var(--accent-fg)',
+              }}
+              role="status"
+            >
+              {inboundNotice}
+            </p>
+          )}
 
           {error && (
             <p className="mt-4 text-sm" role="alert" style={{ color: 'var(--bad)' }}>{error}</p>

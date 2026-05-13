@@ -1,7 +1,9 @@
 import type { NavItem, NavSection } from './navigation'
 
-const STORAGE_KEY = 'game-studio-sidebar-nav-layout-v1'
-export const SIDEBAR_NAV_LAYOUT_EVENT = 'game-studio-sidebar-nav-layout-change'
+const STORAGE_KEY = 'sx-dashboard-sidebar-nav-layout-v1'
+/** Prior branding; read once to migrate saved layout into {@link STORAGE_KEY}. */
+const LEGACY_STORAGE_KEY = 'game-studio-sidebar-nav-layout-v1'
+export const SIDEBAR_NAV_LAYOUT_EVENT = 'sx-dashboard-sidebar-nav-layout-change'
 
 export interface SidebarNavLayoutPersist {
   version:           1
@@ -24,22 +26,62 @@ export const defaultSidebarNavLayout = (): SidebarNavLayoutPersist => ({
   collapsedSectionIds:   [],
 })
 
+/** Removed nav ids → canonical id (sidebar layout persistence). */
+const LEGACY_NAV_ITEM_ALIASES: Record<string, string> = {
+  'production-overview': 'agent-farm',
+}
+
+function migrateLegacyNavItemIds(layout: SidebarNavLayoutPersist): SidebarNavLayoutPersist {
+  const hiddenItemIds = layout.hiddenItemIds.filter(id => id !== 'production-overview')
+  const itemsBySection: Record<string, string[]> = {}
+  for (const [sectionId, ids] of Object.entries(layout.itemsBySection)) {
+    const seen = new Set<string>()
+    const next: string[] = []
+    for (const id of ids) {
+      const mapped = LEGACY_NAV_ITEM_ALIASES[id] ?? id
+      if (!seen.has(mapped)) {
+        seen.add(mapped)
+        next.push(mapped)
+      }
+    }
+    itemsBySection[sectionId] = next
+  }
+  return { ...layout, hiddenItemIds, itemsBySection }
+}
+
+function normalizeParsedLayout(parsed: Partial<SidebarNavLayoutPersist>): SidebarNavLayoutPersist | null {
+  if (parsed.version !== 1) return null
+  const base: SidebarNavLayoutPersist = {
+    version:               1,
+    hiddenSectionIds:      Array.isArray(parsed.hiddenSectionIds) ? parsed.hiddenSectionIds : [],
+    hiddenItemIds:         Array.isArray(parsed.hiddenItemIds) ? parsed.hiddenItemIds : [],
+    sectionOrder:          Array.isArray(parsed.sectionOrder) ? parsed.sectionOrder : null,
+    itemsBySection:        parsed.itemsBySection && typeof parsed.itemsBySection === 'object'
+      ? parsed.itemsBySection
+      : {},
+    collapsedSectionIds:   Array.isArray(parsed.collapsedSectionIds) ? parsed.collapsedSectionIds : [],
+  }
+  return migrateLegacyNavItemIds(base)
+}
+
 export function loadSidebarNavLayout(): SidebarNavLayoutPersist {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const fromNew = localStorage.getItem(STORAGE_KEY)
+    const fromLegacy = fromNew ? null : localStorage.getItem(LEGACY_STORAGE_KEY)
+    const raw = fromNew ?? fromLegacy
     if (!raw) return defaultSidebarNavLayout()
     const parsed = JSON.parse(raw) as Partial<SidebarNavLayoutPersist>
-    if (parsed.version !== 1) return defaultSidebarNavLayout()
-    return {
-      version:               1,
-      hiddenSectionIds:      Array.isArray(parsed.hiddenSectionIds) ? parsed.hiddenSectionIds : [],
-      hiddenItemIds:         Array.isArray(parsed.hiddenItemIds) ? parsed.hiddenItemIds : [],
-      sectionOrder:          Array.isArray(parsed.sectionOrder) ? parsed.sectionOrder : null,
-      itemsBySection:        parsed.itemsBySection && typeof parsed.itemsBySection === 'object'
-        ? parsed.itemsBySection
-        : {},
-      collapsedSectionIds:   Array.isArray(parsed.collapsedSectionIds) ? parsed.collapsedSectionIds : [],
+    const layout = normalizeParsedLayout(parsed)
+    if (!layout) return defaultSidebarNavLayout()
+    if (fromLegacy && !fromNew) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(layout))
+        localStorage.removeItem(LEGACY_STORAGE_KEY)
+      } catch {
+        /* ignore quota */
+      }
     }
+    return layout
   } catch {
     return defaultSidebarNavLayout()
   }

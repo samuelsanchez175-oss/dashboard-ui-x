@@ -20,11 +20,12 @@ export default function CdlAirBrakesPage() {
   return (
     <CdlQuiz
       title="AIR BRAKES"
-      subtitle="66 Questions · E-Z Wheels Driving School"
-      badge="E-Z WHEELS CDL PREP"
+      subtitle="Air Brakes — Core CDL Knowledge"
+      badge="CDL CORE KNOWLEDGE"
       endorseLetter="CDL"
       questions={AIR_BRAKES_QUESTIONS}
       theme={AIR_BRAKES_THEME}
+      officialCount={25}
     />
   )
 }

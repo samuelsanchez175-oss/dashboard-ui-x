@@ -1,6 +1,8 @@
 import { ArrowLeft, Crop, Loader2, Upload } from 'lucide-react'
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 
+import Button from '../../components/ui/Button'
+import ZoneHeader from '../../components/ZoneHeader'
 import { encodeMonoPcm16Wav, triggerDownload } from '../../lib/pcm-wav'
 import StudioToolsHeader from './StudioToolsHeader'
 
@@ -194,8 +196,12 @@ export default function ToolsSampleSlicerPage({ onNavigate }: ToolsSampleSlicerP
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-slate-50">
+    <div
+      className="flex min-h-0 flex-1 flex-col overflow-hidden"
+      style={{ background: 'var(--bg-canvas)', color: 'var(--text-1)' }}
+    >
       <StudioToolsHeader
+        toolId="tools-sample-slicer"
         crumbs={[{ label: 'Workspace' }, { label: 'Tools' }, { label: 'Sample slicer', emphasis: true }]}
         leftExtra={
           <button
@@ -210,15 +216,14 @@ export default function ToolsSampleSlicerPage({ onNavigate }: ToolsSampleSlicerP
       />
 
       <div className="flex-1 overflow-auto px-8 pb-16 pt-8">
-        <div className="mx-auto max-w-3xl">
-          <div className="mono mb-2 text-[11px] uppercase tracking-wide text-slate-500">Production</div>
-          <h1 className="mb-2 flex items-center gap-2 text-2xl font-semibold tracking-tight text-slate-900">
-            <Crop className="size-7 text-amber-500" aria-hidden />
-            Sample / loop slicer
-          </h1>
-          <p className="mb-6 text-sm leading-relaxed text-slate-500">
-            Upload WAV/MP3, drag the handles to bracket a region, export as mono WAV (multichannel averages to mono).
-          </p>
+        <div className="mx-auto w-full max-w-3xl">
+          <ZoneHeader
+            eyebrow="PRODUCTION"
+            title="Sample / loop slicer"
+            icon={Crop}
+            description="Upload WAV/MP3, drag the handles to bracket a region, export as mono WAV (multichannel averages to mono)."
+            className="mb-6"
+          />
 
           <label
             htmlFor={fileId}
@@ -287,13 +292,14 @@ export default function ToolsSampleSlicerPage({ onNavigate }: ToolsSampleSlicerP
                 </label>
               </div>
 
-              <button
-                type="button"
+              <Button
+                variant="primary"
+                size="lg"
                 onClick={sliceAndExport}
-                className="mt-6 rounded-xl bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700"
+                className="mt-6"
               >
                 Export selection as WAV
-              </button>
+              </Button>
             </div>
           ) : (
             !loading && <p className="text-sm text-slate-400">No file loaded.</p>

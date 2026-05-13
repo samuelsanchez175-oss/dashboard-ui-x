@@ -1,20 +1,14 @@
 /**
- * Settings & API keys page.
- *
- * This page is now the *canonical* source for API credentials inside the
- * dashboard. Keys typed here are persisted in localStorage and automatically
- * injected as `x-user-key-*` headers on every `/api/*` request (see
- * `fetchWithKeys`). The dev BFF prefers those headers over `process.env`,
- * so the same key the user types is what actually powers Gemini, YouTube,
- * RSS, OpenAI, etc.
- *
- * The .env.local file remains a fallback for headless usage; the UI shows
- * an "Active source" badge per row so you always know which is being used.
+ * Settings & API keys — canonical scratch store for server keys the BFF reads via
+ * `x-user-key-*` (see `fetchWithKeys`). See `#settings-key-resolution` on-page
+ * for precedence vs `.env.local`.
  */
 
-import { useCallback, useEffect, useId, useMemo, useState } from 'react'
+import { Fragment, useCallback, useEffect, useId, useMemo, useState, type CSSProperties } from 'react'
 import {
   CheckCircle2,
+  ChevronDown,
+  ChevronRight,
   ClipboardCopy,
   Eye,
   EyeOff,
@@ -30,22 +24,28 @@ import {
 } from 'lucide-react'
 
 import { SecureVault } from '../../components/vault'
+import AddDocumentedEnvDialog from '../../components/dev/AddDocumentedEnvDialog'
+import ZoneHeader from '../../components/ZoneHeader'
 import { DOCUMENTED_ENV_LOGOS } from '../../components/agent-farm/integration-logos'
+import { CONTAINERS, SURFACES } from '../../lib/design-tokens'
 import { fetchWithKeys, getAllStoredApiKeys, setApiKey, subscribeApiKeys } from '../../lib/api-keys'
 import {
+  buildDisplayDocGroups,
   buildEnvSnippetFromScratch,
-  createCustomDocRow,
-  existingEnvKeyNames,
   loadCustomDocRows,
+  MAX_CUSTOM_DOC_ROWS,
   mergeDocumentedEnvRows,
-  normalizeEnvKeyName,
   saveCustomDocRows,
   type CustomDocRow,
-  type DocRowScope,
   type MergedDocRow,
 } from '../../lib/dev-documented-env-keys'
-
-/* ── Helpers ─────────────────────────────────────────────────────────────── */
+import {
+  DEV_SETTINGS_ENV_MODEL,
+  DEV_SETTINGS_SECTION_META,
+  probeRouteForStorageKey,
+  type DevSettingsEnvModelEntry,
+  type DevSettingsRetrievalLink,
+} from '../../lib/dev-settings-env-model'
 
 function maskEnvValue(key: string, value: string | undefined): string {
   if (value === undefined || value === '') return '—'
@@ -54,35 +54,24 @@ function maskEnvValue(key: string, value: string | undefined): string {
   return `${value.slice(0, 3)}…${value.slice(-2)}`
 }
 
-/** Probe endpoint per built-in env key (used by the per-row Test button). */
-function probeRouteForKey(envKey: string): { label: string; url: string; init?: RequestInit } | null {
-  switch (envKey) {
-    case 'GEMINI_API_KEY':
-      return { label: 'Gemini', url: '/api/gemini/ping', init: { method: 'POST', headers: { 'Content-Type': 'application/json' } } }
-    case 'YOUTUBE_API_KEY':
-    case 'GOOGLE_API_KEY':
-      return { label: 'YouTube',   url: '/api/youtube/search?q=ping' }
-    case 'OPENAI_API_KEY':
-      return { label: 'OpenAI',    url: '/api/openai/ping' }
-    case 'RSS_FEED_URLS':
-      return { label: 'RSS',       url: '/api/rss?limit=1' }
-    case 'AGENT_FARM_YOUTUBE_CHANNEL_ID':
-      return { label: 'YT Channel', url: '/api/youtube/channel' }
-    default:
-      return null
-  }
-}
-
 type ConfigStatus = Partial<Record<string, boolean>>
 type ProbeOutcome = { ok: true; ms: number; note?: string } | { ok: false; ms: number; message: string }
 
-/* ── Component ──────────────────────────────────────────────────────────── */
+type DevSettingsProps = {
+  onNavigate?: (routeId: string) => void
+}
 
-export default function DevSettings() {
+function harmonyOverrideHint(storedHarmony: string): string {
+  const t = storedHarmony.trim()
+  if (t) {
+    return 'Overrides GEMINI_API_KEY for: Harmony Client Projects (`/api/harmony/client-projects/*`).'
+  }
+  return 'Falls back to GEMINI_API_KEY when empty.'
+}
+
+export default function DevSettings({ onNavigate }: DevSettingsProps) {
   const baseId = useId()
-  const addDialogTitleId = `${baseId}-add-dialog-title`
 
-  /* import.meta.env snapshot for the dev-flags grid */
   const viteSnapshot = useMemo(() => {
     const env = import.meta.env as Record<string, string | boolean | undefined>
     return Object.keys(env)
@@ -91,18 +80,26 @@ export default function DevSettings() {
       .map(k => ({ key: k, display: maskEnvValue(k, env[k] != null ? String(env[k]) : undefined) }))
   }, [])
 
-  /* Manifest + stored values (live-subscribed) */
   const [customRows, setCustomRows] = useState<CustomDocRow[]>(() => loadCustomDocRows())
   const mergedRows = useMemo(() => mergeDocumentedEnvRows(customRows), [customRows])
+  const viteMetaRow = useMemo(() => mergedRows.find(r => r.builtIn && r.envKey === 'VITE_*') ?? null, [mergedRows])
+  const customOnlyGroups = useMemo(() => {
+    const customs = mergedRows.filter((r): r is CustomDocRow => !r.builtIn)
+    return buildDisplayDocGroups(customs)
+  }, [mergedRows])
+
   const [stored, setStored] = useState<Record<string, string>>(() => getAllStoredApiKeys())
   useEffect(() => subscribeApiKeys(setStored), [])
 
-  /* Server config status — refetched whenever local keys change */
+  useEffect(() => {
+    const sync = () => setCustomRows(loadCustomDocRows())
+    window.addEventListener('dev-custom-doc-rows-changed', sync)
+    return () => window.removeEventListener('dev-custom-doc-rows-changed', sync)
+  }, [])
+
   const [envStatus, setEnvStatus] = useState<ConfigStatus | null>(null)
   const refreshEnvStatus = useCallback(async () => {
     try {
-      // Hit the status endpoint WITHOUT auto-injecting keys so we learn the
-      // pure .env.local state. (config/status with keys would always be "true".)
       const r = await fetch('/api/config/status', { cache: 'no-store' })
       if (!r.ok) return
       setEnvStatus(await r.json() as ConfigStatus)
@@ -112,29 +109,30 @@ export default function DevSettings() {
   }, [])
   useEffect(() => { void refreshEnvStatus() }, [refreshEnvStatus])
 
-  /* Show/hide secret-input toggle per row */
   const [reveal, setReveal] = useState<Record<string, boolean>>({})
   const toggleReveal = (envKey: string) => setReveal(r => ({ ...r, [envKey]: !r[envKey] }))
 
-  /* Test-button outcomes per row */
+  const [expandUsedIn, setExpandUsedIn] = useState<Record<string, boolean>>({})
+  const toggleUsedIn = (id: string) => setExpandUsedIn(s => ({ ...s, [id]: !s[id] }))
+
   const [probing, setProbing] = useState<Record<string, boolean>>({})
   const [probeResult, setProbeResult] = useState<Record<string, ProbeOutcome>>({})
 
   const runProbe = useCallback(async (envKey: string) => {
-    const route = probeRouteForKey(envKey)
+    const route = probeRouteForStorageKey(envKey)
     if (!route) return
     setProbing(s => ({ ...s, [envKey]: true }))
     setProbeResult(s => { const c = { ...s }; delete c[envKey]; return c })
     const t0 = performance.now()
     try {
-      const r    = await fetchWithKeys(route.url, route.init)
-      const ms   = Math.round(performance.now() - t0)
+      const r = await fetchWithKeys(route.url, route.init)
+      const ms = Math.round(performance.now() - t0)
       const text = await r.text()
       let body: unknown = null
       try { body = JSON.parse(text) } catch { /* not JSON */ }
       const ok = r.ok && (body == null || (typeof body === 'object' && !('ok' in body) || (body as { ok?: boolean }).ok === true))
       if (ok) {
-        setProbeResult(s => ({ ...s, [envKey]: { ok: true, ms, note: `${route.label} responded ${r.status}` } }))
+        setProbeResult(s => ({ ...s, [envKey]: { ok: true, ms, note: `${route.label} ${r.status}` } }))
       } else {
         const msg = (typeof body === 'object' && body != null && 'message' in body
           ? String((body as { message: string }).message)
@@ -149,15 +147,12 @@ export default function DevSettings() {
     }
   }, [])
 
-  /* Editing — drives both localStorage AND the live status panel */
-  const setRowValue = useCallback((envKey: string, value: string) => {
+  const setRowValue = useCallback((envKey: string, value: string, supportsScratch: boolean) => {
+    if (!supportsScratch) return
     setApiKey(envKey, value)
-    // The status flag depends on what the BFF sees; if no env value but local
-    // value is now set, we still want the dot to flip to green visually.
     void refreshEnvStatus()
   }, [refreshEnvStatus])
 
-  /* Copy snippet for .env.local */
   const [copyHint, setCopyHint] = useState<string | null>(null)
   const copyEnvSnippet = useCallback(async () => {
     const text = buildEnvSnippetFromScratch(mergedRows, stored)
@@ -175,54 +170,32 @@ export default function DevSettings() {
     window.setTimeout(() => setCopyHint(null), 2500)
   }, [mergedRows, stored])
 
-  /* Add-custom-row dialog */
   const [addOpen, setAddOpen] = useState(false)
-  const [addError, setAddError] = useState<string | null>(null)
-  const [newKeyRaw, setNewKeyRaw] = useState('')
-  const [newDesc, setNewDesc] = useState('')
-  const [newScope, setNewScope] = useState<DocRowScope>('server')
-  const [newInputKind, setNewInputKind] = useState<'secret' | 'text'>('secret')
-
-  useEffect(() => {
-    if (!addOpen) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setAddOpen(false) }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [addOpen])
-
-  const openAddModal = useCallback(() => {
-    setAddError(null); setNewKeyRaw(''); setNewDesc('')
-    setNewScope('server'); setNewInputKind('secret'); setAddOpen(true)
+  const commitNewDocRows = useCallback((rows: CustomDocRow[]) => {
+    setCustomRows(prev => {
+      const next = [...prev, ...rows].slice(-MAX_CUSTOM_DOC_ROWS)
+      saveCustomDocRows(next)
+      return next
+    })
   }, [])
-
-  const addCustomRow = useCallback(() => {
-    const taken = existingEnvKeyNames(customRows)
-    const normalized = normalizeEnvKeyName(newKeyRaw)
-    if (!normalized) {
-      setAddError('Use upper snake case (e.g. MY_API_KEY). Letters, digits, underscores only.')
-      return
-    }
-    if (taken.has(normalized)) {
-      setAddError('That variable name already exists in the table.')
-      return
-    }
-    const row = createCustomDocRow({ envKey: normalized, scope: newScope, description: newDesc, inputKind: newInputKind })
-    if (!row) { setAddError('Could not create row — check the variable name.'); return }
-    const next = [...customRows, row]
-    setCustomRows(next)
-    saveCustomDocRows(next)
-    setAddOpen(false)
-  }, [customRows, newDesc, newInputKind, newKeyRaw, newScope])
 
   const removeCustomRow = useCallback((id: string) => {
     const target = customRows.find(r => r.id === id)
+    if (!target) return
+    if (target.oauthPairId) {
+      const victims = customRows.filter(r => r.oauthPairId === target.oauthPairId)
+      const next = customRows.filter(r => r.oauthPairId !== target.oauthPairId)
+      setCustomRows(next)
+      saveCustomDocRows(next)
+      victims.forEach(v => setApiKey(v.envKey, ''))
+      return
+    }
     const next = customRows.filter(r => r.id !== id)
     setCustomRows(next)
     saveCustomDocRows(next)
-    if (target) setApiKey(target.envKey, '')
+    setApiKey(target.envKey, '')
   }, [customRows])
 
-  /* Local content previews — unchanged */
   const [promptPreview, setPromptPreview] = useState<string>('')
   const [presetPreview, setPresetPreview] = useState<string>('')
   const loadLocal = useCallback(async () => {
@@ -243,151 +216,276 @@ export default function DevSettings() {
 
   return (
     <div className="flex-1 overflow-auto" style={{ background: 'var(--bg-canvas)', color: 'var(--text-1)' }}>
-      <div className="mx-auto max-w-4xl space-y-10 p-8">
+      <div className={`${CONTAINERS.hub} space-y-8 py-6 md:py-8`}>
 
-        {/* ── Page heading ──────────────────────────────────────────── */}
-        <header>
-          <h1 className="flex items-center gap-2 text-xl font-semibold tracking-tight" style={{ color: 'var(--text-1)' }}>
-            <KeyRound className="size-5" style={{ color: 'var(--accent)' }} aria-hidden />
-            Settings &amp; API keys
-          </h1>
-          <p className="mt-1 text-sm" style={{ color: 'var(--text-3)' }}>
-            Keys typed here are stored in <code style={chipStyle()}>localStorage</code> and sent to the dev BFF as{' '}
-            <code style={chipStyle()}>x-user-key-*</code> headers. The server prefers your typed value over{' '}
-            <code style={chipStyle()}>.env.local</code> — so this page is the canonical source for Gemini / YouTube /
-            OpenAI / RSS credentials. The <code style={chipStyle()}>.env.local</code> path remains a fallback.
-          </p>
-        </header>
+        <ZoneHeader
+          title="Settings & API keys"
+          icon={KeyRound}
+          description={
+            <>
+              Scratch values live in <code style={chipStyle()}>localStorage</code> and ride on <code style={chipStyle()}>/api/*</code> as{' '}
+              <code style={chipStyle()}>x-user-key-*</code> when supported — the dev BFF prefers them over <code style={chipStyle()}>.env.local</code>.{' '}
+              <a href="#settings-key-resolution" className="font-medium underline decoration-dotted underline-offset-2" style={{ color: 'var(--accent)' }}>
+                How resolution works
+              </a>
+              {onNavigate && (
+                <>
+                  {' · '}
+                  <button
+                    type="button"
+                    onClick={() => onNavigate('dev-diagnostics')}
+                    className="font-medium underline decoration-dotted underline-offset-2"
+                    style={{ color: 'var(--accent)' }}
+                  >
+                    Diagnostics
+                  </button>
+                </>
+              )}
+            </>
+          }
+        />
 
-        {/* ── Safe-patterns callout ─────────────────────────────────── */}
         <section
-          className="space-y-2 rounded-xl p-5"
-          style={{ background: 'var(--accent-soft)', border: '1px solid color-mix(in oklab, var(--accent) 25%, var(--border))' }}
-          aria-labelledby={`${baseId}-safety`}
+          id="settings-key-resolution"
+          className="space-y-2 rounded-lg border p-4"
+          style={{ background: 'var(--accent-soft)', borderColor: 'color-mix(in oklab, var(--accent) 22%, var(--border))' }}
+          aria-labelledby={`${baseId}-resolve`}
         >
-          <h2 id={`${baseId}-safety`} className="flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--accent-fg)' }}>
-            <Lock className="size-4" aria-hidden />
-            How key resolution works
+          <h2 id={`${baseId}-resolve`} className="flex items-center gap-2 text-xs font-semibold md:text-sm" style={{ color: 'var(--accent-fg)' }}>
+            <Lock className="size-3.5 shrink-0 md:size-4" aria-hidden />
+            Key resolution (single source)
           </h2>
-          <ul className="list-disc space-y-1 pl-5 text-sm" style={{ color: 'var(--text-2)' }}>
-            <li>Type a value below → it&apos;s used for every matching <code style={chipStyle()}>/api/*</code> call from this browser.</li>
-            <li>Leave a row blank → the BFF falls back to <code style={chipStyle()}>.env.local</code> (if set).</li>
-            <li><strong>ENV</strong> badge = your <code style={chipStyle()}>.env.local</code> has the key. <strong>LOCAL</strong> badge = you typed one. <strong>BOTH</strong> means your typed key wins.</li>
-            <li>Use <strong>Test</strong> to ping the corresponding upstream API with the value you typed.</li>
-            <li>Secrets in <code style={chipStyle()}>localStorage</code> are not encrypted — use this for dev only.</li>
+          <ul className="list-disc space-y-0.5 pl-4 text-[11px] leading-snug md:text-xs" style={{ color: 'var(--text-2)' }}>
+            <li>Non-empty scratch wins for keys the BFF reads via <code style={chipStyle()}>pickKey</code> (see each row&apos;s Source note).</li>
+            <li><strong>ENV</strong> = set in server <code style={chipStyle()}>.env.local</code>; <strong>LOCAL</strong> = scratch only; <strong>BOTH</strong> = scratch wins.</li>
+            <li><strong>Test</strong> hits the mapped route with <code style={chipStyle()}>fetchWithKeys</code> (same headers as the rest of the app).</li>
+            <li>Scratch is not encrypted — dev-only. Rows marked &quot;server <code style={chipStyle()}>.env</code> only&quot; ignore browser headers.</li>
           </ul>
         </section>
 
-        {/* ── Documented keys table ─────────────────────────────────── */}
-        <section aria-labelledby={`${baseId}-doc`}>
-          <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
-            <h2 id={`${baseId}-doc`} className="flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--text-1)' }}>
-              <Server className="size-4" style={{ color: 'var(--text-3)' }} aria-hidden />
-              Documented keys
+        <section aria-labelledby={`${baseId}-doc`} id="settings-api-keys">
+          <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+            <h2 id={`${baseId}-doc`} className="flex items-center gap-2 text-xs font-semibold md:text-sm" style={{ color: 'var(--text-1)' }}>
+              <Server className="size-3.5 shrink-0 md:size-4" style={{ color: 'var(--text-3)' }} aria-hidden />
+              Integration keys
             </h2>
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                onClick={openAddModal}
-                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition"
-                style={{ background: 'var(--accent-soft)', border: '1px solid color-mix(in oklab, var(--accent) 30%, var(--border))', color: 'var(--accent-fg)' }}
+                onClick={() => setAddOpen(true)}
+                className="inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-semibold transition md:text-xs"
+                style={{ background: 'var(--accent-soft)', border: '1px solid color-mix(in oklab, var(--accent) 28%, var(--border))', color: 'var(--accent-fg)' }}
               >
-                <Plus className="size-3.5 shrink-0" aria-hidden />
-                Add variable
+                <Plus className="size-3 shrink-0" aria-hidden />
+                Add variable / OAuth
               </button>
-              {copyHint && (
-                <span className="text-xs" role="status" style={{ color: 'var(--good)' }}>{copyHint}</span>
-              )}
+              {copyHint && <span className="text-[11px]" role="status" style={{ color: 'var(--good)' }}>{copyHint}</span>}
               <button
                 type="button"
                 onClick={() => void copyEnvSnippet()}
-                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition"
-                style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-1)', boxShadow: 'var(--shadow-sm)' }}
+                className="inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-medium transition md:text-xs"
+                style={{ ...SURFACES.cardStyle, color: 'var(--text-1)' }}
               >
-                <ClipboardCopy className="size-3.5 shrink-0" aria-hidden />
+                <ClipboardCopy className="size-3 shrink-0" aria-hidden />
                 Copy .env lines
               </button>
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-xl" style={{ border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
-            <table className="min-w-full text-sm">
-              <thead style={{ background: 'var(--bg-muted)', color: 'var(--text-3)' }}>
-                <tr className="text-left text-xs uppercase tracking-wide">
-                  <th className="px-4 py-3 font-medium">Variable</th>
-                  <th className="px-4 py-3 font-medium" style={{ width: '6rem' }}>Source</th>
-                  <th className="px-4 py-3 font-medium" style={{ minWidth: '14rem' }}>Local value</th>
-                  <th className="px-4 py-3 font-medium text-right" style={{ width: '8rem' }}>Test / Remove</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mergedRows.map((row: MergedDocRow) => (
-                  <KeyRow
-                    key={row.builtIn ? row.envKey : row.id}
-                    row={row}
-                    storedValue={stored[row.envKey] ?? ''}
-                    envSet={Boolean(envStatus?.[row.envKey])}
-                    reveal={Boolean(reveal[row.envKey])}
-                    onReveal={() => toggleReveal(row.envKey)}
-                    onChange={value => setRowValue(row.envKey, value)}
-                    onRemove={row.builtIn ? null : () => removeCustomRow(row.id)}
-                    probe={probeResult[row.envKey] ?? null}
-                    probing={Boolean(probing[row.envKey])}
-                    onProbe={() => void runProbe(row.envKey)}
-                    canProbe={probeRouteForKey(row.envKey) !== null}
-                  />
-                ))}
-              </tbody>
-            </table>
+          <div className="space-y-5">
+            {DEV_SETTINGS_SECTION_META.map(section => {
+              const rows = DEV_SETTINGS_ENV_MODEL.filter(r => r.sectionId === section.id)
+              if (!rows.length) return null
+              return (
+                <div
+                  key={section.id}
+                  className="overflow-hidden rounded-lg border"
+                  style={{ borderColor: 'var(--border)', background: 'var(--bg-card)' }}
+                >
+                  <div
+                    className="border-b px-3 py-2 text-[11px] font-semibold uppercase tracking-wide md:px-4 md:text-xs"
+                    style={{ background: 'var(--bg-muted)', borderColor: 'var(--border)', color: 'var(--text-2)' }}
+                  >
+                    {section.title}
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-[800px] w-full text-left text-[11px] md:text-xs">
+                      <thead style={{ color: 'var(--text-3)' }}>
+                        <tr className="border-b" style={{ borderColor: 'var(--border-soft)' }}>
+                          <th className="px-2 py-2 font-medium md:px-3">Key(s)</th>
+                          <th className="px-2 py-2 font-medium md:px-3">Role</th>
+                          <th className="w-[7.5rem] min-w-[7rem] px-2 py-2 font-medium md:px-3">Get key</th>
+                          <th className="min-w-[10rem] px-2 py-2 font-medium md:px-3">Used in</th>
+                          <th className="px-2 py-2 font-medium md:px-3">Source</th>
+                          <th className="min-w-[11rem] px-2 py-2 font-medium md:px-3">Local value</th>
+                          <th className="w-20 px-2 py-2 text-right font-medium md:px-3">Test</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {rows.map(entry => (
+                          <ModelEnvRow
+                            key={entry.id}
+                            entry={entry}
+                            storedValue={stored[entry.storageKey] ?? ''}
+                            envSet={Boolean(envStatus?.[entry.storageKey])}
+                            harmonyHint={entry.storageKey === 'HARMONY_CLIENT_PROJECTS_AI_KEY' ? harmonyOverrideHint(stored.HARMONY_CLIENT_PROJECTS_AI_KEY ?? '') : undefined}
+                            reveal={Boolean(reveal[entry.storageKey])}
+                            onReveal={() => toggleReveal(entry.storageKey)}
+                            onChange={v => setRowValue(entry.storageKey, v, entry.supportsLocalScratch)}
+                            expanded={Boolean(expandUsedIn[entry.id])}
+                            onToggleExpand={() => toggleUsedIn(entry.id)}
+                            probe={probeResult[entry.storageKey] ?? null}
+                            probing={Boolean(probing[entry.storageKey])}
+                            onProbe={() => void runProbe(entry.storageKey)}
+                          />
+                        ))}
+                        {section.id === 'client-vite' && viteMetaRow && (
+                          <ViteMetaTableRow row={viteMetaRow} />
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )
+            })}
           </div>
+
+          {(customOnlyGroups.length > 0) && (
+            <div className="mt-6 overflow-hidden rounded-lg border" style={{ borderColor: 'var(--border)', background: 'var(--bg-card)' }}>
+              <div
+                className="border-b px-3 py-2 text-[11px] font-semibold uppercase tracking-wide md:px-4 md:text-xs"
+                style={{ background: 'var(--bg-muted)', borderColor: 'var(--border)', color: 'var(--text-2)' }}
+              >
+                Custom &amp; OAuth
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-[640px] w-full text-left text-[11px] md:text-xs">
+                  <thead style={{ color: 'var(--text-3)' }}>
+                    <tr className="border-b" style={{ borderColor: 'var(--border-soft)' }}>
+                      <th className="px-2 py-2 font-medium md:px-3">Key(s)</th>
+                      <th className="px-2 py-2 font-medium md:px-3">Role</th>
+                      <th className="px-2 py-2 font-medium md:px-3">Notes</th>
+                      <th className="px-2 py-2 font-medium md:px-3">Source</th>
+                      <th className="px-2 py-2 font-medium md:px-3">Local value</th>
+                      <th className="w-24 px-2 py-2 text-right font-medium md:px-3">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {customOnlyGroups.map(group => {
+                      if (group.kind === 'single') {
+                        const row = group.row
+                        if (row.builtIn) return null
+                        return (
+                          <CustomEnvRow
+                            key={row.id}
+                            row={row}
+                            storedValue={stored[row.envKey] ?? ''}
+                            envSet={Boolean(envStatus?.[row.envKey])}
+                            reveal={Boolean(reveal[row.envKey])}
+                            onReveal={() => toggleReveal(row.envKey)}
+                            onChange={value => setRowValue(row.envKey, value, true)}
+                            onRemove={() => removeCustomRow(row.id)}
+                            probe={probeResult[row.envKey] ?? null}
+                            probing={Boolean(probing[row.envKey])}
+                            onProbe={() => void runProbe(row.envKey)}
+                            canProbe={probeRouteForStorageKey(row.envKey) !== null}
+                          />
+                        )
+                      }
+                      return (
+                        <Fragment key={`oauth-${group.pairId}`}>
+                          <tr style={{ borderBottom: '1px solid var(--border-soft)' }}>
+                            <td
+                              colSpan={6}
+                              className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wide md:px-3"
+                              style={{
+                                background: 'color-mix(in oklab, var(--accent-soft) 88%, transparent)',
+                                color: 'var(--accent-fg)',
+                              }}
+                            >
+                              OAuth · {group.label}
+                            </td>
+                          </tr>
+                          <CustomEnvRow
+                            key={group.clientId.id}
+                            row={group.clientId}
+                            storedValue={stored[group.clientId.envKey] ?? ''}
+                            envSet={Boolean(envStatus?.[group.clientId.envKey])}
+                            reveal={Boolean(reveal[group.clientId.envKey])}
+                            onReveal={() => toggleReveal(group.clientId.envKey)}
+                            onChange={value => setRowValue(group.clientId.envKey, value, true)}
+                            onRemove={() => removeCustomRow(group.clientId.id)}
+                            probe={probeResult[group.clientId.envKey] ?? null}
+                            probing={Boolean(probing[group.clientId.envKey])}
+                            onProbe={() => void runProbe(group.clientId.envKey)}
+                            canProbe={probeRouteForStorageKey(group.clientId.envKey) !== null}
+                          />
+                          <CustomEnvRow
+                            key={group.clientSecret.id}
+                            row={group.clientSecret}
+                            storedValue={stored[group.clientSecret.envKey] ?? ''}
+                            envSet={Boolean(envStatus?.[group.clientSecret.envKey])}
+                            reveal={Boolean(reveal[group.clientSecret.envKey])}
+                            onReveal={() => toggleReveal(group.clientSecret.envKey)}
+                            onChange={value => setRowValue(group.clientSecret.envKey, value, true)}
+                            onRemove={() => removeCustomRow(group.clientSecret.id)}
+                            probe={probeResult[group.clientSecret.envKey] ?? null}
+                            probing={Boolean(probing[group.clientSecret.envKey])}
+                            onProbe={() => void runProbe(group.clientSecret.envKey)}
+                            canProbe={probeRouteForStorageKey(group.clientSecret.envKey) !== null}
+                          />
+                        </Fragment>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </section>
 
-        {/* ── Vite env snapshot ─────────────────────────────────────── */}
         <section aria-labelledby={`${baseId}-vite`}>
-          <h2 id={`${baseId}-vite`} className="mb-3 flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--text-1)' }}>
-            <Info className="size-4" style={{ color: 'var(--text-3)' }} aria-hidden />
-            <code style={chipStyle()}>import.meta.env</code> (dev snapshot)
+          <h2 id={`${baseId}-vite`} className="mb-2 flex items-center gap-2 text-xs font-semibold md:text-sm" style={{ color: 'var(--text-1)' }}>
+            <Info className="size-3.5 shrink-0 md:size-4" style={{ color: 'var(--text-3)' }} aria-hidden />
+            <code style={chipStyle()}>import.meta.env</code>
+            <span className="font-normal" style={{ color: 'var(--text-3)' }}>(dev snapshot)</span>
           </h2>
-          <p className="mb-2 text-xs" style={{ color: 'var(--text-3)' }}>
-            Values are masked except safe mode flags. Add <code style={chipStyle()}>VITE_*</code> in{' '}
-            <code style={chipStyle()}>.env.local</code> to surface client-safe config.
+          <p className="mb-2 text-[11px] md:text-xs" style={{ color: 'var(--text-3)' }}>
+            Masked snapshot; add <code style={chipStyle()}>VITE_*</code> to <code style={chipStyle()}>.env.local</code> and restart dev.
           </p>
-          <ul className="grid gap-2 sm:grid-cols-2">
+          <ul className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
             {viteSnapshot.map(({ key, display }) => (
               <li
                 key={key}
-                className="flex items-center justify-between rounded-lg px-3 py-2 text-xs"
-                style={{ background: 'var(--bg-card-soft)', border: '1px solid var(--border-soft)' }}
+                className="flex items-center justify-between rounded-md border px-2 py-1.5 text-[11px] md:text-xs"
+                style={{ background: 'var(--bg-card-soft)', borderColor: 'var(--border-soft)' }}
               >
-                <span className="font-mono" style={{ color: 'var(--text-2)' }}>{key}</span>
-                <span className="tabular-nums" style={{ color: 'var(--text-1)' }}>{display}</span>
+                <span className="mono truncate font-mono" style={{ color: 'var(--text-2)' }}>{key}</span>
+                <span className="ml-2 shrink-0 tabular-nums" style={{ color: 'var(--text-1)' }}>{display}</span>
               </li>
             ))}
           </ul>
         </section>
 
-        {/* ── Local content previews ────────────────────────────────── */}
         <section aria-labelledby={`${baseId}-content`}>
-          <h2 id={`${baseId}-content`} className="mb-3 text-sm font-semibold" style={{ color: 'var(--text-1)' }}>
+          <h2 id={`${baseId}-content`} className="mb-2 text-xs font-semibold md:text-sm" style={{ color: 'var(--text-1)' }}>
             Local content previews
           </h2>
-          <p className="mb-3 text-xs" style={{ color: 'var(--text-3)' }}>
-            Starter files live under <code style={chipStyle()}>content/prompts</code> and{' '}
-            <code style={chipStyle()}>content/presets</code>, served in dev via{' '}
-            <code style={chipStyle()}>/api/local/file?path=…</code>.
+          <p className="mb-2 text-[11px] md:text-xs" style={{ color: 'var(--text-3)' }}>
+            <code style={chipStyle()}>content/prompts</code> / <code style={chipStyle()}>content/presets</code> via <code style={chipStyle()}>/api/local/file?path=…</code>
           </p>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2">
             {[
-              { title: 'prompts/starter.md',   body: promptPreview },
+              { title: 'prompts/starter.md', body: promptPreview },
               { title: 'presets/starter.json', body: presetPreview },
             ].map(p => (
               <div
                 key={p.title}
-                className="rounded-xl p-4"
-                style={{ background: 'var(--bg-card-soft)', border: '1px solid var(--border)' }}
+                className="rounded-lg border p-3"
+                style={{ background: 'var(--bg-card-soft)', borderColor: 'var(--border)' }}
               >
-                <p className="mb-2 text-xs font-medium" style={{ color: 'var(--text-3)' }}>{p.title}</p>
-                <pre className="max-h-48 overflow-auto font-mono text-[11px]" style={{ color: 'var(--text-2)', whiteSpace: 'pre-wrap' }}>
+                <p className="mb-1.5 text-[11px] font-medium md:text-xs" style={{ color: 'var(--text-3)' }}>{p.title}</p>
+                <pre className="max-h-40 overflow-auto font-mono text-[10px] md:text-[11px]" style={{ color: 'var(--text-2)', whiteSpace: 'pre-wrap' }}>
                   {p.body || '—'}
                 </pre>
               </div>
@@ -395,280 +493,328 @@ export default function DevSettings() {
           </div>
         </section>
 
-        {/* ── Secure vault (browser) ────────────────────────────────── */}
         <section aria-labelledby={`${baseId}-vault`}>
-          <h2 id={`${baseId}-vault`} className="mb-3 text-sm font-semibold" style={{ color: 'var(--text-1)' }}>
+          <h2 id={`${baseId}-vault`} className="mb-2 text-xs font-semibold md:text-sm" style={{ color: 'var(--text-1)' }}>
             Secure vault (browser)
           </h2>
-          <div className="overflow-hidden rounded-xl" style={{ background: 'var(--bg-card-soft)', border: '1px solid var(--border)' }}>
+          <div className="overflow-hidden rounded-lg border" style={{ background: 'var(--bg-card-soft)', borderColor: 'var(--border)' }}>
             <SecureVault />
           </div>
         </section>
       </div>
 
-      {/* ── Add-row dialog ───────────────────────────────────────────── */}
-      {addOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: 'rgba(5,5,8,0.6)', backdropFilter: 'blur(4px)' }}
-          role="presentation"
-          onClick={() => setAddOpen(false)}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={addDialogTitleId}
-            className="w-full max-w-md rounded-2xl p-6 shadow-xl"
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <h3 id={addDialogTitleId} className="text-base font-semibold" style={{ color: 'var(--text-1)' }}>
-              Add documented variable
-            </h3>
-            <p className="mt-1 text-xs" style={{ color: 'var(--text-3)' }}>
-              Saved only in this browser. Use upper snake case — same rules as <code style={chipStyle()}>.env</code> names.
-            </p>
-            <div className="mt-4 space-y-3">
-              <DialogField label="Variable name">
-                <input
-                  value={newKeyRaw}
-                  onChange={e => setNewKeyRaw(e.target.value)}
-                  autoComplete="off"
-                  spellCheck={false}
-                  placeholder="MY_SERVICE_API_KEY"
-                  className="w-full rounded-lg px-3 py-2 font-mono text-sm outline-none transition"
-                  style={inputStyle()}
-                />
-              </DialogField>
-              <DialogField label="Description">
-                <textarea
-                  value={newDesc}
-                  onChange={e => setNewDesc(e.target.value)}
-                  rows={3}
-                  placeholder="What this key is for…"
-                  className="w-full resize-y rounded-lg px-3 py-2 text-sm outline-none transition"
-                  style={inputStyle()}
-                />
-              </DialogField>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <DialogField label="Scope">
-                  <select
-                    value={newScope}
-                    onChange={e => setNewScope(e.target.value as DocRowScope)}
-                    className="w-full rounded-lg px-3 py-2 text-sm outline-none transition"
-                    style={inputStyle()}
-                  >
-                    <option value="server">server</option>
-                    <option value="client">client</option>
-                  </select>
-                </DialogField>
-                <DialogField label="Input type">
-                  <select
-                    value={newInputKind}
-                    onChange={e => setNewInputKind(e.target.value as 'secret' | 'text')}
-                    className="w-full rounded-lg px-3 py-2 text-sm outline-none transition"
-                    style={inputStyle()}
-                  >
-                    <option value="secret">Secret (masked)</option>
-                    <option value="text">Plain text</option>
-                  </select>
-                </DialogField>
-              </div>
-              {addError && (
-                <p className="text-xs" role="alert" style={{ color: 'var(--bad)' }}>{addError}</p>
-              )}
-            </div>
-            <div className="mt-6 flex flex-wrap justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setAddOpen(false)}
-                className="rounded-lg px-4 py-2 text-xs font-medium transition"
-                style={{ background: 'var(--bg-card-soft)', border: '1px solid var(--border)', color: 'var(--text-2)' }}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={addCustomRow}
-                className="rounded-lg px-4 py-2 text-xs font-semibold text-white transition"
-                style={{ background: 'var(--accent)' }}
-              >
-                Add row
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AddDocumentedEnvDialog
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        customRowsSnapshot={customRows}
+        onCommitRows={commitNewDocRows}
+      />
     </div>
   )
 }
 
-/* ── Sub-components ──────────────────────────────────────────────────────── */
-
-function KeyRow({
-  row, storedValue, envSet, reveal, onReveal, onChange, onRemove,
-  probe, probing, onProbe, canProbe,
+function ModelEnvRow({
+  entry,
+  storedValue,
+  envSet,
+  harmonyHint,
+  reveal,
+  onReveal,
+  onChange,
+  expanded,
+  onToggleExpand,
+  probe,
+  probing,
+  onProbe,
 }: {
-  row:        MergedDocRow
+  entry: DevSettingsEnvModelEntry
   storedValue: string
-  envSet:     boolean
-  reveal:     boolean
-  onReveal:   () => void
-  onChange:   (value: string) => void
-  onRemove:   (() => void) | null
-  probe:      ProbeOutcome | null
-  probing:    boolean
-  onProbe:    () => void
-  canProbe:   boolean
+  envSet: boolean
+  harmonyHint?: string
+  reveal: boolean
+  onReveal: () => void
+  onChange: (v: string) => void
+  expanded: boolean
+  onToggleExpand: () => void
+  probe: ProbeOutcome | null
+  probing: boolean
+  onProbe: () => void
 }) {
-  const logoSrc  = DOCUMENTED_ENV_LOGOS[row.envKey]
-  const isCustom = !row.builtIn
-  const hasLocal = storedValue.trim().length > 0
-
-  /** Compute the "active source" badge — what the BFF will actually use. */
+  const logoSrc = DOCUMENTED_ENV_LOGOS[entry.storageKey]
+  const hasLocal = entry.supportsLocalScratch && storedValue.trim().length > 0
   const source: 'BOTH' | 'LOCAL' | 'ENV' | 'NONE' =
-    hasLocal && envSet ? 'BOTH'
-    : hasLocal         ? 'LOCAL'
-    : envSet           ? 'ENV'
-    : 'NONE'
+    !entry.supportsLocalScratch
+      ? (envSet ? 'ENV' : 'NONE')
+      : hasLocal && envSet ? 'BOTH'
+        : hasLocal ? 'LOCAL'
+          : envSet ? 'ENV'
+            : 'NONE'
+  const canProbe = probeRouteForStorageKey(entry.storageKey) !== null
 
   return (
-    <tr style={{ borderBottom: '1px solid var(--border-soft)' }}>
-      {/* ── Variable cell ───────────────────────────────────────────── */}
-      <td className="px-4 py-3 align-top">
-        <div className="flex min-w-0 items-start gap-3">
-          {logoSrc ? (
-            <span
-              className="relative mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg p-1.5"
-              style={{ background: '#ffffff', boxShadow: '0 0 0 1px var(--border)' }}
-              aria-hidden
-            >
-              <img src={logoSrc} alt="" className="max-h-full max-w-full object-contain" loading="lazy" decoding="async" />
-            </span>
-          ) : (
-            <span
-              className="relative mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-              style={{ background: 'var(--bg-card-soft)', color: 'var(--text-4)', boxShadow: '0 0 0 1px var(--border)' }}
-              aria-hidden
-            >
-              <KeyRound className="size-4" />
-            </span>
-          )}
+    <tr className="border-b align-top" style={{ borderColor: 'var(--border-soft)' }}>
+      <td className="px-2 py-2 md:px-3">
+        <div className="flex min-w-0 gap-2">
+          <LogoCell logoSrc={logoSrc} label={entry.label} />
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-mono text-xs" style={{ color: 'var(--text-1)' }}>{row.envKey}</span>
-              {isCustom && (
-                <span
-                  className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
-                  style={{ background: 'var(--accent-soft)', color: 'var(--accent-fg)' }}
-                >
-                  Custom
-                </span>
-              )}
-            </div>
-            <p className="mt-1 text-[11px] leading-snug" style={{ color: 'var(--text-3)' }}>{row.description}</p>
+            <p className="mono font-mono text-[10px] leading-tight text-[var(--text-1)] md:text-[11px]">{entry.envKeys.join(' · ')}</p>
+            <p className="mt-0.5 text-[10px] leading-snug md:text-[11px]" style={{ color: 'var(--text-3)' }}>{entry.label}</p>
           </div>
         </div>
       </td>
-
-      {/* ── Source badge ────────────────────────────────────────────── */}
-      <td className="px-4 py-3 align-top whitespace-nowrap">
-        <SourceBadge source={source} />
+      <td className="px-2 py-2 md:px-3">
+        <span style={{ color: 'var(--text-2)' }}>{entry.role}</span>
+        {entry.optional && (
+          <span className="ml-1 rounded bg-[var(--bg-muted)] px-1 py-0 text-[9px] font-semibold uppercase text-[var(--text-3)]">opt</span>
+        )}
       </td>
-
-      {/* ── Value input ─────────────────────────────────────────────── */}
-      <td className="px-4 py-3 align-top">
-        {row.inputKind === 'none' ? (
-          <p className="text-xs leading-snug" style={{ color: 'var(--text-3)' }}>
-            Define concrete names in <code style={chipStyle()}>.env.local</code>. Reload dev after edits.
+      <td className="px-2 py-2 align-top md:px-3">
+        <RetrievalLinksList links={entry.retrievalLinks} />
+      </td>
+      <td className="max-w-[14rem] px-2 py-2 md:px-3">
+        <p className="text-[10px] leading-snug md:text-[11px]" style={{ color: 'var(--text-2)' }}>{entry.oneLinePurpose}</p>
+        {harmonyHint && (
+          <p className="mt-1 text-[10px] leading-snug md:text-[11px]" style={{ color: 'var(--accent-fg)' }}>{harmonyHint}</p>
+        )}
+        {entry.usedIn.length > 0 && (
+          <>
+            <button
+              type="button"
+              onClick={onToggleExpand}
+              className="mt-1 inline-flex items-center gap-0.5 text-[10px] font-medium md:text-[11px]"
+              style={{ color: 'var(--accent)' }}
+              aria-expanded={expanded}
+            >
+              {expanded ? <ChevronDown className="size-3" aria-hidden /> : <ChevronRight className="size-3" aria-hidden />}
+              Where used
+            </button>
+            {expanded && (
+              <ul className="mt-1 list-disc space-y-0.5 pl-3.5 text-[10px] leading-snug md:text-[11px]" style={{ color: 'var(--text-3)' }}>
+                {entry.usedIn.map(line => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+            )}
+          </>
+        )}
+      </td>
+      <td className="px-2 py-2 md:px-3">
+        <div className="flex flex-col gap-1">
+          <SourceBadge source={source} />
+          {entry.sourceResolutionNote && (
+            <p className="text-[9px] leading-snug md:text-[10px]" style={{ color: 'var(--text-3)' }}>{entry.sourceResolutionNote}</p>
+          )}
+        </div>
+      </td>
+      <td className="px-2 py-2 md:px-3">
+        {entry.inputKind === 'none' ? (
+          <span className="text-[10px] text-[var(--text-3)]">—</span>
+        ) : !entry.supportsLocalScratch ? (
+          <p className="text-[10px] leading-snug md:text-[11px]" style={{ color: 'var(--text-3)' }}>
+            Server <code style={chipStyle()}>.env.local</code> only — not sent as <code style={chipStyle()}>x-user-key-*</code>.
           </p>
         ) : (
-          <div className="flex items-center gap-1.5">
-            <label className="relative block flex-1">
-              <span className="sr-only">{row.envKey}</span>
+          <>
+            <label className="relative block">
+              <span className="sr-only">{entry.storageKey}</span>
               <input
-                type={row.inputKind === 'secret' && !reveal ? 'password' : 'text'}
+                type={entry.inputKind === 'secret' && !reveal ? 'password' : 'text'}
                 value={storedValue}
                 onChange={e => onChange(e.target.value)}
                 autoComplete="off"
                 spellCheck={false}
-                placeholder={row.inputKind === 'secret' ? 'Paste key…' : 'Value…'}
-                className="w-full rounded-lg px-3 py-2 pr-9 font-mono text-xs outline-none transition"
+                placeholder={entry.inputKind === 'secret' ? 'Paste…' : 'Value…'}
+                className="w-full rounded-md px-2 py-1.5 pr-8 font-mono text-[10px] outline-none md:text-[11px]"
                 style={inputStyle()}
               />
-              {row.inputKind === 'secret' && (
+              {entry.inputKind === 'secret' && (
                 <button
                   type="button"
                   onClick={onReveal}
-                  className="absolute inset-y-0 right-0 grid w-9 place-items-center"
+                  className="absolute inset-y-0 right-0 grid w-8 place-items-center"
                   style={{ color: 'var(--text-3)' }}
-                  aria-label={reveal ? 'Hide value' : 'Show value'}
-                  title={reveal ? 'Hide' : 'Show'}
+                  aria-label={reveal ? 'Hide' : 'Show'}
                 >
-                  {reveal ? <EyeOff className="size-3.5" aria-hidden /> : <Eye className="size-3.5" aria-hidden />}
+                  {reveal ? <EyeOff className="size-3" aria-hidden /> : <Eye className="size-3" aria-hidden />}
                 </button>
               )}
             </label>
-          </div>
+            {probe && (
+              <p className="mt-1 text-[9px] md:text-[10px]" role="status" style={{ color: probe.ok ? 'var(--good)' : 'var(--bad)' }}>
+                {probe.ok
+                  ? <><CheckCircle2 className="mr-0.5 inline size-3" aria-hidden />{probe.ms} ms{probe.note ? ` · ${probe.note}` : ''}</>
+                  : <><XCircle className="mr-0.5 inline size-3" aria-hidden />{probe.message}</>}
+              </p>
+            )}
+          </>
         )}
-        {probe && (
-          <p
-            className="mt-1.5 text-[11px] leading-snug"
-            role="status"
-            style={{ color: probe.ok ? 'var(--good)' : 'var(--bad)' }}
+      </td>
+      <td className="px-2 py-2 text-right md:px-3">
+        {canProbe && entry.supportsLocalScratch && (
+          <button
+            type="button"
+            onClick={onProbe}
+            disabled={probing}
+            className="inline-flex items-center gap-0.5 rounded-md border px-2 py-1 text-[10px] font-semibold disabled:opacity-50 md:text-[11px]"
+            style={{ background: 'var(--bg-card-soft)', borderColor: 'var(--border)', color: 'var(--text-1)' }}
           >
-            {probe.ok
-              ? <><CheckCircle2 className="-mt-0.5 mr-1 inline size-3.5" aria-hidden /> OK · {probe.ms} ms{probe.note ? ` · ${probe.note}` : ''}</>
-              : <><XCircle      className="-mt-0.5 mr-1 inline size-3.5" aria-hidden /> {probe.message}</>}
+            {probing ? <Loader2 className="size-3 animate-spin" aria-hidden /> : <Zap className="size-3" aria-hidden />}
+            Test
+          </button>
+        )}
+      </td>
+    </tr>
+  )
+}
+
+function ViteMetaTableRow({ row }: { row: MergedDocRow }) {
+  return (
+    <tr className="border-t align-top" style={{ borderColor: 'var(--border-soft)', background: 'var(--bg-muted)' }}>
+      <td className="px-2 py-2 md:px-3" colSpan={2}>
+        <div className="flex gap-2">
+          <LogoCell logoSrc={DOCUMENTED_ENV_LOGOS['VITE_*']} label="Vite" />
+          <div>
+            <p className="mono font-mono text-[10px] md:text-[11px]">{row.envKey}</p>
+            <p className="text-[10px] md:text-[11px]" style={{ color: 'var(--text-3)' }}>{row.description}</p>
+          </div>
+        </div>
+      </td>
+      <td className="px-2 py-2 md:px-3" />
+      <td className="px-2 py-2 text-[10px] md:text-[11px]" style={{ color: 'var(--text-3)' }} colSpan={4}>
+        Informational — client bundle only exposes <code style={chipStyle()}>VITE_*</code> names present at dev-server start.
+      </td>
+    </tr>
+  )
+}
+
+function CustomEnvRow({
+  row, storedValue, envSet, reveal, onReveal, onChange, onRemove,
+  probe, probing, onProbe, canProbe,
+}: {
+  row: CustomDocRow
+  storedValue: string
+  envSet: boolean
+  reveal: boolean
+  onReveal: () => void
+  onChange: (value: string) => void
+  onRemove: () => void
+  probe: ProbeOutcome | null
+  probing: boolean
+  onProbe: () => void
+  canProbe: boolean
+}) {
+  const logoSrc = DOCUMENTED_ENV_LOGOS[row.envKey]
+  const hasLocal = storedValue.trim().length > 0
+  const source: 'BOTH' | 'LOCAL' | 'ENV' | 'NONE' =
+    hasLocal && envSet ? 'BOTH' : hasLocal ? 'LOCAL' : envSet ? 'ENV' : 'NONE'
+
+  return (
+    <tr className="border-b align-top" style={{ borderColor: 'var(--border-soft)' }}>
+      <td className="px-2 py-2 md:px-3">
+        <div className="flex gap-2">
+          <LogoCell logoSrc={logoSrc} />
+          <div className="min-w-0">
+            <p className="mono font-mono text-[10px] md:text-[11px]">{row.envKey}</p>
+            <span className="mt-0.5 inline-block rounded px-1 py-0 text-[9px] font-semibold uppercase" style={{ background: 'var(--accent-soft)', color: 'var(--accent-fg)' }}>Custom</span>
+          </div>
+        </div>
+      </td>
+      <td className="px-2 py-2 text-[var(--text-3)] md:px-3">Custom</td>
+      <td className="max-w-[14rem] px-2 py-2 text-[10px] leading-snug md:px-3 md:text-[11px]" style={{ color: 'var(--text-2)' }}>
+        {row.description}
+      </td>
+      <td className="px-2 py-2 md:px-3"><SourceBadge source={source} /></td>
+      <td className="px-2 py-2 md:px-3">
+        <label className="relative block">
+          <span className="sr-only">{row.envKey}</span>
+          <input
+            type={row.inputKind === 'secret' && !reveal ? 'password' : 'text'}
+            value={storedValue}
+            onChange={e => onChange(e.target.value)}
+            autoComplete="off"
+            spellCheck={false}
+            placeholder={row.inputKind === 'secret' ? 'Paste…' : '…'}
+            className="w-full rounded-md px-2 py-1.5 pr-8 font-mono text-[10px] outline-none md:text-[11px]"
+            style={inputStyle()}
+          />
+          {row.inputKind === 'secret' && (
+            <button type="button" onClick={onReveal} className="absolute inset-y-0 right-0 grid w-8 place-items-center" style={{ color: 'var(--text-3)' }} aria-label={reveal ? 'Hide' : 'Show'}>
+              {reveal ? <EyeOff className="size-3" aria-hidden /> : <Eye className="size-3" aria-hidden />}
+            </button>
+          )}
+        </label>
+        {probe && (
+          <p className="mt-1 text-[9px]" role="status" style={{ color: probe.ok ? 'var(--good)' : 'var(--bad)' }}>
+            {probe.ok ? `OK ${probe.ms} ms` : probe.message}
           </p>
         )}
       </td>
-
-      {/* ── Test / Remove ───────────────────────────────────────────── */}
-      <td className="px-4 py-3 align-top text-right">
-        <div className="inline-flex items-center gap-1.5">
+      <td className="px-2 py-2 text-right md:px-3">
+        <div className="inline-flex gap-1">
           {canProbe && (
-            <button
-              type="button"
-              onClick={onProbe}
-              disabled={probing}
-              className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition disabled:opacity-55"
-              style={{ background: 'var(--bg-card-soft)', border: '1px solid var(--border)', color: 'var(--text-1)' }}
-              title="Ping the matching upstream API with this key"
-            >
-              {probing ? <Loader2 className="size-3 animate-spin" aria-hidden /> : <Zap className="size-3" aria-hidden />}
-              Test
+            <button type="button" onClick={onProbe} disabled={probing} className="rounded-md border px-2 py-1 text-[10px] font-semibold" style={{ borderColor: 'var(--border)', background: 'var(--bg-card-soft)' }}>
+              {probing ? <Loader2 className="size-3 animate-spin" /> : <Zap className="size-3" />}
             </button>
           )}
-          {onRemove && (
-            <button
-              type="button"
-              onClick={onRemove}
-              className="inline-flex rounded-lg p-2 transition"
-              style={{ background: 'var(--bg-card-soft)', border: '1px solid var(--border)', color: 'var(--text-3)' }}
-              aria-label={`Remove ${row.envKey}`}
-              title={`Remove ${row.envKey}`}
-            >
-              <Trash2 className="size-4" aria-hidden />
-            </button>
-          )}
+          <button type="button" onClick={onRemove} className="rounded-md border p-1.5" style={{ borderColor: 'var(--border)', color: 'var(--text-3)' }} aria-label="Remove">
+            <Trash2 className="size-3.5" aria-hidden />
+          </button>
         </div>
       </td>
     </tr>
   )
 }
 
+function RetrievalLinksList({ links }: { links: readonly DevSettingsRetrievalLink[] | undefined }) {
+  if (!links?.length) {
+    return <span className="text-[10px] tabular-nums md:text-[11px]" style={{ color: 'var(--text-4)' }}>—</span>
+  }
+  return (
+    <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
+      {links.map(link => (
+        <li key={`${link.href}-${link.label}`}>
+          <a
+            href={link.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] font-medium underline decoration-dotted underline-offset-2 md:text-[11px]"
+            style={{ color: 'var(--accent)' }}
+          >
+            {link.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function LogoCell({ logoSrc, label }: { logoSrc?: string; label?: string }) {
+  return logoSrc ? (
+    <span
+      className="relative mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md p-1 md:h-8 md:w-8"
+      style={{ background: 'var(--bg-card)', boxShadow: '0 0 0 1px var(--border)' }}
+      aria-hidden={!label}
+    >
+      <img src={logoSrc} alt={label ?? ''} className="max-h-full max-w-full object-contain" loading="lazy" decoding="async" />
+    </span>
+  ) : (
+    <span className="relative mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md md:h-8 md:w-8" style={{ background: 'var(--bg-card-soft)', boxShadow: '0 0 0 1px var(--border)' }} aria-hidden>
+      <KeyRound className="size-3.5 text-[var(--text-4)]" />
+    </span>
+  )
+}
+
 function SourceBadge({ source }: { source: 'BOTH' | 'LOCAL' | 'ENV' | 'NONE' }) {
   const palette: Record<typeof source, { bg: string; fg: string; label: string; tip: string }> = {
-    BOTH:  { bg: 'var(--accent-soft)', fg: 'var(--accent-fg)', label: 'BOTH',  tip: 'Both .env and a local-typed value are present; the local typed value wins for /api/* calls.' },
-    LOCAL: { bg: 'var(--good-soft)',   fg: 'var(--good)',      label: 'LOCAL', tip: 'You typed this value here. Sent to the BFF as x-user-key-* on each /api/* call.' },
-    ENV:   { bg: 'var(--bg-muted)',    fg: 'var(--text-2)',    label: 'ENV',   tip: 'Resolved from .env.local at server start.' },
-    NONE:  { bg: 'var(--bad-soft)',    fg: 'var(--bad)',       label: 'NONE',  tip: 'No value set — features depending on this key will fail until you paste one or set it in .env.local.' },
+    BOTH:  { bg: 'var(--accent-soft)', fg: 'var(--accent-fg)', label: 'BOTH',  tip: 'Env + scratch; scratch wins on /api/*.' },
+    LOCAL: { bg: 'var(--good-soft)',   fg: 'var(--good)',      label: 'LOCAL', tip: 'Scratch only — sent as x-user-key-*.' },
+    ENV:   { bg: 'var(--bg-muted)',    fg: 'var(--text-2)',    label: 'ENV',   tip: 'Server .env.local only.' },
+    NONE:  { bg: 'var(--bad-soft)',    fg: 'var(--bad)',       label: 'NONE',  tip: 'Unset — dependent features fail until configured.' },
   }
   const p = palette[source]
   return (
     <span
-      className="mono inline-flex items-center rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+      className="inline-flex rounded px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wide"
       style={{ background: p.bg, color: p.fg }}
       title={p.tip}
     >
@@ -677,32 +823,21 @@ function SourceBadge({ source }: { source: 'BOTH' | 'LOCAL' | 'ENV' | 'NONE' }) 
   )
 }
 
-function DialogField({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block space-y-1">
-      <span className="text-[11px] font-medium uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>{label}</span>
-      {children}
-    </label>
-  )
-}
-
-/* ── Inline style helpers ────────────────────────────────────────────────── */
-
-function chipStyle(): React.CSSProperties {
+function chipStyle(): CSSProperties {
   return {
-    fontFamily:  "'DM Mono', monospace",
-    fontSize:    11,
-    padding:     '1px 5px',
-    borderRadius: 4,
-    background:  'var(--bg-muted)',
-    color:       'var(--text-2)',
+    fontFamily: "'DM Mono', monospace",
+    fontSize: 10,
+    padding: '0 4px',
+    borderRadius: 3,
+    background: 'var(--bg-muted)',
+    color: 'var(--text-2)',
   }
 }
 
-function inputStyle(): React.CSSProperties {
+function inputStyle(): CSSProperties {
   return {
     background: 'var(--bg-input)',
-    border:     '1px solid var(--border)',
-    color:      'var(--text-1)',
+    border: '1px solid var(--border)',
+    color: 'var(--text-1)',
   }
 }

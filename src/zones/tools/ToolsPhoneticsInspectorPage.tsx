@@ -12,6 +12,8 @@ import {
 } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 
+import Button from '../../components/ui/Button'
+import ZoneHeader from '../../components/ZoneHeader'
 import {
   buildAnchorFromPhonetics,
   buildFigurativePhraseCues,
@@ -28,6 +30,10 @@ import {
   type PhoneticsRhymePanel,
   type RapAnchor,
 } from '../../lib/grap-engine'
+import {
+  publishHandoff,
+  setLastHandoff,
+} from '../../lib/cross-zone-handoff'
 import StudioToolsHeader from './StudioToolsHeader'
 
 interface ToolsPhoneticsInspectorPageProps {
@@ -111,6 +117,7 @@ export default function ToolsPhoneticsInspectorPage({ onNavigate }: ToolsPhoneti
   const [aiBusy,   setAiBusy]   = useState(false)
   const [aiError,  setAiError]  = useState<string | null>(null)
   const [copyHint, setCopyHint] = useState<string | null>(null)
+  const [sendHint, setSendHint] = useState<string | null>(null)
 
   const lastSnapRef = useRef<string | null>(null)
 
@@ -256,6 +263,23 @@ export default function ToolsPhoneticsInspectorPage({ onNavigate }: ToolsPhoneti
     [refreshRhymesForSeed, rhymeSeedManual],
   )
 
+  /** Push the current rhyme panel data over the cross-zone handoff bus. */
+  const sendToRhymeStudio = useCallback(() => {
+    if (!rhymePanel || rhymePanel.unknownSeed) return
+    const payload = {
+      kind:     'phonetics-to-rhyme' as const,
+      seedWord: rhymePanel.seedWord,
+      perfect:  rhymePanel.perfect.map(p => p.word),
+      near:     rhymePanel.near.map(p => p.word),
+    }
+    setLastHandoff(payload)
+    publishHandoff(payload)
+    setSendHint('Sent to Rhyme Studio — opening it…')
+    window.setTimeout(() => setSendHint(null), 2400)
+    // Navigate to Rhyme Studio so the user lands on the consumer side.
+    onNavigate('rhyme-studio')
+  }, [onNavigate, rhymePanel])
+
   const copyPrompt = useCallback(async () => {
     if (!prompt) return
     try {
@@ -312,6 +336,7 @@ export default function ToolsPhoneticsInspectorPage({ onNavigate }: ToolsPhoneti
       style={{ background: 'var(--bg-canvas)' }}
     >
       <StudioToolsHeader
+        toolId="tools-phonetics-inspector"
         crumbs={[{ label: 'Workspace' }, { label: 'Tools' }, { label: 'Phonetics inspector', emphasis: true }]}
         leftExtra={
           <button
@@ -327,18 +352,14 @@ export default function ToolsPhoneticsInspectorPage({ onNavigate }: ToolsPhoneti
       />
 
       <div className="flex-1 overflow-auto px-8 pb-20 pt-8">
-        <div className="mx-auto max-w-3xl">
-          <div className="mono mb-2 text-[11px] uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>Utility</div>
-          <h1 className="mb-2 flex items-center gap-2 text-2xl font-semibold tracking-tight" style={{ color: 'var(--text-1)' }}>
-            <BookText className="size-7" style={{ color: 'var(--accent)' }} aria-hidden />
-            Lyric ↔ phonetics
-          </h1>
-          <p className="mb-6 text-sm leading-relaxed" style={{ color: 'var(--text-3)' }}>
-            Tokenizes pasted lyrics and looks up pronunciations from the CMU dictionary (ARPAbet). After analyze the page
-            surfaces a <strong style={{ color: 'var(--text-1)' }}>Model G v3 / SUPERG</strong> pipeline ported from the
-            AI-Journal app: phonetic anchor, figures of speech, real Gunna / Young Thug bars matched by phonetic ending,
-            authority-lexicon picks, and a ready-to-run prompt.
-          </p>
+        <div className="mx-auto w-full max-w-3xl">
+          <ZoneHeader
+            eyebrow="UTILITY"
+            title="Lyric ↔ phonetics"
+            icon={BookText}
+            description={<>Tokenizes pasted lyrics and looks up pronunciations from the CMU dictionary (ARPAbet). After analyze the page surfaces a <strong style={{ color: 'var(--text-1)' }}>Model G v3 / SUPERG</strong> pipeline ported from the AI-Journal app: phonetic anchor, figures of speech, real Gunna / Young Thug bars matched by phonetic ending, authority-lexicon picks, and a ready-to-run prompt.</>}
+            className="mb-6"
+          />
 
           <textarea
             value={input}
@@ -354,16 +375,16 @@ export default function ToolsPhoneticsInspectorPage({ onNavigate }: ToolsPhoneti
             onFocus={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
             onBlur={e => (e.currentTarget.style.borderColor = 'var(--border)')}
           />
-          <button
-            type="button"
+          <Button
+            variant="primary"
+            size="lg"
+            className="mb-8"
             disabled={busy || !input.trim()}
             onClick={() => void analyze()}
-            className="mb-8 inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50"
-            style={{ background: 'var(--accent)' }}
+            leading={busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Sparkles className="size-4" aria-hidden />}
           >
-            {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Sparkles className="size-4" aria-hidden />}
             {busy ? 'Analyzing…' : 'Analyze words'}
-          </button>
+          </Button>
 
           {rows.length > 0 && (
             <div className="space-y-6">
@@ -500,7 +521,33 @@ export default function ToolsPhoneticsInspectorPage({ onNavigate }: ToolsPhoneti
                         Tight / near / consonant-style from CMUdict. Click a word in the table above to switch seeds.
                       </p>
                     </div>
+                    <button
+                      type="button"
+                      onClick={sendToRhymeStudio}
+                      disabled={rhymePanel.unknownSeed}
+                      className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition disabled:opacity-50"
+                      style={{
+                        background: 'var(--accent)',
+                        color:      '#fff',
+                      }}
+                      title="Open Rhyme Studio pre-filled with this seed + suggestions"
+                    >
+                      <Sparkles className="size-3.5" aria-hidden />
+                      Send to Rhyme Studio
+                    </button>
                   </header>
+                  {sendHint && (
+                    <p
+                      className="mb-3 rounded-md px-2 py-1.5 text-[11px]"
+                      style={{
+                        background: 'var(--accent-soft)',
+                        color:      'var(--accent-fg)',
+                        border:     '1px solid color-mix(in oklab, var(--accent) 22%, var(--border))',
+                      }}
+                    >
+                      {sendHint}
+                    </p>
+                  )}
 
                   {rhymePanel.unknownSeed ? (
                     <p className="text-xs" style={{ color: 'var(--text-3)' }}>

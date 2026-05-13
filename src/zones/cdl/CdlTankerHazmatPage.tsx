@@ -28,10 +28,14 @@ export default function CdlTankerHazmatPage() {
     <CdlQuiz
       title="TANKER + HAZMAT"
       subtitle="Combination — X Endorsement (N + H)"
-      badge="CDL ENDORSEMENT PREP"
+      badge="CDL COMBINATION PREP"
       endorseLetter="X"
       questions={TANKER_HAZMAT_QUESTIONS}
       theme={TANKER_HAZMAT_THEME}
+      // 50 = Tanker (20) + Hazmat (30); pass at 80% = 40 correct.
+      // NJ MVC issues N and H separately — this is combined practice only.
+      officialCount={50}
+      combinedNotice="Combined practice — not an official NJ MVC exam. The state issues Tanker (N) and Hazmat (H) as two separate tests."
     />
   )
 }

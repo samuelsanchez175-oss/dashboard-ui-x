@@ -1,5 +1,6 @@
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, MonitorPlay } from 'lucide-react'
 import MixingAudioGrabber from '../mixing/MixingAudioGrabber'
+import ZoneHeader from '../../components/ZoneHeader'
 import StudioToolsHeader from './StudioToolsHeader'
 
 interface ToolsYoutubePageProps {
@@ -13,6 +14,7 @@ export default function ToolsYoutubePage({ onNavigate }: ToolsYoutubePageProps) 
       style={{ background: 'var(--bg-canvas)' }}
     >
       <StudioToolsHeader
+        toolId="tools-youtube-downloader"
         crumbs={[
           { label: 'Workspace' },
           { label: 'Tools' },
@@ -40,12 +42,11 @@ export default function ToolsYoutubePage({ onNavigate }: ToolsYoutubePageProps) 
           className="shrink-0 px-8 pb-4 pt-8"
           style={{ borderBottom: '1px solid var(--border)' }}
         >
-          <h1 className="text-xl font-semibold tracking-tight" style={{ color: 'var(--text-1)' }}>
-            YouTube downloader
-          </h1>
-          <p className="mt-1 text-sm" style={{ color: 'var(--text-3)' }}>
-            Paste a link — clips decode locally and stack in the dock with optional key / BPM readouts.
-          </p>
+          <ZoneHeader
+            title="YouTube downloader"
+            icon={MonitorPlay}
+            description="Paste a link — clips decode locally and stack in the dock with optional key / BPM readouts."
+          />
         </div>
         <MixingAudioGrabber />
       </div>

@@ -23,7 +23,7 @@ export default function ProfileWidget() {
             className="text-[11px] font-semibold tracking-tight"
             style={{ fontFamily: "'DM Mono', monospace", color: 'var(--accent-fg)' }}
           >
-            GK
+            SS
           </span>
         </div>
 
@@ -32,13 +32,13 @@ export default function ProfileWidget() {
             className="text-[13px] font-semibold leading-tight truncate"
             style={{ color: 'var(--text-1)' }}
           >
-            Game
+            Samuel
           </p>
           <p
             className="text-[11px] leading-tight mt-0.5"
             style={{ color: 'var(--text-4)' }}
           >
-            Founder · Settings
+            Settings
           </p>
         </div>
 

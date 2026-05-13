@@ -1,4 +1,6 @@
 import { useState } from 'react'
+
+import UpdateDot from '../../components/ui/UpdateDot'
 import {
   Calendar, Check, ChevronRight, Circle, Clock, Disc3, Flag,
   Music, Plus, X,
@@ -403,6 +405,9 @@ export default function CpwZone() {
             <Music size={12} />
           </div>
           <span className="text-[13px] font-semibold" style={{ color: 'var(--text-1)' }}>CPW Projects</span>
+          <span className="inline-flex shrink-0 items-center self-center">
+            <UpdateDot zoneId="cpw-projects" className="h-2 w-2" />
+          </span>
           <span className="mono text-[10px] px-2 py-0.5 rounded" style={{ background: 'var(--accent-soft)', color: 'var(--accent-fg)' }}>
             {projects.length} projects
           </span>

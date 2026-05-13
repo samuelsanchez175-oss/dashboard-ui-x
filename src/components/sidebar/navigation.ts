@@ -1,40 +1,32 @@
 import {
-  Activity,
-  AudioWaveform,
   Biohazard,
   Bus,
   Car,
   CheckSquare,
-  Columns2,
   Container,
   Cpu,
-  Crop,
   Disc,
   Droplets,
   Fuel,
-  Drum,
   Globe,
   GraduationCap,
-  Grid2X2,
   Headphones,
+  Images,
   KeyRound,
   LayoutGrid,
-  LayoutList,
-  MonitorPlay,
   Music,
   Paintbrush,
   Piano,
-  Radio,
   Rss,
   School,
   SlidersHorizontal,
   Stethoscope,
-  Timer,
   Wand2,
-  WholeWord,
   Workflow,
   type LucideIcon,
 } from 'lucide-react'
+
+import { TOOLS_REGISTRY } from '../../lib/toolsRegistry'
 
 export interface NavItem {
   id: string
@@ -42,6 +34,8 @@ export interface NavItem {
   icon: LucideIcon
   badge?: number | string
   badgeClass?: string
+  /** Tooltip for the trailing badge (e.g. Settings scratch key count). */
+  badgeTitle?: string
 }
 
 export interface NavSection {
@@ -50,34 +44,31 @@ export interface NavSection {
   items: NavItem[]
 }
 
+const TOOLS_SECTION_ITEMS: NavItem[] = [
+  { id: 'tools-hub', label: 'All tools', icon: LayoutGrid, badge: TOOLS_REGISTRY.length },
+  ...TOOLS_REGISTRY.map(
+    (t): NavItem => ({
+      id:    t.id,
+      label: t.label,
+      icon:  t.icon,
+      ...(t.badge != null ? { badge: t.badge } : {}),
+    }),
+  ),
+]
+
 export const NAV_SECTIONS: NavSection[] = [
   {
-    id: 'tools',
+    id:    'tools',
     title: 'TOOLS',
-    items: [
-      { id: 'tools-hub', label: 'All tools', icon: LayoutGrid, badge: 14 },
-      { id: 'tools-youtube-downloader', label: 'YouTube downloader', icon: MonitorPlay },
-      { id: 'tools-key-finder', label: 'Key & BPM finder', icon: Radio },
-      { id: 'tools-chord-detector', label: 'Chord Detector', icon: AudioWaveform },
-      { id: 'tools-tempo-tap', label: 'Tempo Tap', icon: Activity },
-      { id: 'tools-metronome-export', label: 'Metronome export', icon: Drum },
-      { id: 'tools-phonetics-inspector', label: 'Phonetics inspector', icon: WholeWord },
-      { id: 'tools-session-timer', label: 'Session timer', icon: Timer },
-      { id: 'tools-arrangement-pad', label: 'Arrangement pad', icon: LayoutList },
-      { id: 'tools-sample-slicer', label: 'Sample slicer', icon: Crop },
-      { id: 'tools-stem-splitter', label: 'Stem splitter', icon: Columns2 },
-    ],
+    items: TOOLS_SECTION_ITEMS,
   },
   {
-    id: 'production',
+    id:    'production',
     title: 'PRODUCTION',
-    items: [
-      { id: 'production-overview', label: 'Overview', icon: Grid2X2 },
-      { id: 'agent-farm', label: 'Agent Farm', icon: Cpu, badge: 8 },
-    ],
+    items: [{ id: 'agent-farm', label: 'Agent Farm', icon: Cpu, badge: 8 }],
   },
   {
-    id: 'vocals',
+    id:    'vocals',
     title: 'VOCALS',
     items: [
       { id: 'vocals', label: 'Piano / MIDI', icon: Piano },
@@ -85,7 +76,7 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
-    id: 'mixing',
+    id:    'mixing',
     title: 'MIXING',
     items: [
       { id: 'mixing', label: 'Mix board', icon: SlidersHorizontal },
@@ -93,47 +84,46 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
-    id: 'harmony',
+    id:    'harmony',
     title: 'HARMONY STACK',
     items: [
       { id: 'harmony-services', label: 'Services & Pricing', icon: Globe },
-      { id: 'harmony-todos',    label: 'Client Projects',    icon: CheckSquare },
+      { id: 'harmony-todos', label: 'Client Projects', icon: CheckSquare },
+      { id: 'harmony-portfolio', label: 'Portfolio', icon: Images },
     ],
   },
   {
-    id: 'cpw',
+    id:    'cpw',
     title: 'CPW',
-    items: [
-      { id: 'cpw-projects', label: 'Projects', icon: Music },
-    ],
+    items: [{ id: 'cpw-projects', label: 'Projects', icon: Music }],
   },
   {
-    id: 'pulse',
+    id:    'pulse',
     title: 'PULSE',
     items: [{ id: 'pulse', label: 'AI digest', icon: Rss }],
   },
   {
-    id: 'cdl',
+    id:    'cdl',
     title: 'CDL PRAC',
     items: [
-      { id: 'cdl-hub',             label: 'All quizzes',            icon: GraduationCap, badge: 8 },
-      { id: 'cdl-hazmat',          label: 'Hazmat (H)',             icon: Biohazard },
-      { id: 'cdl-air-brakes',      label: 'Air Brakes',             icon: Disc },
-      { id: 'cdl-tanker',          label: 'Tanker (N)',             icon: Droplets },
-      { id: 'cdl-tanker-hazmat',   label: 'Tanker + HazMat (X)',    icon: Fuel },
-      { id: 'cdl-passenger',       label: 'Passenger (P)',          icon: Bus },
-      { id: 'cdl-school-bus',      label: 'School Bus (S)',         icon: School },
-      { id: 'cdl-doubles-triples', label: 'Doubles / Triples (T)',  icon: Container },
-      { id: 'cdl-tanker-doubles',  label: 'Tanker Doubles',         icon: Workflow },
+      { id: 'cdl-hub', label: 'All quizzes', icon: GraduationCap, badge: 8 },
+      { id: 'cdl-hazmat', label: 'Hazmat (H)', icon: Biohazard },
+      { id: 'cdl-air-brakes', label: 'Air Brakes', icon: Disc },
+      { id: 'cdl-tanker', label: 'Tanker (N)', icon: Droplets },
+      { id: 'cdl-tanker-hazmat', label: 'Tanker + HazMat (X)', icon: Fuel },
+      { id: 'cdl-passenger', label: 'Passenger (P)', icon: Bus },
+      { id: 'cdl-school-bus', label: 'School Bus (S)', icon: School },
+      { id: 'cdl-doubles-triples', label: 'Doubles / Triples (T)', icon: Container },
+      { id: 'cdl-tanker-doubles', label: 'Tanker Doubles', icon: Workflow },
     ],
   },
   {
-    id: 'web-designer-nav',
+    id:    'web-designer-nav',
     title: 'WEB DESIGN',
     items: [{ id: 'web-designer', label: 'Designer browser', icon: Paintbrush }],
   },
   {
-    id: 'dev',
+    id:    'dev',
     title: 'DEV',
     items: [
       { id: 'dev-diagnostics', label: 'Diagnostics', icon: Stethoscope },
@@ -141,11 +131,11 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
-    id: 'tesla',
+    id:    'tesla',
     title: 'TESLA',
-    items: [{ id: 'tesla', label: 'Vehicle (mock)', icon: Car }],
+    items: [{ id: 'tesla', label: 'Tesla Fleet', icon: Car }],
   },
 ]
 
 /** Default selected route on first mount. */
-export const DEFAULT_ACTIVE_ID = 'production-overview'
+export const DEFAULT_ACTIVE_ID = 'agent-farm'

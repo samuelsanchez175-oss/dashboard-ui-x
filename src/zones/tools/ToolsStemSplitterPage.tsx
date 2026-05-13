@@ -1,6 +1,9 @@
-import { ArrowLeft, Cpu, Divide, Loader2, Upload } from 'lucide-react'
-import { useCallback, useId, useMemo, useRef, useState } from 'react'
+import { ArrowLeft, Columns2, Cpu, Loader2, Upload } from 'lucide-react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 
+import Button from '../../components/ui/Button'
+import ZoneHeader from '../../components/ZoneHeader'
+import { getFileById } from '../../components/files-dock/files-store'
 import { encodeMonoPcm16Wav, triggerDownload } from '../../lib/pcm-wav'
 import StudioToolsHeader from './StudioToolsHeader'
 
@@ -61,6 +64,8 @@ export default function ToolsStemSplitterPage({ onNavigate }: ToolsStemSplitterP
   const [processing, setProcessing] = useState(false)
   const [remoteBusy, setRemoteBusy] = useState(false)
   const [crossoverHz, setCrossoverHz] = useState(1200)
+  /** Inbound clip relayed from another tool (Audio grabber, Recent clips tray). */
+  const [inboundNotice, setInboundNotice] = useState<string | null>(null)
 
   const ctxRef = useRef<AudioContext | null>(null)
 
@@ -84,6 +89,31 @@ export default function ToolsStemSplitterPage({ onNavigate }: ToolsStemSplitterP
     } finally {
       setLoading(false)
     }
+  }, [])
+
+  // Receive a clip handed off from the Mixing Audio Grabber (or any other
+  // sender that writes the agreed `inbound-clip-<routeId>` sessionStorage key).
+  // The pickup is one-shot — the key is cleared as soon as it's consumed.
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      let id: string | null = null
+      try {
+        id = sessionStorage.getItem('inbound-clip-tools-stem-splitter')
+        if (id) sessionStorage.removeItem('inbound-clip-tools-stem-splitter')
+      } catch {
+        id = null
+      }
+      if (!id || cancelled) return
+      const stored = await getFileById(id)
+      if (!stored || cancelled) return
+      const f = new File([stored.blob], stored.name, { type: stored.mime || 'audio/mpeg' })
+      setInboundNotice(`Loaded clip “${stored.name}” from grabber`)
+      void decodeFile(f)
+    })()
+    return () => { cancelled = true }
+    // Intentionally only on mount: clip pickup is one-shot per route entry.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const exportCrossovers = useCallback(async () => {
@@ -149,8 +179,12 @@ export default function ToolsStemSplitterPage({ onNavigate }: ToolsStemSplitterP
   }, [buffer, name, serviceUrl])
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-slate-50">
+    <div
+      className="flex min-h-0 flex-1 flex-col overflow-hidden"
+      style={{ background: 'var(--bg-canvas)', color: 'var(--text-1)' }}
+    >
       <StudioToolsHeader
+        toolId="tools-stem-splitter"
         crumbs={[{ label: 'Workspace' }, { label: 'Tools' }, { label: 'Stem splitter', emphasis: true }]}
         leftExtra={
           <button
@@ -165,12 +199,13 @@ export default function ToolsStemSplitterPage({ onNavigate }: ToolsStemSplitterP
       />
 
       <div className="flex-1 overflow-auto px-8 pb-16 pt-8">
-        <div className="mx-auto max-w-2xl">
-          <div className="mono mb-2 text-[11px] uppercase tracking-wide text-slate-500">Utility · Analysis</div>
-          <h1 className="mb-2 flex items-center gap-2 text-2xl font-semibold tracking-tight text-slate-900">
-            <Divide className="size-7 text-blue-500" aria-hidden />
-            Stem splitter preview
-          </h1>
+        <div className="mx-auto w-full max-w-3xl">
+          <ZoneHeader
+            eyebrow="UTILITY · ANALYSIS"
+            title="Stem splitter preview"
+            icon={Columns2}
+            className="mb-6"
+          />
 
           <div
             role="alert"
@@ -197,6 +232,15 @@ export default function ToolsStemSplitterPage({ onNavigate }: ToolsStemSplitterP
               }}
             />
           </label>
+
+          {inboundNotice && (
+            <p
+              className="mb-4 inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-900"
+              role="status"
+            >
+              {inboundNotice}
+            </p>
+          )}
 
           {buffer ? (
             <>
@@ -227,14 +271,15 @@ export default function ToolsStemSplitterPage({ onNavigate }: ToolsStemSplitterP
                 </div>
               </label>
 
-              <button
-                type="button"
+              <Button
+                variant="primary"
+                size="lg"
                 disabled={processing}
                 onClick={() => void exportCrossovers()}
-                className="mb-6 w-full rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-60"
+                className="mb-6 w-full"
               >
                 {processing ? 'Rendering…' : 'Download crossover stems (brightness + body WAV)'}
-              </button>
+              </Button>
 
               {serviceUrl ? (
                 <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">

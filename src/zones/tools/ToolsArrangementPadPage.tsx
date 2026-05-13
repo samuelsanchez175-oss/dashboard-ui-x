@@ -1,6 +1,8 @@
-import { ArrowLeft, Download, Layers, Plus, Trash2 } from 'lucide-react'
+import { ArrowLeft, Download, LayoutList, Plus, Trash2 } from 'lucide-react'
 import { useCallback, useState } from 'react'
 
+import Button from '../../components/ui/Button'
+import ZoneHeader from '../../components/ZoneHeader'
 import { triggerDownload } from '../../lib/pcm-wav'
 import StudioToolsHeader from './StudioToolsHeader'
 
@@ -89,8 +91,12 @@ export default function ToolsArrangementPadPage({ onNavigate }: ToolsArrangement
   }, [serializeMd])
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-slate-50">
+    <div
+      className="flex min-h-0 flex-1 flex-col overflow-hidden"
+      style={{ background: 'var(--bg-canvas)', color: 'var(--text-1)' }}
+    >
       <StudioToolsHeader
+        toolId="tools-arrangement-pad"
         crumbs={[{ label: 'Workspace' }, { label: 'Tools' }, { label: 'Arrangement pad', emphasis: true }]}
         leftExtra={
           <button
@@ -105,15 +111,14 @@ export default function ToolsArrangementPadPage({ onNavigate }: ToolsArrangement
       />
 
       <div className="flex-1 overflow-auto px-8 pb-16 pt-8">
-        <div className="mx-auto max-w-2xl">
-          <div className="mono mb-2 text-[11px] uppercase tracking-wide text-slate-500">Production</div>
-          <h1 className="mb-2 flex items-center gap-2 text-2xl font-semibold tracking-tight text-slate-900">
-            <Layers className="size-7 text-violet-500" aria-hidden />
-            Arrangement sketch pad
-          </h1>
-          <p className="mb-6 text-sm leading-relaxed text-slate-500">
-            Stack sections with bar lengths and optional BPM; export notes for rehearsals or collaborators.
-          </p>
+        <div className="mx-auto w-full max-w-3xl">
+          <ZoneHeader
+            eyebrow="PRODUCTION"
+            title="Arrangement sketch pad"
+            icon={LayoutList}
+            description="Stack sections with bar lengths and optional BPM; export notes for rehearsals or collaborators."
+            className="mb-6"
+          />
 
           <label className="mb-6 block rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <span className="mono text-[11px] uppercase tracking-wide text-slate-500">Optional BPM</span>
@@ -200,14 +205,13 @@ export default function ToolsArrangementPadPage({ onNavigate }: ToolsArrangement
               <Download className="size-4" />
               Plain text
             </button>
-            <button
-              type="button"
+            <Button
+              variant="primary"
               onClick={dlMd}
-              className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700"
+              leading={<Download className="size-4" />}
             >
-              <Download className="size-4" />
               Markdown
-            </button>
+            </Button>
           </div>
         </div>
       </div>

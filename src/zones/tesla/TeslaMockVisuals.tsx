@@ -49,7 +49,7 @@ export function BatterySocChart() {
   }, [])
 
   return (
-    <ChartCard title="Battery SOC (24h mock)" subtitle="Fleet Telemetry or charge logs would replace synthetic hourly samples.">
+    <ChartCard title="Battery SOC (24h sample)" subtitle="Fleet Telemetry or charge logs would replace synthetic hourly samples.">
       <div className="relative">
         <svg viewBox="0 0 360 128" className="h-auto max-h-40 w-full text-violet-600" aria-hidden>
           <defs>
@@ -74,7 +74,7 @@ export function BatterySocChart() {
           <span className="font-semibold tabular-nums text-gray-900">
             {Math.min(...points.map(p => p.soc)).toFixed(0)}–{Math.max(...points.map(p => p.soc)).toFixed(0)}%
           </span>{' '}
-          mock window.
+          sample window.
         </p>
       </div>
     </ChartCard>
@@ -86,7 +86,7 @@ export function WeeklyHomeChargingChart() {
   return (
     <ChartCard
       title="Home charging energy"
-      subtitle="kWh per weekday (mock) — utility-style weekly buckets."
+      subtitle="kWh per weekday (sample) — utility-style weekly buckets."
     >
       <div className="flex h-36 items-end justify-between gap-2 px-1">
         {MOCK_HOME_CHARGE_KWH_WEEK.map((kwh, i) => (
@@ -103,7 +103,7 @@ export function WeeklyHomeChargingChart() {
         ))}
       </div>
       <p className="mt-3 text-xs text-gray-600">
-        Total week (mock):{' '}
+        Total week (sample):{' '}
         <span className="font-semibold tabular-nums text-gray-900">
           {MOCK_HOME_CHARGE_KWH_WEEK.reduce((a, b) => a + b, 0).toFixed(1)} kWh
         </span>
@@ -121,7 +121,7 @@ export function TripEnergySplitDiagram() {
   ] as const
 
   return (
-    <ChartCard title="Last trip energy flow (mock)" subtitle="Trip diagnostics often expose motive vs regen vs HVAC overhead.">
+    <ChartCard title="Last trip energy flow (sample)" subtitle="Trip diagnostics often expose motive vs regen vs HVAC overhead.">
       <div className="flex h-10 w-full overflow-hidden rounded-lg ring-1 ring-gray-200">
         {seg.map(s => (
           <div
@@ -165,7 +165,7 @@ export function DriveScoreTrendChart() {
   }).join(' ')
 
   return (
-    <ChartCard title="Drive score trend" subtitle="Seven-day mock spark — scoring APIs vary by region / partner.">
+    <ChartCard title="Drive score trend" subtitle="Seven-day sample spark — scoring APIs vary by region / partner.">
       <svg viewBox={`0 0 ${W} ${H}`} className="h-auto max-h-28 w-full text-amber-600" aria-hidden>
         <path d={d} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         {MOCK_DRIVE_SCORE_SERIES.map((score, i) => {
@@ -175,7 +175,7 @@ export function DriveScoreTrendChart() {
         })}
       </svg>
       <p className="mt-2 text-xs text-gray-600">
-        Latest (mock):{' '}
+        Latest (sample):{' '}
         <span className="font-semibold tabular-nums text-gray-900">{MOCK_DRIVE_SCORE_SERIES.at(-1)}</span>
       </p>
     </ChartCard>

@@ -1,6 +1,7 @@
 /**
- * Dev-only BFF: Reddit RSS proxy (avoids browser CORS) and safe reads from repo `content/`.
- * Registered before other /api handlers in Vite.
+ * Dev-only BFF: Reddit RSS proxy, safe reads from repo `content/`, Tesla Fleet
+ * proxy (OAuth + vehicle reads), and mixing routes. Registered before other /api
+ * handlers in Vite.
  */
 
 import fs from 'node:fs/promises'
@@ -8,6 +9,7 @@ import path from 'node:path'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
 import { handleMixingYoutubeAudioPost } from './mixing-youtube-audio'
+import { tryHandleTeslaFleetRoutes } from './tesla-fleet-bff'
 
 type Next = () => void
 
@@ -229,6 +231,10 @@ export function attachDashboardBff(
     const method = (req.method ?? 'GET').toUpperCase()
     const next: Next = () => {
       next_()
+    }
+
+    if (tryHandleTeslaFleetRoutes(req, res)) {
+      return
     }
 
     if (pathName.startsWith('/api/mixing/')) {

@@ -1,25 +1,85 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Menu } from 'lucide-react'
 import Sidebar, { DEFAULT_ACTIVE_ID } from './components/sidebar'
 import MainContent from './components/MainContent'
 import TweaksPanel from './components/TweaksPanel'
 import FilesDock from './components/files-dock/FilesDock'
+import ShortcutOverlay from './components/ui/ShortcutOverlay'
 import { BffConfigProvider } from './context/BffConfigContext'
 import { DiagnosticsProvider } from './context/DiagnosticsContext'
 import { MockDataProvider } from './context/MockDataContext'
 import { UiChromeProvider } from './context/UiChromeContext'
+import { TeslaFleetMockSyncBridge } from './zones/tesla/TeslaFleetMockSyncBridge'
 import { ThemeProvider } from './context/ThemeContext'
 import { CustomZonesProvider } from './context/CustomZonesContext'
 import { WebDesignerBookmarksProvider } from './context/WebDesignerBookmarksContext'
+import { useGlobalShortcutOverlay } from './lib/useGlobalShortcuts'
+import { useSwipeGesture } from './hooks/useSwipeGesture'
+
+import { RECENT_EDITS } from './lib/recentEdits'
+import { seedUpdates, useUpdatesStore } from './lib/updatesStore'
+
+const SESSION_TOUCHED_ZONE_SEED = [
+  'tools-hub',
+  'tools-chord-detector',
+  'mixing-audio-grab',
+  'agent-farm',
+  'rhyme-studio',
+  'tesla',
+  'pulse',
+  'dev-diagnostics',
+  'dev',
+  'harmony-services',
+  'harmony-projects',
+  'harmony-portfolio',
+  'cdl-hub',
+] as const
 
 function App() {
   const [activeRouteId, setActiveRouteId] = useState<string>(DEFAULT_ACTIVE_ID)
   const [sidebarOpen, setSidebarOpen]     = useState(false)
+  const { overlayOpen, closeOverlay }     = useGlobalShortcutOverlay()
 
-  const handleRouteChange = (id: string) => {
-    setActiveRouteId(id)
+  useEffect(() => {
+    const DAY_MS = 24 * 60 * 60 * 1000
+    const now = Date.now()
+    for (const [zoneId, iso] of Object.entries(RECENT_EDITS)) {
+      const touched = new Date(iso).getTime()
+      if (!Number.isFinite(touched)) continue
+      if (now - touched < DAY_MS) {
+        useUpdatesStore.getState().markUpdated(zoneId)
+      }
+    }
+    seedUpdates([...SESSION_TOUCHED_ZONE_SEED])
+  }, [])
+
+  const handleRouteChange = useCallback((id: string) => {
+    setActiveRouteId(id === 'production-overview' ? 'agent-farm' : id)
     setSidebarOpen(false)
-  }
+  }, [])
+
+  // Cross-zone synergy bus: any module can dispatch
+  // `CustomEvent('dashboard:set-route', { detail: { id } })` to navigate
+  // (used by MixingAudioGrabber "Send to" rows and RecentClipsTray).
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ id?: string }>).detail
+      if (detail?.id) handleRouteChange(detail.id)
+    }
+    window.addEventListener('dashboard:set-route', handler)
+    return () => window.removeEventListener('dashboard:set-route', handler)
+  }, [handleRouteChange])
+
+  const openSidebar  = useCallback(() => setSidebarOpen(true),  [])
+  const closeSidebar = useCallback(() => setSidebarOpen(false), [])
+
+  // Mobile gestures: swipe right from the left edge to open the menu,
+  // swipe left anywhere while open to close it.
+  useSwipeGesture({
+    onSwipeRight: sidebarOpen ? undefined : openSidebar,
+    onSwipeLeft:  sidebarOpen ? closeSidebar : undefined,
+    rightEdgeSize: 28,
+  })
 
   return (
     <ThemeProvider>
@@ -28,6 +88,7 @@ function App() {
           <BffConfigProvider>
           <DiagnosticsProvider>
             <MockDataProvider>
+              <TeslaFleetMockSyncBridge />
               <UiChromeProvider>
                 <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg-app)' }}>
 
@@ -68,7 +129,7 @@ function App() {
                         className="text-[14px] font-semibold tracking-tight"
                         style={{ color: 'var(--text-1)' }}
                       >
-                        Dashboard X
+                        Samuel x Dashboard
                       </span>
                     </div>
 
@@ -77,6 +138,7 @@ function App() {
 
                   <TweaksPanel />
                   <FilesDock />
+                  <ShortcutOverlay open={overlayOpen} onClose={closeOverlay} />
                 </div>
               </UiChromeProvider>
             </MockDataProvider>

@@ -15,6 +15,11 @@ export type ConfigStatus = {
   GEMINI_API_KEY: boolean
   GOOGLE_API_KEY: boolean
   RSS_FEED_URLS: boolean
+  /** Harmony Stack → Client Projects prompt builder (`POST /api/harmony/client-projects/build-prompt`). */
+  HARMONY_CLIENT_PROJECTS_AI_KEY: boolean
+  /** Mixing / YouTube-audio pipeline — read from server env only. */
+  FFMPEG_PATH: boolean
+  YT_DLP_PATH: boolean
 }
 
 export type YoutubeSearchItem = {
@@ -39,11 +44,24 @@ export type RssItem = {
   feedUrl: string
 }
 
+export function parseConfigStatusPayload(raw: unknown): ConfigStatus {
+  const o = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
+  return {
+    YOUTUBE_API_KEY: Boolean(o.YOUTUBE_API_KEY),
+    GEMINI_API_KEY: Boolean(o.GEMINI_API_KEY),
+    GOOGLE_API_KEY: Boolean(o.GOOGLE_API_KEY),
+    RSS_FEED_URLS: Boolean(o.RSS_FEED_URLS),
+    HARMONY_CLIENT_PROJECTS_AI_KEY: Boolean(o.HARMONY_CLIENT_PROJECTS_AI_KEY),
+    FFMPEG_PATH: Boolean(o.FFMPEG_PATH),
+    YT_DLP_PATH: Boolean(o.YT_DLP_PATH),
+  }
+}
+
 export async function fetchConfigStatus(): Promise<ConfigStatus | null> {
   try {
     const res = await fetchWithKeys('/api/config/status')
     if (!res.ok) return null
-    return (await res.json()) as ConfigStatus
+    return parseConfigStatusPayload(await res.json())
   } catch {
     return null
   }

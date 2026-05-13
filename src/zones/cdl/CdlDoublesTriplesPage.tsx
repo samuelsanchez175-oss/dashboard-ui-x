@@ -32,6 +32,7 @@ export default function CdlDoublesTriplesPage() {
       endorseLetter="T"
       questions={DOUBLES_TRIPLES_QUESTIONS}
       theme={DOUBLES_TRIPLES_THEME}
+      officialCount={20}
     />
   )
 }

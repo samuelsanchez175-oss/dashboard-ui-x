@@ -80,32 +80,32 @@ export default function GrapEngineStudio() {
   }, [word, includeSlant])
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 to-white">
+    <div className="flex-1 overflow-y-auto bg-gradient-to-br from-[var(--bg-card-soft)] to-[var(--bg-canvas)]">
       <div className="max-w-[1200px] mx-auto p-6 space-y-4">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Sparkles size={22} className="text-purple-600" aria-hidden />
-              <h1 className="text-[22px] font-semibold text-gray-900 tracking-tight">
+              <Sparkles size={22} className="text-[var(--accent)]" aria-hidden />
+              <h1 className="text-[22px] font-semibold text-[var(--text-1)] tracking-tight">
                 G Rap Engine
               </h1>
             </div>
-            <p className="text-[12px] text-gray-500 max-w-xl">
+            <p className="text-[12px] text-[var(--text-4)] max-w-xl">
               Journal-grade rhyme discovery: CMUdict ARPAbet keys grouped with the{' '}
-              <span className="font-mono text-gray-700">rhyming-part</span> tonic nucleus + optional stress-stripped
+              <span className="font-mono text-[var(--text-2)]">rhyming-part</span> tonic nucleus + optional stress-stripped
               “slant” relatives. Mirrors the lyric journal flow (phonetic-first, pocket-aware).
             </p>
           </div>
-          <div className="text-right text-[10px] font-mono text-gray-400 uppercase tracking-wider space-y-1">
+          <div className="text-right text-[10px] font-mono text-[var(--text-4)] uppercase tracking-wider space-y-1">
             <div>{indexReady ? 'CMU index ready' : indexError ?? 'Hydrating phoneme index…'}</div>
-            {previewKey && <div className="text-purple-600 normal-case">live key: {previewKey}</div>}
+            {previewKey && <div className="text-[var(--accent)] normal-case">live key: {previewKey}</div>}
           </div>
         </div>
 
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm space-y-3">
+        <div className="rounded-xl border border-[var(--border-soft)] bg-[var(--bg-card)] p-4 shadow-sm space-y-3">
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex-1 min-w-[200px]">
-              <label htmlFor={inputId} className="block text-[11px] font-medium text-gray-500 uppercase tracking-wide mb-1">
+              <label htmlFor={inputId} className="block text-[11px] font-medium text-[var(--text-4)] uppercase tracking-wide mb-1">
                 Headword
               </label>
               <input
@@ -114,19 +114,19 @@ export default function GrapEngineStudio() {
                 value={word}
                 onChange={e => setWord(e.target.value)}
                 placeholder="flow, cosmos, violet…"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-purple-500 focus:ring-1 focus:ring-purple-400 outline-none"
+                className="w-full rounded-lg border border-[var(--border-soft)] bg-[var(--bg-input)] px-3 py-2 text-sm text-[var(--text-1)] placeholder:text-[var(--text-4)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none"
                 onKeyDown={e => {
                   if (e.key === 'Enter') void runSearch()
                 }}
                 disabled={!indexReady}
               />
             </div>
-            <label className="flex items-center gap-2 cursor-pointer pb-2 text-xs text-gray-600">
+            <label className="flex items-center gap-2 cursor-pointer pb-2 text-xs text-[var(--text-2)]">
               <input
                 type="checkbox"
                 checked={includeSlant}
                 onChange={e => setIncludeSlant(e.target.checked)}
-                className="rounded border-gray-300 text-purple-600 focus:ring-purple-400"
+                className="rounded border-[var(--border-soft)] text-[var(--accent)] focus:ring-[var(--accent)]"
               />
               Include slant (stress-less family)
             </label>
@@ -134,7 +134,7 @@ export default function GrapEngineStudio() {
               type="button"
               onClick={() => void runSearch()}
               disabled={!indexReady || loading}
-              className="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white shadow hover:bg-[var(--accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? <Loader2 className="animate-spin size-4" /> : <Wand2 size={16} />}
               Find rhymes
@@ -146,21 +146,21 @@ export default function GrapEngineStudio() {
             </p>
           )}
           {rhymeKeys.length > 0 && (
-            <p className="text-[11px] text-gray-400 font-mono">
+            <p className="text-[11px] text-[var(--text-4)] font-mono">
               rhyme keys ({rhymeKeys.length}):{' '}
-              <span className="text-gray-600">{rhymeKeys.join(' · ')}</span>
+              <span className="text-[var(--text-2)]">{rhymeKeys.join(' · ')}</span>
             </p>
           )}
         </div>
 
         <div className="grid gap-4 lg:grid-cols-[1fr,minmax(220px,.35fr)]">
-          <section className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-            <h2 className="text-[13px] font-semibold text-gray-800 flex items-center justify-between mb-3">
+          <section className="rounded-xl border border-[var(--border-soft)] bg-[var(--bg-card)] p-4 shadow-sm">
+            <h2 className="text-[13px] font-semibold text-[var(--text-1)] flex items-center justify-between mb-3">
               Suggestions
-              <span className="text-[10px] font-mono text-gray-400 uppercase">{rhymes.length} items</span>
+              <span className="text-[10px] font-mono text-[var(--text-4)] uppercase">{rhymes.length} items</span>
             </h2>
             {!rhymes.length && !hint && (
-              <p className="text-sm text-gray-400">Try a CMU-listed word above — clusters update instantly.</p>
+              <p className="text-sm text-[var(--text-4)]">Try a CMU-listed word above — clusters update instantly.</p>
             )}
             {rhymes.length > 0 && (
               <ul className="flex flex-wrap gap-2">
@@ -193,12 +193,12 @@ export default function GrapEngineStudio() {
             )}
           </section>
 
-          <aside className="rounded-xl border border-gray-200 bg-gradient-to-b from-white to-purple-50/40 p-4 shadow-sm space-y-3">
-            <h3 className="text-[12px] font-semibold text-gray-800 uppercase tracking-wide">Theme cues (static RAG)</h3>
+          <aside className="rounded-xl border border-[var(--border-soft)] bg-gradient-to-b from-[var(--bg-card)] to-[var(--accent-soft)] p-4 shadow-sm space-y-3">
+            <h3 className="text-[12px] font-semibold text-[var(--text-1)] uppercase tracking-wide">Theme cues (static RAG)</h3>
             <ul className="space-y-2">
               {GRAP_THEME_RULES.map(rule => (
-                <li key={rule.id} className="text-[11px] text-gray-600 leading-snug border-l-2 border-purple-200 pl-2">
-                  <span className="font-semibold text-gray-800">{rule.title}: </span>
+                <li key={rule.id} className="text-[11px] text-[var(--text-2)] leading-snug border-l-2 border-[var(--accent-soft-2)] pl-2">
+                  <span className="font-semibold text-[var(--text-1)]">{rule.title}: </span>
                   {rule.detail}
                 </li>
               ))}

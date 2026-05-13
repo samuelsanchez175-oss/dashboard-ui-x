@@ -31,6 +31,7 @@ export default function CdlPassengerPage() {
       endorseLetter="P"
       questions={PASSENGER_QUESTIONS}
       theme={PASSENGER_THEME}
+      officialCount={20}
     />
   )
 }

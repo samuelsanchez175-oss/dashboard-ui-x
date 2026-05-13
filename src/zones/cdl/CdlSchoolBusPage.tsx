@@ -31,6 +31,7 @@ export default function CdlSchoolBusPage() {
       endorseLetter="S"
       questions={SCHOOL_BUS_QUESTIONS}
       theme={SCHOOL_BUS_THEME}
+      officialCount={20}
     />
   )
 }

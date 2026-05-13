@@ -3,8 +3,18 @@
  * menu → quiz → review missed → results. Accent color and badge text are
  * parameterized so HAZMAT (toxic-green) and AIR BRAKES (caution-amber) can
  * share one implementation.
+ *
+ * Question-count behavior:
+ *   • `officialCount` is the NJ MVC question count for the matching real test
+ *     (e.g. Hazmat = 30, Air Brakes = 25). Default mode samples that many
+ *     questions from the bank so the menu/results numbers match what the
+ *     state actually administers.
+ *   • Banks ship with extra material so the user can also opt into an
+ *     "Extended (all N questions)" run via a toggle on the menu screen.
+ *   • Pass threshold scales with the active count: ceil(count * 0.8) = the
+ *     number of correct answers required at the 80% NJ MVC bar.
  */
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { ANSWER_LABELS, type CdlQuestion } from './cdl-questions'
 
@@ -46,32 +56,91 @@ export interface CdlQuizProps {
   endorseLetter: string
   questions: CdlQuestion[]
   theme:     CdlQuizTheme
+  /**
+   * Default question count for this test — the official NJ MVC count for the
+   * real exam (e.g. Hazmat 30, Air Brakes 25, Tanker 20). The quiz randomly
+   * samples this many questions from `questions` when the user starts the
+   * default test. If the bank is smaller than `officialCount`, the bank size
+   * is used and the toggle is hidden.
+   */
+  officialCount: number
+  /**
+   * Optional one-line clarifier shown under the stats row (used by the
+   * combo-prep screens — Tanker+Hazmat, Tanker+Doubles — to make clear that
+   * they are not real MVC exams).
+   */
+  combinedNotice?: string
 }
 
-export default function CdlQuiz({ title, subtitle, badge, endorseLetter, questions, theme }: CdlQuizProps) {
+/* ── helpers ────────────────────────────────────────────────────────────── */
+
+/**
+ * Fisher–Yates shuffle, then take the first `n`. Used to sample a fresh
+ * subset of the bank each time the user starts a test so retakes don't keep
+ * hitting the same 30 questions.
+ */
+function sampleQuestions(qs: CdlQuestion[], n: number): CdlQuestion[] {
+  const shuffled = qs.slice()
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    const tmp = shuffled[i]!
+    shuffled[i] = shuffled[j]!
+    shuffled[j] = tmp
+  }
+  return shuffled.slice(0, Math.max(0, Math.min(n, shuffled.length)))
+}
+
+export default function CdlQuiz({
+  title,
+  subtitle,
+  badge,
+  endorseLetter,
+  questions,
+  theme,
+  officialCount,
+  combinedNotice,
+}: CdlQuizProps) {
   const [mode,        setMode]        = useState<Mode>('menu')
   const [current,     setCurrent]     = useState(0)
   const [answers,     setAnswers]     = useState<Record<number, boolean>>({})
   const [selected,    setSelected]    = useState<number | null>(null)
   const [confirmed,   setConfirmed]   = useState(false)
   const [reviewIdx,   setReviewIdx]   = useState(0)
+  const [extended,    setExtended]    = useState(false)
+  /**
+   * The questions for the current attempt. Empty until START is pressed.
+   * On start we sample once and lock the slice for this run; the menu count
+   * is computed from `defaultCount` / `extended` instead of this array.
+   */
+  const [activeQuestions, setActiveQuestions] = useState<CdlQuestion[]>([])
 
-  const q       = questions[current]!
-  const total   = questions.length
-  const answered = Object.keys(answers).length
-  const score    = Object.values(answers).filter(Boolean).length
-  const pct      = Math.round((score / total) * 100)
-  const pass     = pct >= 80
-  const wrong    = questions.filter(qq => answers[qq.id] === false)
+  const bankSize        = questions.length
+  const cappedOfficial  = Math.min(officialCount, bankSize)
+  const hasExtendedMode = bankSize > cappedOfficial
+  const menuCount       = extended ? bankSize : cappedOfficial
+  const menuPassNeeded  = Math.ceil(menuCount * 0.8)
+
+  const total           = activeQuestions.length
+  const passNeeded      = Math.ceil(total * 0.8)
+  const q               = activeQuestions[current]
+  const answered        = Object.keys(answers).length
+  const score           = Object.values(answers).filter(Boolean).length
+  const pct             = total > 0 ? Math.round((score / total) * 100) : 0
+  const pass            = score >= passNeeded && total > 0
+  const wrong           = useMemo(
+    () => activeQuestions.filter(qq => answers[qq.id] === false),
+    [activeQuestions, answers],
+  )
 
   const startQuiz = () => {
+    setActiveQuestions(sampleQuestions(questions, menuCount))
     setAnswers({}); setSelected(null); setConfirmed(false); setCurrent(0); setMode('quiz')
   }
 
   const selectAnswer = (i: number) => { if (!confirmed) setSelected(i) }
 
   const confirm = () => {
-    if (selected === null) return
+    if (selected === null || !q) return
     setAnswers(prev => ({ ...prev, [q.id]: selected === q.ans }))
     setConfirmed(true)
   }
@@ -99,14 +168,36 @@ export default function CdlQuiz({ title, subtitle, badge, endorseLetter, questio
           )}
           <h1 style={titleStyle(theme)}>{title}</h1>
           <p style={subtitleStyle(theme)}>{subtitle}</p>
-          <div style={statRow(theme)}>
-            <Stat theme={theme} num={String(total)} label="Questions" />
+          <div style={{ ...statRow(theme), marginBottom: 14 }}>
+            <Stat theme={theme} num={String(menuCount)} label="Questions" />
             <span style={statDiv(theme)} />
             <Stat theme={theme} num="80%" label="To Pass" />
             <span style={statDiv(theme)} />
             <Stat theme={theme} num={endorseLetter} label="Endorsement" />
           </div>
-          <button style={startBtn(theme)} onClick={startQuiz}>START TEST</button>
+          <div style={passingNote(theme)}>
+            Need <strong style={{ color: theme.accent }}>{menuPassNeeded}</strong> of{' '}
+            <strong style={{ color: theme.accent }}>{menuCount}</strong> correct to pass
+          </div>
+          {combinedNotice && (
+            <div style={comboNotice(theme)}>{combinedNotice}</div>
+          )}
+          <button style={{ ...startBtn(theme), marginBottom: hasExtendedMode ? 10 : 0 }} onClick={startQuiz}>
+            START TEST
+          </button>
+          {hasExtendedMode && (
+            <button
+              type="button"
+              style={extendedToggle(theme, extended)}
+              onClick={() => setExtended(v => !v)}
+              aria-pressed={extended}
+            >
+              <span style={{ display: 'inline-block', width: 14, height: 14, marginRight: 10, border: `1px solid ${theme.accent}`, background: extended ? theme.accent : 'transparent', verticalAlign: '-2px' }} />
+              {extended
+                ? `Extended ON · all ${bankSize} questions`
+                : `Extended practice (all ${bankSize} questions)`}
+            </button>
+          )}
         </div>
       </Shell>
     )
@@ -123,7 +214,10 @@ export default function CdlQuiz({ title, subtitle, badge, endorseLetter, questio
           <p style={{ ...subtitleStyle(theme), color: verdictColor, fontWeight: 700, fontSize: 18, marginBottom: 8 }}>
             {pass ? '✓ PASSED' : '✗ FAILED'}
           </p>
-          <p style={{ ...subtitleStyle(theme), marginBottom: 28 }}>{score} / {total} correct</p>
+          <p style={{ ...subtitleStyle(theme), marginBottom: 6 }}>{score} / {total} correct</p>
+          <p style={{ ...subtitleStyle(theme), marginBottom: 28, fontSize: 11 }}>
+            ({passNeeded} required to pass at 80%)
+          </p>
           {wrong.length > 0 && (
             <button
               style={{ ...startBtn(theme), background: theme.cardBg, border: `2px solid ${theme.accent}`, color: theme.accent, marginBottom: 10 }}
@@ -191,6 +285,19 @@ export default function CdlQuiz({ title, subtitle, badge, endorseLetter, questio
   }
 
   /* ── quiz screen ───────────────────────────────────────────────────────── */
+  if (!q) {
+    // Defensive: should never happen, but if `activeQuestions` is empty bail
+    // back to the menu instead of crashing on `q.q`.
+    return (
+      <Shell theme={theme}>
+        <div style={menuCard(theme)}>
+          <p style={subtitleStyle(theme)}>No questions available.</p>
+          <button style={startBtn(theme)} onClick={() => setMode('menu')}>BACK TO MENU</button>
+        </div>
+      </Shell>
+    )
+  }
+
   const progress = (current / total) * 100
 
   return (
@@ -246,6 +353,7 @@ export default function CdlQuiz({ title, subtitle, badge, endorseLetter, questio
           <span style={{ color: theme.good }}>✓ {score}</span>
           <span style={{ color: theme.bad,     marginLeft: 16 }}>✗ {answered - score}</span>
           <span style={{ color: theme.textDim, marginLeft: 16 }}>{total - answered} left</span>
+          <span style={{ color: theme.textDim, marginLeft: 16 }}>· need {passNeeded} to pass</span>
         </div>
       </div>
     </Shell>
@@ -313,16 +421,50 @@ const subtitleStyle = (t: CdlQuizTheme): React.CSSProperties => ({
 })
 
 const statRow = (t: CdlQuizTheme): React.CSSProperties => ({
-  display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 36,
+  display: 'flex', justifyContent: 'center', alignItems: 'center',
   border: `1px solid ${t.border}`, borderRadius: 3, overflow: 'hidden',
 })
 
 const statDiv = (t: CdlQuizTheme): React.CSSProperties => ({ width: 1, height: 40, background: t.border })
 
+const passingNote = (t: CdlQuizTheme): React.CSSProperties => ({
+  color:         t.textDim,
+  fontSize:      12,
+  letterSpacing: 1,
+  marginBottom:  20,
+})
+
+const comboNotice = (t: CdlQuizTheme): React.CSSProperties => ({
+  color:         t.textDim,
+  fontSize:      11,
+  fontStyle:     'italic',
+  marginBottom:  18,
+  paddingTop:    10,
+  borderTop:     `1px dashed ${t.border}`,
+  letterSpacing: 0.4,
+  lineHeight:    1.5,
+})
+
 const startBtn = (t: CdlQuizTheme): React.CSSProperties => ({
   width: '100%', padding: 15, background: t.accent, color: t.accentFg, border: 'none',
   fontSize: 15, fontWeight: 900, letterSpacing: 4, cursor: 'pointer',
   fontFamily: "'Courier New', monospace", borderRadius: 2,
+})
+
+const extendedToggle = (t: CdlQuizTheme, on: boolean): React.CSSProperties => ({
+  width:         '100%',
+  padding:       '10px 12px',
+  background:    on ? t.accentSoft : 'transparent',
+  color:         on ? t.accent : t.textDim,
+  border:        `1px solid ${on ? t.accent : t.border}`,
+  fontSize:      11,
+  fontWeight:    700,
+  letterSpacing: 2,
+  cursor:        'pointer',
+  fontFamily:    "'Courier New', monospace",
+  borderRadius:  2,
+  textTransform: 'uppercase',
+  textAlign:     'left',
 })
 
 const quizWrap = (t: CdlQuizTheme): React.CSSProperties => ({

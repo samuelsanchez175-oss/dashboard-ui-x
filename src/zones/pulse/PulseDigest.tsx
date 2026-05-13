@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ExternalLink, RefreshCw, Rss } from 'lucide-react'
+import { LoadingState } from '../../components/ui/states'
+import Button from '../../components/ui/Button'
+import ZoneHeader from '../../components/ZoneHeader'
+import { CONTAINERS } from '../../lib/design-tokens'
 
 type DigestItem = { title: string; link: string; publishedAt: string | null }
 
@@ -61,9 +65,11 @@ export default function PulseDigest() {
 
   const savedHint =
     savedFeed.trim().length > 0 ? (
-      <span className="block mt-1 text-xs text-gray-600">
+      <span className="mt-1 block text-xs" style={{ color: 'var(--text-3)' }}>
         Using saved feed:{' '}
-        <code className="bg-gray-100 px-1 rounded">{savedFeed.trim()}</code>{' '}
+        <code className="rounded px-1" style={{ background: 'var(--bg-muted)', color: 'var(--text-1)' }}>
+          {savedFeed.trim()}
+        </code>{' '}
         <button
           type="button"
           onClick={resetToDefault}
@@ -76,15 +82,18 @@ export default function PulseDigest() {
 
   return (
     <div className="flex-1 overflow-auto" style={{ background: 'var(--bg-canvas)', color: 'var(--text-1)' }}>
-      <div className="max-w-3xl mx-auto p-8 space-y-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight flex items-center gap-2">
-              <Rss className="size-5 text-orange-600" aria-hidden />
-              AI digest
-            </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              <code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded">r/claudeskills</code> via{' '}
+      <div className={`${CONTAINERS.narrow} py-8 space-y-6`}>
+        <ZoneHeader
+          title="AI digest"
+          icon={Rss}
+          description={
+            <>
+              <code
+                className="rounded px-1.5 py-0.5 text-xs"
+                style={{ background: 'var(--bg-muted)', color: 'var(--text-1)' }}
+              >
+                r/claudeskills
+              </code>{' '}
               <a
                 className="text-orange-700 underline underline-offset-2"
                 href="https://www.reddit.com/r/claudeskills/.rss"
@@ -94,23 +103,22 @@ export default function PulseDigest() {
                 Reddit RSS
               </a>{' '}
               (proxied in dev to avoid CORS).
-            </p>
-            {savedHint}
-          </div>
-          <button
-            type="button"
-            onClick={() => void load()}
-            disabled={loading}
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50 disabled:opacity-60"
-          >
-            <RefreshCw className={`size-4 ${loading ? 'animate-spin' : ''}`} aria-hidden />
-            Refresh
-          </button>
-        </div>
+              {savedHint}
+            </>
+          }
+          actions={
+            <Button
+              variant="secondary"
+              onClick={() => void load()}
+              disabled={loading}
+              leading={<RefreshCw className={`size-4 ${loading ? 'animate-spin' : ''}`} aria-hidden />}
+            >
+              Refresh
+            </Button>
+          }
+        />
 
-        {loading && !data ? (
-          <p className="text-sm text-gray-500">Loading feed…</p>
-        ) : null}
+        {loading && !data ? <LoadingState label="Loading feed…" /> : null}
 
         {data && !data.ok ? (
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 space-y-3">
@@ -141,7 +149,8 @@ export default function PulseDigest() {
                     if (e.key === 'Enter') saveAndReload()
                   }}
                   placeholder="claudeskills or https://example.com/feed.xml"
-                  className="flex-1 min-w-0 rounded-lg border border-amber-300/90 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+                  className="flex-1 min-w-0 rounded-lg border border-amber-300/90 px-3 py-2 text-sm shadow-sm placeholder:[color:var(--text-4)] focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+                  style={{ background: 'var(--bg-card)', color: 'var(--text-1)' }}
                   autoComplete="off"
                 />
                 <button
@@ -165,16 +174,25 @@ export default function PulseDigest() {
                   href={item.link}
                   target="_blank"
                   rel="noreferrer"
-                  className="group flex gap-3 rounded-lg border border-gray-200 bg-gray-50/80 px-4 py-3 hover:border-gray-300 hover:bg-white transition-colors"
+                  className="group flex gap-3 rounded-lg border px-4 py-3 transition-colors hover:[border-color:var(--border)] hover:[background:var(--bg-card)]"
+                  style={{
+                    borderColor: 'var(--border-soft)',
+                    background: 'color-mix(in oklab, var(--bg-card-soft) 80%, transparent)',
+                  }}
                 >
                   <ExternalLink
-                    className="size-4 shrink-0 text-gray-400 group-hover:text-orange-600 mt-0.5"
+                    className="mt-0.5 size-4 shrink-0 transition-colors group-hover:text-orange-600"
+                    style={{ color: 'var(--text-4)' }}
                     aria-hidden
                   />
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-900 leading-snug">{item.title}</p>
+                    <p className="text-sm font-medium leading-snug" style={{ color: 'var(--text-1)' }}>
+                      {item.title}
+                    </p>
                     {item.publishedAt ? (
-                      <p className="text-xs text-gray-500 mt-1 tabular-nums">{item.publishedAt}</p>
+                      <p className="mt-1 text-xs tabular-nums" style={{ color: 'var(--text-3)' }}>
+                        {item.publishedAt}
+                      </p>
                     ) : null}
                   </div>
                 </a>

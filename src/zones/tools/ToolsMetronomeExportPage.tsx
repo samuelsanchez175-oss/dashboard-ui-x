@@ -1,7 +1,9 @@
 import { Midi } from '@tonejs/midi'
-import { ArrowLeft, Download, Play, Square, Waves } from 'lucide-react'
+import { ArrowLeft, Download, Drum, Play, Square, Waves } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import Button from '../../components/ui/Button'
+import ZoneHeader from '../../components/ZoneHeader'
 import { encodeMonoPcm16Wav, triggerDownload } from '../../lib/pcm-wav'
 import StudioToolsHeader from './StudioToolsHeader'
 
@@ -156,8 +158,12 @@ export default function ToolsMetronomeExportPage({ onNavigate }: ToolsMetronomeE
   }, [accentEvery, bpm, bars, beatsPerBar, maxBarsByDuration, secPerBeat])
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-slate-50">
+    <div
+      className="flex min-h-0 flex-1 flex-col overflow-hidden"
+      style={{ background: 'var(--bg-canvas)', color: 'var(--text-1)' }}
+    >
       <StudioToolsHeader
+        toolId="tools-metronome-export"
         crumbs={[{ label: 'Workspace' }, { label: 'Tools' }, { label: 'Metronome Export', emphasis: true }]}
         leftExtra={
           <button
@@ -172,15 +178,19 @@ export default function ToolsMetronomeExportPage({ onNavigate }: ToolsMetronomeE
       />
 
       <div className="flex-1 overflow-auto px-8 pb-16 pt-8">
-        <div className="mx-auto max-w-lg">
-          <div className="mono mb-2 text-[11px] uppercase tracking-wide text-slate-500">Utility</div>
-          <h1 className="mb-2 text-2xl font-semibold tracking-tight text-slate-900">Metronome / click export</h1>
-          <p className="mb-8 text-sm leading-relaxed text-slate-500">
-            Preview clicks in real time and export a WAV (or MIDI) click track capped at roughly 30 seconds. Accents repeat
-            every <span className="font-medium text-slate-700">N</span> beats — default matches beats per measure.
-          </p>
+        <div className="mx-auto w-full max-w-3xl">
+          <ZoneHeader
+            eyebrow="UTILITY"
+            title="Metronome / click export"
+            icon={Drum}
+            description={<>Preview clicks in real time and export a WAV (or MIDI) click track capped at roughly 30 seconds. Accents repeat every <span className="font-medium" style={{ color: 'var(--text-2)' }}>N</span> beats — default matches beats per measure.</>}
+            className="mb-8"
+          />
 
-          <div className="space-y-5 rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+          <div
+            className="space-y-5 rounded-2xl p-8"
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}
+          >
             <label className="block">
               <span className="mono text-[11px] uppercase tracking-wide text-slate-500">BPM ({BPM_MIN}–{BPM_MAX})</span>
               <div className="mt-2 flex flex-wrap items-center gap-3">
@@ -250,9 +260,12 @@ export default function ToolsMetronomeExportPage({ onNavigate }: ToolsMetronomeE
               </p>
             </label>
 
-            <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-6">
-              <button
-                type="button"
+            <div
+              className="flex flex-wrap gap-2 pt-6"
+              style={{ borderTop: '1px solid var(--border-soft)' }}
+            >
+              <Button
+                variant={previewOn ? 'destructive' : 'primary'}
                 onClick={() => {
                   if (previewOn) setPreviewOn(false)
                   else {
@@ -260,14 +273,10 @@ export default function ToolsMetronomeExportPage({ onNavigate }: ToolsMetronomeE
                     setPreviewOn(true)
                   }
                 }}
-                className={[
-                  'inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold shadow-sm transition',
-                  previewOn ? 'bg-rose-600 text-white hover:bg-rose-700' : 'bg-emerald-600 text-white hover:bg-emerald-700',
-                ].join(' ')}
+                leading={previewOn ? <Square className="size-4" /> : <Play className="size-4" />}
               >
-                {previewOn ? <Square className="size-4" /> : <Play className="size-4" />}
                 {previewOn ? 'Stop preview' : 'Live preview'}
-              </button>
+              </Button>
               <button
                 type="button"
                 onClick={() => void exportWav()}

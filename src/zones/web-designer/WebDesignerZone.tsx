@@ -89,7 +89,7 @@ export default function WebDesignerZone({ onNavigate, initialBookmarkId }: WebDe
   if (initialBookmarkId && !resolvedBookmark) {
     return (
       <div
-        className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center"
+        className="flex flex-1 flex-col items-center justify-center gap-[var(--grid-gap)] p-[var(--pad-card)] text-center"
         style={{ background: 'var(--bg-canvas)' }}
       >
         <p className="text-sm font-medium" style={{ color: 'var(--text-2)' }}>
@@ -114,7 +114,7 @@ export default function WebDesignerZone({ onNavigate, initialBookmarkId }: WebDe
     >
       {/* Top chrome */}
       <div
-        className="shrink-0 border-b px-6 py-4 md:px-8"
+        className="shrink-0 border-b py-4 px-[var(--pad-card)]"
         style={{ borderColor: 'var(--border)', background: 'var(--bg-sidebar)' }}
       >
         <div className="flex flex-wrap items-center gap-2 text-[11px] font-medium uppercase tracking-wider" style={{ color: 'var(--text-4)' }}>

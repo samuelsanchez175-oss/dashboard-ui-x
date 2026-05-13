@@ -3,9 +3,23 @@
  */
 
 import type { ApiResult } from '../components/agent-farm/api-stubs'
-import type { ConfigStatus, GeminiPingPayload, YoutubeSearchPayload } from './agent-farm-api'
-import { canUseYoutubeSearch } from './agent-farm-api'
+import {
+  canUseYoutubeSearch,
+  parseConfigStatusPayload,
+  type ConfigStatus,
+  type GeminiPingPayload,
+  type YoutubeSearchPayload,
+} from './agent-farm-api'
 import { summarizeDevSettingsScratch } from './dev-documented-env-keys'
+import {
+  CLIENT_VITE_DIAG_ENTRIES,
+  SERVER_DIAGNOSTIC_ENV_ENTRIES,
+  classifyEnvPresence,
+  detailFromPresence,
+  fixHintFromPresence,
+  severityFromPresence,
+  type EnvPresence,
+} from './diagnostics-env-contract'
 import { probeMixingDockIndexedDb } from '../zones/mixing/mixing-audio-idb'
 
 export type DiagnosticSeverity = 'ok' | 'warn' | 'critical'
@@ -45,7 +59,8 @@ function integrationHint(cfg: ConfigStatus): DiagnosticCheck | null {
     cfg.YOUTUBE_API_KEY ||
     cfg.GOOGLE_API_KEY ||
     cfg.GEMINI_API_KEY ||
-    cfg.RSS_FEED_URLS
+    cfg.RSS_FEED_URLS ||
+    cfg.HARMONY_CLIENT_PROJECTS_AI_KEY
   if (any) return null
   return {
     id: 'integrations-empty',
@@ -54,7 +69,7 @@ function integrationHint(cfg: ConfigStatus): DiagnosticCheck | null {
     title: 'No integration keys reported by the BFF',
     detail:
       'Agent Farm, Pulse RSS, and some tabs need server keys in .env.local (see Settings & API).',
-    fix: 'Add at least one of YOUTUBE_API_KEY, GOOGLE_API_KEY, GEMINI_API_KEY, or RSS_FEED_URLS — then restart npm run dev.',
+    fix: 'Add at least one of YOUTUBE_API_KEY, GOOGLE_API_KEY, GEMINI_API_KEY, HARMONY_CLIENT_PROJECTS_AI_KEY, or RSS_FEED_URLS — then restart npm run dev.',
   }
 }
 
@@ -560,6 +575,99 @@ async function probeOpenAiPing(bffOk: boolean): Promise<DiagnosticCheck | null> 
   }
 }
 
+type ServerEnvKeysPayload = { server?: Record<string, EnvPresence> }
+
+async function probeEnvKeyRows(extendedApiSmoke: boolean, bffOk: boolean): Promise<DiagnosticCheck[]> {
+  if (!extendedApiSmoke) return []
+
+  const rows: DiagnosticCheck[] = []
+
+  for (const e of CLIENT_VITE_DIAG_ENTRIES) {
+    const meta = import.meta.env as Record<string, string | boolean | undefined>
+    const raw = meta[e.envKey]
+    const str = typeof raw === 'string' ? raw : raw != null && raw !== false ? String(raw) : ''
+    const p = classifyEnvPresence(str)
+    const severity = severityFromPresence(p, e.missingSeverity, e.placeholderSeverity)
+    rows.push({
+      id: `env-client-${e.envKey}`,
+      category: 'runtime',
+      severity,
+      title: `${e.label} (${e.envKey})`,
+      detail: detailFromPresence(p, e.envKey),
+      fix: fixHintFromPresence(p, 'client'),
+    })
+  }
+
+  if (!bffOk) {
+    rows.push({
+      id: 'env-server-probe',
+      category: 'integrations',
+      severity: 'warn',
+      title: 'Server env key audit skipped',
+      detail: 'BFF unreachable — cannot call GET /api/diagnostics/env-keys (server values are never exposed to the client bundle).',
+    })
+    return rows
+  }
+
+  try {
+    const { ms, res } = await timedFetch('/api/diagnostics/env-keys')
+    if (!res.ok) {
+      rows.push({
+        id: 'env-server-probe',
+        category: 'api',
+        severity: 'critical',
+        title: 'GET /api/diagnostics/env-keys failed',
+        detail: `HTTP ${res.status} (${ms} ms).`,
+        fix: 'Ensure the Vite dev BFF is running and `server/agent-farm-bff.ts` includes the diagnostics route.',
+      })
+      return rows
+    }
+    let body: ServerEnvKeysPayload = {}
+    try {
+      body = (await res.json()) as ServerEnvKeysPayload
+    } catch {
+      rows.push({
+        id: 'env-server-probe',
+        category: 'api',
+        severity: 'warn',
+        title: 'GET /api/diagnostics/env-keys — invalid JSON',
+        detail: `HTTP ${res.status} (${ms} ms).`,
+      })
+      return rows
+    }
+    const server = body.server ?? {}
+    for (const e of SERVER_DIAGNOSTIC_ENV_ENTRIES) {
+      const p = server[e.envKey] ?? 'missing'
+      const severity = severityFromPresence(p, e.missingSeverity, e.placeholderSeverity)
+      rows.push({
+        id: `env-server-${e.envKey}`,
+        category: 'integrations',
+        severity,
+        title: `${e.label} (${e.envKey})`,
+        detail: detailFromPresence(p, e.envKey),
+        fix: fixHintFromPresence(p, 'server'),
+      })
+    }
+    rows.push({
+      id: 'api-diagnostics-env-keys',
+      category: 'api',
+      severity: 'ok',
+      title: 'GET /api/diagnostics/env-keys OK',
+      detail: `HTTP ${res.status} (${ms} ms). Returned presence labels only for ${SERVER_DIAGNOSTIC_ENV_ENTRIES.length} allowlisted server variables.`,
+    })
+  } catch (e) {
+    rows.push({
+      id: 'env-server-probe',
+      category: 'api',
+      severity: 'critical',
+      title: 'GET /api/diagnostics/env-keys unreachable',
+      detail: e instanceof Error ? e.message : String(e),
+    })
+  }
+
+  return rows
+}
+
 export type RunDiagnosticsOptions = {
   /**
    * When true, probes RSS aggregation and optional YouTube / Gemini / OpenAI routes (may hit third-party APIs).
@@ -586,7 +694,7 @@ function probeDevSettingsScratchSummary(): DiagnosticCheck {
 export async function runDashboardDiagnostics(opts?: RunDiagnosticsOptions): Promise<DiagnosticsReport> {
   const extendedApiSmoke = opts?.extendedApiSmoke === true
   const checks: DiagnosticCheck[] = []
-  let bffLatencyMs: number | null = null
+  let bffLatencyMs: number | null
   let config: ConfigStatus | null = null
 
   const clientOrigin =
@@ -612,7 +720,7 @@ export async function runDashboardDiagnostics(opts?: RunDiagnosticsOptions): Pro
       })
     } else {
       bffReachable = true
-      config = (await res.json()) as ConfigStatus
+      config = parseConfigStatusPayload(await res.json())
       checks.push({
         id: 'bff-ok',
         category: 'bff',
@@ -655,7 +763,7 @@ export async function runDashboardDiagnostics(opts?: RunDiagnosticsOptions): Pro
       severity: 'ok',
       title: 'Extended API smoke not run (scheduled refresh)',
       detail:
-        'RSS / YouTube / Gemini / OpenAI probes are skipped on automatic refresh to avoid feed traffic and API quotas. Click “Run checks” on Diagnostics for a full pass.',
+        'RSS / YouTube / Gemini / OpenAI probes and the env-key audit (VITE_* + allowlisted server vars) are skipped on automatic refresh to avoid feed traffic, API quotas, and extra routes. Click “Run full checks” on Diagnostics for a full pass.',
     })
   } else {
     const heavy = await Promise.all([
@@ -666,6 +774,9 @@ export async function runDashboardDiagnostics(opts?: RunDiagnosticsOptions): Pro
     ])
     for (const row of heavy) {
       if (row) checks.push(row)
+    }
+    for (const row of await probeEnvKeyRows(true, bffReachable)) {
+      checks.push(row)
     }
   }
 
@@ -743,6 +854,29 @@ export function formatDiagnosticsMarkdown(report: DiagnosticsReport, clientError
     lines.push(
       `- **YOUTUBE_API_KEY:** ${report.config.YOUTUBE_API_KEY ? 'set' : 'missing'} · **GOOGLE_API_KEY:** ${report.config.GOOGLE_API_KEY ? 'set' : 'missing'} · **GEMINI_API_KEY:** ${report.config.GEMINI_API_KEY ? 'set' : 'missing'} · **RSS_FEED_URLS:** ${report.config.RSS_FEED_URLS ? 'set' : 'missing'}`,
     )
+    lines.push('')
+  }
+
+  const envRows = report.checks.filter(
+    c =>
+      c.id.startsWith('env-client-') ||
+      c.id.startsWith('env-server-') ||
+      c.id === 'api-diagnostics-env-keys' ||
+      c.id === 'env-server-probe',
+  )
+  if (envRows.length) {
+    lines.push('## Environment variables (full checks only)')
+    lines.push(
+      '- **Classification:** present / missing / placeholder (heuristic). Secret values are never exported.',
+    )
+    lines.push(
+      '- **Client:** `import.meta.env` for documented `VITE_*` keys only. **Server:** `GET /api/diagnostics/env-keys` (allowlisted names, booleans/presence labels).',
+    )
+    for (const c of envRows.sort((a, b) => a.id.localeCompare(b.id))) {
+      lines.push(`- **${c.severity.toUpperCase()}** \`${c.id}\` — ${c.title}`)
+      lines.push(`  - ${c.detail}`)
+      if (c.fix) lines.push(`  - *Fix:* ${c.fix}`)
+    }
     lines.push('')
   }
 

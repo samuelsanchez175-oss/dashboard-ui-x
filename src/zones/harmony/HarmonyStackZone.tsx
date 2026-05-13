@@ -1,11 +1,37 @@
-import { useState } from 'react'
+import { useEffect, useId, useMemo, useState, type KeyboardEvent } from 'react'
 import {
-  Check, ChevronDown, Circle, Clock, Globe, Plus, Star, Trash2,
-  TrendingUp, X, Zap,
+  Check,
+  ChevronDown,
+  Circle,
+  Clock,
+  Copy,
+  Eye,
+  EyeOff,
+  Globe,
+  Loader2,
+  Plus,
+  RotateCcw,
+  Sparkles,
+  Star,
+  Trash2,
+  TrendingUp,
+  X,
+  Zap,
 } from 'lucide-react'
 
+import UpdateDot from '../../components/ui/UpdateDot'
+import { fetchWithKeys, getApiKey, setApiKey, subscribeApiKeys } from '../../lib/api-keys'
+
 /* ── Types ─────────────────────────────────────────────────────────────────── */
-type Tab = 'services' | 'projects'
+type Tab = 'services' | 'projects' | 'portfolio'
+
+const HARMONY_TAB_ORDER: Tab[] = ['services', 'projects', 'portfolio']
+
+function tabLabel(t: Tab): string {
+  if (t === 'services') return 'Services & Pricing'
+  if (t === 'projects') return 'Client Projects'
+  return 'Portfolio'
+}
 
 interface ServicePackage {
   id:       string
@@ -116,6 +142,26 @@ const PRIORITY_COLORS: Record<ClientTask['priority'], { bg: string; fg: string }
   low:  { bg: 'var(--bg-muted)',  fg: 'var(--text-4)' },
 }
 
+const HARMONY_CLIENT_PROJECTS_AI_KEY = 'HARMONY_CLIENT_PROJECTS_AI_KEY' as const
+
+function buildClientProjectsGeminiPrompt(task: ClientTask): string {
+  const dueLine = task.due
+    ? `Due date: ${task.due}`
+    : 'Due date: not set'
+  return [
+    'You help a web design studio (Harmony Stack) turn internal tasks into a single, copy-pasteable assistant prompt.',
+    '',
+    'Task context:',
+    `- Title: ${task.title}`,
+    `- Client / project: ${task.client}`,
+    `- Current workflow status: ${task.status}`,
+    `- Priority: ${task.priority}`,
+    `- ${dueLine}`,
+    '',
+    'Write ONE cohesive block of instructions (no meta commentary, no surrounding quotes) that the designer can paste into an AI tool to execute or prepare this task well. Keep it under ~220 words.',
+  ].join('\n')
+}
+
 /* ── Services tab ───────────────────────────────────────────────────────────── */
 function ServicesTab() {
   const [addonsOpen, setAddonsOpen] = useState(true)
@@ -136,11 +182,11 @@ function ServicesTab() {
       </div>
 
       {/* Package cards */}
-      <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
+      <div className="grid gap-[var(--grid-gap)]" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(var(--tile-min), 1fr))' }}>
         {PACKAGES.map(pkg => (
           <div
             key={pkg.id}
-            className="zone-card flex flex-col gap-4 relative overflow-hidden"
+            className="zone-card flex flex-col gap-[var(--grid-gap)] relative overflow-hidden"
             style={pkg.highlight ? {
               borderColor: 'var(--accent)',
               boxShadow: '0 0 0 1px var(--accent), var(--shadow-md)',
@@ -196,7 +242,7 @@ function ServicesTab() {
 
       {/* Stats strip */}
       <div
-        className="grid gap-4 rounded-xl p-5"
+        className="grid gap-[var(--grid-gap)] rounded-xl p-5"
         style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))' }}
       >
         {[
@@ -237,11 +283,11 @@ function ServicesTab() {
           />
         </button>
         {addonsOpen && (
-          <div className="grid gap-2 px-5 pb-5 fade-in" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
+          <div className="grid gap-2 px-5 pb-5 fade-in" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(var(--tile-min), 1fr))' }}>
             {ADDONS.map(a => (
               <div
                 key={a.label}
-                className="flex items-center justify-between rounded-lg px-3 py-2.5"
+                className="flex items-center justify-between rounded-lg px-[var(--pad-row)] py-[var(--pad-row)]"
                 style={{ background: 'var(--bg-muted)', border: '1px solid var(--border-soft)' }}
               >
                 <span className="text-[12px]" style={{ color: 'var(--text-2)' }}>{a.label}</span>
@@ -257,11 +303,32 @@ function ServicesTab() {
 
 /* ── Projects tab ───────────────────────────────────────────────────────────── */
 function ProjectsTab() {
-  const [tasks, setTasks]         = useState<ClientTask[]>(INITIAL_TASKS)
-  const [newTitle, setNewTitle]   = useState('')
+  const harmonyKeyInputId = useId()
+  const [tasks, setTasks] = useState<ClientTask[]>(INITIAL_TASKS)
+  const [newTitle, setNewTitle] = useState('')
   const [newClient, setNewClient] = useState('')
-  const [newDue, setNewDue]       = useState('')
-  const [filter, setFilter]       = useState<ClientTask['status'] | 'all'>('all')
+  const [newDue, setNewDue] = useState('')
+  const [harmonyAiKeyDraft, setHarmonyAiKeyDraft] = useState(() => getApiKey(HARMONY_CLIENT_PROJECTS_AI_KEY))
+  const [showHarmonyAiKey, setShowHarmonyAiKey] = useState(false)
+  const [promptModal, setPromptModal] = useState<
+    null | { taskTitle: string; loading: boolean; text: string; error: string }
+  >(null)
+  const [copyFlash, setCopyFlash] = useState(false)
+
+  useEffect(() => subscribeApiKeys(keys => {
+    setHarmonyAiKeyDraft(keys[HARMONY_CLIENT_PROJECTS_AI_KEY] ?? '')
+  }), [])
+
+  const clientsGrouped = useMemo(() => {
+    const map = new Map<string, ClientTask[]>()
+    for (const t of tasks) {
+      const key = t.client.trim() || 'Unknown'
+      const arr = map.get(key) ?? []
+      arr.push(t)
+      map.set(key, arr)
+    }
+    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]))
+  }, [tasks])
 
   function addTask() {
     if (!newTitle.trim()) return
@@ -277,72 +344,213 @@ function ProjectsTab() {
     setNewTitle(''); setNewClient(''); setNewDue('')
   }
 
-  function cycleStatus(id: string) {
-    const order: ClientTask['status'][] = ['todo', 'active', 'review', 'done']
-    setTasks(prev => prev.map(t => {
-      if (t.id !== id) return t
-      const next = order[(order.indexOf(t.status) + 1) % order.length]
-      return { ...t, status: next }
-    }))
+  function setTaskStatus(id: string, status: ClientTask['status']) {
+    setTasks(prev => prev.map(task => (task.id === id ? { ...task, status } : task)))
   }
 
-  function remove(id: string) {
+  function removeTask(id: string) {
     setTasks(prev => prev.filter(t => t.id !== id))
   }
-
-  const visible = filter === 'all' ? tasks : tasks.filter(t => t.status === filter)
-  const counts  = STATUS_COLS.reduce((acc, col) => {
-    acc[col.id] = tasks.filter(t => t.status === col.id).length
-    return acc
-  }, {} as Record<ClientTask['status'], number>)
 
   function isOverdue(due?: string) {
     if (!due) return false
     return new Date(due) < new Date()
   }
 
+  async function runBuildPrompt(task: ClientTask) {
+    setPromptModal({ taskTitle: task.title, loading: true, text: '', error: '' })
+    const prompt = buildClientProjectsGeminiPrompt(task)
+    try {
+      const res = await fetchWithKeys('/api/harmony/client-projects/build-prompt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, maxOutputTokens: 512 }),
+      })
+      const body = (await res.json()) as { ok?: boolean; preview?: string | null; message?: string }
+      const failed = !res.ok || (body && typeof body === 'object' && 'ok' in body && body.ok === false)
+      if (failed) {
+        const msg = typeof body?.message === 'string' ? body.message : `HTTP ${res.status}`
+        setPromptModal(m => (m ? { ...m, loading: false, error: msg, text: '' } : null))
+        return
+      }
+      const text = typeof body.preview === 'string' ? body.preview : ''
+      setPromptModal(m => (m ? { ...m, loading: false, text, error: '' } : null))
+    } catch (e) {
+      setPromptModal(m => (m
+        ? { ...m, loading: false, error: e instanceof Error ? e.message : 'Request failed', text: '' }
+        : null))
+    }
+  }
+
+  async function copyModalText() {
+    const text = promptModal?.text
+    if (!text) return
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopyFlash(true)
+      window.setTimeout(() => setCopyFlash(false), 1600)
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function renderTaskRow(
+    task: ClientTask,
+    mode: 'todo' | 'done',
+  ) {
+    const statusCol = STATUS_COLS.find(c => c.id === task.status)!
+    const priCfg = PRIORITY_COLORS[task.priority]
+    const overdue = isOverdue(task.due) && task.status !== 'done'
+    return (
+      <li
+        key={task.id}
+        className="flex flex-col gap-2 rounded-lg px-[var(--pad-row)] py-[var(--pad-row)] sm:flex-row sm:items-center sm:gap-3"
+        style={{ background: 'var(--bg-muted)', border: '1px solid var(--border-soft)' }}
+      >
+        <div className="flex flex-1 min-w-0 items-start gap-2">
+          <div
+            className="mt-0.5 shrink-0 rounded-full p-1"
+            style={{ background: 'color-mix(in oklab, ' + statusCol.color + ' 15%, transparent)', color: statusCol.color }}
+            title={`Status: ${statusCol.label}`}
+          >
+            {task.status === 'done' ? <Check size={12} /> : <Circle size={12} />}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p
+              className="text-[13px] font-medium break-words"
+              style={{
+                color: 'var(--text-1)',
+                textDecoration: task.status === 'done' ? 'line-through' : 'none',
+              }}
+            >
+              {task.title}
+            </p>
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              {task.due && (
+                <span
+                  className="mono flex items-center gap-1 rounded px-2 py-0.5 text-[10px]"
+                  style={{
+                    background: overdue ? 'var(--bad-soft)' : 'var(--bg-card)',
+                    color: overdue ? 'var(--bad)' : 'var(--text-4)',
+                  }}
+                >
+                  <Clock size={9} />
+                  {new Date(task.due).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </span>
+              )}
+              <span
+                className="mono rounded px-1.5 py-0.5 text-[9px] font-bold uppercase"
+                style={{ background: priCfg.bg, color: priCfg.fg }}
+              >
+                {task.priority}
+              </span>
+              <span
+                className="mono rounded px-2 py-0.5 text-[9px] font-semibold"
+                style={{ background: 'color-mix(in oklab, ' + statusCol.color + ' 15%, transparent)', color: statusCol.color }}
+              >
+                {statusCol.label}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:pl-2">
+          {mode === 'todo' && (
+            <>
+              <button
+                type="button"
+                onClick={() => setTaskStatus(task.id, 'done')}
+                className="rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition-colors"
+                style={{ background: 'var(--good-soft)', color: 'var(--good)' }}
+              >
+                Done
+              </button>
+              <button
+                type="button"
+                onClick={() => void runBuildPrompt(task)}
+                className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition-colors"
+                style={{ background: 'var(--accent-soft)', color: 'var(--accent-fg)' }}
+              >
+                <Sparkles size={12} />
+                Build a prompt
+              </button>
+            </>
+          )}
+          {mode === 'done' && (
+            <button
+              type="button"
+              onClick={() => setTaskStatus(task.id, 'todo')}
+              className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-colors"
+              style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-2)' }}
+            >
+              <RotateCcw size={12} />
+              Restore
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => removeTask(task.id)}
+            className="rounded-lg p-1.5 transition-colors"
+            style={{ color: 'var(--text-4)' }}
+            title="Delete task"
+            aria-label="Delete task"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
+      </li>
+    )
+  }
+
   return (
     <div className="fade-in space-y-6">
-      {/* Header */}
-      <div>
-        <h2 className="text-[22px] font-semibold tracking-tight" style={{ color: 'var(--text-1)' }}>
-          Client Projects
-        </h2>
-        <p className="mt-1 text-[13px]" style={{ color: 'var(--text-3)' }}>
-          Track deliverables across all active Harmony Stack clients.
-        </p>
-      </div>
-
-      {/* Status summary pills */}
-      <div className="flex flex-wrap gap-2">
-        <button
-          onClick={() => setFilter('all')}
-          className="mono px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all"
-          style={{
-            background: filter === 'all' ? 'var(--accent)' : 'var(--bg-muted)',
-            color:      filter === 'all' ? 'white'         : 'var(--text-3)',
-            border:     '1px solid ' + (filter === 'all' ? 'transparent' : 'var(--border)'),
-          }}
-        >
-          All · {tasks.length}
-        </button>
-        {STATUS_COLS.map(col => (
-          <button
-            key={col.id}
-            onClick={() => setFilter(col.id)}
-            className="mono px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all"
-            style={{
-              background: filter === col.id ? col.color : 'var(--bg-muted)',
-              color:      filter === col.id ? 'white'   : 'var(--text-3)',
-              border:     '1px solid ' + (filter === col.id ? 'transparent' : 'var(--border)'),
-            }}
+      <div className="flex flex-wrap items-start justify-between gap-[var(--grid-gap)]">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-[22px] font-semibold tracking-tight" style={{ color: 'var(--text-1)' }}>
+            Client Projects
+          </h2>
+          <p className="mt-1 text-[13px]" style={{ color: 'var(--text-3)' }}>
+            Track deliverables across all active Harmony Stack clients.
+          </p>
+        </div>
+        <div className="flex w-full max-w-[min(100%,320px)] flex-col items-stretch gap-1 sm:w-auto sm:items-end">
+          <label
+            htmlFor={harmonyKeyInputId}
+            className="mono text-[9px] font-semibold uppercase tracking-wider sm:self-end"
+            style={{ color: 'var(--text-4)' }}
           >
-            {col.label} · {counts[col.id]}
-          </button>
-        ))}
+            HARMONY_CLIENT_PROJECTS_AI_KEY
+          </label>
+          <div className="flex items-center gap-1">
+            <input
+              id={harmonyKeyInputId}
+              type={showHarmonyAiKey ? 'text' : 'password'}
+              autoComplete="off"
+              spellCheck={false}
+              value={harmonyAiKeyDraft}
+              onChange={e => {
+                const v = e.target.value
+                setHarmonyAiKeyDraft(v)
+                setApiKey(HARMONY_CLIENT_PROJECTS_AI_KEY, v)
+              }}
+              placeholder="Optional; falls back to GEMINI"
+              className="mono min-w-0 flex-1 rounded-lg px-2 py-1.5 text-[11px]"
+              style={{ background: 'var(--bg-input)', border: '1px solid var(--border)', color: 'var(--text-1)', outline: 'none' }}
+              onFocus={e => (e.target.style.borderColor = 'var(--accent)')}
+              onBlur={e => (e.target.style.borderColor = 'var(--border)')}
+            />
+            <button
+              type="button"
+              onClick={() => setShowHarmonyAiKey(v => !v)}
+              className="shrink-0 rounded-lg p-1.5 transition-colors"
+              style={{ color: 'var(--text-3)', border: '1px solid var(--border)', background: 'var(--bg-card)' }}
+              aria-label={showHarmonyAiKey ? 'Hide API key' : 'Show API key'}
+            >
+              {showHarmonyAiKey ? <EyeOff size={15} /> : <Eye size={15} />}
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Add task */}
       <div className="zone-card flex flex-wrap gap-3 items-end">
         <div className="flex-1 min-w-[160px]">
           <label className="block mb-1 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-4)' }}>
@@ -356,7 +564,7 @@ function ProjectsTab() {
             className="w-full rounded-lg px-3 py-2 text-[12px]"
             style={{ background: 'var(--bg-input)', border: '1px solid var(--border)', color: 'var(--text-1)', outline: 'none' }}
             onFocus={e => (e.target.style.borderColor = 'var(--accent)')}
-            onBlur={e  => (e.target.style.borderColor = 'var(--border)')}
+            onBlur={e => (e.target.style.borderColor = 'var(--border)')}
           />
         </div>
         <div className="min-w-[130px]">
@@ -370,7 +578,7 @@ function ProjectsTab() {
             className="w-full rounded-lg px-3 py-2 text-[12px]"
             style={{ background: 'var(--bg-input)', border: '1px solid var(--border)', color: 'var(--text-1)', outline: 'none' }}
             onFocus={e => (e.target.style.borderColor = 'var(--accent)')}
-            onBlur={e  => (e.target.style.borderColor = 'var(--border)')}
+            onBlur={e => (e.target.style.borderColor = 'var(--border)')}
           />
         </div>
         <div className="min-w-[130px]">
@@ -395,92 +603,143 @@ function ProjectsTab() {
         </button>
       </div>
 
-      {/* Task list */}
-      <div className="space-y-2">
-        {visible.length === 0 && (
-          <div className="zone-card text-center py-10" style={{ color: 'var(--text-4)' }}>
-            <Circle size={24} className="mx-auto mb-3 opacity-30" />
-            <p className="text-[13px]">No tasks here yet.</p>
-          </div>
-        )}
-        {visible.map(task => {
-          const statusCol = STATUS_COLS.find(c => c.id === task.status)!
-          const priCfg    = PRIORITY_COLORS[task.priority]
-          const overdue   = isOverdue(task.due) && task.status !== 'done'
-          return (
-            <div
-              key={task.id}
-              className="zone-card flex items-center gap-3"
-              style={{ padding: '12px 16px', opacity: task.status === 'done' ? 0.6 : 1 }}
-            >
-              {/* Status toggle */}
-              <button
-                onClick={() => cycleStatus(task.id)}
-                className="rounded-full p-1 transition-all shrink-0"
-                style={{ background: 'color-mix(in oklab, ' + statusCol.color + ' 15%, transparent)', color: statusCol.color }}
-                title={`Status: ${statusCol.label} — click to advance`}
-              >
-                {task.status === 'done' ? <Check size={13} /> : <Circle size={13} />}
-              </button>
+      {tasks.length === 0 ? (
+        <div className="zone-card py-10 text-center" style={{ color: 'var(--text-4)' }}>
+          <Circle size={24} className="mx-auto mb-3 opacity-30" />
+          <p className="text-[13px]">No tasks yet. Add one above.</p>
+        </div>
+      ) : (
+        <div className="space-y-8">
+          {clientsGrouped.map(([client, clientTasks]) => {
+            const todo = clientTasks.filter(t => t.status !== 'done')
+            const done = clientTasks.filter(t => t.status === 'done')
+            return (
+              <section key={client} className="zone-card space-y-5" style={{ padding: 'var(--pad-card)' }}>
+                <h3 className="text-[15px] font-semibold tracking-tight" style={{ color: 'var(--text-1)' }}>{client}</h3>
 
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <p
-                  className="text-[13px] font-medium truncate"
-                  style={{ color: 'var(--text-1)', textDecoration: task.status === 'done' ? 'line-through' : 'none' }}
-                >
-                  {task.title}
-                </p>
-                <p className="mono text-[10px] mt-0.5" style={{ color: 'var(--text-4)' }}>{task.client}</p>
-              </div>
+                <div>
+                  <p className="mono mb-2 text-[10px] font-semibold tracking-widest" style={{ color: 'var(--text-4)' }}>TO DO</p>
+                  {todo.length === 0 ? (
+                    <p className="text-[12px]" style={{ color: 'var(--text-4)' }}>No open tasks for this client.</p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {todo.map(task => renderTaskRow(task, 'todo'))}
+                    </ul>
+                  )}
+                </div>
 
-              {/* Badges */}
-              <div className="flex items-center gap-2 shrink-0">
-                {task.due && (
-                  <span
-                    className="mono text-[10px] px-2 py-0.5 rounded flex items-center gap-1"
-                    style={{
-                      background: overdue ? 'var(--bad-soft)'  : 'var(--bg-muted)',
-                      color:      overdue ? 'var(--bad)'       : 'var(--text-4)',
-                    }}
-                  >
-                    <Clock size={9} />
-                    {new Date(task.due).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                  </span>
-                )}
-                <span
-                  className="mono text-[9px] font-bold px-1.5 py-0.5 rounded uppercase"
-                  style={{ background: priCfg.bg, color: priCfg.fg }}
-                >
-                  {task.priority}
-                </span>
-                <span
-                  className="mono text-[9px] font-semibold px-2 py-0.5 rounded"
-                  style={{ background: 'color-mix(in oklab, ' + statusCol.color + ' 15%, transparent)', color: statusCol.color }}
-                >
-                  {statusCol.label}
-                </span>
-                <button onClick={() => remove(task.id)} style={{ color: 'var(--text-4)' }} className="transition-colors hover:text-red-500">
-                  <X size={13} />
-                </button>
-              </div>
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Trash completed */}
-      {tasks.some(t => t.status === 'done') && (
-        <button
-          onClick={() => setTasks(prev => prev.filter(t => t.status !== 'done'))}
-          className="flex items-center gap-2 text-[11px] transition-colors"
-          style={{ color: 'var(--text-4)' }}
-          onMouseEnter={e => (e.currentTarget.style.color = 'var(--bad)')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-4)')}
-        >
-          <Trash2 size={12} /> Clear completed tasks
-        </button>
+                <div>
+                  <p className="mono mb-2 text-[10px] font-semibold tracking-widest" style={{ color: 'var(--text-4)' }}>DONE</p>
+                  {done.length === 0 ? (
+                    <p className="text-[12px]" style={{ color: 'var(--text-4)' }}>Nothing completed yet.</p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {done.map(task => renderTaskRow(task, 'done'))}
+                    </ul>
+                  )}
+                </div>
+              </section>
+            )
+          })}
+        </div>
       )}
+
+      {promptModal && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.45)' }}
+          role="presentation"
+          onClick={e => {
+            if (e.target === e.currentTarget && !promptModal.loading) setPromptModal(null)
+          }}
+        >
+          <div
+            className="zone-card flex max-h-[min(80vh,520px)] w-full max-w-lg flex-col gap-3"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="harmony-prompt-modal-title"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p id="harmony-prompt-modal-title" className="text-[14px] font-semibold" style={{ color: 'var(--text-1)' }}>
+                  Generated prompt
+                </p>
+                <p className="mt-0.5 truncate text-[11px]" style={{ color: 'var(--text-4)' }}>{promptModal.taskTitle}</p>
+              </div>
+              <button
+                type="button"
+                disabled={promptModal.loading}
+                onClick={() => setPromptModal(null)}
+                className="shrink-0 rounded p-1 transition-colors"
+                style={{ color: 'var(--text-3)' }}
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div
+              className="mono min-h-[120px] flex-1 overflow-y-auto whitespace-pre-wrap rounded-lg p-3 text-[12px] leading-relaxed"
+              style={{ background: 'var(--bg-muted)', border: '1px solid var(--border-soft)', color: 'var(--text-2)' }}
+            >
+              {promptModal.loading && (
+                <span className="inline-flex items-center gap-2" style={{ color: 'var(--text-4)' }}>
+                  <Loader2 size={14} className="animate-spin" aria-hidden />
+                  Generating…
+                </span>
+              )}
+              {promptModal.error && (
+                <span style={{ color: 'var(--bad)' }}>{promptModal.error}</span>
+              )}
+              {!promptModal.loading && !promptModal.error && (
+                promptModal.text || <span style={{ color: 'var(--text-4)' }}>(empty response)</span>
+              )}
+            </div>
+            <div className="flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                disabled={!promptModal.text || promptModal.loading}
+                onClick={() => void copyModalText()}
+                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-[12px] font-semibold transition-colors"
+                style={{
+                  background: promptModal.text && !promptModal.loading ? 'var(--accent)' : 'var(--bg-muted)',
+                  color: promptModal.text && !promptModal.loading ? 'white' : 'var(--text-4)',
+                  cursor: promptModal.text && !promptModal.loading ? 'pointer' : 'not-allowed',
+                }}
+              >
+                <Copy size={13} />
+                {copyFlash ? 'Copied' : 'Copy'}
+              </button>
+              <button
+                type="button"
+                disabled={promptModal.loading}
+                onClick={() => setPromptModal(null)}
+                className="rounded-lg border px-3 py-2 text-[12px] font-medium transition-colors"
+                style={{ borderColor: 'var(--border)', color: 'var(--text-2)', background: 'var(--bg-card)' }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ── Portfolio tab ──────────────────────────────────────────────────────────── */
+const HARMONY_SERVICES_SHEET_URL = `${import.meta.env.BASE_URL}harmony/harmony-stack-services.html`
+
+function PortfolioTab() {
+  return (
+    <div className="fade-in m-0 flex min-h-0 min-w-0 flex-1 flex-col p-0">
+      <div className="m-0 flex min-h-0 min-w-0 w-full flex-1 flex-col p-0">
+        <iframe
+          title="Harmony Stack — web design services, pricing, and portfolio"
+          src={HARMONY_SERVICES_SHEET_URL}
+          className="m-0 block min-h-0 min-w-0 h-full w-full flex-1 border-0 bg-[var(--bg-canvas)] p-0 align-top"
+        />
+      </div>
     </div>
   )
 }
@@ -488,9 +747,49 @@ function ProjectsTab() {
 /* ── Root component ─────────────────────────────────────────────────────────── */
 export default function HarmonyStackZone({ defaultTab = 'services' }: { defaultTab?: Tab }) {
   const [tab, setTab] = useState<Tab>(defaultTab)
+  const idRoot = useId()
+
+  const tabIds = useMemo(() => ({
+    services:  `${idRoot}-tab-services`,
+    projects:  `${idRoot}-tab-projects`,
+    portfolio: `${idRoot}-tab-portfolio`,
+  }), [idRoot])
+
+  const panelIds = useMemo(() => ({
+    services:  `${idRoot}-panel-services`,
+    projects:  `${idRoot}-panel-projects`,
+    portfolio: `${idRoot}-panel-portfolio`,
+  }), [idRoot])
+
+  function focusTabButton(next: Tab) {
+    const el = document.getElementById(tabIds[next])
+    if (el instanceof HTMLElement) el.focus()
+  }
+
+  function handleTabListKeyDown(e: KeyboardEvent<HTMLDivElement>) {
+    const cur = HARMONY_TAB_ORDER.indexOf(tab)
+    if (cur < 0) return
+
+    let next: Tab | null = null
+    if (e.key === 'ArrowRight') {
+      next = HARMONY_TAB_ORDER[(cur + 1) % HARMONY_TAB_ORDER.length]!
+    } else if (e.key === 'ArrowLeft') {
+      next = HARMONY_TAB_ORDER[(cur - 1 + HARMONY_TAB_ORDER.length) % HARMONY_TAB_ORDER.length]!
+    } else if (e.key === 'Home') {
+      next = HARMONY_TAB_ORDER[0]!
+    } else if (e.key === 'End') {
+      next = HARMONY_TAB_ORDER[HARMONY_TAB_ORDER.length - 1]!
+    }
+
+    if (!next) return
+
+    e.preventDefault()
+    setTab(next)
+    requestAnimationFrame(() => focusTabButton(next))
+  }
 
   return (
-    <div className="zone-canvas flex flex-col">
+    <div className="zone-canvas flex min-h-0 flex-1 flex-col">
       {/* Topbar */}
       <header className="zone-topbar">
         <div className="flex items-center gap-3">
@@ -498,6 +797,9 @@ export default function HarmonyStackZone({ defaultTab = 'services' }: { defaultT
             <Globe size={12} />
           </div>
           <span className="text-[13px] font-semibold" style={{ color: 'var(--text-1)' }}>Harmony Stack</span>
+          <span className="inline-flex shrink-0 items-center self-center">
+            <UpdateDot zoneId="harmony-services" className="h-2 w-2" />
+          </span>
           <span className="mono text-[10px] px-2 py-0.5 rounded" style={{ background: 'var(--good-soft)', color: 'var(--good)' }}>
             ● ACTIVE
           </span>
@@ -505,25 +807,73 @@ export default function HarmonyStackZone({ defaultTab = 'services' }: { defaultT
       </header>
 
       {/* Tab bar */}
-      <div className="flex px-8 pt-6 gap-1" style={{ borderBottom: '1px solid var(--border)' }}>
-        {(['services', 'projects'] as Tab[]).map(t => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className="px-4 py-2 text-[13px] font-medium capitalize transition-all rounded-t-lg"
-            style={{
-              color:       t === tab ? 'var(--accent-fg)' : 'var(--text-3)',
-              borderBottom: t === tab ? '2px solid var(--accent)' : '2px solid transparent',
-              marginBottom: -1,
-            }}
-          >
-            {t === 'services' ? 'Services & Pricing' : 'Client Projects'}
-          </button>
-        ))}
+      <div
+        role="tablist"
+        aria-label="Harmony Stack sections"
+        onKeyDown={handleTabListKeyDown}
+        className="flex px-8 pt-6 gap-1"
+        style={{ borderBottom: '1px solid var(--border)' }}
+      >
+        {HARMONY_TAB_ORDER.map(t => {
+          const isActive = t === tab
+          return (
+            <button
+              key={t}
+              type="button"
+              role="tab"
+              id={tabIds[t]}
+              aria-selected={isActive}
+              aria-controls={panelIds[t]}
+              tabIndex={isActive ? 0 : -1}
+              onClick={() => setTab(t)}
+              className="px-4 py-2 text-[13px] font-medium transition-all rounded-t-lg"
+              style={{
+                color:       isActive ? 'var(--accent-fg)' : 'var(--text-3)',
+                borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
+                marginBottom: -1,
+              }}
+            >
+              {tabLabel(t)}
+            </button>
+          )
+        })}
       </div>
 
-      <div className="zone-inner">
-        {tab === 'services' ? <ServicesTab /> : <ProjectsTab />}
+      <div
+        className={
+          tab === 'portfolio'
+            ? 'zone-inner zone-inner--harmony-portfolio flex min-h-0 min-w-0 flex-1 flex-col'
+            : 'zone-inner'
+        }
+      >
+        <div
+          role="tabpanel"
+          id={panelIds.services}
+          aria-labelledby={tabIds.services}
+          hidden={tab !== 'services'}
+          tabIndex={tab === 'services' ? 0 : -1}
+        >
+          {tab === 'services' ? <ServicesTab /> : null}
+        </div>
+        <div
+          role="tabpanel"
+          id={panelIds.projects}
+          aria-labelledby={tabIds.projects}
+          hidden={tab !== 'projects'}
+          tabIndex={tab === 'projects' ? 0 : -1}
+        >
+          {tab === 'projects' ? <ProjectsTab /> : null}
+        </div>
+        <div
+          role="tabpanel"
+          id={panelIds.portfolio}
+          aria-labelledby={tabIds.portfolio}
+          hidden={tab !== 'portfolio'}
+          tabIndex={tab === 'portfolio' ? 0 : -1}
+          className={tab === 'portfolio' ? 'flex min-h-0 min-w-0 flex-1 flex-col' : undefined}
+        >
+          {tab === 'portfolio' ? <PortfolioTab /> : null}
+        </div>
       </div>
     </div>
   )

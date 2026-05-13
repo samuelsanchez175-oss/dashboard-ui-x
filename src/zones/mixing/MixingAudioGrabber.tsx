@@ -1,8 +1,8 @@
-import { useEffect, useId, useRef, useState } from 'react'
-import { ChevronDown, ChevronUp, Download, Loader2, Music2, MonitorPlay, RefreshCw, Trash2 } from 'lucide-react'
+import { useEffect, useId, useRef, useState, type MutableRefObject } from 'react'
+import { ChevronDown, ChevronUp, Columns2, Download, Loader2, Music2, MonitorPlay, Radio, RefreshCw, Send, Trash2, AudioWaveform } from 'lucide-react'
 
 import { deleteMixClip, loadAllMixClips, patchMixClip, saveMixClip, type MixClipMeta } from './mixing-audio-idb'
-import { dispatchFileDownload } from '../../components/files-dock/files-store'
+import { addDownloadedFile, dispatchFileDownload } from '../../components/files-dock/files-store'
 
 type DockItem = {
   videoId: string
@@ -24,9 +24,51 @@ function triggerFileDownload(blob: Blob, filename: string) {
   a.click()
   a.remove()
   URL.revokeObjectURL(url)
-  // Also surface in the global Files Dock.
-  dispatchFileDownload({ blob, name: safeName, source: 'YouTube grab' })
 }
+
+/**
+ * Persist an MP3 to the global Files Dock and return the resulting
+ * `StoredFile.id` so callers can wire "Send to ‹tool›" hand-offs.
+ *
+ * Prefer this over the fire-and-forget `dispatchFileDownload` when you need
+ * to reference the dock entry afterwards (the event bridge has no return).
+ */
+async function pushMp3ToDock(blob: Blob, filename: string): Promise<string | null> {
+  const safeName = filename.endsWith('.mp3') ? filename : `${filename}.mp3`
+  try {
+    const row = await addDownloadedFile({ blob, name: safeName, source: 'YouTube grab', lane: 'downloads' })
+    return row.id
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Send a freshly-grabbed clip to a sibling audio-family tool.
+ *
+ * Contract: writes `inbound-clip-<routeId>` in sessionStorage (one-shot,
+ * cleared by the receiver on mount) and asks the shell to switch routes via
+ * a `'dashboard:set-route'` CustomEvent. The shell owner is expected to
+ * listen for that event in `App` and call `setActiveRouteId(detail.id)`.
+ */
+function sendClipToRoute(routeId: string, dockId: string) {
+  try {
+    sessionStorage.setItem(`inbound-clip-${routeId}`, dockId)
+  } catch {
+    /* sessionStorage unavailable — receiver simply won't autoload */
+  }
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent('dashboard:set-route', { detail: { id: routeId } }),
+    )
+  }
+}
+
+const SEND_TO_TARGETS: ReadonlyArray<{ routeId: string; label: string; Icon: typeof Radio }> = [
+  { routeId: 'tools-stem-splitter',  label: 'Stem splitter', Icon: Columns2 },
+  { routeId: 'tools-key-finder',     label: 'Key & BPM',     Icon: Radio },
+  { routeId: 'tools-chord-detector', label: 'Chords',        Icon: AudioWaveform },
+]
 
 /**
  * Best-effort YouTube thumbnail fetch. Tries `maxresdefault.jpg` first (1280×720
@@ -88,6 +130,13 @@ export default function MixingAudioGrabber() {
   const [laneAnalyzeIds, setLaneAnalyzeIds] = useState<string[]>([])
   /** Dock tiles collapsed to a compact header-only strip (per clip). */
   const [collapsedDockIds, setCollapsedDockIds] = useState<Set<string>>(() => new Set())
+  /**
+   * Maps `videoId` → Files-Dock `StoredFile.id` for clips grabbed in this
+   * session (in-memory only — clips reloaded from IDB on remount lose their
+   * dockId until the user re-saves them).
+   */
+  const dockIdRef = useRef<Map<string, string>>(new Map())
+  const [, setDockIdEpoch] = useState(0)
 
   const toggleDockCollapsed = (videoId: string) => {
     setCollapsedDockIds(prev => {
@@ -207,6 +256,14 @@ export default function MixingAudioGrabber() {
 
       await saveMixClip({ videoId: vid, title, blob })
       triggerFileDownload(blob, `${title}.mp3`)
+      // Surface in the global Files Dock and capture the id so the user can
+      // "Send to ‹tool›" right after the grab. Awaiting keeps the id assignment
+      // ordered with the dock subscriber rerender; failure is non-fatal.
+      const dockId = await pushMp3ToDock(blob, `${title}.mp3`)
+      if (dockId) {
+        dockIdRef.current.set(vid, dockId)
+        setDockIdEpoch(e => e + 1)
+      }
       void fetchYoutubeThumbnail(vid, title)
       setDockEpoch(e => e + 1)
       runClipAnalysis(vid, blob)
@@ -222,6 +279,8 @@ export default function MixingAudioGrabber() {
     stopAnalyzing(videoId)
     laneAnalyzeGuardRef.current.delete(videoId)
     setLaneAnalyzeIds(prev => prev.filter(id => id !== videoId))
+    dockIdRef.current.delete(videoId)
+    setDockIdEpoch(e => e + 1)
     await deleteMixClip(videoId)
     setDockEpoch(e => e + 1)
   }
@@ -509,6 +568,19 @@ export default function MixingAudioGrabber() {
                             </button>
                           </div>
                         ) : null}
+
+                        {!scanning ? (
+                          <SendToRow
+                            videoId={item.videoId}
+                            title={item.title}
+                            blob={item.blob}
+                            dockIdRef={dockIdRef}
+                            onAssignDockId={(vid, id) => {
+                              dockIdRef.current.set(vid, id)
+                              setDockIdEpoch(e => e + 1)
+                            }}
+                          />
+                        ) : null}
                       </div>
                     </div>
                   ) : null}
@@ -518,6 +590,78 @@ export default function MixingAudioGrabber() {
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+/**
+ * "Send to ‹tool›" pill row — appears on every grab tile once analysis is
+ * idle. Each click pushes the clip to the Files Dock (if not already there
+ * this session) and then hands the resulting `StoredFile.id` off to the
+ * destination tool via `sessionStorage` + `'dashboard:set-route'`.
+ *
+ * Targets are limited to the in-app audio-family tools (see `SEND_TO_TARGETS`);
+ * future audio-family additions should be sourced from `getToolsByFamily('detection')`.
+ */
+function SendToRow({
+  videoId,
+  title,
+  blob,
+  dockIdRef,
+  onAssignDockId,
+}: {
+  videoId: string
+  title: string
+  blob: Blob
+  dockIdRef: MutableRefObject<Map<string, string>>
+  onAssignDockId: (videoId: string, dockId: string) => void
+}) {
+  const handle = async (routeId: string) => {
+    let id = dockIdRef.current.get(videoId) ?? null
+    if (!id) {
+      id = await pushMp3ToDock(blob, `${safeMp3Basename(title)}.mp3`)
+      if (id) onAssignDockId(videoId, id)
+    }
+    if (!id) return
+    sendClipToRoute(routeId, id)
+  }
+  return (
+    <div
+      className="flex flex-wrap items-center gap-1.5 pt-2"
+      style={{ borderTop: '1px solid var(--border-soft)' }}
+    >
+      <span className="mono mr-1 text-[10px] uppercase tracking-wide" style={{ color: 'var(--text-4)' }}>
+        Send to
+      </span>
+      {SEND_TO_TARGETS.map(({ routeId, label, Icon }) => (
+        <button
+          key={routeId}
+          type="button"
+          onClick={() => void handle(routeId)}
+          className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium transition"
+          style={{
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border)',
+            color: 'var(--text-2)',
+            boxShadow: 'var(--shadow-sm)',
+          }}
+          onMouseEnter={e => {
+            const el = e.currentTarget as HTMLElement
+            el.style.background = 'var(--accent-soft)'
+            el.style.color = 'var(--accent-fg)'
+          }}
+          onMouseLeave={e => {
+            const el = e.currentTarget as HTMLElement
+            el.style.background = 'var(--bg-card)'
+            el.style.color = 'var(--text-2)'
+          }}
+          title={`Open ${label} with this clip`}
+        >
+          <Icon className="size-3 shrink-0" aria-hidden />
+          {label}
+          <Send className="size-3 opacity-60 shrink-0" aria-hidden />
+        </button>
+      ))}
     </div>
   )
 }

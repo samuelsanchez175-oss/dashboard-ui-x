@@ -1,0 +1,4728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Harmony Stack — Web Design Services</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  @import url('https://fonts.cdnfonts.com/css/cash-market');
+
+  :root {
+    --bg:      #f5f0e8;
+    --bg2:     #ede8de;
+    --white:   #ffffff;
+    --purple:  #9b8ec4;
+    --purple2: #7b6ca8;
+    /* Shop / Shop Pay brand purple (distinct from site lavender --purple) */
+    --shop-badge: #5a31f4;
+    --neon:    #b8ff00;
+    --dark:    #1a1520;
+    --body:    #2e2840;
+    --muted:   #7a7090;
+    --border:  #d8d0c8;
+    --warn:    #e07a30;
+    --card-bg: #ffffff;
+    /* iPhone 14 Pro logical display (screenshots are fitted to this aspect in the preview) */
+    --phone-vw: 393;
+    --phone-vh: 852;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--body);
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100vh;
+    /* No top padding: full-bleed hero should meet the viewport (and iframe) top;
+       32px top padding caused a beige strip when embedded under the app tab bar. */
+    padding: 0 16px 64px;
+    overflow-x: hidden;
+  }
+
+  .page { max-width: 900px; margin: 0 auto; }
+
+  /* ---- HEADER (full-bleed band — same burnt orange as packages) ---- */
+  .site-header {
+    width: 100vw;
+    max-width: 100vw;
+    margin-inline: calc(50% - 50vw);
+    padding: 24px max(16px, calc((100vw - 900px) / 2)) 28px;
+    margin-bottom: 0;
+    background: linear-gradient(165deg, #f07828 0%, #e04e12 46%, #c43a08 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 8px 28px rgba(196, 58, 8, 0.28);
+    border-top: 1px solid rgba(160, 45, 8, 0.4);
+    border-bottom: 1px solid rgba(160, 45, 8, 0.4);
+  }
+
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+
+  .brand { font-family: 'Cash Market', 'Space Grotesk', sans-serif; font-size: clamp(38px, 9vw, 64px); font-weight: 700; line-height: 0.92; letter-spacing: -1px; color: var(--dark); }
+  .brand span { color: var(--purple); }
+
+  @keyframes brand-iridescent {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  .site-header .brand,
+  .site-header .brand span {
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(
+      118deg,
+      #7dd3fc 0%,
+      #38bdf8 12%,
+      #60a5fa 26%,
+      #818cf8 38%,
+      #22d3ee 50%,
+      #3b82f6 62%,
+      #a5b4fc 74%,
+      #67e8f9 86%,
+      #93c5fd 100%
+    );
+    background-size: 240% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    animation: brand-iridescent 12s ease-in-out infinite;
+  }
+
+  .site-header .brand {
+    text-shadow: none;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-header .brand,
+    .site-header .brand span {
+      animation: none;
+      background-position: 35% 50%;
+    }
+  }
+
+  .tagline { font-size: 10px; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; text-align: right; line-height: 1.7; padding-top: 4px; }
+
+  .site-header .tagline {
+    color: rgba(255, 248, 242, 0.88);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.12);
+  }
+
+  .header-cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 16px;
+    margin-bottom: 16px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: rgba(255, 248, 242, 0.14);
+    border: 1px solid rgba(255, 248, 242, 0.28);
+  }
+
+  .header-cta-label {
+    font-family: 'Cash Market', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255, 248, 242, 0.92);
+  }
+
+  .header-cta-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    align-items: center;
+  }
+
+  .header-cta-actions a {
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff8f2;
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(26, 21, 32, 0.22);
+    border: 1px solid rgba(255, 248, 242, 0.35);
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+
+  .header-cta-actions a:hover {
+    background: rgba(26, 21, 32, 0.35);
+    border-color: rgba(255, 248, 242, 0.55);
+  }
+
+  /* Same language as .header-cta — sits on the orange band without a separate “card” panel */
+  .portfolio-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 10px 14px 14px;
+    margin: 0;
+    background: rgba(255, 248, 242, 0.14);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 248, 242, 0.28);
+    box-shadow: none;
+  }
+
+  .portfolio-label {
+    font-size: 8px;
+    font-family: 'Cash Market', sans-serif;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--purple2);
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap;
+  }
+
+  .site-header .portfolio-label {
+    color: rgba(255, 248, 242, 0.92);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.12);
+  }
+
+  .portfolio-label::after {
+    content: '';
+    width: min(120px, 22vw);
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--neon) 0%, var(--purple) 55%, transparent 100%);
+    opacity: 0.85;
+  }
+
+  .portfolio-bar-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .portfolio-site {
+    font-size: 10px;
+    font-family: 'Space Grotesk', sans-serif;
+    letter-spacing: 0.03em;
+    color: var(--body);
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: transparent;
+  }
+
+  a.portfolio-site {
+    cursor: pointer;
+    text-align: left;
+    text-decoration: none;
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: var(--white);
+    border: 1.5px solid rgba(216, 208, 200, 0.95);
+    box-shadow: 0 2px 10px rgba(26, 21, 32, 0.045);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease, transform 0.12s ease;
+  }
+
+  a.portfolio-site:hover {
+    color: var(--purple2);
+    border-color: rgba(155, 142, 196, 0.65);
+    box-shadow: 0 4px 16px rgba(155, 142, 196, 0.18);
+    transform: translateY(-1px);
+  }
+
+  a.portfolio-site:focus-visible {
+    outline: none;
+    color: var(--purple2);
+    border-color: var(--purple);
+    box-shadow: 0 0 0 3px rgba(155, 142, 196, 0.35);
+  }
+
+  a.portfolio-site:active {
+    transform: translateY(0);
+  }
+
+  /* ---- SECTION LABEL ---- */
+  .section-label { font-size: 9px; font-family: 'Cash Market', sans-serif; letter-spacing: 0.28em; text-transform: uppercase; color: var(--purple); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1.5px; background: var(--border); }
+
+  .packages-collapse-heading.section-label {
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    margin-bottom: 16px;
+  }
+
+  #website-packages {
+    scroll-margin-top: 20px;
+  }
+
+  #portfolio-showcase {
+    scroll-margin-top: 20px;
+  }
+
+  /* Packages heading — full-bleed orange (same breakout as .packages-cluster / .retainer-section) */
+  #website-packages > .packages-collapse-heading.section-label {
+    color: #fff8f2;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.18);
+    margin-bottom: 0;
+    width: 100vw;
+    max-width: 100vw;
+    margin-inline: calc(50% - 50vw);
+    padding: 14px max(16px, calc((100vw - 900px) / 2));
+    background: linear-gradient(165deg, #f07828 0%, #e04e12 46%, #c43a08 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    border: none;
+    border-top: 1px solid rgba(160, 45, 8, 0.4);
+  }
+
+  /* One continuous orange band: strip flows into .packages-cluster (no double rule / beige gap) */
+  #website-packages .packages-cluster {
+    border-top: none;
+  }
+
+  #website-packages > .packages-collapse-heading.section-label::after {
+    background: linear-gradient(90deg, rgba(255, 248, 242, 0.55) 0%, rgba(255, 248, 242, 0.08) 100%);
+  }
+
+  #website-packages > .packages-collapse-heading .harmony-collapse-chevron {
+    color: rgba(255, 248, 242, 0.88);
+  }
+
+  #website-packages > .packages-collapse-heading .harmony-collapse-toggle:focus-visible {
+    outline-color: rgba(255, 248, 242, 0.95);
+  }
+
+  /* ---- Shared collapsible sections (same interaction as Dropbox handoff) ---- */
+  .harmony-collapse-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
+    max-width: 100%;
+  }
+  .harmony-collapse-toggle:hover .harmony-collapse-toggle-label {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .harmony-collapse-toggle:focus-visible {
+    outline: 2px solid #0061ff;
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  .harmony-collapse-chevron {
+    flex-shrink: 0;
+    display: inline-block;
+    font-size: 8px;
+    line-height: 1;
+    color: var(--purple2);
+    transform: rotate(0deg);
+    transition: transform 0.2s ease;
+  }
+  .harmony-collapse.is-collapsed .harmony-collapse-chevron {
+    transform: rotate(-90deg);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .harmony-collapse-chevron { transition: none; }
+  }
+  .harmony-collapse-panel[hidden] {
+    display: none !important;
+  }
+  .harmony-collapse-heading.section-label {
+    margin-bottom: 16px;
+  }
+
+  /*
+   * In-page navigators — full-bleed bars (same horizontal inset as orange bands).
+   * Collapsed: stack flush (no 48px dead zones between strips).
+   */
+  .addons-section > .harmony-collapse-heading.section-label,
+  .payment-section > .harmony-collapse-heading.section-label,
+  .footer-note > .harmony-collapse-heading.section-label,
+  #kickoff-checklist > .kickoff-checklist-heading.section-label,
+  #dropbox-handoff > .dropbox-handoff-heading.section-label,
+  #revision-guide > .revision-guide-heading.section-label {
+    position: relative;
+    z-index: 1;
+    width: 100vw;
+    max-width: 100vw;
+    margin-inline: calc(50% - 50vw);
+    padding: 14px max(16px, calc((100vw - 900px) / 2));
+    margin-bottom: 0;
+    box-sizing: border-box;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: var(--purple2);
+    background: linear-gradient(180deg, #faf8ff 0%, #ede8de 52%, #e8e2d8 100%);
+    border: none;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid rgba(216, 208, 200, 0.95);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  }
+
+  .addons-section > .harmony-collapse-heading.section-label::after,
+  .payment-section > .harmony-collapse-heading.section-label::after,
+  .footer-note > .harmony-collapse-heading.section-label::after,
+  #kickoff-checklist > .kickoff-checklist-heading.section-label::after,
+  #dropbox-handoff > .dropbox-handoff-heading.section-label::after,
+  #revision-guide > .revision-guide-heading.section-label::after {
+    background: linear-gradient(90deg, rgba(123, 108, 168, 0.35) 0%, rgba(216, 208, 200, 0.4) 100%);
+  }
+
+  .addons-section > .harmony-collapse-panel,
+  .payment-section > .harmony-collapse-panel,
+  .footer-note > .harmony-collapse-panel,
+  #kickoff-checklist > .kickoff-checklist-panel,
+  #dropbox-handoff > .dropbox-handoff-panel,
+  #revision-guide > .revision-guide-panel {
+    padding-top: 16px;
+  }
+
+  #website-packages.harmony-collapse.is-collapsed,
+  .addons-section.harmony-collapse.is-collapsed,
+  .payment-section.harmony-collapse.is-collapsed,
+  .footer-note.harmony-collapse.is-collapsed,
+  .kickoff-checklist-cluster.is-collapsed,
+  .dropbox-section.is-collapsed,
+  .revision-guide.is-collapsed {
+    margin-bottom: 0;
+  }
+
+  .footer-note.harmony-collapse {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+
+  /* ---- PORTFOLIO SHOWCASE (full-bleed black stage: kicker + carousel + dots) ---- */
+  #portfolio-showcase.portfolio-showcase {
+    width: 100vw;
+    max-width: 100vw;
+    margin-inline: calc(50% - 50vw);
+    margin-bottom: 0;
+    scroll-margin-top: 12px;
+    position: relative;
+    padding: 18px max(16px, calc((100vw - 900px) / 2)) 36px;
+    background: #000;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 40px 100px rgba(0, 0, 0, 0.38);
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    overflow: hidden;
+  }
+
+  #portfolio-showcase.portfolio-showcase::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse 92% 65% at 50% -18%, rgba(115, 115, 145, 0.14) 0%, transparent 52%);
+  }
+
+  #portfolio-showcase.portfolio-showcase > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  #portfolio-showcase > .harmony-collapse-heading.section-label {
+    color: rgba(245, 245, 247, 0.78);
+    margin-bottom: 18px;
+  }
+
+  #portfolio-showcase > .harmony-collapse-heading.section-label::after {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.06) 100%);
+  }
+
+  #portfolio-showcase .harmony-collapse-chevron {
+    color: rgba(245, 245, 247, 0.78);
+  }
+
+  #portfolio-showcase .harmony-collapse-toggle:focus-visible {
+    outline-color: rgba(186, 175, 220, 0.9);
+  }
+
+  #portfolio-carousel.portfolio-carousel {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 0;
+    padding: 8px 0 12px;
+    border-radius: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
+  #portfolio-carousel.portfolio-carousel::before {
+    display: none;
+  }
+
+  #portfolio-showcase .portfolio-carousel-dots {
+    margin-top: 4px;
+    margin-bottom: 0;
+    padding: 14px 0 6px;
+    border-radius: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
+  #portfolio-carousel .carousel-nav-btn {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    color: rgba(245, 245, 247, 0.94);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  #portfolio-carousel .carousel-nav-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #fff;
+  }
+
+  #portfolio-carousel .carousel-nav-btn:disabled {
+    opacity: 0.22;
+  }
+
+  #portfolio-carousel .carousel-nav-btn:focus-visible {
+    outline: 2px solid rgba(186, 175, 220, 0.9);
+    outline-offset: 2px;
+  }
+
+  #portfolio-carousel .portfolio-carousel-viewport:focus-visible {
+    outline: 2px solid rgba(186, 175, 220, 0.9);
+  }
+
+  #portfolio-carousel .site-card-label {
+    color: #f5f5f7;
+  }
+
+  #portfolio-carousel .site-card-url {
+    color: rgba(198, 190, 232, 0.95);
+  }
+
+  #portfolio-carousel a.site-card-external:hover,
+  #portfolio-carousel a.site-card-external:focus-visible {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  #portfolio-carousel a.site-card-external:hover .site-card-label,
+  #portfolio-carousel a.site-card-external:focus-visible .site-card-label {
+    color: #fff;
+  }
+
+  #portfolio-carousel a.site-card-external:hover .site-card-url,
+  #portfolio-carousel a.site-card-external:focus-visible .site-card-url {
+    color: rgba(220, 214, 248, 1);
+  }
+
+  #portfolio-carousel .phone-frame:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  #portfolio-carousel .phone-frame.is-preview-open {
+    background: rgba(255, 255, 255, 0.07);
+  }
+
+  #portfolio-carousel .phone-outer {
+    box-shadow:
+      0 32px 72px rgba(0, 0, 0, 0.72),
+      0 1px 0 rgba(255, 255, 255, 0.05),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
+
+  #portfolio-showcase .portfolio-carousel-dot {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  #portfolio-showcase .portfolio-carousel-dot[aria-selected="true"] {
+    background: rgba(245, 245, 247, 0.96);
+    border-color: rgba(245, 245, 247, 0.96);
+    box-shadow: 0 0 14px rgba(245, 245, 247, 0.22);
+  }
+
+  #portfolio-showcase .portfolio-carousel-dot:focus-visible {
+    outline: 2px solid rgba(186, 175, 220, 0.9);
+  }
+
+  .carousel-nav-btn {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: var(--white);
+    color: var(--purple2);
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .carousel-nav-btn:hover { border-color: var(--purple); color: var(--purple); }
+  .carousel-nav-btn:focus-visible { outline: 2px solid var(--purple); outline-offset: 2px; }
+  .carousel-nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .portfolio-carousel-viewport {
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .portfolio-carousel-viewport:focus-visible {
+    outline: 2px solid var(--purple);
+    outline-offset: 2px;
+  }
+
+  .portfolio-carousel-track {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 16px;
+    padding: 4px 8px 14px;
+    width: max-content;
+  }
+
+  .portfolio-carousel-track .site-card {
+    flex: 0 0 auto;
+    width: min(240px, calc(100vw - 120px));
+    scroll-snap-align: center;
+  }
+
+  .portfolio-carousel-dots {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  .portfolio-carousel-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .portfolio-carousel-dot[aria-selected="true"] {
+    background: var(--purple);
+    border-color: var(--purple);
+  }
+
+  .portfolio-carousel-dot:focus-visible {
+    outline: 2px solid var(--purple);
+    outline-offset: 2px;
+  }
+
+  .site-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .site-card-label {
+    font-family: 'Cash Market', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--dark);
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  .site-card-url {
+    font-size: 9px;
+    color: var(--purple2);
+    text-align: center;
+    letter-spacing: 0.03em;
+  }
+
+  a.site-card-external {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 10px;
+    padding: 6px 10px;
+    margin: -2px 0;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  a.site-card-external:hover {
+    background: rgba(155, 142, 196, 0.12);
+  }
+
+  a.site-card-external:hover .site-card-label,
+  a.site-card-external:focus-visible .site-card-label {
+    color: var(--purple);
+  }
+
+  a.site-card-external:hover .site-card-url,
+  a.site-card-external:focus-visible .site-card-url {
+    color: var(--purple);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  a.site-card-external:focus-visible {
+    outline: 2px solid var(--purple2);
+    outline-offset: 2px;
+  }
+
+  /*
+   * Device frame (iPhone 14 Pro display aspect 393×852): bezel + Dynamic Island, no colored glow.
+   */
+  .phone-frame {
+    width: 100%;
+    max-width: min(220px, 50vw);
+    position: relative;
+    padding: 10px 8px;
+    cursor: pointer;
+    border-radius: 16px;
+    transition: background 0.15s ease;
+  }
+
+  .phone-frame:hover {
+    background: rgba(155, 142, 196, 0.08);
+  }
+
+  .phone-frame:focus {
+    outline: none;
+  }
+
+  .phone-frame:focus-visible {
+    outline: 2px solid var(--purple2);
+    outline-offset: 3px;
+  }
+
+  .phone-frame.is-preview-open {
+    background: rgba(155, 142, 196, 0.12);
+  }
+
+  /* Portfolio preview panel — flex item in carousel track (pushes slides aside); height matches site-card row */
+  /* [hidden] must beat display:flex — without this, the close button sets hidden="" but the card stays visible */
+  #portfolio-preview-popout[hidden] {
+    display: none !important;
+  }
+
+  .portfolio-preview-popout {
+    position: relative;
+    z-index: 1;
+    flex: 0 0 auto;
+    width: min(288px, calc(100vw - 120px));
+    max-width: min(288px, calc(100vw - 120px));
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    scroll-snap-align: center;
+    padding: 14px 38px 14px 16px;
+    margin: 0;
+    background: var(--card-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 18px 48px rgba(26, 21, 32, 0.2);
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--body);
+  }
+
+  .portfolio-preview-popout-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 8px;
+    background: var(--bg2);
+    color: var(--purple2);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .portfolio-preview-popout-close:hover {
+    background: rgba(155, 142, 196, 0.2);
+    color: var(--purple);
+  }
+
+  .portfolio-preview-popout-close:focus-visible {
+    outline: 2px solid var(--purple2);
+    outline-offset: 2px;
+  }
+
+  .portfolio-preview-popout-kicker {
+    font-size: 8px;
+    font-family: 'Cash Market', sans-serif;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 6px;
+    flex-shrink: 0;
+    padding-right: 8px;
+  }
+
+  .portfolio-preview-popout-title {
+    font-family: 'Cash Market', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--dark);
+    margin: 0 0 10px;
+    line-height: 1.25;
+    flex-shrink: 0;
+    padding-right: 8px;
+  }
+
+  .portfolio-preview-popout-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    margin: 0;
+    padding-left: 18px;
+    padding-right: 4px;
+    font-size: 11px;
+    line-height: 1.55;
+    color: var(--muted);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .portfolio-preview-popout-list li + li {
+    margin-top: 6px;
+  }
+
+  .phone-outer {
+    position: relative;
+    width: 100%;
+    padding: 3px;
+    border-radius: 28px;
+    background: #000;
+    border: 1px solid #2e2e30;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  }
+
+  /* Dynamic Island */
+  .phone-outer::before {
+    content: "";
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32%;
+    max-width: 92px;
+    min-width: 58px;
+    height: 12px;
+    border-radius: 999px;
+    box-sizing: border-box;
+    border: 1px solid #3a3a3d;
+    background: #000;
+    z-index: 4;
+    pointer-events: none;
+  }
+
+  .phone-screen {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 22px;
+    background: #000;
+  }
+
+  /* iPhone 14 Pro portrait display: height / width = 852 / 393 */
+  .phone-screen::before {
+    content: "";
+    display: block;
+    padding-top: calc(852 / 393 * 100%);
+  }
+
+  .phone-screen-shot {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    object-fit: cover;
+    object-position: top center;
+    display: block;
+  }
+
+  /* Screenshot placeholder inside phone */
+  .screen-placeholder {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .screen-statusbar {
+    height: 14px;
+    background: var(--purple2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 6px;
+    flex-shrink: 0;
+  }
+
+  .screen-statusbar-text {
+    font-size: 5px;
+    color: rgba(255,255,255,0.8);
+    letter-spacing: 0.05em;
+  }
+
+  .screen-nav {
+    height: 20px;
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    gap: 3px;
+    flex-shrink: 0;
+  }
+
+  .screen-nav-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--border); }
+  .screen-nav-bar { flex: 1; height: 5px; background: var(--bg2); border-radius: 2px; }
+
+  .screen-hero {
+    height: 36%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .screen-content {
+    flex: 1;
+    padding: 5px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    overflow: hidden;
+  }
+
+  .screen-line { height: 4px; background: var(--border); border-radius: 1px; }
+  .screen-line.short { width: 60%; }
+  .screen-line.heading { height: 6px; background: var(--purple); opacity: 0.4; width: 80%; }
+  .screen-line.img-block { height: 20px; background: var(--bg2); border: 1px solid var(--border); margin: 2px 0; }
+  .screen-line.btn { height: 8px; background: var(--purple); opacity: 0.6; width: 50%; border-radius: 1px; }
+
+  /* Upload area instruction on phone */
+  .screen-upload-prompt {
+    position: absolute;
+    inset: 0;
+    background: rgba(245,240,232,0.92);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    text-align: center;
+    padding: 4px;
+  }
+
+  .screen-upload-icon { font-size: 16px; line-height: 1; }
+  .screen-upload-text { font-size: 6px; color: var(--muted); line-height: 1.4; font-family: 'Space Grotesk', sans-serif; }
+  .screen-upload-text strong { color: var(--purple2); display: block; font-size: 7px; }
+
+  /* Page type labels */
+  .page-type-badge {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .page-badge {
+    font-size: 8px;
+    padding: 2px 7px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .page-badge.active { background: var(--purple); color: white; border-color: var(--purple); }
+  .page-badge.active.page-badge--shop { background: var(--shop-badge); border-color: var(--shop-badge); }
+
+  /* ---- PACKAGES ---- */
+  .packages-cluster {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    margin-bottom: 48px;
+    /* Full-bleed breakout from .page (max-width 900px) — orange edge-to-edge */
+    width: 100vw;
+    max-width: 100vw;
+    margin-inline: calc(50% - 50vw);
+    padding: 26px max(16px, calc((100vw - 900px) / 2)) 32px;
+    border-radius: 0;
+    background: linear-gradient(165deg, #f07828 0%, #e04e12 46%, #c43a08 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 8px 28px rgba(196, 58, 8, 0.28);
+    border: none;
+    border-top: 1px solid rgba(160, 45, 8, 0.4);
+    border-bottom: 1px solid rgba(160, 45, 8, 0.4);
+  }
+
+  .packages-band {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px 14px;
+    margin-bottom: -6px;
+  }
+
+  .packages-band-kicker {
+    font-family: 'Cash Market', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dark);
+  }
+
+  .packages-band-note {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    line-height: 1.45;
+  }
+
+  .packages-cluster .packages-band-kicker {
+    color: #fff8f2;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.18);
+  }
+
+  .packages-cluster .packages-band-note {
+    color: rgba(255, 248, 242, 0.88);
+  }
+
+  .packages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+    gap: 14px;
+    margin-bottom: 0;
+    background: transparent;
+    border: none;
+  }
+
+  .packages-grid--entry {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  }
+
+  /* Tiers 01–02: single comparison block (features as rows, tiers as columns) */
+  .packages-entry-compare {
+    display: block;
+  }
+
+  .packages-entry-compare-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0;
+  }
+
+  .packages-entry-compare-card {
+    background: var(--card-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 6px 22px rgba(26, 21, 32, 0.06);
+    min-width: min(100%, 520px);
+  }
+
+  .packages-entry-compare-table {
+    table-layout: fixed;
+    width: 100%;
+    min-width: 520px;
+    max-width: 100%;
+    border-collapse: collapse;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .packages-entry-compare-table col.pkg-col-feature {
+    width: 44%;
+  }
+
+  .packages-entry-compare-table col.pkg-col-tier {
+    width: 28%;
+  }
+
+  .packages-entry-compare-table th,
+  .packages-entry-compare-table td {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: normal;
+    hyphens: manual;
+  }
+
+  .packages-entry-compare-table thead th {
+    padding: 14px 12px 10px;
+    font-family: 'Cash Market', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--purple2);
+    text-align: center;
+    vertical-align: bottom;
+    background: linear-gradient(180deg, #faf8ff 0%, #ffffff 100%);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .packages-entry-compare-table thead th:first-child {
+    text-align: left;
+    letter-spacing: 0.18em;
+  }
+
+  .packages-entry-compare-subrow td {
+    padding: 10px 12px 14px;
+    vertical-align: top;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: rgba(250, 248, 255, 0.5);
+    font-size: 11px;
+    color: var(--body);
+    line-height: 1.45;
+  }
+
+  .packages-entry-compare-subrow td:first-child {
+    background: var(--card-bg);
+  }
+
+  .packages-entry-compare-table .pkg-compare-price {
+    display: block;
+    font-family: 'Cash Market', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--purple2);
+    letter-spacing: -0.02em;
+    margin-bottom: 2px;
+    line-height: 1.1;
+  }
+
+  .packages-entry-compare-table .pkg-compare-note {
+    display: block;
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .packages-entry-compare-table .pkg-compare-desc {
+    margin: 0;
+    font-size: 11px;
+    color: var(--body);
+    line-height: 1.5;
+    text-align: left;
+  }
+
+  .packages-entry-compare-table tbody th[scope="row"] {
+    padding: 10px 12px;
+    font-size: 11px;
+    font-weight: 500;
+    text-align: left;
+    color: var(--body);
+    border-bottom: 1px solid var(--border);
+    background: var(--card-bg);
+  }
+
+  .packages-entry-compare-table tbody td {
+    padding: 10px 8px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  .packages-entry-compare-table tbody tr:last-child th,
+  .packages-entry-compare-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .pkg-cell-yes {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a6b45;
+    line-height: 1;
+    display: inline-block;
+    min-width: 1.25em;
+    text-align: center;
+  }
+
+  .pkg-cell-no {
+    font-size: 14px;
+    font-weight: 600;
+    color: #c4bcc8;
+    line-height: 1;
+    display: inline-block;
+    min-width: 1.25em;
+    text-align: center;
+  }
+
+  .packages-entry-compare-table .pkg-compare-value {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--body);
+    letter-spacing: 0.02em;
+  }
+
+  .packages-entry-compare-table .pkg-compare-na {
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  /* Tiers 03–05: same card + scroll comparison layout as 01–02 */
+  .packages-build-compare {
+    display: block;
+  }
+
+  .packages-entry-compare-table.packages-entry-compare-table--build {
+    min-width: min(100%, 720px);
+  }
+
+  .packages-entry-compare-table--build col.pkg-col-feature {
+    width: 26%;
+  }
+
+  .packages-entry-compare-table--build col.pkg-col-tier {
+    width: 24.67%;
+  }
+
+  .pkg-compare-tier-kicker {
+    display: block;
+    font-family: 'Cash Market', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--purple2);
+    margin-bottom: 4px;
+    line-height: 1.2;
+    text-align: center;
+  }
+
+  .packages-entry-compare-table .pkg-compare-tier-head {
+    text-align: center;
+    vertical-align: bottom;
+  }
+
+  .packages-entry-compare-table .pkg-compare-tier-icon {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    margin: 0 auto 10px;
+    line-height: 0;
+  }
+
+  .packages-entry-compare-table .pkg-compare-tier-icon svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .pkg-compare-tier-icon--quick {
+    width: 30px;
+  }
+
+  .pkg-compare-tier-icon--refresh {
+    width: 42px;
+  }
+
+  .pkg-compare-tier-icon--starter {
+    width: 34px;
+  }
+
+  .pkg-compare-tier-icon--pro {
+    width: 48px;
+  }
+
+  .pkg-compare-tier-icon--commerce {
+    width: 62px;
+  }
+
+  .packages-entry-compare-table .pkg-compare-tier-title {
+    display: block;
+    line-height: 1.25;
+  }
+
+  .packages-entry-compare-table .pkg-compare-revision {
+    display: inline-block;
+    background: var(--neon);
+    color: var(--dark);
+    font-weight: 700;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+  }
+
+  .packages-entry-compare-table td.pkg-compare-chips {
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .packages-entry-compare-table .pkg-compare-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--body);
+    background: rgba(46, 40, 64, 0.06);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px 8px 3px 6px;
+    margin: 2px 4px 2px 0;
+  }
+
+  .packages-entry-compare-table .pkg-compare-chip .icon-img {
+    width: 12px;
+    height: 12px;
+    opacity: 0.88;
+    flex-shrink: 0;
+  }
+
+  .packages-grid--build {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+  }
+
+  .package {
+    background: var(--card-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 6px 22px rgba(26, 21, 32, 0.06);
+  }
+
+  .package.featured {
+    background: linear-gradient(180deg, #faf8ff 0%, var(--white) 48%);
+    border-color: var(--purple2);
+    box-shadow:
+      0 8px 28px rgba(123, 108, 168, 0.12),
+      0 0 0 1px rgba(155, 142, 196, 0.25);
+  }
+
+  .package--entry .pkg-body {
+    padding: 16px 14px 15px;
+  }
+
+  /* Entry tiers: illustration rail on the right (no vertical rule — continuous card) */
+  .package--entry .pkg-visual {
+    width: 76px;
+    min-width: 76px;
+    padding: 12px 8px;
+    background: var(--card-bg);
+  }
+
+  .package--entry .pkg-visual svg { max-width: 52px; }
+
+  .package--entry .pkg-tag {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    margin-bottom: 8px;
+  }
+
+  .package--entry .pkg-name { font-size: 18px; }
+
+  .package--entry .pkg-price { font-size: 22px; }
+
+  .package--entry .pkg-price-note { font-size: 11px; margin-bottom: 9px; }
+
+  .package--entry .pkg-desc { font-size: 12px; margin-bottom: 10px; line-height: 1.55; }
+
+  .package--entry .pkg-includes { gap: 6px; margin-bottom: 10px; }
+
+  .package--entry .pkg-includes li { font-size: 11px; gap: 7px; line-height: 1.45; }
+
+  .package--entry .pkg-includes li.revision {
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+
+  .package--entry .pkg-receives { padding-top: 10px; gap: 6px; }
+
+  .package--entry .receive-chip {
+    font-size: 10px;
+    padding: 4px 9px;
+    border-radius: 6px;
+  }
+
+  .package--entry .receive-chip .icon-img { width: 12px; height: 12px; }
+
+  .package--build .pkg-body {
+    padding: 20px 18px 18px;
+  }
+
+  .package--build .pkg-visual {
+    width: 108px;
+    min-width: 108px;
+    padding: 16px 12px;
+  }
+
+  .package--build .pkg-visual svg { max-width: 76px; }
+
+  .package--build .pkg-tag { font-size: 10px; margin-bottom: 10px; letter-spacing: 0.14em; }
+
+  .package--build .pkg-name { font-size: 23px; }
+
+  .package--build .pkg-price { font-size: 29px; letter-spacing: -0.02em; }
+
+  .package--build .pkg-price-note { font-size: 11px; }
+
+  .package--build .pkg-desc { font-size: 12px; line-height: 1.55; }
+
+  .package--build .pkg-includes li { font-size: 12px; line-height: 1.45; }
+
+  .package--build .pkg-includes li.revision { font-size: 11px; border-radius: 6px; padding: 4px 10px; }
+
+  .package--build .receive-chip {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+
+  .package--build .receive-chip .icon-img { width: 13px; height: 13px; }
+
+  .pkg-inner {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    height: 100%;
+  }
+
+  .pkg-body {
+    flex: 1;
+    padding: 20px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .pkg-visual {
+    width: 90px;
+    min-width: 90px;
+    background: var(--card-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 8px;
+    flex-shrink: 0;
+  }
+
+  .package.featured .pkg-visual {
+    background: transparent;
+  }
+
+  .package--entry.featured .pkg-visual {
+    background: transparent;
+  }
+
+  .pkg-visual svg { width: 100%; max-width: 70px; height: auto; }
+
+  /* Package tier illustrations — subtle motion (respects reduced-motion) */
+  @media (prefers-reduced-motion: no-preference) {
+    .packages-cluster .pkg-visual {
+      overflow: visible;
+    }
+
+    .packages-cluster .pkg-illu-glow {
+      animation: pkg-illu-glow-breathe 2.2s ease-in-out infinite;
+    }
+
+    @keyframes pkg-illu-glow-breathe {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+
+    .packages-cluster .pkg-illu-pencil-dab {
+      animation: pkg-illu-pencil-dab 2.8s ease-in-out infinite;
+    }
+
+    @keyframes pkg-illu-pencil-dab {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(-1.2px, 1.5px); }
+    }
+
+    .packages-cluster .pkg-illu-pages {
+      animation: pkg-illu-pages-lift 3.5s ease-in-out infinite;
+    }
+
+    @keyframes pkg-illu-pages-lift {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-2px); }
+    }
+
+    .packages-cluster .pkg-illu-roller {
+      animation: pkg-illu-roller-stroke 3.5s ease-in-out infinite;
+    }
+
+    @keyframes pkg-illu-roller-stroke {
+      0%, 100% { transform: translateY(0); }
+      38% { transform: translateY(5px); }
+      52% { transform: translateY(0); }
+    }
+
+    .packages-cluster .pkg-illu-chart-center {
+      animation: pkg-illu-chart-rise 3s ease-in-out infinite;
+      transform-box: fill-box;
+      transform-origin: 50% 100%;
+    }
+
+    @keyframes pkg-illu-chart-rise {
+      0%, 100% { transform: scaleY(1); }
+      50% { transform: scaleY(1.07); }
+    }
+
+    .packages-cluster .pkg-illu-star-badge {
+      animation: pkg-illu-star-pop 2.5s ease-in-out infinite;
+      transform-box: fill-box;
+      transform-origin: 50% 50%;
+    }
+
+    @keyframes pkg-illu-star-pop {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      35% { transform: scale(1.12) rotate(-6deg); }
+      65% { transform: scale(1.08) rotate(6deg); }
+    }
+
+    .packages-cluster .pkg-illu-pro-grid {
+      animation: pkg-illu-pro-float 4s ease-in-out infinite;
+    }
+
+    @keyframes pkg-illu-pro-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-2px); }
+    }
+
+    .packages-cluster .pkg-illu-code-tag {
+      animation: pkg-illu-code-glint 3.2s ease-in-out infinite;
+    }
+
+    @keyframes pkg-illu-code-glint {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.55; }
+    }
+
+    .packages-cluster .pkg-illu-shop {
+      animation: pkg-illu-shop-sway 4.5s ease-in-out infinite;
+    }
+
+    @keyframes pkg-illu-shop-sway {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-1.5px); }
+    }
+
+    .packages-cluster .pkg-illu-cart-badge {
+      animation: pkg-illu-cart-pulse 2.4s ease-in-out infinite;
+      transform-box: fill-box;
+      transform-origin: 50% 50%;
+    }
+
+    @keyframes pkg-illu-cart-pulse {
+      0%, 100% { transform: scale(1); }
+      40% { transform: scale(1.1); }
+    }
+  }
+
+  .pkg-tag { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--body); font-weight: 600; margin-bottom: 8px; display: block; }
+  .pkg-tag.popular { color: var(--purple); }
+
+  .pkg-name { font-family: 'Cash Market', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 3px; color: var(--dark); }
+  .pkg-price { font-family: 'Cash Market', sans-serif; font-size: 22px; font-weight: 700; color: var(--purple2); margin-bottom: 2px; }
+  .pkg-price-note { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+  .pkg-desc { font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 10px; }
+
+  .pkg-includes { list-style: none; display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+  .pkg-includes li { font-size: 12px; color: var(--body); display: flex; gap: 7px; line-height: 1.45; }
+  .pkg-includes li::before { content: '—'; color: var(--purple); flex-shrink: 0; }
+  .pkg-includes li.revision { background: var(--neon); color: var(--dark); font-weight: 700; padding: 3px 9px; font-size: 11px; display: inline-flex; align-self: flex-start; margin-top: 2px; }
+  .pkg-includes li.revision::before {
+    content: '';
+    width: 11px;
+    height: 11px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    background: url('icons/ic-sparkle-dark.svg') center / contain no-repeat;
+  }
+
+  .pkg-receives { display: flex; flex-wrap: wrap; gap: 5px; margin-top: auto; padding-top: 10px; border-top: 1px solid var(--border); }
+  .receive-chip { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--muted); background: var(--bg); border: 1px solid var(--border); padding: 3px 8px; }
+  .receive-chip .icon-img { flex-shrink: 0; display: block; }
+
+  /* ---- REVISION GUIDE (matches Dropbox handoff toggle pattern) ---- */
+  .revision-guide { margin-bottom: 48px; }
+  .revision-guide-heading.section-label { margin-bottom: 16px; }
+  .revision-guide-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
+    max-width: 100%;
+  }
+  .revision-guide-toggle:hover .revision-guide-toggle-label {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .revision-guide-toggle:focus-visible {
+    outline: 2px solid #0061ff;
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  .revision-guide-chevron {
+    flex-shrink: 0;
+    display: inline-block;
+    font-size: 8px;
+    line-height: 1;
+    color: var(--purple2);
+    transform: rotate(0deg);
+    transition: transform 0.2s ease;
+  }
+  .revision-guide.is-collapsed .revision-guide-chevron {
+    transform: rotate(-90deg);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .revision-guide-chevron { transition: none; }
+  }
+  .revision-guide-panel[hidden] {
+    display: none !important;
+  }
+  .revision-guide-lead {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.8;
+    margin: 0 0 16px 0;
+  }
+  .revision-guide-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
+  .revision-step { padding: 18px 16px; border-right: 1.5px solid var(--border); border-bottom: 1.5px solid var(--border); }
+  .revision-step:last-child { border-right: none; }
+  .revision-step-num { font-family: 'Cash Market', sans-serif; font-size: 26px; font-weight: 700; color: var(--purple); opacity: 0.3; line-height: 1; margin-bottom: 6px; }
+  .revision-step-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .revision-step-head .revision-step-num { margin-bottom: 0; }
+  .revision-screenshot-icon,
+  .revision-markup-icon,
+  .revision-write-icon,
+  .revision-check-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 40px;
+    color: var(--purple2);
+    opacity: 0.85;
+  }
+  .revision-step-title { font-family: 'Cash Market', sans-serif; font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 5px; }
+  .revision-step-desc { font-size: 10px; color: var(--muted); line-height: 1.7; }
+  .revision-step-desc strong { color: var(--body); }
+  .revision-warning { background: #fff8f2; border-top: 1.5px solid var(--warn); padding: 14px 20px; display: flex; gap: 10px; align-items: flex-start; }
+  .revision-warning-icon { flex-shrink: 0; display: inline-flex; align-items: center; line-height: 0; }
+  .revision-warning-text { font-size: 10px; color: var(--muted); line-height: 1.7; }
+  .revision-warning-text strong { color: var(--warn); font-family: 'Cash Market', sans-serif; }
+
+  /* ---- ADDONS ---- */
+  .addons-section { margin-bottom: 48px; }
+  .addons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 170px), 1fr)); gap: 2px; background: var(--border); border: 1.5px solid var(--border); }
+  .addon { background: var(--card-bg); padding: 16px; display: flex; flex-direction: column; }
+  .addon-icon {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 28px;
+    height: 28px;
+    margin-bottom: 10px;
+    color: var(--purple2);
+    flex-shrink: 0;
+    user-select: none;
+  }
+
+  .addon-icon .icon-img {
+    width: 100%;
+    height: auto;
+    max-width: 28px;
+    max-height: 28px;
+    display: block;
+    object-fit: contain;
+  }
+  .addon-name { font-family: 'Cash Market', sans-serif; font-size: 12px; font-weight: 700; margin-bottom: 4px; color: var(--dark); }
+  .addon-price { color: var(--purple2); font-size: 11px; font-weight: 600; margin-bottom: 4px; }
+  .addon-desc { font-size: 10px; color: var(--muted); line-height: 1.5; }
+
+  .addons-footnote {
+    margin-top: 12px;
+    font-size: 9px;
+    color: var(--muted);
+    line-height: 1.6;
+    letter-spacing: 0.02em;
+    max-width: 52em;
+  }
+
+  /* ---- RETAINER (full-bleed orange band — matches packages / header) ---- */
+  .retainer-section {
+    margin-bottom: 48px;
+    width: 100vw;
+    max-width: 100vw;
+    margin-inline: calc(50% - 50vw);
+    padding: 26px max(16px, calc((100vw - 900px) / 2)) 32px;
+    background: linear-gradient(165deg, #f07828 0%, #e04e12 46%, #c43a08 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 8px 28px rgba(196, 58, 8, 0.28);
+    border-top: 1px solid rgba(160, 45, 8, 0.4);
+    border-bottom: 1px solid rgba(160, 45, 8, 0.4);
+  }
+
+  .retainer-section .section-label {
+    color: #fff8f2;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.18);
+    margin-bottom: 12px;
+  }
+
+  .retainer-section .section-label::after {
+    background: linear-gradient(90deg, rgba(255, 248, 242, 0.55) 0%, rgba(255, 248, 242, 0.08) 100%);
+  }
+
+  .retainer-section .harmony-collapse-chevron {
+    color: rgba(255, 248, 242, 0.88);
+  }
+
+  .retainer-section .harmony-collapse-toggle:focus-visible {
+    outline-color: rgba(255, 248, 242, 0.95);
+  }
+
+  /* Retainer toggle row — same label scale as Website Packages */
+  .retainer-section .harmony-collapse-heading.section-label {
+    font-size: 11px;
+    letter-spacing: 0.22em;
+  }
+
+  /* Collapsed: slim strip only — match #website-packages heading padding / shadow */
+  .retainer-section.harmony-collapse.is-collapsed {
+    margin-bottom: 0;
+    padding: 14px max(16px, calc((100vw - 900px) / 2));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  }
+
+  .retainer-section.harmony-collapse.is-collapsed .harmony-collapse-heading.section-label {
+    margin-bottom: 0;
+  }
+
+  .retainer-intro { font-size: 11px; color: var(--muted); margin-bottom: 16px; line-height: 1.7; }
+  .retainer-intro strong { color: var(--dark); font-family: 'Cash Market', sans-serif; }
+
+  .retainer-section .retainer-intro {
+    color: rgba(255, 248, 242, 0.88);
+  }
+
+  .retainer-section .retainer-intro strong {
+    color: #fff8f2;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.12);
+  }
+
+  .retainer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+    gap: 14px;
+    background: transparent;
+    border: none;
+  }
+
+  .retainer {
+    background: var(--card-bg);
+    padding: 22px 18px;
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 6px 22px rgba(26, 21, 32, 0.06);
+  }
+  .retainer-name { font-family: 'Cash Market', sans-serif; font-size: 17px; font-weight: 700; margin-bottom: 4px; color: var(--dark); }
+  .retainer-price { color: var(--purple2); font-family: 'Cash Market', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 3px; }
+  .retainer-note { font-size: 10px; color: var(--muted); margin-bottom: 14px; }
+  .retainer-includes { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+  .retainer-includes li { font-size: 11px; color: var(--body); display: flex; gap: 8px; }
+  .retainer-includes li::before { content: '→'; color: var(--purple); flex-shrink: 0; }
+
+  /* ---- INTAKE ---- */
+  /* Flush with other collapsible sections (Dropbox / revisions) — no inset card */
+  .kickoff-checklist-cluster {
+    margin-bottom: 48px;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    scroll-margin-top: 12px;
+  }
+
+  .kickoff-checklist-cluster > .section-label { margin-bottom: 16px; }
+
+  .kickoff-checklist-heading.section-label { margin-bottom: 16px; }
+  .kickoff-checklist-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
+    max-width: 100%;
+  }
+  .kickoff-checklist-toggle:hover .kickoff-checklist-toggle-label {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .kickoff-checklist-toggle:focus-visible {
+    outline: 2px solid var(--purple2);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  .kickoff-checklist-chevron {
+    flex-shrink: 0;
+    display: inline-block;
+    font-size: 8px;
+    line-height: 1;
+    color: var(--purple2);
+    transform: rotate(0deg);
+    transition: transform 0.2s ease;
+  }
+  .kickoff-checklist-cluster.is-collapsed .kickoff-checklist-chevron {
+    transform: rotate(-90deg);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .kickoff-checklist-chevron { transition: none; }
+  }
+  .kickoff-checklist-panel[hidden] {
+    display: none !important;
+  }
+
+  .kickoff-cluster-lead {
+    font-size: 12px;
+    color: var(--body);
+    line-height: 1.65;
+    margin: 0 0 22px 0;
+    max-width: 42em;
+    letter-spacing: 0.01em;
+  }
+
+  .kickoff-cluster-lead strong { color: var(--dark); font-family: 'Cash Market', sans-serif; }
+
+  .kickoff-checklist-cluster .intake-section,
+  .kickoff-checklist-cluster .hosting-section,
+  .kickoff-checklist-cluster .permissions-section {
+    margin-bottom: 0;
+  }
+
+  .kickoff-checklist-part + .kickoff-checklist-part {
+    margin-top: 28px;
+    padding-top: 22px;
+    border-top: 1.5px solid var(--border);
+  }
+
+  .kickoff-checklist-part > .hosting-section {
+    margin-top: 18px;
+  }
+
+  .kickoff-part-head {
+    margin-bottom: 16px;
+  }
+
+  .kickoff-part-kicker {
+    display: block;
+    font-size: 8px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--purple);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .kickoff-part-title {
+    font-family: 'Cash Market', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--dark);
+    margin: 0 0 8px 0;
+    line-height: 1.25;
+  }
+
+  .kickoff-part-desc {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.65;
+    margin: 0;
+    max-width: 40em;
+  }
+
+  .kickoff-part-desc a {
+    color: var(--purple2);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .kickoff-part-desc a:hover { text-decoration: underline; }
+
+  .kickoff-part1-simple {
+    font-size: 12px;
+    color: var(--body);
+    line-height: 1.72;
+    max-width: 40em;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .kickoff-part1-simple p { margin: 0; }
+
+  .kickoff-part1-simple strong { color: var(--dark); font-weight: 600; }
+
+  .intake-section { margin-bottom: 48px; }
+  .intake-intro { font-size: 11px; color: var(--muted); line-height: 1.65; margin-bottom: 20px; padding: 16px 18px; border: 1.5px solid var(--purple); border-left: 4px solid var(--purple); background: var(--white); }
+  .intake-intro strong { color: var(--dark); font-family: 'Cash Market', sans-serif; }
+  .intake-intro-lead {
+    font-family: 'Cash Market', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--dark);
+    margin: 0 0 14px 0;
+    line-height: 1.45;
+  }
+  .intake-intro-lead .intake-required-word {
+    color: var(--warn);
+    text-transform: uppercase;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    vertical-align: middle;
+  }
+  .intake-intro-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+  }
+  .intake-intro-list li {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.65;
+    padding-left: 15px;
+    position: relative;
+  }
+  .intake-intro-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--purple);
+    opacity: 0.85;
+  }
+  .intake-intro-list strong { color: var(--body); font-family: 'Space Grotesk', sans-serif; }
+  .intake-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 2px; background: var(--border); border: 1.5px solid var(--border); margin-bottom: 2px; }
+  .intake-card { background: var(--card-bg); padding: 20px 16px; }
+  .intake-card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .intake-icon { display: inline-flex; align-items: center; justify-content: center; line-height: 0; }
+  .intake-icon .icon-img { display: block; }
+  .intake-card-title { font-family: 'Cash Market', sans-serif; font-size: 13px; font-weight: 700; color: var(--dark); }
+  .intake-tag { font-size: 7px; letter-spacing: 0.15em; text-transform: uppercase; padding: 2px 6px; border: 1px solid; margin-left: auto; white-space: nowrap; }
+  .intake-tag.required { color: var(--warn); border-color: var(--warn); }
+  .intake-tag.optional { color: var(--muted); border-color: var(--border); }
+  .intake-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .intake-list li { font-size: 10px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px; line-height: 1.5; align-items: baseline; }
+  .intake-list li::before { content: '—'; color: var(--border); flex-shrink: 0; }
+  .intake-list li.important { color: var(--body); }
+  .intake-list li.important::before { color: var(--purple); }
+  /* Kickoff: file uploads belong in Dropbox — highlight those rows */
+  .intake-list li.intake-li-dropbox {
+    color: #004a99;
+    font-weight: 600;
+  }
+  .intake-list li.intake-li-dropbox::before {
+    color: #0061ff;
+    content: '—';
+  }
+
+  .intake-dropbox-tag {
+    display: inline-block;
+    margin-left: 6px;
+    font-size: 7px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(0, 97, 255, 0.11);
+    color: #0061ff;
+    border: 1px solid rgba(0, 97, 255, 0.32);
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  .intake-field-inline-hint {
+    display: inline;
+    margin-left: 6px;
+    font-size: 8px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+  .intake-note { margin-top: 10px; font-size: 10px; color: var(--muted); line-height: 1.6; padding-top: 10px; border-top: 1px solid var(--border); }
+  .intake-note a {
+    color: #0066cc;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-weight: 600;
+  }
+  .intake-note a:hover { color: #004a99; }
+  .intake-note a:visited { color: #551a8b; }
+  .intake-note a:focus-visible { outline: 2px solid #0066cc; outline-offset: 2px; }
+
+  .intake-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .intake-field { margin: 0; }
+
+  .intake-field-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 5px;
+    line-height: 1.45;
+  }
+
+  .intake-field-req {
+    color: var(--warn);
+    font-size: 8px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-left: 5px;
+  }
+
+  .intake-field input[type="text"],
+  .intake-field input[type="email"],
+  .intake-field input[type="url"],
+  .intake-field textarea {
+    width: 100%;
+    box-sizing: border-box;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px;
+    line-height: 1.45;
+    padding: 8px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    background: var(--white);
+    color: var(--body);
+    resize: vertical;
+  }
+
+  .intake-field textarea { min-height: 52px; }
+  .intake-field textarea.intake-textarea--lg { min-height: 100px; }
+
+  .intake-field input:focus,
+  .intake-field textarea:focus {
+    outline: none;
+    border-color: var(--purple2);
+    box-shadow: 0 0 0 2px rgba(155, 142, 196, 0.22);
+  }
+
+  .intake-color-hint {
+    font-size: 9px;
+    color: var(--muted);
+    margin: 0 0 8px 0;
+    line-height: 1.5;
+  }
+
+  .intake-color-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .intake-field input[type="color"].intake-color-picker {
+    width: 48px;
+    height: 38px;
+    padding: 3px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    background: var(--white);
+    flex-shrink: 0;
+  }
+
+  .intake-field input[type="color"].intake-color-picker:focus {
+    outline: none;
+    border-color: var(--purple2);
+    box-shadow: 0 0 0 2px rgba(155, 142, 196, 0.22);
+  }
+
+  .intake-color-hex-preview {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    padding: 8px 11px;
+    background: var(--bg2);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    color: var(--dark);
+    min-width: 5.5em;
+  }
+
+  .intake-color-open-btn,
+  .intake-color-add-btn {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1.5px solid var(--purple2);
+    background: var(--white);
+    color: var(--purple2);
+  }
+
+  .intake-color-open-btn:hover,
+  .intake-color-add-btn:hover {
+    background: rgba(155, 142, 196, 0.12);
+  }
+
+  .intake-color-open-btn:focus-visible,
+  .intake-color-add-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(155, 142, 196, 0.35);
+  }
+
+  .intake-color-add-btn {
+    border-color: var(--dark);
+    color: var(--dark);
+  }
+
+  .intake-color-add-btn:hover {
+    background: rgba(26, 21, 32, 0.06);
+  }
+
+  .intake-field--dropbox {
+    padding: 11px 12px;
+    background: rgba(0, 97, 255, 0.07);
+    border: 1.5px dashed rgba(0, 97, 255, 0.38);
+    border-radius: 10px;
+  }
+
+  .intake-field-tag {
+    display: inline-block;
+    font-size: 7px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 3px 7px;
+    background: rgba(0, 97, 255, 0.14);
+    color: #0050cc;
+    border-radius: 4px;
+    font-weight: 700;
+    margin-bottom: 7px;
+  }
+
+  .intake-field-dropbox-path {
+    font-size: 9px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--purple2);
+    margin: 0 0 6px 0;
+    word-break: break-all;
+  }
+
+  .intake-field-dropbox-note {
+    font-size: 9px;
+    color: var(--muted);
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  .intake-field-dropbox-note a {
+    color: #0061ff;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .intake-field-dropbox-note a:hover { text-decoration: underline; }
+
+  .intake-field-mini-list {
+    list-style: none;
+    margin: 8px 0 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 9px;
+    color: var(--body);
+    line-height: 1.5;
+  }
+  .intake-field-mini-list strong { font-weight: 600; color: var(--dark); }
+  .intake-field-mini-list code {
+    font-size: 8px;
+    background: rgba(255, 255, 255, 0.7);
+    padding: 1px 5px;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 97, 255, 0.15);
+  }
+
+  .hosting-card .intake-fields { margin-top: 2px; }
+
+  .delay-box { border: 1.5px solid var(--warn); background: #fff8f2; padding: 16px 18px; display: flex; gap: 12px; align-items: flex-start; margin-top: 2px; }
+  .delay-icon { flex-shrink: 0; display: inline-flex; align-items: center; line-height: 0; }
+  .delay-text { font-size: 10px; color: var(--muted); line-height: 1.7; }
+  .delay-text strong { color: var(--warn); font-family: 'Cash Market', sans-serif; }
+
+  /* ---- HOSTING ---- */
+  .hosting-section { margin-bottom: 48px; }
+  .hosting-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 2px; background: var(--border); border: 1.5px solid var(--border); margin-bottom: 16px; }
+  .hosting-card { background: var(--card-bg); padding: 20px 16px; }
+  .hosting-card-title { font-family: 'Cash Market', sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--dark); display: flex; align-items: center; gap: 8px; }
+  .hosting-card-title .icon-img { flex-shrink: 0; display: block; }
+
+  /* ---- CHECKLIST ---- */
+  .checklist-wrap { border: 1.5px solid var(--border); background: var(--bg2); }
+  .checklist-header { padding: 14px 18px; border-bottom: 1.5px solid var(--border); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: var(--white); }
+  .checklist-header-title { font-family: 'Cash Market', sans-serif; font-size: 13px; font-weight: 700; color: var(--dark); line-height: 1.4; }
+  .checklist-sub { font-size: 9px; color: var(--muted); margin-left: auto; white-space: nowrap; }
+  .checklist-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); }
+  .checklist-group { padding: 16px 16px; border-right: 1.5px solid var(--border); border-bottom: 1.5px solid var(--border); background: var(--card-bg); }
+  .checklist-group-title { font-family: 'Cash Market', sans-serif; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--purple); margin-bottom: 10px; }
+  .checklist-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 7px;
+    font-size: 10px;
+    color: var(--body);
+    line-height: 1.5;
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 2px 4px 2px 2px;
+    margin-left: -2px;
+  }
+
+  .checklist-item:hover {
+    background: rgba(155, 142, 196, 0.08);
+  }
+
+  .checklist-item:focus-within {
+    outline: 2px solid var(--purple2);
+    outline-offset: 1px;
+  }
+
+  .checklist-check {
+    width: 13px;
+    height: 13px;
+    min-width: 13px;
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: var(--purple2);
+    cursor: pointer;
+    border-radius: 2px;
+  }
+
+  .checklist-item-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .checklist-item:has(.checklist-check:checked) .checklist-item-text {
+    color: var(--muted);
+    text-decoration: line-through;
+  }
+
+  .checklist-check--promo {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+    opacity: 0;
+  }
+
+  /* ---- SELF-PROMO ---- */
+  .promo-check-wrap {
+    position: relative;
+    border-top: 2px solid var(--neon);
+    background: var(--dark);
+    padding: 18px 20px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    cursor: pointer;
+    margin: 0;
+  }
+
+  .promo-check-wrap:focus-within {
+    outline: 2px solid var(--neon);
+    outline-offset: 3px;
+  }
+
+  .promo-check-wrap:has(.checklist-check--promo:checked) .promo-big-checkbox {
+    background: var(--neon);
+    color: var(--dark);
+    border-color: var(--neon);
+  }
+
+  .promo-check-wrap:has(.checklist-check--promo:checked) .promo-check-desc,
+  .promo-check-wrap:has(.checklist-check--promo:checked) .promo-check-label {
+    opacity: 0.85;
+  }
+
+  .promo-check-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .promo-check-left { flex-shrink: 0; padding-top: 2px; }
+  .promo-big-checkbox { width: 18px; height: 18px; border: 2px solid var(--neon); background: transparent; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--neon); }
+  .promo-check-label { font-family: 'Cash Market', sans-serif; font-size: 13px; font-weight: 700; color: var(--neon); margin-bottom: 6px; display: block; }
+  .promo-check-desc { font-size: 10px; color: #b0a8c0; line-height: 1.7; display: block; }
+  .promo-check-desc strong { color: #f5f0e8; }
+  .promo-badge-preview { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; padding: 5px 10px; background: rgba(184,255,0,0.08); border: 1px solid var(--neon); font-size: 9px; color: var(--neon); letter-spacing: 0.05em; align-self: flex-start; }
+
+  /* ---- DROPBOX ---- */
+  .dropbox-section { margin-bottom: 48px; }
+  .dropbox-handoff-heading.section-label { margin-bottom: 16px; }
+  .dropbox-handoff-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
+    max-width: 100%;
+  }
+  .dropbox-handoff-toggle:hover .dropbox-handoff-toggle-label {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .dropbox-handoff-toggle:focus-visible {
+    outline: 2px solid #0061ff;
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  .dropbox-handoff-chevron {
+    flex-shrink: 0;
+    display: inline-block;
+    font-size: 8px;
+    line-height: 1;
+    color: var(--purple2);
+    transform: rotate(0deg);
+    transition: transform 0.2s ease;
+  }
+  .dropbox-section.is-collapsed .dropbox-handoff-chevron {
+    transform: rotate(-90deg);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dropbox-handoff-chevron { transition: none; }
+  }
+  .dropbox-handoff-panel[hidden] {
+    display: none !important;
+  }
+  .dropbox-intro { font-size: 11px; color: var(--muted); line-height: 1.8; margin-bottom: 16px; padding: 14px 16px; border: 1.5px solid var(--border); border-left: 4px solid #0061ff; background: var(--white); }
+  .dropbox-intro > p { margin: 0 0 12px 0; }
+  .dropbox-intro > p:last-child { margin-bottom: 0; }
+  .dropbox-intro strong { color: var(--dark); }
+  .dropbox-intro a { color: #0061ff; font-weight: 600; text-decoration: none; }
+  .dropbox-intro a:hover { text-decoration: underline; }
+
+  .dropbox-intro-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin: -4px 0 12px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .dropbox-intro-theme-label {
+    margin-right: auto;
+    font-size: 9px;
+    font-family: 'Cash Market', sans-serif;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .dropbox-theme-toggle {
+    display: inline-flex;
+    border-radius: 999px;
+    border: 1.5px solid var(--border);
+    background: var(--bg2);
+    padding: 3px;
+    gap: 2px;
+  }
+
+  .dropbox-theme-btn {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  .dropbox-theme-btn:hover {
+    color: var(--purple2);
+    background: rgba(155, 142, 196, 0.12);
+  }
+
+  .dropbox-theme-btn:focus-visible {
+    outline: 2px solid #0061ff;
+    outline-offset: 2px;
+  }
+
+  .dropbox-theme-btn.is-active {
+    background: var(--white);
+    color: var(--dark);
+    box-shadow: 0 1px 3px rgba(26, 21, 32, 0.08);
+  }
+
+  /* Dropbox guide — dark theme (scoped to section) */
+  .dropbox-section.is-dark .dropbox-intro {
+    background: #1a1f26;
+    border-color: #363d4a;
+    border-left-color: #4d9fff;
+    color: #b8c0cc;
+  }
+
+  .dropbox-section.is-dark .dropbox-intro strong { color: #f0f2f5; }
+  .dropbox-section.is-dark .dropbox-intro a { color: #6eb0ff; }
+  .dropbox-section.is-dark .dropbox-intro-toolbar { border-bottom-color: #363d4a; }
+  .dropbox-section.is-dark .dropbox-intro-theme-label { color: #8b95a8; }
+
+  .dropbox-section.is-dark .dropbox-theme-toggle {
+    background: #252b34;
+    border-color: #404958;
+  }
+
+  .dropbox-section.is-dark .dropbox-theme-btn { color: #9aa3af; }
+  .dropbox-section.is-dark .dropbox-theme-btn:hover {
+    color: #c8d0dc;
+    background: rgba(77, 159, 255, 0.12);
+  }
+
+  .dropbox-section.is-dark .dropbox-theme-btn.is-active {
+    background: #363d4d;
+    color: #f0f4fa;
+    box-shadow: none;
+  }
+
+  .dropbox-section.is-dark .dropbox-path-diagram {
+    background: rgba(77, 159, 255, 0.1);
+    border-color: rgba(110, 176, 255, 0.35);
+  }
+
+  .dropbox-section.is-dark .dbx-path-diagram-kicker { color: #c4b8e8; }
+
+  .dropbox-section.is-dark .dbx-finder-columns {
+    background: #1c1c1e;
+    border-color: #3a3a3e;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .dropbox-section.is-dark .dbx-finder-col {
+    background: linear-gradient(180deg, #2c2c2e 0%, #242426 100%);
+    border-right-color: #3a3a3e;
+  }
+
+  .dropbox-section.is-dark .dbx-finder-empty {
+    color: #636366;
+  }
+
+  .dropbox-section.is-dark .dbx-finder-row {
+    color: #e8e8ed;
+  }
+
+  .dropbox-section.is-dark .dbx-finder-row:not(.is-selected) {
+    color: #aeaeb2;
+  }
+
+  .dropbox-section.is-dark .dbx-finder-row.is-selected {
+    background: #0a84ff;
+    color: #fff;
+    box-shadow: none;
+  }
+
+  .dropbox-section.is-dark .dbx-finder-row-folder::before {
+    opacity: 0.95;
+  }
+
+  .dropbox-section.is-dark .dbx-finder-row:not(.is-selected).dbx-finder-row-folder::before {
+    opacity: 0.75;
+  }
+
+  .dropbox-section.is-dark .dbx-finder-row-file:not(.is-selected) {
+    color: #98989d;
+  }
+
+  .dropbox-section.is-dark .dbx-path-note { color: #9aa3af; }
+
+  .dropbox-section.is-dark .dropbox-drop-figure {
+    background: #252b34;
+    border-color: #404958;
+  }
+
+  .dropbox-section.is-dark .dropbox-drop-figure figcaption { color: #e8eaed; }
+
+  .dropbox-section.is-dark .dropbox-drop-figure svg .dbx-anim-old { fill: #8b95a8; }
+  .dropbox-section.is-dark .dropbox-drop-figure svg .dbx-anim-new { fill: #f0f4fa; }
+  .dropbox-section.is-dark .dropbox-drop-figure svg .dbx-anim-file > rect { fill: #2a3140; stroke: #6b7280; }
+  .dropbox-section.is-dark .dropbox-drop-figure svg .dbx-cursor-pointer { fill: #363d4d; stroke: #e8eaed; }
+
+  /* Folder: Lucide path scaled up — non-scaling stroke keeps outline hairline (otherwise scale(6.3) blows up stroke) */
+  .dropbox-drop-figure svg .dbx-folder-back,
+  .dropbox-drop-figure svg .dbx-folder-front,
+  .dropbox-drop-figure svg .dbx-folder-fold {
+    vector-effect: non-scaling-stroke;
+  }
+  .dropbox-drop-figure svg .dbx-folder-back { fill: #5a9ae6; stroke: #0061ff; stroke-width: 1.1px; stroke-linejoin: round; paint-order: fill stroke; }
+  .dropbox-drop-figure svg .dbx-folder-front { fill: url(#dbxPhGrad); stroke: #0061ff; stroke-width: 1.2px; stroke-linejoin: round; paint-order: fill stroke; }
+  .dropbox-drop-figure svg .dbx-folder-fold { stroke: #0061ff; stroke-opacity: 0.33; stroke-width: 0.95px; stroke-linecap: round; fill: none; }
+  .dropbox-section.is-dark .dropbox-drop-figure svg .dbx-folder-back { fill: #2a3d52; stroke: #4d9fff; }
+  .dropbox-section.is-dark .dropbox-drop-figure svg .dbx-folder-front { fill: #3d556d; stroke: #4d9fff; }
+  .dropbox-section.is-dark .dropbox-drop-figure svg .dbx-folder-fold { stroke: #4d9fff; }
+
+  .dropbox-section.is-dark .dropbox-diagram {
+    --dbx-blue: #4d9fff;
+    --dbx-blue-hover: #6eb0ff;
+    --dbx-bg: #252a33;
+    --dbx-surface: #1a1f26;
+    --dbx-text: #e8eaed;
+    --dbx-muted: #9aa3af;
+    --dbx-border: #363d4a;
+    --dbx-row-hover: #2a3240;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35), 0 10px 28px rgba(0, 0, 0, 0.28);
+  }
+
+  .dropbox-section.is-dark .dbx-ic-file {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%239aa3af' d='M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+
+  .dropbox-section.is-dark .dropbox-diagram-hint { color: #9aa3af; }
+
+  .dropbox-section.is-dark .dropbox-rules {
+    background: #363d4a;
+    border-color: #404958;
+  }
+
+  .dropbox-section.is-dark .dropbox-rule {
+    background: #1e2329;
+  }
+
+  .dropbox-section.is-dark .dropbox-rule-title {
+    color: #c4b8e8;
+  }
+
+  .dropbox-section.is-dark .dropbox-rule-desc {
+    color: #a8aeb8;
+  }
+
+  .dropbox-intro-visuals {
+    display: grid;
+    gap: 16px;
+    margin: 16px 0 14px;
+  }
+  @media (min-width: 760px) {
+    .dropbox-intro-visuals {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+  }
+
+  .dropbox-path-diagram {
+    padding: 14px 14px 12px;
+    background: rgba(0, 97, 255, 0.06);
+    border: 1px solid rgba(0, 97, 255, 0.22);
+    border-radius: 10px;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .dbx-path-diagram-kicker {
+    font-size: 9px;
+    font-family: 'Cash Market', sans-serif;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--purple2);
+    margin: 0 0 10px 0;
+  }
+
+  /* Finder-style column path (interactive — click folders to drill down) */
+  .dbx-finder-columns {
+    display: flex;
+    align-items: stretch;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: #d8d8d8;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    font-size: 8px;
+    line-height: 1.3;
+    min-height: 152px;
+    max-height: 220px;
+  }
+
+  .dbx-finder-col {
+    flex: 1 1 0;
+    min-width: 0;
+    border-right: 1px solid rgba(0, 0, 0, 0.14);
+    background: linear-gradient(180deg, #f6f6f6 0%, #ececec 100%);
+    display: flex;
+    flex-direction: column;
+    padding: 3px 0 5px;
+    overflow: hidden;
+  }
+
+  .dbx-finder-col:last-child {
+    border-right: none;
+  }
+
+  .dbx-finder-row {
+    position: relative;
+    padding: 4px 6px 4px 24px;
+    color: #1c1c1e;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    border-radius: 4px;
+    margin: 0 3px;
+    -webkit-appearance: none;
+    appearance: none;
+    border: none;
+    background: transparent;
+    width: auto;
+    align-self: stretch;
+    font: inherit;
+    text-align: left;
+    display: block;
+    box-sizing: border-box;
+  }
+
+  .dbx-finder-row:focus {
+    outline: none;
+  }
+
+  .dbx-finder-row:focus-visible {
+    outline: 2px solid #0061ff;
+    outline-offset: -1px;
+  }
+
+  .dropbox-section.is-dark .dbx-finder-row:focus-visible {
+    outline-color: #4d9fff;
+  }
+
+  .dbx-finder-empty {
+    padding: 12px 6px;
+    font-size: 8px;
+    line-height: 1.35;
+    color: #8e8e93;
+    text-align: center;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dbx-finder-row-folder::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 10px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 20'%3E%3Cpath fill='%230061ff' d='M10 2H4C2.9 2 2 2.9 2 4v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8L12 2h-2z'/%3E%3C/svg%3E") center / contain no-repeat;
+    opacity: 0.9;
+  }
+
+  .dbx-finder-row-file::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 12px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23637282' d='M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z'/%3E%3C/svg%3E") center / contain no-repeat;
+    opacity: 0.88;
+  }
+
+  .dbx-finder-row.is-selected {
+    background: #0a84ff;
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  }
+
+  .dbx-finder-row.is-selected.dbx-finder-row-folder::before,
+  .dbx-finder-row.is-selected.dbx-finder-row-file::before {
+    filter: brightness(0) invert(1);
+    opacity: 1;
+  }
+
+  .dbx-finder-row:not(.is-selected) {
+    color: #3a3a3c;
+    font-weight: 500;
+  }
+
+  .dbx-finder-row-file:not(.is-selected) {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 8px;
+    color: #48484a;
+  }
+
+  .dbx-finder-row.is-selected.dbx-finder-row-file {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 8px;
+  }
+
+  @media (max-width: 520px) {
+    .dbx-finder-columns {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .dbx-finder-col {
+      flex: 0 0 min(32vw, 120px);
+      max-width: none;
+    }
+  }
+
+  .dbx-path-note {
+    margin: 12px 0 0 0;
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  .dropbox-drop-figure {
+    margin: 0;
+    padding: 12px 12px 10px;
+    background: var(--bg2);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+  }
+
+  .dropbox-drop-figure figcaption {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 8px;
+    line-height: 1.45;
+  }
+
+  .dropbox-drop-figure svg {
+    display: block;
+    width: 100%;
+    max-height: 210px;
+    height: auto;
+  }
+
+  .dropbox-kickoff-map {
+    margin: 12px 0 0 0;
+    padding: 12px 14px;
+    font-size: 10px;
+    color: var(--body);
+    line-height: 1.65;
+    background: rgba(0, 97, 255, 0.06);
+    border: 1px solid rgba(0, 97, 255, 0.22);
+    border-radius: 10px;
+  }
+
+  .dropbox-kickoff-map strong { color: var(--dark); font-family: 'Cash Market', sans-serif; }
+  .dropbox-kickoff-map code {
+    font-size: 9px;
+    background: var(--white);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
+  /* Dropbox-style folder preview (mimics web app chrome) */
+  .dropbox-diagram {
+    --dbx-blue: #0061ff;
+    --dbx-blue-hover: #0057e6;
+    --dbx-bg: #f7f9fa;
+    --dbx-surface: #ffffff;
+    --dbx-text: #1e1919;
+    --dbx-muted: #637282;
+    --dbx-border: #e3e8ee;
+    --dbx-row-hover: #f2f6fc;
+    margin: 12px 0 12px 0;
+    padding: 0;
+    background: var(--dbx-surface);
+    border: 1px solid var(--dbx-border);
+    border-radius: 8px;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    box-shadow: 0 1px 3px rgba(30, 25, 25, 0.08), 0 8px 24px rgba(0, 97, 255, 0.06);
+  }
+
+  .dbx-chrome { background: var(--dbx-surface); color: var(--dbx-text); }
+
+  .dbx-topbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--dbx-border);
+    background: var(--dbx-surface);
+  }
+
+  .dbx-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--dbx-text);
+    letter-spacing: -0.02em;
+  }
+
+  .dbx-logo-mark.dbx-ic-folder {
+    width: 26px;
+    height: 22px;
+  }
+
+  .dbx-topbar-faux {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--dbx-muted);
+    padding: 5px 12px;
+    border: 1px solid var(--dbx-border);
+    border-radius: 999px;
+    background: var(--dbx-bg);
+  }
+
+  .dbx-shell {
+    display: flex;
+    min-height: 220px;
+    max-height: 420px;
+  }
+
+  .dbx-sidebar {
+    width: min(200px, 34%);
+    flex-shrink: 0;
+    background: var(--dbx-bg);
+    border-right: 1px solid var(--dbx-border);
+    padding: 10px 0 12px;
+    font-size: 12px;
+  }
+
+  .dbx-side-item {
+    padding: 8px 14px;
+    color: var(--dbx-text);
+    cursor: default;
+    border-left: 3px solid transparent;
+  }
+
+  .dbx-side-item.is-active {
+    background: rgba(0, 97, 255, 0.08);
+    border-left-color: var(--dbx-blue);
+    font-weight: 600;
+  }
+
+  .dbx-tree-label {
+    margin: 14px 14px 6px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--dbx-muted);
+  }
+
+  .dbx-tree { padding: 0 6px; }
+
+  .dbx-tree-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    color: var(--dbx-text);
+    font-size: 11px;
+  }
+
+  .dbx-tree-row.sub { padding-left: 22px; opacity: 0.92; }
+
+  .dbx-tree-row.is-hi {
+    background: rgba(0, 97, 255, 0.1);
+    font-weight: 600;
+  }
+
+  .dbx-ic {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+
+  .dbx-ic-folder {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%230061ff' d='M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+
+  .dbx-ic-file {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23637282' d='M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+
+  .dbx-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--dbx-surface);
+  }
+
+  .dbx-bc {
+    padding: 10px 14px 6px;
+    font-size: 11px;
+    color: var(--dbx-muted);
+    line-height: 1.5;
+  }
+
+  .dbx-bc-sep { margin: 0 4px; color: var(--dbx-border); }
+
+  .dbx-bc-link { color: var(--dbx-blue); font-weight: 500; }
+
+  .dbx-bc-here { color: var(--dbx-text); font-weight: 600; }
+
+  .dbx-toolbar {
+    display: flex;
+    align-items: center;
+    padding: 4px 14px 10px;
+    gap: 10px;
+    border-bottom: 1px solid var(--dbx-border);
+    font-size: 10px;
+    color: var(--dbx-muted);
+  }
+
+  .dbx-view-toggle {
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: var(--dbx-bg);
+    border: 1px solid var(--dbx-border);
+    font-weight: 500;
+    color: var(--dbx-text);
+  }
+
+  .dbx-toolbar-spacer { flex: 1; }
+
+  .dbx-invite-hint {
+    color: var(--dbx-blue);
+    font-weight: 600;
+  }
+
+  .dbx-table { flex: 1; overflow: auto; padding: 0 8px 12px; }
+
+  .dbx-th { min-width: 0; }
+
+  .dbx-thead,
+  .dbx-tr {
+    display: grid;
+    grid-template-columns: 1fr 72px;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  .dbx-thead {
+    color: var(--dbx-muted);
+    font-weight: 600;
+    border-bottom: 1px solid var(--dbx-border);
+    margin: 0 0 2px;
+  }
+
+  .dbx-tr {
+    border-radius: 6px;
+    color: var(--dbx-text);
+  }
+
+  .dbx-tr:hover { background: var(--dbx-row-hover); }
+
+  .dbx-td { display: flex; align-items: center; gap: 10px; min-width: 0; }
+
+  .dbx-td .dbx-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .dbx-tr.is-file .dbx-td:first-child { padding-left: 28px; }
+
+  .dbx-col-meta { color: var(--dbx-muted); font-size: 10px; justify-content: flex-end; }
+
+  .dbx-split-foot {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--dbx-border);
+    border-top: 1px solid var(--dbx-border);
+    font-size: 10px;
+  }
+
+  .dbx-split-cell {
+    background: var(--dbx-bg);
+    padding: 10px 12px;
+    color: var(--dbx-muted);
+    line-height: 1.55;
+  }
+
+  .dbx-split-cell strong {
+    display: block;
+    color: var(--dbx-text);
+    font-size: 11px;
+    margin-bottom: 4px;
+  }
+
+  .dbx-legend {
+    margin: 0;
+    padding: 8px 14px 10px;
+    font-size: 10px;
+    color: var(--dbx-muted);
+    border-top: 1px solid var(--dbx-border);
+    background: var(--dbx-bg);
+    line-height: 1.5;
+  }
+
+  @media (max-width: 640px) {
+    .dbx-shell { flex-direction: column; max-height: none; }
+    .dbx-sidebar {
+      width: 100%;
+      border-right: none;
+      border-bottom: 1px solid var(--dbx-border);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      padding: 8px;
+    }
+    .dbx-tree-label { grid-column: 1 / -1; margin: 8px 0 4px; }
+    .dbx-tree { grid-column: 1 / -1; }
+    .dbx-split-foot { grid-template-columns: 1fr; }
+  }
+
+  .dropbox-diagram-hint {
+    margin: 0;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .dropbox-rules { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 170px), 1fr)); gap: 2px; background: var(--border); border: 1.5px solid var(--border); }
+  .dropbox-rule { background: var(--card-bg); padding: 14px 14px; }
+  .dropbox-rule-title { font-family: 'Cash Market', sans-serif; font-size: 11px; font-weight: 700; color: var(--purple2); margin-bottom: 5px; }
+  .dropbox-rule-desc { font-size: 10px; color: var(--muted); line-height: 1.6; }
+
+  /* ---- PAYMENT ---- */
+  .payment-section { margin-bottom: 48px; }
+  .payment-box { border: 1.5px solid var(--border); background: var(--dark); padding: 24px 20px; display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start; }
+  .payment-method { flex: 1; min-width: 180px; }
+  .zelle-label { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #7a7090; margin-bottom: 6px; }
+  .payment-method-name { font-family: 'Cash Market', sans-serif; font-size: 26px; font-weight: 700; color: var(--neon); margin-bottom: 6px; }
+  .payment-method-detail { font-size: 12px; color: #f5f0e8; margin-bottom: 5px; word-break: break-all; }
+  .payment-method-sub { font-size: 10px; color: #7a7090; line-height: 1.6; }
+  .payment-terms { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 8px; }
+  .payment-term { font-size: 11px; color: #b8b0c8; padding: 8px 0; border-bottom: 1px solid #3a3050; }
+  .payment-term:last-child { border-bottom: none; }
+
+  .footer-note { margin-top: 48px; padding-top: 24px; border-top: 1.5px solid var(--border); font-size: 10px; color: var(--muted); line-height: 1.8; }
+  .footer-note p { margin-bottom: 10px; }
+
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="site-header">
+    <div class="header-top">
+      <div class="brand">Harmony <span>Stack</span></div>
+      <div class="tagline">Web design services<br>Custom sites · Shopify · support</div>
+    </div>
+    <div class="header-cta">
+      <span class="header-cta-label">Next step</span>
+      <div class="header-cta-actions">
+        <a href="mailto:harmonyStack@gmail.com">Email Harmony Stack</a>
+        <a href="tel:+12017457995">Call</a>
+        <a href="#website-packages">View packages</a>
+      </div>
+    </div>
+    <div class="portfolio-bar">
+      <div class="portfolio-label">Past work</div>
+      <div class="portfolio-bar-chips">
+        <a class="portfolio-site" href="https://luzidproductions.com" target="_blank" rel="noopener noreferrer" aria-label="Open luzidproductions.com in a new tab">luzidproductions.com</a>
+        <a class="portfolio-site" href="https://girlsgonedigital.com" target="_blank" rel="noopener noreferrer" aria-label="Open girlsgonedigital.com in a new tab">girlsgonedigital.com</a>
+        <a class="portfolio-site" href="https://careshaplease.com" target="_blank" rel="noopener noreferrer" aria-label="Open careshaplease.com in a new tab">careshaplease.com</a>
+        <a class="portfolio-site" href="https://girlsgone.digital" target="_blank" rel="noopener noreferrer" aria-label="Open girlsgone.digital in a new tab">girlsgone.digital</a>
+        <a class="portfolio-site" href="https://blanksquareproductions.com" target="_blank" rel="noopener noreferrer" aria-label="Open blanksquareproductions.com in a new tab">blanksquareproductions.com</a>
+        <a class="portfolio-site" href="https://icestudios.shop" target="_blank" rel="noopener noreferrer" aria-label="Open icestudios.shop in a new tab">icestudios.shop</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="portfolio-showcase harmony-collapse" id="portfolio-showcase" data-harmony-collapse-storage="harmony-portfolio-showcase-collapsed">
+    <div class="section-label harmony-collapse-heading">
+      <button type="button" class="harmony-collapse-toggle" id="portfolio-showcase-toggle" aria-expanded="true" aria-controls="portfolio-showcase-panel">
+        <span class="harmony-collapse-chevron" aria-hidden="true">▼</span>
+        <span class="harmony-collapse-toggle-label">Previous Work — Mobile View</span>
+      </button>
+    </div>
+    <div class="harmony-collapse-panel" id="portfolio-showcase-panel">
+    <div class="portfolio-carousel" id="portfolio-carousel">
+      <button type="button" class="carousel-nav-btn" data-carousel-prev aria-label="Previous project">&#8249;</button>
+      <div class="portfolio-carousel-viewport" tabindex="0" role="region" aria-roledescription="carousel" aria-label="Portfolio mobile previews">
+        <div class="portfolio-carousel-track">
+
+      <!-- luzidproductions.com home -->
+      <div class="site-card" data-portfolio-site="luzidproductions.com">
+        <div class="phone-frame" tabindex="0" role="button" data-preview-id="luzid-home" aria-label="Luzid Productions — show what’s in this preview" aria-expanded="false" aria-controls="portfolio-preview-popout">
+          <div class="phone-outer">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <img class="phone-screen-shot" src="portfolio-screenshots/luzidproductions-home.png" alt="Luzid Productions — home page" loading="eager" decoding="async" />
+            </div>
+            <div class="phone-home-btn"></div>
+          </div>
+        </div>
+        <div class="page-type-badge">
+          <span class="page-badge active">Home</span>
+        </div>
+        <a class="site-card-external" href="https://luzidproductions.com" target="_blank" rel="noopener noreferrer">
+          <span class="site-card-label">Luzid Productions</span>
+          <span class="site-card-url">luzidproductions.com</span>
+        </a>
+      </div>
+
+      <!-- girlsgonedigital.com home -->
+      <div class="site-card" data-portfolio-site="girlsgonedigital.com">
+        <div class="phone-frame" tabindex="0" role="button" data-preview-id="girls-com-home" aria-label="Girls Gone Digital — show what’s in this preview" aria-expanded="false" aria-controls="portfolio-preview-popout">
+          <div class="phone-outer">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <img class="phone-screen-shot" src="portfolio-screenshots/girlsgonedigital-home.png" alt="Girls Gone Digital — girlsgonedigital.com (HTTPS unreachable; preview from girlsgone.digital home)" loading="eager" decoding="async" />
+            </div>
+            <div class="phone-home-btn"></div>
+          </div>
+        </div>
+        <div class="page-type-badge">
+          <span class="page-badge active">Home</span>
+        </div>
+        <a class="site-card-external" href="https://girlsgonedigital.com" target="_blank" rel="noopener noreferrer">
+          <span class="site-card-label">Girls Gone Digital</span>
+          <span class="site-card-url">girlsgonedigital.com</span>
+        </a>
+      </div>
+
+      <!-- careshaplease.com — visual only, no text credit -->
+      <div class="site-card" data-portfolio-site="careshaplease.com">
+        <div class="phone-frame" tabindex="0" role="button" data-preview-id="caresha-home" aria-label="Caresha Please home — show what’s in this preview" aria-expanded="false" aria-controls="portfolio-preview-popout">
+          <div class="phone-outer">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <img class="phone-screen-shot" src="portfolio-screenshots/caresha-please-home.png" alt="Caresha Please — preview home (caresha-please-site.vercel.app)" loading="eager" decoding="async" />
+            </div>
+            <div class="phone-home-btn"></div>
+          </div>
+        </div>
+        <div class="page-type-badge">
+          <span class="page-badge active">Home</span>
+        </div>
+        <div class="site-card-label">Caresha Please</div>
+        <div class="site-card-url" style="color:var(--muted);">— private —</div>
+      </div>
+
+      <!-- careshaplease.com shop -->
+      <div class="site-card" data-portfolio-site="careshaplease.com">
+        <div class="phone-frame" tabindex="0" role="button" data-preview-id="caresha-shop" aria-label="Caresha Please shop — show what’s in this preview" aria-expanded="false" aria-controls="portfolio-preview-popout">
+          <div class="phone-outer">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <img class="phone-screen-shot" src="portfolio-screenshots/caresha-please-shop.png" alt="Caresha Please — Get Into Some Tea section and product grid (caresha-please-site.vercel.app home)" loading="eager" decoding="async" />
+            </div>
+            <div class="phone-home-btn"></div>
+          </div>
+        </div>
+        <div class="page-type-badge">
+          <span class="page-badge active page-badge--shop">Shop</span>
+        </div>
+        <div class="site-card-label">Caresha Please</div>
+        <div class="site-card-url" style="color:var(--muted);">— private —</div>
+      </div>
+
+      <!-- girlsgone.digital shop (single slot for this domain in grid) -->
+      <div class="site-card" data-portfolio-site="girlsgone.digital">
+        <div class="phone-frame" tabindex="0" role="button" data-preview-id="girls-ggd-shop" aria-label="Girls Gone Digital shop — show what’s in this preview" aria-expanded="false" aria-controls="portfolio-preview-popout">
+          <div class="phone-outer">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <img class="phone-screen-shot" src="portfolio-screenshots/girlsgone-digital-shop.png" alt="Girls Gone Digital — shop section (girlsgone.digital)" loading="eager" decoding="async" />
+            </div>
+            <div class="phone-home-btn"></div>
+          </div>
+        </div>
+        <div class="page-type-badge">
+          <span class="page-badge active page-badge--shop">Shop</span>
+        </div>
+        <a class="site-card-external" href="https://girlsgone.digital" target="_blank" rel="noopener noreferrer">
+          <span class="site-card-label">Girls Gone Digital</span>
+          <span class="site-card-url">girlsgone.digital</span>
+        </a>
+      </div>
+
+      <!-- blanksquareproductions.com home -->
+      <div class="site-card" data-portfolio-site="blanksquareproductions.com">
+        <div class="phone-frame" tabindex="0" role="button" data-preview-id="blanksquare-home" aria-label="Blank Square — show what’s in this preview" aria-expanded="false" aria-controls="portfolio-preview-popout">
+          <div class="phone-outer">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <img class="phone-screen-shot" src="portfolio-screenshots/blanksquareproductions-home.png" alt="Blank Square Productions — home page" loading="eager" decoding="async" />
+            </div>
+            <div class="phone-home-btn"></div>
+          </div>
+        </div>
+        <div class="page-type-badge">
+          <span class="page-badge active">Home</span>
+        </div>
+        <a class="site-card-external" href="https://blanksquareproductions.com" target="_blank" rel="noopener noreferrer">
+          <span class="site-card-label">Blank Square</span>
+          <span class="site-card-url">blanksquareproductions.com</span>
+        </a>
+      </div>
+
+      <!-- icestudios.shop home -->
+      <div class="site-card" data-portfolio-site="icestudios.shop">
+        <div class="phone-frame" tabindex="0" role="button" data-preview-id="ice-home" aria-label="ICE Studios — show what’s in this preview" aria-expanded="false" aria-controls="portfolio-preview-popout">
+          <div class="phone-outer">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <img class="phone-screen-shot" src="portfolio-screenshots/icestudios-shop-home.png" alt="ICE Studios — icestudios.shop storefront password page (no public home or catalog visible)" loading="eager" decoding="async" />
+            </div>
+            <div class="phone-home-btn"></div>
+          </div>
+        </div>
+        <div class="page-type-badge">
+          <span class="page-badge active">Home</span>
+        </div>
+        <a class="site-card-external" href="https://icestudios.shop" target="_blank" rel="noopener noreferrer">
+          <span class="site-card-label">ICE Studios</span>
+          <span class="site-card-url">icestudios.shop</span>
+        </a>
+      </div>
+
+      <div id="portfolio-preview-popout" class="portfolio-preview-popout" role="dialog" aria-modal="false" aria-labelledby="portfolio-preview-popout-title" aria-hidden="true" hidden>
+        <button type="button" class="portfolio-preview-popout-close" aria-label="Close project details">&times;</button>
+        <div class="portfolio-preview-popout-kicker" id="portfolio-preview-popout-kicker"></div>
+        <h3 class="portfolio-preview-popout-title" id="portfolio-preview-popout-title"></h3>
+        <ul class="portfolio-preview-popout-list" id="portfolio-preview-popout-list"></ul>
+      </div>
+
+        </div>
+      </div>
+      <button type="button" class="carousel-nav-btn" data-carousel-next aria-label="Next project">›</button>
+    </div>
+    <div class="portfolio-carousel-dots" id="portfolio-carousel-dots" role="tablist" aria-label="Portfolio slides"></div>
+    </div>
+  </div>
+
+  <!-- PACKAGES — After editing compare tables: save UTF-8, run python3 verify-html-structure.py.
+       If layout breaks (payment section inside the table), run python3 apply_packages_canonical.py -->
+  <div class="harmony-collapse" id="website-packages" data-harmony-collapse-storage="harmony-packages-collapsed">
+    <div class="section-label harmony-collapse-heading packages-collapse-heading">
+      <button type="button" class="harmony-collapse-toggle" id="packages-collapse-toggle" aria-expanded="true" aria-controls="packages-collapse-panel">
+        <span class="harmony-collapse-chevron" aria-hidden="true">▼</span>
+        <span class="harmony-collapse-toggle-label">Website Packages — One-Time Builds</span>
+      </button>
+    </div>
+    <div class="harmony-collapse-panel" id="packages-collapse-panel">
+    <div class="packages-cluster">
+    <div class="packages-band">
+      <span class="packages-band-kicker">Tiers 01–02</span>
+      <span class="packages-band-note">Small scope · quick sessions</span>
+    </div>
+    <div class="packages-grid packages-grid--entry packages-entry-compare">
+      <div class="packages-entry-compare-scroll">
+        <div class="packages-entry-compare-card">
+          <table class="packages-entry-compare-table" aria-label="Compare Tier 01 Quick Fix and Tier 02 Refresh">
+            <colgroup>
+              <col class="pkg-col-feature" />
+              <col class="pkg-col-tier" />
+              <col class="pkg-col-tier" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th scope="col">What’s included</th>
+                <th scope="col" class="pkg-compare-tier-head">
+                  <span class="pkg-compare-tier-icon pkg-compare-tier-icon--quick" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" focusable="false" fill="none" stroke="#7b6ca8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                    </svg>
+                  </span>
+                  <span class="pkg-compare-tier-title">Tier 01 · Quick Fix</span>
+                </th>
+                <th scope="col" class="pkg-compare-tier-head">
+                  <span class="pkg-compare-tier-icon pkg-compare-tier-icon--refresh" aria-hidden="true">
+                    <svg viewBox="0 0 56 40" xmlns="http://www.w3.org/2000/svg" focusable="false">
+                      <path d="M4 6h16l7 7V34H4V6Z" fill="#faf8ff" stroke="#d8d0c8" stroke-width="1.2" />
+                      <path d="M20 6v7h7" fill="none" stroke="#d8d0c8" stroke-width="1.2" />
+                      <line x1="8" y1="18" x2="22" y2="18" stroke="#9b8ec4" stroke-width="1" opacity="0.45" />
+                      <line x1="8" y1="22" x2="18" y2="22" stroke="#9b8ec4" stroke-width="1" opacity="0.35" />
+                      <path fill="none" stroke="#7b6ca8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M34 28L46 16" />
+                      <circle cx="34" cy="28" r="4.5" fill="#ede8de" stroke="#7b6ca8" stroke-width="1.8" />
+                      <path d="M44.5 12H49v4.5H47l-2.5-2.5V12Z" fill="#ede8de" stroke="#7b6ca8" stroke-width="1.6" stroke-linejoin="round" />
+                      <path d="M42 4l.8 2.2 2.3.8-2.3.8L42 10l-.8-2.2-2.3-.8 2.3-.8L42 4Z" fill="#b8ff00" opacity="0.95" />
+                      <circle cx="50" cy="22" r="1.3" fill="#b8ff00" />
+                      <path d="M28 8l.6 1.6 1.7.6-1.7.6L28 12.4l-.6-1.6-1.7-.6 1.7-.6L28 8Z" fill="#9b8ec4" opacity="0.9" />
+                    </svg>
+                  </span>
+                  <span class="pkg-compare-tier-title">Tier 02 · Refresh</span>
+                </th>
+              </tr>
+              <tr class="packages-entry-compare-subrow">
+                <td></td>
+                <td>
+                  <span class="pkg-compare-price">$75–150</span>
+                  <span class="pkg-compare-note">flat rate · per session</span>
+                  <p class="pkg-compare-desc">Small updates to an existing site. Fast turnaround.</p>
+                </td>
+                <td>
+                  <span class="pkg-compare-price">$300–600</span>
+                  <span class="pkg-compare-note">flat rate · existing site</span>
+                  <p class="pkg-compare-desc">Visual overhaul without a full rebuild.</p>
+                </td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Quick-session updates (copy, images, links, minor layout, 1–2 pages)</th>
+                <td><span class="pkg-cell-yes" aria-label="Included in Tier 01">&#10003;</span></td>
+                <td><span class="pkg-cell-no" aria-label="Not in Tier 02 in this row">&#10005;</span></td>
+              </tr>
+              <tr>
+                <th scope="row">Updated fonts, colors &amp; new imagery</th>
+                <td><span class="pkg-cell-no" aria-label="Not in Tier 01 as listed">&#10005;</span></td>
+                <td><span class="pkg-cell-yes" aria-label="Included in Tier 02">&#10003;</span></td>
+              </tr>
+              <tr>
+                <th scope="row">Mobile check</th>
+                <td><span class="pkg-cell-no" aria-label="Not in Tier 01 as listed">&#10005;</span></td>
+                <td><span class="pkg-cell-yes" aria-label="Included in Tier 02">&#10003;</span></td>
+              </tr>
+              <tr>
+                <th scope="row">Pages to redesign</th>
+                <td><span class="pkg-compare-value pkg-compare-na" aria-label="Not included for Tier 01 in this row">&#8212;</span></td>
+                <td><span class="pkg-compare-value">Up to 5</span></td>
+              </tr>
+              <tr>
+                <th scope="row">Rounds of revisions</th>
+                <td><span class="pkg-compare-value">2 rounds</span></td>
+                <td><span class="pkg-compare-value">2 rounds</span></td>
+              </tr>
+              <tr>
+                <th scope="row">You send: edit list, screenshots, live URL</th>
+                <td><span class="pkg-cell-yes" aria-label="Included in Tier 01">&#10003;</span></td>
+                <td><span class="pkg-cell-no" aria-label="Not in Tier 02 in this row">&#10005;</span></td>
+              </tr>
+              <tr>
+                <th scope="row">You send: brand assets &amp; new images</th>
+                <td><span class="pkg-cell-no" aria-label="Not in Tier 01 as listed">&#10005;</span></td>
+                <td><span class="pkg-cell-yes" aria-label="Included in Tier 02">&#10003;</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="packages-band">
+      <span class="packages-band-kicker">Tiers 03–05</span>
+      <span class="packages-band-note">Full builds · compare tiers side by side</span>
+    </div>
+    <div class="packages-grid packages-grid--build packages-build-compare">
+      <div class="packages-entry-compare-scroll">
+        <div class="packages-entry-compare-card">
+          <table class="packages-entry-compare-table packages-entry-compare-table--build" aria-label="Compare Tier 03 Starter Site, Tier 04 Pro Build, and Tier 05 E-Commerce">
+            <colgroup>
+              <col class="pkg-col-feature" />
+              <col class="pkg-col-tier" />
+              <col class="pkg-col-tier" />
+              <col class="pkg-col-tier" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th scope="col">What’s included</th>
+                <th scope="col" class="pkg-compare-tier-head">
+                  <span class="pkg-compare-tier-kicker">★ Most popular</span>
+                  <span class="pkg-compare-tier-icon pkg-compare-tier-icon--starter" aria-hidden="true">
+                    <svg viewBox="0 0 40 32" xmlns="http://www.w3.org/2000/svg" focusable="false">
+                      <rect x="1" y="19" width="6" height="11" fill="#ede8de" stroke="#9b8ec4" stroke-width="1" />
+                      <rect x="9" y="15" width="6" height="15" fill="#ede8de" stroke="#9b8ec4" stroke-width="1" />
+                      <rect x="17" y="7" width="7" height="23" fill="#e4ddf0" stroke="#7b6ca8" stroke-width="1.4" />
+                      <rect x="26" y="15" width="6" height="15" fill="#ede8de" stroke="#9b8ec4" stroke-width="1" />
+                      <rect x="34" y="19" width="6" height="11" fill="#ede8de" stroke="#9b8ec4" stroke-width="1" />
+                    </svg>
+                  </span>
+                  <span class="pkg-compare-tier-title">Tier 03 · Starter Site</span>
+                </th>
+                <th scope="col" class="pkg-compare-tier-head">
+                  <span class="pkg-compare-tier-icon pkg-compare-tier-icon--pro" aria-hidden="true">
+                    <svg viewBox="0 0 48 38" xmlns="http://www.w3.org/2000/svg" focusable="false">
+                      <rect x="3" y="3" width="9" height="7" fill="#f5f0e8" stroke="#d8d0c8" stroke-width="0.8" />
+                      <rect x="14" y="3" width="9" height="7" fill="#f5f0e8" stroke="#d8d0c8" stroke-width="0.8" />
+                      <rect x="25" y="3" width="9" height="7" fill="#f5f0e8" stroke="#d8d0c8" stroke-width="0.8" />
+                      <rect x="36" y="3" width="9" height="7" fill="#f5f0e8" stroke="#d8d0c8" stroke-width="0.8" />
+                      <rect x="3" y="12" width="9" height="7" fill="#f5f0e8" stroke="#d8d0c8" stroke-width="0.8" />
+                      <rect x="14" y="12" width="9" height="7" fill="#f5f0e8" stroke="#d8d0c8" stroke-width="0.8" />
+                      <rect x="25" y="12" width="9" height="7" fill="#f5f0e8" stroke="#d8d0c8" stroke-width="0.8" />
+                      <rect x="36" y="12" width="9" height="7" fill="#f5f0e8" stroke="#d8d0c8" stroke-width="0.8" />
+                      <rect x="3" y="21" width="9" height="7" fill="#f5f0e8" stroke="#d8d0c8" stroke-width="0.8" />
+                      <rect x="14" y="21" width="9" height="7" fill="#f5f0e8" stroke="#d8d0c8" stroke-width="0.8" />
+                      <rect x="25" y="21" width="9" height="7" fill="#ede8de" stroke="#b8ff00" stroke-width="1.2" />
+                      <rect x="36" y="21" width="9" height="7" fill="#f5f0e8" stroke="#d8d0c8" stroke-width="0.8" />
+                      <text x="24" y="35.5" text-anchor="middle" font-size="9" fill="#7b6ca8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">&lt;/&gt;</text>
+                    </svg>
+                  </span>
+                  <span class="pkg-compare-tier-title">Tier 04 · Pro Build</span>
+                </th>
+                <th scope="col" class="pkg-compare-tier-head">
+                  <span class="pkg-compare-tier-icon pkg-compare-tier-icon--commerce" aria-hidden="true">
+                    <svg viewBox="0 0 56 36" xmlns="http://www.w3.org/2000/svg" focusable="false">
+                      <path d="M6 14h44v16H6z" fill="#f5f0e8" stroke="#d8d0c8" stroke-width="1.2" />
+                      <path d="M6 14L28 6l22 8" fill="none" stroke="#7b6ca8" stroke-width="1.5" stroke-linejoin="round" />
+                      <line x1="6" y1="22" x2="50" y2="22" stroke="#d8d0c8" stroke-width="1" />
+                      <rect x="10" y="24" width="7" height="8" rx="0.5" fill="#9b8ec4" opacity="0.45" />
+                      <rect x="20" y="25" width="7" height="7" fill="#7b6ca8" opacity="0.35" />
+                      <rect x="30" y="24" width="7" height="8" fill="#9b8ec4" opacity="0.35" />
+                      <circle cx="46" cy="10" r="5" fill="#b8ff00" />
+                      <path d="M46 7.5v5M43.5 10h5" stroke="#1a1520" stroke-width="1.2" stroke-linecap="round" />
+                    </svg>
+                  </span>
+                  <span class="pkg-compare-tier-title">Tier 05 · E-Commerce</span>
+                </th>
+              </tr>
+              <tr class="packages-entry-compare-subrow">
+                <td></td>
+                <td>
+                  <span class="pkg-compare-price">$400–1,200</span>
+                  <span class="pkg-compare-note">flat rate · new build</span>
+                  <p class="pkg-compare-desc">Clean, professional site from scratch.</p>
+                </td>
+                <td>
+                  <span class="pkg-compare-price">$2,000–4,500</span>
+                  <span class="pkg-compare-note">flat rate · full project</span>
+                  <p class="pkg-compare-desc">Full-scale site with advanced features and animations.</p>
+                </td>
+                <td>
+                  <span class="pkg-compare-price">$3,500–7,000</span>
+                  <span class="pkg-compare-note">flat rate · online store</span>
+                  <p class="pkg-compare-desc">Full store with product pages, checkout, and payments.</p>
+                </td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Pages or product listings</th>
+                <td><span class="pkg-compare-value">Up to 5 pages</span></td>
+                <td><span class="pkg-compare-value">Up to 10 pages</span></td>
+                <td><span class="pkg-compare-value">Up to 20 products</span></td>
+              </tr>
+              <tr>
+                <th scope="row">Custom design (no templates)</th>
+                <td><span class="pkg-cell-yes" aria-label="Included in Tier 03">&#10003;</span></td>
+                <td><span class="pkg-cell-yes" aria-label="Included in Tier 04">&#10003;</span></td>
+                <td><span class="pkg-cell-yes" aria-label="Included in Tier 05">&#10003;</span></td>
+              </tr>
+              <tr>
+                <th scope="row">Mobile responsive</th>
+                <td><span class="pkg-cell-yes" aria-label="Included in Tier 03">&#10003;</span></td>
+                <td><span class="pkg-cell-yes" aria-label="Included in Tier 04">&#10003;</span></td>
+                <td><span class="pkg-cell-yes" aria-label="Included in Tier 05">&#10003;</span></td>
+              </tr>
+              <tr>
+                <th scope="row">Blog or portfolio section</th>
+                <td><span class="pkg-compare-value pkg-compare-na" aria-label="Not in Tier 03 as listed">&#8212;</span></td>
+                <td><span class="pkg-cell-yes" aria-label="Included in Tier 04">&#10003;</span></td>
+                <td><span class="pkg-compare-value pkg-compare-na" aria-label="Not in Tier 05 as listed">&#8212;</span></td>
+              </tr>
+              <tr>
+                <th scope="row">Performance optimized</th>
+                <td><span class="pkg-cell-yes" aria-label="Included in Tier 03">&#10003;</span></td>
+                <td><span class="pkg-cell-yes" aria-label="Included in Tier 04">&#10003;</span></td>
+                <td><span class="pkg-cell-yes" aria-label="Included in Tier 05">&#10003;</span></td>
+              </tr>
+              <tr>
+                <th scope="row">Shopify / WooCommerce store</th>
+                <td><span class="pkg-compare-value pkg-compare-na" aria-label="Not in Tier 03 as listed">&#8212;</span></td>
+                <td><span class="pkg-compare-value pkg-compare-na" aria-label="Not in Tier 04 as listed">&#8212;</span></td>
+                <td><span class="pkg-cell-yes" aria-label="Included in Tier 05">&#10003;</span></td>
+              </tr>
+              <tr>
+                <th scope="row">Custom UI/UX + animations</th>
+                <td><span class="pkg-compare-value pkg-compare-na" aria-label="Not in Tier 03 as listed">&#8212;</span></td>
+                <td><span class="pkg-cell-yes" aria-label="Included in Tier 04">&#10003;</span></td>
+                <td><span class="pkg-compare-value">Store UX + flows</span></td>
+              </tr>
+              <tr>
+                <th scope="row">Contact form + launch support</th>
+                <td><span class="pkg-cell-yes" aria-label="Included in Tier 03">&#10003;</span></td>
+                <td><span class="pkg-cell-yes" aria-label="Included in Tier 04">&#10003;</span></td>
+                <td><span class="pkg-compare-value">Checkout, products &amp; launch</span></td>
+              </tr>
+              <tr>
+                <th scope="row">Post-launch support</th>
+                <td><span class="pkg-compare-value">Launch support</span></td>
+                <td><span class="pkg-compare-value">30 days</span></td>
+                <td><span class="pkg-compare-value">45 days</span></td>
+              </tr>
+              <tr>
+                <th scope="row">Rounds of revisions</th>
+                <td><span class="pkg-compare-revision" aria-label="Included in Tier 03">+ 4 rounds</span></td>
+                <td><span class="pkg-compare-revision" aria-label="Included in Tier 04">+ 4 rounds</span></td>
+                <td><span class="pkg-compare-revision" aria-label="Included in Tier 05">+ 6 rounds</span></td>
+              </tr>
+              <tr>
+                <th scope="row">You send</th>
+                <td class="pkg-compare-chips">
+                  <span class="pkg-compare-chip"><img class="icon-img" src="icons/ic-palette.svg" width="12" height="12" alt="" />Brand kit</span>
+                  <span class="pkg-compare-chip"><img class="icon-img" src="icons/ic-image.svg" width="12" height="12" alt="" />Images</span>
+                  <span class="pkg-compare-chip"><img class="icon-img" src="icons/ic-document.svg" width="12" height="12" alt="" />Copy</span>
+                </td>
+                <td class="pkg-compare-chips">
+                  <span class="pkg-compare-chip"><img class="icon-img" src="icons/ic-palette.svg" width="12" height="12" alt="" />Brand kit</span>
+                  <span class="pkg-compare-chip"><img class="icon-img" src="icons/ic-image.svg" width="12" height="12" alt="" />All images</span>
+                  <span class="pkg-compare-chip"><img class="icon-img" src="icons/ic-gear.svg" width="12" height="12" alt="" />Integrations</span>
+                </td>
+                <td class="pkg-compare-chips">
+                  <span class="pkg-compare-chip"><img class="icon-img" src="icons/ic-image.svg" width="12" height="12" alt="" />Product photos</span>
+                  <span class="pkg-compare-chip"><img class="icon-img" src="icons/ic-box.svg" width="12" height="12" alt="" />Product info</span>
+                  <span class="pkg-compare-chip"><img class="icon-img" src="icons/ic-card.svg" width="12" height="12" alt="" />Payment details</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+    </div>
+  </div>
+  <!-- RETAINERS (after one-time packages) -->
+  <div class="retainer-section harmony-collapse" data-harmony-collapse-storage="harmony-retainers-collapsed">
+    <div class="section-label harmony-collapse-heading">
+      <button type="button" class="harmony-collapse-toggle" id="retainers-collapse-toggle" aria-expanded="true" aria-controls="retainers-collapse-panel">
+        <span class="harmony-collapse-chevron" aria-hidden="true">▼</span>
+        <span class="harmony-collapse-toggle-label">Monthly Retainers — Ongoing Support</span>
+      </button>
+    </div>
+    <div class="harmony-collapse-panel" id="retainers-collapse-panel">
+    <p class="retainer-intro">Pricing scales with <strong>complexity and hours per month</strong>. Month-to-month with 30-day cancellation.</p>
+    <div class="retainer-grid">
+      <div class="retainer"><div class="retainer-name">Basic Care</div><div class="retainer-price">$200/mo</div><div class="retainer-note">2–8 hrs/mo · work weeks</div><ul class="retainer-includes"><li>Text &amp; image updates</li><li>Plugin updates</li><li>Minor fixes + email support</li></ul></div>
+      <div class="retainer"><div class="retainer-name">Growth Plan</div><div class="retainer-price">$450/mo</div><div class="retainer-note">active management · ~5–6 hrs/mo</div><ul class="retainer-includes"><li>New sections or features</li><li>Monthly performance check</li><li>Priority response (24hrs)</li><li>Basic SEO monitoring</li></ul></div>
+      <div class="retainer"><div class="retainer-name">Partner Plan</div><div class="retainer-price">$700–900/mo</div><div class="retainer-note">full-service · ~10+ hrs/mo</div><ul class="retainer-includes"><li>Design + dev updates</li><li>Monthly strategy call</li><li>Analytics reporting</li><li>Same-day response</li><li>New page builds included</li></ul></div>
+    </div>
+    </div>
+  </div>
+
+  <!-- ADDONS: icons are external SVG files in /icons/ (referenced via img). -->
+  <div class="addons-section harmony-collapse" data-harmony-collapse-storage="harmony-addons-collapsed">
+    <div class="section-label harmony-collapse-heading">
+      <button type="button" class="harmony-collapse-toggle" id="addons-collapse-toggle" aria-expanded="true" aria-controls="addons-collapse-panel">
+        <span class="harmony-collapse-chevron" aria-hidden="true">▼</span>
+        <span class="harmony-collapse-toggle-label">À La Carte Add-Ons</span>
+      </button>
+    </div>
+    <div class="harmony-collapse-panel" id="addons-collapse-panel">
+        <div class="addons-grid">
+      <div class="addon"><span class="addon-icon" aria-hidden="true"><img class="icon-img" src="icons/addon-extra-page.svg" width="28" height="28" alt="" /></span><div class="addon-name">Extra Page</div><div class="addon-price">$50–200/page</div><div class="addon-desc">Adds a page outside your package’s included count.</div></div>
+      <div class="addon"><span class="addon-icon" aria-hidden="true"><img class="icon-img" src="icons/addon-logo.svg" width="28" height="28" alt="" /></span><div class="addon-name">Logo Design</div><div class="addon-price">$100–400</div><div class="addon-desc">2–3 logo directions, revisions, and final files for web and print.</div></div>
+      <div class="addon"><span class="addon-icon" aria-hidden="true"><img class="icon-img" src="icons/addon-speed.svg" width="28" height="28" alt="" /></span><div class="addon-name">Speed Optimization</div><div class="addon-price">$100–300</div><div class="addon-desc">Faster loads: image compression, caching, and Core Web Vitals fixes.</div></div>
+      <div class="addon"><span class="addon-icon" aria-hidden="true"><img class="icon-img" src="icons/addon-globe.svg" width="28" height="28" alt="" /></span><div class="addon-name">Domain + Hosting</div><div class="addon-price">$75–150</div><div class="addon-desc">Buy or connect your domain, set DNS, and wire up hosting for go-live.</div></div>
+      <div class="addon"><span class="addon-icon" aria-hidden="true"><img class="icon-img" src="icons/addon-note.svg" width="28" height="28" alt="" /></span><div class="addon-name">Copywriting</div><div class="addon-price">$100–250/page</div><div class="addon-desc">When you do not have draft page text, I write headlines and body copy from your notes, outline, or a short call.</div></div>
+      <div class="addon"><span class="addon-icon" aria-hidden="true"><img class="icon-img" src="icons/addon-chart.svg" width="28" height="28" alt="" /></span><div class="addon-name">Analytics Setup</div><div class="addon-price">$75–150</div><div class="addon-desc">Install visitor tracking and basic reporting (Google Analytics 4 or Plausible).</div></div>
+      <div class="addon"><span class="addon-icon" aria-hidden="true"><img class="icon-img" src="icons/ic-search.svg" width="28" height="28" alt="" /></span><div class="addon-name">SEO Package</div><div class="addon-price">$300–800</div><div class="addon-desc">Help search engines understand your site: keyword research (up to 10 pages), page titles and meta descriptions, sitemap, Search Console setup, and a written SEO audit.</div></div>
+      <div class="addon"><span class="addon-icon" aria-hidden="true"><img class="icon-img" src="icons/addon-grid.svg" width="28" height="28" alt="" /></span><div class="addon-name">Social Media Kit</div><div class="addon-price">$200–400</div><div class="addon-desc">Ready-to-post banners, story templates, and profile graphics for major platforms.</div></div>
+      <div class="addon"><span class="addon-icon" aria-hidden="true"><img class="icon-img" src="icons/addon-rush.svg" width="28" height="28" alt="" /></span><div class="addon-name">Rush Delivery</div><div class="addon-price">+25–50% fee</div><div class="addon-desc">Shorter deadline: priority scheduling with a 25–50% rush fee on the project.</div></div>
+    </div>
+       <p class="addons-footnote">These add-ons can be bundled together for a custom quote—combined pricing may differ from the à la carte rates above.</p>
+    </div>
+  </div>
+
+  <!-- KICKOFF CHECKLIST (Part 1 formulate · Part 2 turn in) -->
+  <div class="kickoff-checklist-cluster" id="kickoff-checklist">
+    <div class="section-label kickoff-checklist-heading">
+      <button type="button" class="kickoff-checklist-toggle" id="kickoff-checklist-toggle" aria-expanded="true" aria-controls="kickoff-checklist-panel">
+        <span class="kickoff-checklist-chevron" aria-hidden="true">▼</span>
+        <span class="kickoff-checklist-toggle-label">Kickoff checklist</span>
+      </button>
+    </div>
+    <div class="kickoff-checklist-panel" id="kickoff-checklist-panel">
+    <p class="kickoff-cluster-lead">Before the project clock starts, send <strong>one delivery</strong>: Part&nbsp;1 (brief below) + Part&nbsp;2 (Dropbox, logins, checklist).</p>
+
+  <!-- Part 1 — creative direction & requirements (formulate) -->
+  <div class="intake-section kickoff-checklist-part">
+    <div class="kickoff-part-head">
+      <span class="kickoff-part-kicker">Part 1</span>
+      <h3 class="kickoff-part-title">Creative direction &amp; requirements</h3>
+      <p class="kickoff-part-desc">Put this in a doc or email — not Dropbox.</p>
+    </div>
+    <div class="kickoff-part1-simple">
+      <p><strong>What to include:</strong> 2–4 reference sites (what you like or want to avoid); page list / sitemap; draft copy per page or a clear plan (copywriting add-on $100–250/page if you need drafts); form details (where submissions go, fields, booking/CRM). Clearer references usually mean fewer revision rounds.</p>
+      <p><strong>Optional:</strong> Shopify apps, payments/shipping, chat or popups, pixels, platform preference — note what you already pay for.</p>
+    </div>
+  </div>
+
+  <!-- Part 2 — assets, access & permissions (turn in) -->
+  <div class="kickoff-checklist-part">
+    <div class="kickoff-part-head">
+      <span class="kickoff-part-kicker">Part 2</span>
+      <h3 class="kickoff-part-title">Assets, access &amp; permissions</h3>
+      <p class="kickoff-part-desc">Use the cards for brand &amp; images, then the hosting grid and checklist for domain, hosting, and platform access.</p>
+    </div>
+    <div class="intake-intro">
+      <p class="intake-intro-lead">Cards marked <span class="intake-required-word">Required</span> must be complete for kickoff. Upload files through Dropbox — see <a href="#dropbox-handoff">Dropbox section</a> — not email. Optional lines can follow without blocking the clock.</p>
+    </div>
+    <div class="intake-grid">
+      <div class="intake-card"><div class="intake-card-header"><div class="intake-icon"><img class="icon-img" src="icons/ic-palette.svg" width="18" height="18" alt="" /></div><div class="intake-card-title">Brand Assets</div><div class="intake-tag required">Required</div></div><ul class="intake-list"><li class="important">Logo file — SVG or PNG, transparent background</li><li class="important">Brand colors — hex codes</li><li class="important">Fonts — name or font files</li><li>Secondary logos, icons, watermarks</li><li>Brand guidelines doc if exists</li></ul><div class="intake-note">Don't have a brand kit? Use <a href="https://www.pomeloai.co" target="_blank">Pomelio AI</a>, <a href="https://brandmark.io" target="_blank">Brandmark.io</a>, <a href="https://business.google.com" target="_blank">Google Business Profile</a>, or <a href="https://aistudio.google.com" target="_blank">Google AI Studio</a>.</div></div>
+      <div class="intake-card"><div class="intake-card-header"><div class="intake-icon"><img class="icon-img" src="icons/ic-image.svg" width="18" height="18" alt="" /></div><div class="intake-card-title">Image Assets</div><div class="intake-tag required">Required</div></div><ul class="intake-list"><li class="important">All photos — high res (1MB+)</li><li class="important">Product images — white bg or lifestyle shots</li><li>Team / headshots with names and titles</li><li>Video files or YouTube/Vimeo links</li></ul><div class="intake-note">Folder layout: <a href="#dropbox-handoff">Dropbox guide</a>.</div></div>
+    </div>
+    <div class="hosting-section">
+    <div class="hosting-grid">
+      <div class="hosting-card"><div class="hosting-card-title"><img class="icon-img" src="icons/ic-globe.svg" width="17" height="17" alt="" /> Domain</div><ul class="intake-list"><li class="important">Domain registrar (GoDaddy, Namecheap, etc.)</li><li class="important">Login or DNS access</li><li class="important">All active and parked domain names</li><li>Domain expiry date + privacy status</li><li>Subdomains in use (shop., blog.)</li><li>Email tied to domain — flag before DNS edits</li></ul></div>
+      <div class="hosting-card"><div class="hosting-card-title"><img class="icon-img" src="icons/ic-server.svg" width="17" height="17" alt="" /> Hosting</div><ul class="intake-list"><li class="important">Hosting provider name</li><li class="important">Account login or server credentials</li><li class="important">Plan type — shared, VPS, managed</li><li>cPanel / FTP / SSH credentials</li><li>SSL active? HTTPS working?</li></ul></div>
+      <div class="hosting-card"><div class="hosting-card-title"><img class="icon-img" src="icons/ic-refresh.svg" width="17" height="17" alt="" /> DNS &amp; Records</div><ul class="intake-list"><li>Current nameservers</li><li>Existing A records, CNAMEs, MX records</li><li>Third-party services tied to DNS</li><li>Has the domain been migrated before?</li></ul></div>
+      <div class="hosting-card"><div class="hosting-card-title"><img class="icon-img" src="icons/ic-bag.svg" width="17" height="17" alt="" /> Platform-Specific</div><ul class="intake-list"><li>Shopify: store URL + staff invite</li><li>WordPress: admin URL + login</li><li>Webflow / Squarespace / Wix: collaborator invite</li><li>Custom: GitHub / GitLab repo access</li></ul></div>
+    </div>
+    <div class="checklist-wrap">
+      <div class="checklist-header"><div class="intake-icon"><img class="icon-img" src="icons/ic-check.svg" width="18" height="18" alt="" /></div><div class="checklist-header-title">Permissions checklist</div><div class="checklist-sub">Tick when each line matches what you shared</div></div>
+      <div class="checklist-grid" id="kickoff-permissions-checklist">
+        <div class="checklist-group"><div class="checklist-group-title">Domain Access</div><label class="checklist-item"><input type="checkbox" class="checklist-check" data-checklist-key="perm-domain-registrar" /><span class="checklist-item-text">Domain registrar login shared</span></label><label class="checklist-item"><input type="checkbox" class="checklist-check" data-checklist-key="perm-dns-management" /><span class="checklist-item-text">DNS management access granted</span></label><label class="checklist-item"><input type="checkbox" class="checklist-check" data-checklist-key="perm-domain-names" /><span class="checklist-item-text">All domain names confirmed</span></label><label class="checklist-item"><input type="checkbox" class="checklist-check" data-checklist-key="perm-email-dns-safe" /><span class="checklist-item-text">Email/DNS change confirmed safe</span></label></div>
+        <div class="checklist-group"><div class="checklist-group-title">Hosting Access</div><label class="checklist-item"><input type="checkbox" class="checklist-check" data-checklist-key="perm-hosting-login" /><span class="checklist-item-text">Hosting login shared</span></label><label class="checklist-item"><input type="checkbox" class="checklist-check" data-checklist-key="perm-cpanel" /><span class="checklist-item-text">cPanel / admin accessible</span></label><label class="checklist-item"><input type="checkbox" class="checklist-check" data-checklist-key="perm-ftp" /><span class="checklist-item-text">FTP / SFTP credentials given</span></label><label class="checklist-item"><input type="checkbox" class="checklist-check" data-checklist-key="perm-ssl" /><span class="checklist-item-text">SSL certificate confirmed</span></label></div>
+        <div class="checklist-group"><div class="checklist-group-title">Platform Access</div><label class="checklist-item"><input type="checkbox" class="checklist-check" data-checklist-key="perm-platform-login" /><span class="checklist-item-text">Platform login / invite sent</span></label><label class="checklist-item"><input type="checkbox" class="checklist-check" data-checklist-key="perm-shopify-staff" /><span class="checklist-item-text">Shopify staff invite sent</span></label><label class="checklist-item"><input type="checkbox" class="checklist-check" data-checklist-key="perm-wordpress-admin" /><span class="checklist-item-text">WordPress admin granted</span></label><label class="checklist-item"><input type="checkbox" class="checklist-check" data-checklist-key="perm-github" /><span class="checklist-item-text">GitHub / repo access shared</span></label></div>
+        <div class="checklist-group"><div class="checklist-group-title">Google &amp; Analytics</div><label class="checklist-item"><input type="checkbox" class="checklist-check" data-checklist-key="perm-ga" /><span class="checklist-item-text">Google Analytics access granted</span></label><label class="checklist-item"><input type="checkbox" class="checklist-check" data-checklist-key="perm-search-console" /><span class="checklist-item-text">Search Console access granted</span></label><label class="checklist-item"><input type="checkbox" class="checklist-check" data-checklist-key="perm-gbp" /><span class="checklist-item-text">Google Business Profile access</span></label><label class="checklist-item"><input type="checkbox" class="checklist-check" data-checklist-key="perm-pixels" /><span class="checklist-item-text">Meta / TikTok pixel IDs provided</span></label></div>
+        <div class="checklist-group"><div class="checklist-group-title">Email &amp; Forms</div><label class="checklist-item"><input type="checkbox" class="checklist-check" data-checklist-key="perm-form-email" /><span class="checklist-item-text">Form delivery email confirmed</span></label><label class="checklist-item"><input type="checkbox" class="checklist-check" data-checklist-key="perm-business-email" /><span class="checklist-item-text">Business email account shared</span></label><label class="checklist-item"><input type="checkbox" class="checklist-check" data-checklist-key="perm-crm" /><span class="checklist-item-text">CRM or form tool access</span></label></div>
+        <div class="checklist-group"><div class="checklist-group-title">Assets Uploaded</div><label class="checklist-item"><input type="checkbox" class="checklist-check" data-checklist-key="perm-dropbox-shared" /><span class="checklist-item-text">Dropbox folder shared</span></label><label class="checklist-item"><input type="checkbox" class="checklist-check" data-checklist-key="perm-brand-assets" /><span class="checklist-item-text">Brand assets uploaded</span></label><label class="checklist-item"><input type="checkbox" class="checklist-check" data-checklist-key="perm-images-by-page" /><span class="checklist-item-text">All images organized by page</span></label><label class="checklist-item"><input type="checkbox" class="checklist-check" data-checklist-key="perm-copy-doc" /><span class="checklist-item-text">Copy doc + reference URLs sent</span></label></div>
+      </div>
+      <div class="promo-check-wrap">
+        <div class="promo-check-left"><div class="promo-big-checkbox"><img class="icon-img" src="icons/ic-sparkle-neon.svg" width="12" height="12" alt="" /></div></div>
+        <div class="promo-check-body">
+          <div class="promo-check-label">Self-Promotion Permission</div>
+          <div class="promo-check-desc">Would you allow a small footer banner — <strong>"Want a website like this? Built by Harmony Stack"</strong> — linking to my portfolio? Optional, free, removable any time.</div>
+          <div class="promo-badge-preview"><img class="icon-img" src="icons/ic-sparkle-neon.svg" width="10" height="10" alt="" /> Want a website like this? Built by Harmony Stack →</div>
+        </div>
+      </div>
+    </div>
+    </div>
+    <div class="delay-box"><div class="delay-icon"><img class="icon-img" src="icons/ic-clock.svg" width="18" height="18" alt="" /></div><div class="delay-text"><strong>Clock starts when the full package is in.</strong> Delays past 7 days after deposit may result in a restart fee.</div></div>
+  </div>
+    </div>
+  </div>
+
+  <!-- DROPBOX -->
+  <div class="dropbox-section" id="dropbox-handoff">
+    <div class="section-label dropbox-handoff-heading">
+      <button type="button" class="dropbox-handoff-toggle" id="dropbox-handoff-toggle" aria-expanded="true" aria-controls="dropbox-handoff-panel">
+        <span class="dropbox-handoff-chevron" aria-hidden="true">▼</span>
+        <span class="dropbox-handoff-toggle-label">How to Organize Your Dropbox Folder</span>
+      </button>
+    </div>
+    <div class="dropbox-handoff-panel" id="dropbox-handoff-panel">
+    <div class="dropbox-intro">
+      <div class="dropbox-intro-toolbar">
+        <span class="dropbox-intro-theme-label">Guide appearance</span>
+        <div class="dropbox-theme-toggle" role="group" aria-label="Light or dark style for this Dropbox guide">
+          <button type="button" class="dropbox-theme-btn is-active" data-set-dropbox-theme="light" aria-pressed="true">Light</button>
+          <button type="button" class="dropbox-theme-btn" data-set-dropbox-theme="dark" aria-pressed="false">Dark</button>
+        </div>
+      </div>
+      <p>All assets submitted via <strong>Dropbox</strong>. Invite <strong>samuelsanchez175@gmail.com</strong> and <strong>harmonyStack@gmail.com</strong> with edit access. Build folders as <strong>page → section → files</strong> (diagram below). <a href="#dbx-finder-columns">→ Jump to the interactive folder explorer</a></p>
+      <div class="dropbox-intro-visuals">
+        <div class="dropbox-path-diagram">
+          <p class="dbx-path-diagram-kicker">Path you’re building (column view)</p>
+          <div class="dbx-finder-columns" id="dbx-finder-columns" role="region" aria-label="Interactive Finder-style folder columns"></div>
+          <p class="dbx-path-note">Like <strong>macOS Finder column view</strong>: each column is one folder level — <strong>click folders below</strong> to drill in; the next column shows what’s inside. Drop files in the matching folder in real Dropbox (e.g. hero images in <strong>hero/</strong>). Swap folder names for your sitemap anytime.</p>
+        </div>
+        <figure class="dropbox-drop-figure">
+          <figcaption>Drop into the right folder, then rename (no camera codes)</figcaption>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 188" width="400" height="188" role="img" aria-labelledby="dbxDropAnimTitle">
+            <title id="dbxDropAnimTitle">Illustration: a photo file moves into a folder; the name changes from IMG_9042.jpg to hero</title>
+            <defs>
+              <linearGradient id="dbxPhGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#e8f4ff"/>
+                <stop offset="100%" stop-color="#cfe8ff"/>
+              </linearGradient>
+            </defs>
+            <style>
+              @keyframes dbxFileNudge {
+                0%, 12% { transform: translate(0, 0); }
+                38%, 52% { transform: translate(132px, -6px); }
+                58%, 70% { transform: translate(132px, 10px); }
+                100% { transform: translate(132px, 10px); }
+              }
+              @keyframes dbxOldFade {
+                0%, 42% { opacity: 1; }
+                52%, 100% { opacity: 0; }
+              }
+              @keyframes dbxNewFade {
+                0%, 48% { opacity: 0; }
+                58%, 100% { opacity: 1; }
+              }
+              @keyframes dbxFolderPulse {
+                0%, 50% { opacity: 1; }
+                56% { opacity: 0.92; }
+                100% { opacity: 1; }
+              }
+              .dbx-anim-file { animation: dbxFileNudge 4.2s ease-in-out infinite; }
+              .dbx-anim-old { animation: dbxOldFade 4.2s ease-in-out infinite; }
+              .dbx-anim-new { animation: dbxNewFade 4.2s ease-in-out infinite; }
+              .dbx-anim-folder { animation: dbxFolderPulse 4.2s ease-in-out infinite; }
+              @media (prefers-reduced-motion: reduce) {
+                .dbx-anim-file, .dbx-anim-old, .dbx-anim-new, .dbx-anim-folder { animation: none !important; }
+                .dbx-anim-file { transform: translate(132px, 10px); }
+                .dbx-anim-old { opacity: 0; }
+                .dbx-anim-new { opacity: 1; }
+              }
+            </style>
+            <g class="dbx-anim-folder">
+              <ellipse cx="252" cy="128" rx="58" ry="3.5" fill="#0061ff" opacity="0.08"/>
+              <!-- 24×24 Lucide folder path; scale + translate keeps center ~252px to match file drag target -->
+              <g transform="translate(176, 50) scale(6.3333333)">
+                <path class="dbx-folder-back" vector-effect="non-scaling-stroke" transform="translate(0.5, 0.75)" d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                <path class="dbx-folder-front" vector-effect="non-scaling-stroke" d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                <line class="dbx-folder-fold" vector-effect="non-scaling-stroke" x1="3.5" y1="10.25" x2="20.5" y2="10.25"/>
+              </g>
+            </g>
+            <g class="dbx-anim-file">
+              <rect x="36" y="64" width="52" height="60" rx="8" fill="#ffffff" stroke="#637282" stroke-width="1.5"/>
+              <circle cx="52" cy="80" r="5" fill="#ffd27f"/>
+              <path d="M 44 108 L 58 92 L 72 104 L 80 88 L 88 108 Z" fill="#9b8ec4" opacity="0.85"/>
+              <!-- Pointer overlapping thumbnail (moves with drag) -->
+              <g transform="translate(74, 108)" aria-hidden="true">
+                <path class="dbx-cursor-pointer" fill="#ffffff" stroke="#1e1919" stroke-width="1.25" stroke-linejoin="round" d="M 0 0 L 0 15 L 4.2 11.2 L 7.2 18.5 L 10.2 17.4 L 7.1 10.2 L 12 10.2 Z"/>
+              </g>
+            </g>
+            <g font-family="Space Grotesk, ui-sans-serif, system-ui, sans-serif" font-size="11" text-anchor="middle">
+              <text x="200" y="172" fill="#637282" class="dbx-anim-old">IMG_9042.jpg</text>
+              <text x="200" y="172" fill="#1a1520" font-weight="600" class="dbx-anim-new">hero</text>
+            </g>
+          </svg>
+        </figure>
+      </div>
+      <div class="dropbox-diagram" role="figure" aria-label="Example Dropbox folder layout — illustration">
+        <div class="dbx-chrome">
+          <header class="dbx-topbar">
+            <span class="dbx-logo">
+              <span class="dbx-logo-mark dbx-ic dbx-ic-folder" aria-hidden="true"></span>
+              <span class="dbx-logo-type">Dropbox</span>
+            </span>
+            <span class="dbx-topbar-faux">Example · not your live account</span>
+          </header>
+          <div class="dbx-shell">
+            <aside class="dbx-sidebar" aria-label="Sidebar (illustration)">
+              <div class="dbx-side-item is-active">All files</div>
+              <div class="dbx-side-item">Recents</div>
+              <div class="dbx-side-item">Starred</div>
+              <div class="dbx-tree-label">Folders</div>
+              <div class="dbx-tree">
+                <div class="dbx-tree-row"><span class="dbx-ic dbx-ic-folder" aria-hidden="true"></span> my-site-assets</div>
+                <div class="dbx-tree-row sub is-hi"><span class="dbx-ic dbx-ic-folder" aria-hidden="true"></span> 01-home</div>
+                <div class="dbx-tree-row sub"><span class="dbx-ic dbx-ic-folder" aria-hidden="true"></span> 02-about</div>
+                <div class="dbx-tree-row sub"><span class="dbx-ic dbx-ic-folder" aria-hidden="true"></span> 03-shop</div>
+              </div>
+            </aside>
+            <main class="dbx-main">
+              <nav class="dbx-bc" aria-label="Breadcrumb">All files <span class="dbx-bc-sep">/</span> <span class="dbx-bc-link">my-site-assets</span> <span class="dbx-bc-sep">/</span> <span class="dbx-bc-here">01-home</span></nav>
+              <div class="dbx-toolbar">
+                <span class="dbx-view-toggle">List</span>
+                <span class="dbx-toolbar-spacer"></span>
+                <span class="dbx-invite-hint">Invite editors</span>
+              </div>
+              <div class="dbx-table" role="group">
+                <div class="dbx-thead" role="row">
+                  <div class="dbx-th">Name</div>
+                  <div class="dbx-th dbx-col-meta">Kind</div>
+                </div>
+                <div class="dbx-tr" role="row">
+                  <div class="dbx-td"><span class="dbx-ic dbx-ic-folder" aria-hidden="true"></span> <span class="dbx-name">hero</span></div>
+                  <div class="dbx-td dbx-col-meta">Folder</div>
+                </div>
+                <div class="dbx-tr is-file" role="row">
+                  <div class="dbx-td"><span class="dbx-ic dbx-ic-file" aria-hidden="true"></span> <span class="dbx-name">banner.jpg</span></div>
+                  <div class="dbx-td dbx-col-meta">Image</div>
+                </div>
+                <div class="dbx-tr is-file" role="row">
+                  <div class="dbx-td"><span class="dbx-ic dbx-ic-file" aria-hidden="true"></span> <span class="dbx-name">logo.svg</span></div>
+                  <div class="dbx-td dbx-col-meta">Image</div>
+                </div>
+                <div class="dbx-tr" role="row">
+                  <div class="dbx-td"><span class="dbx-ic dbx-ic-folder" aria-hidden="true"></span> <span class="dbx-name">testimonials</span></div>
+                  <div class="dbx-td dbx-col-meta">Folder</div>
+                </div>
+                <div class="dbx-tr is-file" role="row">
+                  <div class="dbx-td"><span class="dbx-ic dbx-ic-file" aria-hidden="true"></span> <span class="dbx-name">headshot-maria.png</span></div>
+                  <div class="dbx-td dbx-col-meta">Image</div>
+                </div>
+              </div>
+              <div class="dbx-split-foot">
+                <div class="dbx-split-cell"><strong>02-about / team</strong> jordan-photo.jpg</div>
+                <div class="dbx-split-cell"><strong>03-shop / tea-collection</strong> product-oolong-01.jpg</div>
+              </div>
+              <p class="dbx-legend">Illustration only — in real Dropbox you’ll click folders in the sidebar or list, same as <strong>page → section → files</strong>.</p>
+            </main>
+          </div>
+        </div>
+      </div>
+      <p class="dropbox-diagram-hint">Number page folders (01, 02…) to match your sitemap. Name files by what they are, not by camera codes.</p>
+    </div>
+    <div class="dropbox-rules">
+      <div class="dropbox-rule"><div class="dropbox-rule-title">Name Files Clearly</div><div class="dropbox-rule-desc">hero-banner.jpg not IMG_9042.jpg.</div></div>
+      <div class="dropbox-rule"><div class="dropbox-rule-title">One Folder Per Page</div><div class="dropbox-rule-desc">Each page gets its own numbered folder.</div></div>
+      <div class="dropbox-rule"><div class="dropbox-rule-title">Subfolders Per Section</div><div class="dropbox-rule-desc">hero/, testimonials/ inside each page folder.</div></div>
+      <div class="dropbox-rule"><div class="dropbox-rule-title">Products by Category</div><div class="dropbox-rule-desc">Each product category in its own subfolder.</div></div>
+      <div class="dropbox-rule"><div class="dropbox-rule-title">High Res Only</div><div class="dropbox-rule-desc">1MB+ per image. Export originals, not screenshots.</div></div>
+      <div class="dropbox-rule"><div class="dropbox-rule-title">Still-Live Assets</div><div class="dropbox-rule-desc">Note the URL in a .txt — no re-export needed.</div></div>
+    </div>
+    </div>
+  </div>
+
+  <!-- REVISION GUIDE -->
+  <div class="revision-guide" id="revision-guide">
+    <div class="section-label revision-guide-heading">
+      <button type="button" class="revision-guide-toggle" id="revision-guide-toggle" aria-expanded="true" aria-controls="revision-guide-panel">
+        <span class="revision-guide-chevron" aria-hidden="true">▼</span>
+        <span class="revision-guide-toggle-label">How Revisions Work</span>
+      </button>
+    </div>
+    <div class="revision-guide-panel" id="revision-guide-panel">
+    <p class="revision-guide-lead">Read before submitting changes.</p>
+    <div class="revision-guide-body">
+      <div class="revision-step">
+        <div class="revision-step-head">
+          <div class="revision-step-num">01</div>
+          <svg class="revision-screenshot-icon" viewBox="0 0 56 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <title>Screenshot</title>
+            <rect x="10" y="12" width="36" height="24" rx="2.5" fill="#f5f0e8" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M18 22h20M18 27h14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity="0.35"/>
+            <circle cx="28" cy="30" r="2.5" fill="currentColor" opacity="0.25"/>
+            <path d="M6 18V8h10M50 8h10v10M50 30v10H40M6 30v10h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="revision-step-title">Take Screenshots</div>
+        <div class="revision-step-desc">Go through the full preview carefully. <strong>Screenshot every area you want changed.</strong> Use Snipping Tool, Command+Shift+4 on Mac, or your phone.</div>
+      </div>
+      <div class="revision-step">
+        <div class="revision-step-head">
+          <div class="revision-step-num">02</div>
+          <svg class="revision-markup-icon" viewBox="0 0 56 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <title>Markup and annotate</title>
+            <rect x="6" y="8" width="34" height="32" rx="3" fill="#f5f0e8" stroke="currentColor" stroke-width="1.3"/>
+            <ellipse cx="23" cy="26" rx="11" ry="8.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="3.2 2.8"/>
+            <path d="M40 9 L49 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M46.5 11.5 L50.2 19.5 L43.8 17.2 Z" fill="currentColor"/>
+            <path d="M37 33 L46 42" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+            <circle cx="45.5" cy="41" r="1.8" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="revision-step-title">Mark Them Up</div>
+        <div class="revision-step-desc"><strong>Circle, arrow, or annotate</strong> the exact element on each screenshot. Use Canva, Google Slides, iPhone Markup, or any annotation tool. Vague screenshots cause delays.</div>
+      </div>
+      <div class="revision-step">
+        <div class="revision-step-head">
+          <div class="revision-step-num">03</div>
+          <svg class="revision-write-icon" viewBox="0 0 56 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <title>Document and pencil</title>
+            <rect x="7" y="5" width="30" height="38" rx="3" fill="#f5f0e8" stroke="currentColor" stroke-width="1.35"/>
+            <path d="M13 14 h18 M13 20 h20 M13 26 h14 M13 32 h17" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" opacity="0.38"/>
+            <path d="M29 30 L47 11" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M45.2 9.2 L50 14.5 L46.5 16.5 Z" fill="currentColor"/>
+            <path d="M27 33 L32 38" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
+          </svg>
+        </div>
+        <div class="revision-step-title">Write Full Context</div>
+        <div class="revision-step-desc">For each screenshot, write a <strong>clear explanation</strong> of what's wrong and what you want instead. "Make it bigger" is not enough. Reference a site or describe exactly what you mean.</div>
+      </div>
+      <div class="revision-step">
+        <div class="revision-step-head">
+          <div class="revision-step-num">04</div>
+          <svg class="revision-check-icon" viewBox="0 0 56 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <title>Ready to send</title>
+            <circle cx="38" cy="24" r="14.5" fill="currentColor" fill-opacity="0.1" stroke="currentColor" stroke-width="1.35" stroke-opacity="0.45"/>
+            <path d="M30.5 24.2 L35.8 29.5 L45.8 17.2" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="revision-step-title">Send One Complete List</div>
+        <div class="revision-step-desc"><strong>Compile everything into one message.</strong> Do not send revisions one at a time over multiple days. Review the full site, collect all changes, then send them together.</div>
+      </div>
+    </div>
+    <div class="revision-warning">
+      <span class="revision-warning-icon"><img class="icon-img" src="icons/ic-alert.svg" width="18" height="18" alt="" /></span>
+      <div class="revision-warning-text">
+        <strong>One pass per revision round.</strong> Sending changes in pieces uses up rounds fast. Collect every change you want, review the entire site, then submit everything together in a single list. Rounds cannot be split or carried over — use them wisely.
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <!-- PAYMENT -->
+  <div class="payment-section harmony-collapse" data-harmony-collapse-storage="harmony-payment-collapsed">
+    <div class="section-label harmony-collapse-heading">
+      <button type="button" class="harmony-collapse-toggle" id="payment-collapse-toggle" aria-expanded="true" aria-controls="payment-collapse-panel">
+        <span class="harmony-collapse-chevron" aria-hidden="true">▼</span>
+        <span class="harmony-collapse-toggle-label">How to Pay</span>
+      </button>
+    </div>
+    <div class="harmony-collapse-panel" id="payment-collapse-panel">
+    <div class="payment-box">
+      <div class="payment-method">
+        <div class="zelle-label">Accepted via</div>
+        <div class="payment-method-name">Zelle</div>
+        <div class="payment-method-detail">samuelsanchez175@gmail.com<br><a href="tel:+12017457995" style="color:inherit;text-decoration:none">201-745-7995</a></div>
+        <div class="payment-method-sub">Through your bank app or the Zelle app — no fees</div>
+      </div>
+      <div class="payment-terms">
+        <div class="payment-term">Predetermined deposit before work begins</div>
+        <div class="payment-term">Remaining is due on delivery.</div>
+        <div class="payment-term">Retainers billed the 1st of each month</div>
+        <div class="payment-term">Extra revisions at $75–100/hr</div>
+        <div class="payment-term">Signed agreement required before all projects</div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <div class="footer-note harmony-collapse" data-harmony-collapse-storage="harmony-footer-collapsed">
+    <div class="section-label harmony-collapse-heading">
+      <button type="button" class="harmony-collapse-toggle" id="footer-note-toggle" aria-expanded="true" aria-controls="footer-note-panel">
+        <span class="harmony-collapse-chevron" aria-hidden="true">▼</span>
+        <span class="harmony-collapse-toggle-label">Pricing notes &amp; past clients</span>
+      </button>
+    </div>
+    <div class="harmony-collapse-panel" id="footer-note-panel">
+    <p>All prices are starting ranges and vary by scope, platform, and timeline. <strong>Custom quotes available — reach out before committing.</strong></p>
+    <p>Harmony Stack has worked with <strong>luzidproductions.com</strong>, <strong>girlsgonedigital.com</strong>, <strong>girlsgone.digital</strong>, <strong>blanksquareproductions.com</strong>, and <strong>icestudios.shop</strong>.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  var roots = document.querySelectorAll("[data-harmony-collapse-storage]");
+  for (var i = 0; i < roots.length; i++) {
+    (function (root, key) {
+      if (!key) return;
+      var toggle = root.querySelector(".harmony-collapse-toggle");
+      var panel = root.querySelector(".harmony-collapse-panel");
+      if (!toggle || !panel) return;
+      var panelId = panel.id;
+      if (panelId) toggle.setAttribute("aria-controls", panelId);
+
+      function setCollapsed(collapsed) {
+        root.classList.toggle("is-collapsed", collapsed);
+        if (collapsed) {
+          panel.setAttribute("hidden", "");
+        } else {
+          panel.removeAttribute("hidden");
+        }
+        toggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
+        try {
+          localStorage.setItem(key, collapsed ? "1" : "0");
+        } catch (e) {}
+      }
+
+      toggle.addEventListener("click", function (ev) {
+        ev.preventDefault();
+        setCollapsed(!root.classList.contains("is-collapsed"));
+      });
+
+      try {
+        if (localStorage.getItem(key) === "1") {
+          setCollapsed(true);
+        }
+      } catch (e) {}
+    })(roots[i], roots[i].getAttribute("data-harmony-collapse-storage"));
+  }
+})();
+</script>
+<script>
+(function () {
+  var root = document.getElementById("portfolio-carousel");
+  var showcase = document.getElementById("portfolio-showcase");
+  if (!root || !showcase) return;
+
+  var viewport = root.querySelector(".portfolio-carousel-viewport");
+  var track = root.querySelector(".portfolio-carousel-track");
+  var dotsEl = document.getElementById("portfolio-carousel-dots");
+  var prevBtn = root.querySelector("[data-carousel-prev]");
+  var nextBtn = root.querySelector("[data-carousel-next]");
+  if (!viewport || !track) return;
+
+  function cards() {
+    return Array.prototype.slice.call(track.querySelectorAll(".site-card"));
+  }
+
+  function activeIndex() {
+    var c = cards();
+    if (!c.length) return 0;
+    var mid = viewport.scrollLeft + viewport.clientWidth / 2;
+    var best = 0;
+    var bestD = Infinity;
+    for (var i = 0; i < c.length; i++) {
+      var cx = c[i].offsetLeft + c[i].offsetWidth / 2;
+      var d = Math.abs(cx - mid);
+      if (d < bestD) {
+        bestD = d;
+        best = i;
+      }
+    }
+    return best;
+  }
+
+  function goToCard(card) {
+    if (!card) return;
+    var vpW = viewport.clientWidth;
+    var left = card.offsetLeft - (vpW - card.offsetWidth) / 2;
+    viewport.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+    syncNav();
+ }
+
+  function goToIndex(i) {
+    var c = cards();
+    if (!c.length) return;
+    i = Math.max(0, Math.min(c.length - 1, i));
+    goToCard(c[i]);
+  }
+
+  function syncNav() {
+    var c = cards();
+    var n = c.length;
+    var ai = activeIndex();
+    if (prevBtn) prevBtn.disabled = ai <= 0;
+    if (nextBtn) nextBtn.disabled = ai >= n - 1;
+    if (!dotsEl) return;
+    var dotBtns = dotsEl.querySelectorAll("button");
+    for (var j = 0; j < dotBtns.length; j++) {
+      dotBtns[j].setAttribute("aria-selected", j === ai ? "true" : "false");
+    }
+  }
+
+  function buildDots() {
+    if (!dotsEl) return;
+    dotsEl.innerHTML = "";
+    var c = cards();
+    for (var i = 0; i < c.length; i++) {
+      (function (idx) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "portfolio-carousel-dot";
+        b.setAttribute("aria-label", "Go to project " + (idx + 1));
+        b.addEventListener("click", function () {
+          goToIndex(idx);
+        });
+        dotsEl.appendChild(b);
+      })(i);
+    }
+    syncNav();
+  }
+
+  if (prevBtn) {
+    prevBtn.addEventListener("click", function () {
+      goToIndex(activeIndex() - 1);
+    });
+  }
+  if (nextBtn) {
+    nextBtn.addEventListener("click", function () {
+      goToIndex(activeIndex() + 1);
+    });
+  }
+
+  viewport.addEventListener(
+    "scroll",
+    function () {
+      window.requestAnimationFrame(syncNav);
+    },
+    { passive: true }
+  );
+
+  viewport.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      goToIndex(activeIndex() - 1);
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      goToIndex(activeIndex() + 1);
+    }
+  });
+
+  buildDots();
+
+  window.addEventListener("resize", function () {
+    syncNav();
+  });
+})();
+</script>
+<script>
+(function () {
+  var PREVIEW_COPY = {
+    "luzid-home": {
+      kicker: "Luzid Productions · Home",
+      title: "Luxury production house, glass-forward hero",
+      bullets: [
+        "Full-bleed video hero with a glossy / glass treatment over the footage.",
+        "Typography and spacing read high-end — built to feel like a premium production brand, not a template.",
+        "Motion and contrast carry the story before scroll; the frame is intentionally cinematic."
+      ]
+    },
+    "girls-com-home": {
+      kicker: "Girls Gone Digital · Home (.com)",
+      title: "Editorial lifestyle + bold brand voice",
+      bullets: [
+        "Campaign-style layout with strong type and lifestyle imagery.",
+        "Sits alongside the .digital shop — same brand, different entry point for the audience.",
+        "Sections stack for story-first browsing before commerce."
+      ]
+    },
+    "girls-ggd-shop": {
+      kicker: "Girls Gone Digital · Shop",
+      title: "Shopify storefront & merch storytelling",
+      bullets: [
+        "Storefront rhythm tuned for products, drops, and repeat visits.",
+        "Collection and product blocks match the main brand world.",
+        "Shop badge marks commerce-heavy views vs. editorial home."
+      ]
+    },
+    "blanksquare-home": {
+      kicker: "Blank Square · Home",
+      title: "Minimal production-studio presence",
+      bullets: [
+        "Restrained palette and grid — portfolio and credits lead.",
+        "Large type and negative space signal a film / production company, not a retail catalog.",
+        "Fast scan: who they are, what they’ve done, how to book."
+      ]
+    },
+    "ice-home": {
+      kicker: "ICE Studios · Shop (preview)",
+      title: "Jewelry brand on Shopify",
+      bullets: [
+        "Shopify-native frame; preview shows the password / launch gate for the live storefront.",
+        "Clean monoline logo and icy palette carry through the shell.",
+        "Structured for catalog scale once the store opens publicly."
+      ]
+    },
+    "caresha-home": {
+      kicker: "Caresha Please · Home",
+      title: "Celebrity brand site & campaign sections",
+      bullets: [
+        "Story-first sections that set tone before hard product push.",
+        "Rich imagery and branded blocks aligned with a product launch narrative.",
+        "Shown as a private preview build in this deck."
+      ]
+    },
+    "caresha-shop": {
+      kicker: "Caresha Please · Shop",
+      title: "Tea product grid & commerce blocks",
+      bullets: [
+        "Product grid, pricing rhythm, and add-to-cart patterns for the tea line.",
+        "Sections pair merchandising with the same brand voice as the home story.",
+        "Useful reference for how shop views sit next to editorial pages."
+      ]
+    }
+  };
+
+  var popout = document.getElementById("portfolio-preview-popout");
+  var kickerEl = document.getElementById("portfolio-preview-popout-kicker");
+  var titleEl = document.getElementById("portfolio-preview-popout-title");
+  var listEl = document.getElementById("portfolio-preview-popout-list");
+  var closeBtn = popout ? popout.querySelector(".portfolio-preview-popout-close") : null;
+  if (!popout || !kickerEl || !titleEl || !listEl) return;
+
+  var openFrame = null;
+  var lastFocus = null;
+
+  function allFrames() {
+    return Array.prototype.slice.call(document.querySelectorAll(".phone-frame[data-preview-id]"));
+  }
+
+  function setFramesExpanded(onFrame) {
+    allFrames().forEach(function (el) {
+      el.setAttribute("aria-expanded", el === onFrame ? "true" : "false");
+      el.classList.toggle("is-preview-open", el === onFrame);
+    });
+  }
+
+  function getTrackAndViewport() {
+    var carousel = document.getElementById("portfolio-carousel");
+    if (!carousel) return { track: null, viewport: null };
+    return {
+      track: carousel.querySelector(".portfolio-carousel-track"),
+      viewport: carousel.querySelector(".portfolio-carousel-viewport")
+    };
+  }
+
+  function scrollPanelGroupIntoView(anchor, behavior) {
+    var tv = getTrackAndViewport();
+    var viewport = tv.viewport;
+    var card = anchor.closest(".site-card");
+    if (!viewport || !card || !popout.classList.contains("is-open")) return;
+    var gap = 16;
+    var groupLeft = card.offsetLeft;
+    var groupWidth = card.offsetWidth + gap + popout.offsetWidth;
+    var target = groupLeft + groupWidth / 2 - viewport.clientWidth / 2;
+    viewport.scrollTo({ left: Math.max(0, target), behavior: behavior || "smooth" });
+  }
+
+  function placePanelAfterCard(anchor) {
+    var tv = getTrackAndViewport();
+    var track = tv.track;
+    var card = anchor.closest(".site-card");
+    if (!track || !card) return;
+    track.insertBefore(popout, card.nextSibling);
+    popout.style.width = "";
+    popout.style.left = "";
+    popout.style.top = "";
+  }
+
+  function closePreview() {
+    popout.classList.remove("is-open");
+    popout.setAttribute("hidden", "");
+    popout.setAttribute("aria-hidden", "true");
+    var tv = getTrackAndViewport();
+    if (tv.track && popout.parentNode === tv.track) {
+      tv.track.appendChild(popout);
+    }
+    setFramesExpanded(null);
+    document.removeEventListener("click", onDocumentClick);
+    document.removeEventListener("keydown", onKeydown);
+    window.removeEventListener("resize", onResize);
+    openFrame = null;
+    if (lastFocus && typeof lastFocus.focus === "function") {
+      try {
+        lastFocus.focus();
+      } catch (e) {}
+    }
+    lastFocus = null;
+  }
+
+  function onDocumentClick(e) {
+    if (!popout.classList.contains("is-open")) return;
+    if (popout.contains(e.target)) return;
+    if (e.target.closest && e.target.closest(".phone-frame[data-preview-id]")) return;
+    closePreview();
+  }
+
+  function onKeydown(e) {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      closePreview();
+    }
+  }
+
+  function onResize() {
+    if (openFrame && popout.classList.contains("is-open")) {
+      scrollPanelGroupIntoView(openFrame, "auto");
+    }
+  }
+
+  function openPreview(frame) {
+    var id = frame.getAttribute("data-preview-id");
+    var copy = id ? PREVIEW_COPY[id] : null;
+    if (!copy) return;
+
+    var wasOpen = popout.classList.contains("is-open");
+    if (!wasOpen) {
+      lastFocus = document.activeElement;
+    }
+    openFrame = frame;
+
+    document.removeEventListener("click", onDocumentClick);
+    document.removeEventListener("keydown", onKeydown);
+    window.removeEventListener("resize", onResize);
+
+    kickerEl.textContent = copy.kicker;
+    titleEl.textContent = copy.title;
+    listEl.innerHTML = "";
+    copy.bullets.forEach(function (line) {
+      var li = document.createElement("li");
+      li.textContent = line;
+      listEl.appendChild(li);
+    });
+
+    placePanelAfterCard(frame);
+
+    popout.removeAttribute("hidden");
+    popout.setAttribute("aria-hidden", "false");
+    popout.classList.add("is-open");
+    setFramesExpanded(frame);
+
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        scrollPanelGroupIntoView(frame, "smooth");
+      });
+      if (closeBtn) closeBtn.focus();
+      setTimeout(function () {
+        document.addEventListener("click", onDocumentClick);
+      }, 0);
+      document.addEventListener("keydown", onKeydown);
+      window.addEventListener("resize", onResize);
+    });
+  }
+
+  function onFrameActivate(frame, e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (openFrame === frame && popout.classList.contains("is-open")) {
+      lastFocus = frame;
+      closePreview();
+      return;
+    }
+    openPreview(frame);
+  }
+
+  allFrames().forEach(function (frame) {
+    frame.addEventListener("click", function (e) {
+      onFrameActivate(frame, e);
+    });
+    frame.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") {
+        onFrameActivate(frame, e);
+      }
+    });
+  });
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      closePreview();
+    });
+  }
+})();
+</script>
+<script>
+(function () {
+  var picker = document.getElementById("kickoff-brand-color-picker");
+  var preview = document.getElementById("kickoff-brand-color-hex-preview");
+  var ta = document.getElementById("kickoff-brand-colors");
+  var addBtn = document.getElementById("kickoff-brand-color-add");
+  var openBtn = document.getElementById("kickoff-brand-color-open");
+  if (!picker || !preview || !ta) return;
+
+  function hex() {
+    return picker.value.toLowerCase();
+  }
+
+  function syncPreview() {
+    preview.textContent = hex();
+  }
+
+  picker.addEventListener("input", syncPreview);
+  picker.addEventListener("change", syncPreview);
+  syncPreview();
+
+  if (openBtn) {
+    openBtn.addEventListener("click", function () {
+      picker.click();
+    });
+  }
+
+  if (addBtn) {
+    addBtn.addEventListener("click", function () {
+      var h = hex();
+      var cur = ta.value.replace(/\s+/g, " ").trim();
+      if (!cur) {
+        ta.value = h;
+      } else {
+        var endsComma = /[,，]\s*$/.test(cur);
+        ta.value = cur + (endsComma ? " " : ", ") + h;
+      }
+      ta.focus();
+    });
+  }
+})();
+</script>
+<script>
+(function () {
+  var wrap = document.querySelector(".checklist-wrap");
+  if (!wrap) return;
+
+  var STORAGE_KEY = "harmony-kickoff-checklist-v1";
+
+  function readStore() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return {};
+      var parsed = JSON.parse(raw);
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function writeStore(data) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (e) {}
+  }
+
+  function applySaved() {
+    var data = readStore();
+    var inputs = wrap.querySelectorAll("[data-checklist-key]");
+    for (var i = 0; i < inputs.length; i++) {
+      var inp = inputs[i];
+      var key = inp.getAttribute("data-checklist-key");
+      if (!key) continue;
+      inp.checked = data[key] === true;
+    }
+  }
+
+  function persistFromDom() {
+    var data = {};
+    var inputs = wrap.querySelectorAll("[data-checklist-key]");
+    for (var i = 0; i < inputs.length; i++) {
+      var inp = inputs[i];
+      var key = inp.getAttribute("data-checklist-key");
+      if (!key) continue;
+      if (inp.checked) data[key] = true;
+    }
+    writeStore(data);
+  }
+
+  applySaved();
+
+  wrap.addEventListener("change", function (e) {
+    var t = e.target;
+    if (!t || !t.getAttribute) return;
+    if (t.getAttribute("data-checklist-key")) persistFromDom();
+  });
+})();
+</script>
+<script>
+(function () {
+  var section = document.getElementById("dropbox-handoff");
+  if (!section) return;
+
+  var STORAGE_KEY = "harmony-dropbox-guide-theme";
+  var COLLAPSE_KEY = "harmony-dropbox-handoff-collapsed";
+
+  function apply(theme) {
+    var isDark = theme === "dark";
+    section.classList.toggle("is-dark", isDark);
+    var buttons = section.querySelectorAll(".dropbox-theme-btn[data-set-dropbox-theme]");
+    for (var i = 0; i < buttons.length; i++) {
+      var btn = buttons[i];
+      var on = btn.getAttribute("data-set-dropbox-theme") === theme;
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    }
+    try {
+      localStorage.setItem(STORAGE_KEY, theme);
+    } catch (e) {}
+  }
+
+  var initial = "light";
+  try {
+    var saved = localStorage.getItem(STORAGE_KEY);
+    if (saved === "dark" || saved === "light") {
+      initial = saved;
+    } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      initial = "dark";
+    }
+  } catch (e) {}
+
+  apply(initial);
+
+  var panel = document.getElementById("dropbox-handoff-panel");
+  var toggle = document.getElementById("dropbox-handoff-toggle");
+  function setCollapsed(collapsed) {
+    section.classList.toggle("is-collapsed", collapsed);
+    if (panel) {
+      if (collapsed) {
+        panel.setAttribute("hidden", "");
+      } else {
+        panel.removeAttribute("hidden");
+      }
+    }
+    if (toggle) {
+      toggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
+    }
+    try {
+      localStorage.setItem(COLLAPSE_KEY, collapsed ? "1" : "0");
+    } catch (e) {}
+  }
+  if (toggle && panel) {
+    try {
+      if (localStorage.getItem(COLLAPSE_KEY) === "1") {
+        setCollapsed(true);
+      }
+    } catch (e) {}
+    toggle.addEventListener("click", function (e) {
+      e.preventDefault();
+      setCollapsed(!section.classList.contains("is-collapsed"));
+    });
+  }
+
+  section.addEventListener("click", function (e) {
+    var t = e.target;
+    if (!t || !t.getAttribute) return;
+    var theme = t.getAttribute("data-set-dropbox-theme");
+    if (!theme) return;
+    e.preventDefault();
+    apply(theme);
+  });
+})();
+</script>
+<script>
+(function () {
+  var cluster = document.getElementById("kickoff-checklist");
+  if (!cluster) return;
+
+  var KICKOFF_COLLAPSE_KEY = "harmony-kickoff-checklist-collapsed";
+  var panel = document.getElementById("kickoff-checklist-panel");
+  var toggle = document.getElementById("kickoff-checklist-toggle");
+
+  function setKickoffCollapsed(collapsed) {
+    cluster.classList.toggle("is-collapsed", collapsed);
+    if (panel) {
+      if (collapsed) {
+        panel.setAttribute("hidden", "");
+      } else {
+        panel.removeAttribute("hidden");
+      }
+    }
+    if (toggle) {
+      toggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
+    }
+    try {
+      localStorage.setItem(KICKOFF_COLLAPSE_KEY, collapsed ? "1" : "0");
+    } catch (e) {}
+  }
+
+  if (toggle && panel) {
+    try {
+      if (localStorage.getItem(KICKOFF_COLLAPSE_KEY) === "1") {
+        setKickoffCollapsed(true);
+      }
+    } catch (e) {}
+    toggle.addEventListener("click", function (e) {
+      e.preventDefault();
+      setKickoffCollapsed(!cluster.classList.contains("is-collapsed"));
+    });
+  }
+})();
+</script>
+<script>
+(function () {
+  var block = document.getElementById("revision-guide");
+  if (!block) return;
+
+  var REVISION_COLLAPSE_KEY = "harmony-revision-guide-collapsed";
+  var panel = document.getElementById("revision-guide-panel");
+  var toggle = document.getElementById("revision-guide-toggle");
+
+  function setRevisionCollapsed(collapsed) {
+    block.classList.toggle("is-collapsed", collapsed);
+    if (panel) {
+      if (collapsed) {
+        panel.setAttribute("hidden", "");
+      } else {
+        panel.removeAttribute("hidden");
+      }
+    }
+    if (toggle) {
+      toggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
+    }
+    try {
+      localStorage.setItem(REVISION_COLLAPSE_KEY, collapsed ? "1" : "0");
+    } catch (e) {}
+  }
+
+  if (toggle && panel) {
+    try {
+      if (localStorage.getItem(REVISION_COLLAPSE_KEY) === "1") {
+        setRevisionCollapsed(true);
+      }
+    } catch (e) {}
+    toggle.addEventListener("click", function (e) {
+      e.preventDefault();
+      setRevisionCollapsed(!block.classList.contains("is-collapsed"));
+    });
+  }
+})();
+</script>
+<script>
+(function () {
+  var root = document.getElementById("dbx-finder-columns");
+  if (!root) return;
+
+  var TREE = {
+    __root__: ["my-site-assets", "00-brand"],
+    "my-site-assets": ["01-home", "02-about", "03-shop"],
+    "00-brand": ["logos", "palette.pdf"],
+    "01-home": ["hero", "testimonials"],
+    "02-about": ["team", "timeline"],
+    "03-shop": ["featured", "tea-collection"],
+    hero: ["banner.jpg", "logo.svg"],
+    testimonials: ["headshot-maria.png", "quotes.txt"],
+    team: ["jordan-photo.jpg"],
+    timeline: ["milestones.md"],
+    featured: ["hero-product.jpg"],
+    "tea-collection": ["oolong-01.jpg"],
+    logos: ["wordmark.svg", "icon-mark.png"]
+  };
+
+  function isFile(name) {
+    return /\.(jpg|jpeg|png|gif|webp|svg|pdf|txt|md)$/i.test(name);
+  }
+
+  function childrenOf(key) {
+    var list = TREE[key];
+    return list ? list.slice() : [];
+  }
+
+  var path = ["my-site-assets", "01-home", "hero", "banner.jpg"];
+
+  function itemsAtDepth(depth) {
+    if (depth === 0) {
+      return childrenOf("__root__");
+    }
+    var parent = path[depth - 1];
+    if (!parent || isFile(parent)) {
+      return [];
+    }
+    return childrenOf(parent);
+  }
+
+  function summarizePath() {
+    var parts = [];
+    for (var i = 0; i < path.length; i++) {
+      if (path[i]) {
+        parts.push(path[i]);
+      }
+    }
+    return parts.length ? parts.join(" → ") : "choose a folder";
+  }
+
+  function render() {
+    root.innerHTML = "";
+    var colCount = 4;
+    for (var d = 0; d < colCount; d++) {
+      var items = itemsAtDepth(d);
+      var selected = path[d];
+      var col = document.createElement("div");
+      col.className = "dbx-finder-col";
+      col.setAttribute("data-depth", String(d));
+      col.setAttribute("role", "group");
+      col.setAttribute(
+        "aria-label",
+        d === 0 ? "Top-level folders" : "Inside " + (path[d - 1] || "folder")
+      );
+
+      if (!items.length) {
+        var empty = document.createElement("div");
+        empty.className = "dbx-finder-empty";
+        empty.textContent = d === 0 ? "" : "";
+        empty.setAttribute("aria-hidden", "true");
+        col.appendChild(empty);
+      } else {
+        for (var i = 0; i < items.length; i++) {
+          (function (depth, name) {
+            var btn = document.createElement("button");
+            btn.type = "button";
+            btn.className =
+              "dbx-finder-row" +
+              (isFile(name) ? " dbx-finder-row-file" : " dbx-finder-row-folder");
+            if (selected === name) {
+              btn.classList.add("is-selected");
+            }
+            btn.textContent = name;
+            btn.setAttribute(
+              "aria-label",
+              (isFile(name) ? "File " : "Folder ") + name + (selected === name ? ", selected" : "")
+            );
+            btn.addEventListener("click", function () {
+              path = path.slice(0, depth).concat([name]);
+              render();
+            });
+            col.appendChild(btn);
+          })(d, items[i]);
+        }
+      }
+      root.appendChild(col);
+    }
+    root.setAttribute("aria-label", "Folder columns: " + summarizePath());
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

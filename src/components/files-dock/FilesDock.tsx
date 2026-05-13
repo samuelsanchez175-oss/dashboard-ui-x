@@ -9,13 +9,21 @@ import {
   Upload,
   X,
 } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import type { KeyboardEvent } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 
+import { EmptyState } from '../ui/states'
+
+import { LANES } from './dock-lanes'
 import {
   addDownloadedFile,
   clearAllFiles,
   deleteFile,
   DOCK_DRAG_MIME,
+  getActiveLane,
+  getDockForcedOpen,
+  setDockActiveLane,
+  subscribeDockShell,
   subscribeFiles,
   type StoredFile,
 } from './files-store'
@@ -67,10 +75,34 @@ function formatSize(bytes: number): string {
   return `${(bytes / 1024 / 1024).toFixed(2)} MB`
 }
 
+function laneEmptyMessage(laneId: string): { title: string; description?: string } {
+  if (laneId === 'downloads') {
+    return {
+      title:       'No downloads yet',
+      description: 'Grab audio from YouTube or add files with the downloads lane.',
+    }
+  }
+  if (laneId === 'analysis') {
+    return {
+      title:       'No analyses yet',
+      description: 'Run the Key & BPM finder or drop analysis audio here.',
+    }
+  }
+  const lane = LANES.find(l => l.id === laneId)
+  return {
+    title:       `No ${(lane?.label ?? 'lane').toLowerCase()} yet`,
+    description: 'Switch to All or add files that match this lane.',
+  }
+}
+
 /* ── Component ───────────────────────────────────────────────────────────── */
 
 export default function FilesDock() {
+  const idRoot = useId()
+  const panelId = `${idRoot}-dock-files-panel`
   const [files,   setFiles]   = useState<StoredFile[]>([])
+  const [dockForcedOpen, setDockForcedOpen] = useState(getDockForcedOpen)
+  const [activeLane, setActiveLaneState] = useState(getActiveLane)
   const [mouseX,  setMouseX]  = useState<number | null>(null)
   const [scales,  setScales]  = useState<number[]>([])
   const [active,  setActive]  = useState<string | null>(null)
@@ -90,11 +122,40 @@ export default function FilesDock() {
   /* subscribe to file store */
   useEffect(() => subscribeFiles(setFiles), [])
 
+  useEffect(
+    () => subscribeDockShell(() => {
+      setDockForcedOpen(getDockForcedOpen())
+      setActiveLaneState(getActiveLane())
+    }),
+    [],
+  )
+
+  const activeLaneDef = useMemo(
+    () => LANES.find(l => l.id === activeLane) ?? LANES[0]!,
+    [activeLane],
+  )
+  const visibleFiles = useMemo(
+    () => files.filter(f => activeLaneDef.match(f)),
+    [files, activeLaneDef],
+  )
+
+  useEffect(() => {
+    if (active && !visibleFiles.some(f => f.id === active)) setActive(null)
+  }, [active, visibleFiles])
+
+  useEffect(() => {
+    if (hoverId && !visibleFiles.some(f => f.id === hoverId)) {
+      setHoverId(null)
+      setHoverCenterX(null)
+      setHoverTopY(null)
+    }
+  }, [hoverId, visibleFiles])
+
   /* magnification animation loop */
   useEffect(() => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current)
     const tick = () => {
-      const target = cosineMag(mouseX, files.length)
+      const target = cosineMag(mouseX, visibleFiles.length)
       setScales(prev => {
         if (prev.length !== target.length) return target
         const lerp = mouseX !== null ? 0.25 : 0.16
@@ -107,7 +168,7 @@ export default function FilesDock() {
     }
     rafRef.current = requestAnimationFrame(tick)
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }
-  }, [mouseX, files.length, scales])
+  }, [mouseX, visibleFiles.length, scales])
 
   /* ── Pointer handlers ─────────────────────────────────────────────────── */
 
@@ -121,6 +182,25 @@ export default function FilesDock() {
   }, [])
 
   const onMouseLeave = useCallback(() => setMouseX(null), [])
+
+  const handleTabListKeyDown = useCallback((e: KeyboardEvent<HTMLDivElement>) => {
+    const order = LANES.map(l => l.id)
+    const cur = order.indexOf(activeLane)
+    if (cur < 0) return
+    let nextIdx: number | null = null
+    if (e.key === 'ArrowRight') nextIdx = (cur + 1) % order.length
+    else if (e.key === 'ArrowLeft') nextIdx = (cur - 1 + order.length) % order.length
+    else if (e.key === 'Home') nextIdx = 0
+    else if (e.key === 'End') nextIdx = order.length - 1
+    if (nextIdx === null) return
+    e.preventDefault()
+    const nextId = order[nextIdx]!
+    setDockActiveLane(nextId)
+    requestAnimationFrame(() => {
+      const el = document.getElementById(`${idRoot}-tab-${nextId}`)
+      if (el instanceof HTMLElement) el.focus()
+    })
+  }, [activeLane, idRoot])
 
   /* ── Drag-and-drop ────────────────────────────────────────────────────── */
 
@@ -168,7 +248,7 @@ export default function FilesDock() {
     }
   }, [])
 
-  const visible = files.length > 0 || globalDragHint
+  const visible = files.length > 0 || globalDragHint || dockForcedOpen
 
   /* Resolve the preview file from the current list — if it was deleted while open, close. */
   const previewFile = previewId ? files.find(f => f.id === previewId) ?? null : null
@@ -189,9 +269,9 @@ export default function FilesDock() {
     >
       {/* Hover popover for the active file */}
       {active && (() => {
-        const idx = files.findIndex(f => f.id === active)
+        const idx = visibleFiles.findIndex(f => f.id === active)
         if (idx < 0) return null
-        const f = files[idx]!
+        const f = visibleFiles[idx]!
         const tint = tintForMime(f.mime)
         return (
           <div
@@ -260,7 +340,7 @@ export default function FilesDock() {
 
       {/* Hover label — surfaces the file name immediately while clicking still opens the full popover with actions. */}
       {hoverId && hoverCenterX !== null && hoverTopY !== null && !active && (() => {
-        const f = files.find(x => x.id === hoverId)
+        const f = visibleFiles.find(x => x.id === hoverId)
         if (!f) return null
         return (
           <div
@@ -310,17 +390,62 @@ export default function FilesDock() {
             : '1px solid rgba(255,255,255,0.15)',
           boxShadow:    '0 8px 32px rgba(0,0,0,0.45), 0 2px 10px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
           padding:      12,
-          minWidth:     files.length === 0 ? 280 : undefined,
+          minWidth:     visibleFiles.length === 0 ? 300 : undefined,
         }}
       >
-        {files.length === 0 ? (
-          <div className="flex items-center gap-2.5 text-[12px] font-medium" style={{ color: '#d1d5db' }}>
-            <Upload className="size-4" style={{ color: '#a78bfa' }} aria-hidden />
-            Drop files here to add them to the dock
-          </div>
+        <div
+          role="tablist"
+          aria-label="Dock file lanes"
+          onKeyDown={handleTabListKeyDown}
+          className="mb-2 flex flex-wrap gap-0.5"
+          style={{ borderBottom: '1px solid var(--border-soft)', paddingBottom: 6 }}
+        >
+          {LANES.map(lane => {
+            const isTabActive = activeLane === lane.id
+            const TabIcon = lane.icon
+            return (
+              <button
+                key={lane.id}
+                type="button"
+                role="tab"
+                id={`${idRoot}-tab-${lane.id}`}
+                aria-selected={isTabActive}
+                aria-controls={panelId}
+                tabIndex={isTabActive ? 0 : -1}
+                onClick={() => setDockActiveLane(lane.id)}
+                className="inline-flex items-center gap-1.5 rounded-t-md px-2.5 py-1.5 text-[11px] font-semibold transition-colors"
+                style={{
+                  color:        isTabActive ? 'var(--text-1)' : 'var(--text-3)',
+                  borderBottom: isTabActive ? '2px solid var(--accent)' : '2px solid transparent',
+                  marginBottom: -1,
+                  background:   isTabActive ? 'var(--bg-card)' : 'transparent',
+                }}
+              >
+                <TabIcon className="size-3.5 shrink-0" aria-hidden strokeWidth={2} />
+                {lane.label}
+              </button>
+            )
+          })}
+        </div>
+
+        <div
+          role="tabpanel"
+          id={panelId}
+          aria-labelledby={`${idRoot}-tab-${activeLane}`}
+        >
+        {visibleFiles.length === 0 ? (
+          activeLane === 'all' ? (
+            <EmptyState
+              icon={Upload}
+              title="Drop files anywhere"
+              description="Drop files here or use a workspace tool to add them to the dock."
+            />
+          ) : (
+            <EmptyState icon={activeLaneDef.icon} {...laneEmptyMessage(activeLane)} />
+          )
         ) : (
           <div className="relative flex items-end" style={{ height: BASE_ICON_SIZE * MAX_SCALE, gap: BASE_SPACING }}>
-            {files.map((f, i) => {
+            {visibleFiles.map((f, i) => {
               const scale = scales[i] ?? MIN_SCALE
               const size  = BASE_ICON_SIZE * scale
               const tint  = tintForMime(f.mime)
@@ -445,6 +570,7 @@ export default function FilesDock() {
             )}
           </div>
         )}
+        </div>
       </div>
     </div>
     </>

@@ -1,11 +1,15 @@
 /**
  * CDL practice quiz question banks.
  *
- *   • HAZMAT      — Hazardous Materials (H endorsement), 66 questions.
- *   • AIR BRAKES  — Air-brake-equipped vehicles, 66 questions.
+ * Each bank carries 66 questions — significantly more than the official NJ
+ * MVC test, so the quiz engine (`CdlQuiz.tsx`) randomly samples the official
+ * count by default (Hazmat 30, Air Brakes 25, Tanker/Doubles/Passenger/
+ * School Bus 20) and exposes an "Extended practice (all 66)" toggle that
+ * runs the full bank. Pass threshold is 80% of whichever count is active.
  *
  * Each question has 3 options (A/B/C) and a 0-indexed correct answer.
- * Ported verbatim from the user's downloads/hazmat-quiz.jsx + air-brakes-quiz.jsx.
+ * Originally ported from the user's downloads/hazmat-quiz.jsx +
+ * air-brakes-quiz.jsx.
  */
 
 export interface CdlQuestion {

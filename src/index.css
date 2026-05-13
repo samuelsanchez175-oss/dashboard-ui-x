@@ -14,6 +14,8 @@
   --bg-canvas:    #ffffff;
   --bg-card:      #ffffff;
   --bg-card-soft: #fafafa;
+  --bg-cockpit:   #f6f7fb;
+  --bg-cockpit-strong: var(--bg-card-soft);
   --bg-hover:     #f3f4f6;
   --bg-muted:     #f3f4f6;
   --bg-input:     #ffffff;
@@ -54,6 +56,13 @@
   --pad-row:   14px;
   --grid-gap:  16px;
   --tile-min:  240px;
+
+  --gradient-cockpit-header: linear-gradient(
+    to right,
+    color-mix(in oklab, var(--accent) 88%, #5b21b6),
+    color-mix(in oklab, var(--accent) 28%, color-mix(in oklab, #7dd3fc 72%, white)),
+    color-mix(in oklab, #7dd3fc 82%, white)
+  );
 }
 
 [data-theme="dark"] {
@@ -62,6 +71,8 @@
   --bg-canvas:    #0b0b0f;
   --bg-card:      #14151b;
   --bg-card-soft: #101117;
+  --bg-cockpit:   #0a0a0c;
+  --bg-cockpit-strong: #0a0a0c;
   --bg-hover:     #1b1c24;
   --bg-muted:     #1b1c24;
   --bg-input:     #14151b;
@@ -85,6 +96,13 @@
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
   --shadow-md: 0 1px 3px 0 rgb(0 0 0 / 0.5), 0 1px 2px -1px rgb(0 0 0 / 0.4);
   --shadow-lg: 0 10px 30px -10px rgb(0 0 0 / 0.6);
+
+  --gradient-cockpit-header: linear-gradient(
+    to right,
+    color-mix(in oklab, var(--accent) 52%, var(--bg-cockpit)),
+    color-mix(in oklab, var(--accent) 18%, color-mix(in oklab, #38bdf8 45%, var(--bg-cockpit))),
+    color-mix(in oklab, #38bdf8 58%, var(--bg-cockpit))
+  );
 }
 
 /* ── Dark mode: remap hardcoded Tailwind color classes ─────────────────────
@@ -406,6 +424,16 @@
   padding: 32px 32px 80px;
 }
 
+/* Harmony Stack — Portfolio tab only: embedded sheet uses full main-column width */
+.zone-inner.zone-inner--harmony-portfolio {
+  box-sizing: border-box;
+  max-width: none;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  padding: 0;
+}
+
 .zone-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -432,7 +460,7 @@
   font-family: 'DM Mono', monospace;
 }
 
-/* ── Mobile sidebar ───────────────────────────────────────────────────────── */
+/* ── Mobile sidebar (drawer mode only at phone widths) ─ */
 @media (max-width: 767px) {
   .sidebar-shell {
     position: fixed !important;
@@ -464,6 +492,10 @@
   .zone-inner {
     padding: 16px;
   }
+
+  .zone-inner.zone-inner--harmony-portfolio {
+    padding: 0;
+  }
 }
 
 /* ── Responsive zone topbar ───────────────────────────────────────────────── */
@@ -473,5 +505,9 @@
   }
   .zone-inner {
     padding: 12px;
+  }
+
+  .zone-inner.zone-inner--harmony-portfolio {
+    padding: 0;
   }
 }

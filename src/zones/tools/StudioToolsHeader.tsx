@@ -1,14 +1,23 @@
 import { Bell, ChevronRight, Folder } from 'lucide-react'
 import type { ReactNode } from 'react'
 
+import UpdateDot from '../../components/ui/UpdateDot'
+import { getToolById } from '../../lib/toolsRegistry'
+
 export type StudioCrumb = { label: string; emphasis?: boolean }
 
 interface StudioToolsHeaderProps {
   crumbs:     StudioCrumb[]
   leftExtra?: ReactNode
+  /** When set, shows the tool icon from the registry to the left of breadcrumbs. */
+  toolId?: string
 }
 
-export default function StudioToolsHeader({ crumbs, leftExtra }: StudioToolsHeaderProps) {
+export default function StudioToolsHeader({ crumbs, leftExtra, toolId }: StudioToolsHeaderProps) {
+  const tool = toolId ? getToolById(toolId) : undefined
+  const ToolIcon = tool?.icon
+  const updateZoneId = toolId ?? 'tools-hub'
+
   return (
     <header
       className="sticky top-0 z-[5] flex shrink-0 items-center justify-between gap-4 px-8 py-3.5 backdrop-blur-md"
@@ -19,7 +28,18 @@ export default function StudioToolsHeader({ crumbs, leftExtra }: StudioToolsHead
     >
       <div className="flex min-w-0 flex-1 items-center gap-2">
         {leftExtra}
-        <div className="flex min-w-0 items-center gap-1.5 text-xs" style={{ color: 'var(--text-3)' }}>
+        {ToolIcon && (
+          <span
+            className="grid size-[26px] shrink-0 place-items-center rounded-md text-[var(--text-3)]"
+            style={{
+              background: 'var(--bg-card)',
+              border:     '1px solid var(--border-soft)',
+            }}
+          >
+            <ToolIcon className="size-[15px] text-inherit" strokeWidth={1.8} aria-hidden />
+          </span>
+        )}
+        <div className="relative flex min-w-0 items-center gap-1.5 text-xs" style={{ color: 'var(--text-3)' }}>
           <Folder className="size-3.5 shrink-0" style={{ color: 'var(--text-4)' }} aria-hidden />
           {crumbs.map((c, i) => (
             <span key={`${c.label}-${i}`} className="flex items-center gap-1.5 truncate">
@@ -37,6 +57,9 @@ export default function StudioToolsHeader({ crumbs, leftExtra }: StudioToolsHead
               </span>
             </span>
           ))}
+          <span className="ml-0.5 inline-flex shrink-0 items-center self-center">
+            <UpdateDot zoneId={updateZoneId} className="h-2 w-2" />
+          </span>
         </div>
       </div>
 
