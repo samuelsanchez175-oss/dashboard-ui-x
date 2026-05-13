@@ -24,13 +24,30 @@ export default defineConfig({
   build: {
     /**
      * Use esbuild for minification instead of the default rolldown minifier.
-     * Rolldown's name-mangler (Vite 8 default) was picking short identifiers
-     * that collided with React-internal symbols (`kt`) in some builds, which
-     * caused `TypeError: i is not a function` at module load on Vercel while
-     * working fine locally (different mangler heuristics per host).
-     * esbuild's mangler is more conservative and ships proven-stable output.
+     * Conservative name mangling avoids identifier collisions with
+     * React-internal helpers.
      */
     minify: 'esbuild',
+    rolldownOptions: {
+      output: {
+        /**
+         * Force `lucide-react` into its own chunk.
+         *
+         * Default auto-chunking placed the lucide `createLucideIcon` factory
+         * inside the main bundle, but the main bundle ALSO synchronously
+         * imports `files-store` (where many icons are defined). files-store
+         * then imports the factory back from main → circular dependency.
+         * In Vercel's build the factory binding is still uninitialized when
+         * files-store evaluates → `TypeError: i is not a function`.
+         *
+         * Pulling lucide into a dedicated chunk gives both sides a third
+         * dependency they share without any back-edge to main.
+         */
+        manualChunks(id) {
+          if (id.includes('node_modules/lucide-react')) return 'lucide-react'
+        },
+      },
+    },
   },
   plugins: [
     react(),
