@@ -20,6 +20,11 @@ import { createHash, createPublicKey, generateKeyPairSync } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 
+/** Vercel serverless functions run with read-only `/var/task`. */
+function isReadOnlyEnv(): boolean {
+  return Boolean(process.env.VERCEL || process.env.LAMBDA_TASK_ROOT || process.env.AWS_LAMBDA_FUNCTION_NAME)
+}
+
 const PRIVATE_KEY_FILE = resolve(process.cwd(), '.tesla-virtual-key.json')
 const PUBLIC_PEM_FILE = resolve(
   process.cwd(),
@@ -77,44 +82,93 @@ function writePublicPemToWellKnown(publicKeyPem: string): void {
 }
 
 export function getVirtualKeyInfo(): VirtualKeyInfo {
+  // Preferred path: private-key JSON on local disk (dev machine). Has both
+  // public + private — supports signed commands.
   const existing = loadExisting()
-  if (!existing) {
+  if (existing) {
+    if (!existsSync(PUBLIC_PEM_FILE)) {
+      try {
+        writePublicPemToWellKnown(existing.publicKeyPem)
+      } catch {
+        // Non-fatal — read can succeed even if write fails.
+      }
+    }
     return {
-      hasKey: false,
-      publicKeyPem: null,
-      fingerprint: null,
-      createdAt: null,
+      hasKey: true,
+      publicKeyPem: existing.publicKeyPem,
+      fingerprint: fingerprintFromPem(existing.publicKeyPem),
+      createdAt: existing.createdAt,
       publicPemPath: PUBLIC_PEM_FILE,
     }
   }
-  // Republish the public PEM only when it's missing — repeatedly writing on
-  // every read triggers Vite's `public/` file watcher and full-reloads the app
-  // every time a component reads virtual-key info.
-  if (!existsSync(PUBLIC_PEM_FILE)) {
+
+  // Fallback: read-only environments (Vercel serverless functions) can't host
+  // the private-key JSON file. But the PUBLIC PEM is shipped in the build
+  // bundle (`public/.well-known/...`) and is what Tesla actually fetches for
+  // ownership verification + partner registration. If we can read that file,
+  // the deployment is functionally registered with Tesla — just not capable
+  // of signing commands (signed commands require the private key, which only
+  // your dev machine has). Reading commands and OAuth work fine.
+  if (existsSync(PUBLIC_PEM_FILE)) {
     try {
-      writePublicPemToWellKnown(existing.publicKeyPem)
+      const pem = readFileSync(PUBLIC_PEM_FILE, 'utf8')
+      if (pem.includes('BEGIN PUBLIC KEY')) {
+        return {
+          hasKey: true,
+          publicKeyPem: pem,
+          fingerprint: fingerprintFromPem(pem),
+          createdAt: null,
+          publicPemPath: PUBLIC_PEM_FILE,
+        }
+      }
     } catch {
-      // Non-fatal — read can succeed even if write fails.
+      // Non-fatal — fall through to no-key state.
     }
   }
+
   return {
-    hasKey: true,
-    publicKeyPem: existing.publicKeyPem,
-    fingerprint: fingerprintFromPem(existing.publicKeyPem),
-    createdAt: existing.createdAt,
+    hasKey: false,
+    publicKeyPem: null,
+    fingerprint: null,
+    createdAt: null,
     publicPemPath: PUBLIC_PEM_FILE,
   }
 }
 
 /**
  * Generate a fresh P-256 keypair, persist private to gitignored JSON,
- * write public PEM to `public/.well-known/…`. Idempotent: if a key already
- * exists, returns the existing info unchanged (`created: false`).
+ * write public PEM to `public/.well-known/…`.
+ *
+ * Idempotent: if a private key already exists on disk, returns the existing
+ * info unchanged. On read-only environments (Vercel) we can't write — but if
+ * the public PEM is already deployed there's nothing to do, so we return the
+ * info from the deployed PEM with `created: false` and a helpful note.
  */
-export function generateVirtualKey(): VirtualKeyInfo & { created: boolean } {
+export function generateVirtualKey(): VirtualKeyInfo & { created: boolean; note?: string } {
   const existing = loadExisting()
   if (existing) {
     return { ...getVirtualKeyInfo(), created: false }
+  }
+
+  if (isReadOnlyEnv()) {
+    // Can't write the private key here. If the public PEM is already in the
+    // deploy bundle, surface that — partner registration + OAuth + data
+    // reading all work without a writable private key.
+    const info = getVirtualKeyInfo()
+    if (info.hasKey) {
+      return {
+        ...info,
+        created: false,
+        note:
+          'Running on a read-only filesystem (Vercel). The deployed public PEM is the source of truth. Generate locally (on your dev machine) to get the private-key JSON for signed commands.',
+      }
+    }
+    return {
+      ...info,
+      created: false,
+      note:
+        'Cannot write the private key on a read-only filesystem. Run `npm run dev` locally, click Generate there, commit the resulting public PEM (in `public/.well-known/`), and redeploy.',
+    }
   }
 
   const { privateKey, publicKey } = generateKeyPairSync('ec', {
