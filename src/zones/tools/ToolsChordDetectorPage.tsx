@@ -107,6 +107,8 @@ function formatMmSs(seconds: number): string {
 
 /** Single-key persistence for MELODY POST sliders (`chord-detector:melodyPost:` prefix). */
 const MELODY_POST_LOCAL_STORAGE_KEY = 'chord-detector:melodyPost:ui'
+/** Bump when persisted shape or baseline defaults change; v1 loads are re-saved as v2 on read. */
+const MELODY_POST_UI_SCHEMA_V = 2 as const
 
 type MelodyPostUiState = {
   enabled: boolean
@@ -143,10 +145,11 @@ function loadMelodyPostUiStateFromStorage(): MelodyPostUiState | null {
     const parsed: unknown = JSON.parse(raw)
     if (!parsed || typeof parsed !== 'object') return null
     const o = parsed as Record<string, unknown>
-    if (o._v !== 1) return null
+    const v = o._v
+    if (v !== 1 && v !== MELODY_POST_UI_SCHEMA_V) return null
     const fb = defaultMelodyPostUiState()
     const maxDiv = NEURALNOTE_TIME_DIVISION_LABELS.length - 1
-    return {
+    const state: MelodyPostUiState = {
       enabled: typeof o.enabled === 'boolean' ? o.enabled : fb.enabled,
       timeQuantizeEnabled:
         typeof o.timeQuantizeEnabled === 'boolean' ? o.timeQuantizeEnabled : fb.timeQuantizeEnabled,
@@ -156,6 +159,10 @@ function loadMelodyPostUiStateFromStorage(): MelodyPostUiState | null {
       velocityGainPct: clampInt(o.velocityGainPct, 50, 150, fb.velocityGainPct),
       velocityCompressionPct: clampInt(o.velocityCompressionPct, 0, 100, fb.velocityCompressionPct),
     }
+    if (v === 1) {
+      saveMelodyPostUiStateToStorage(state)
+    }
+    return state
   } catch {
     return null
   }
@@ -165,7 +172,7 @@ function saveMelodyPostUiStateToStorage(state: MelodyPostUiState): void {
   try {
     localStorage.setItem(
       MELODY_POST_LOCAL_STORAGE_KEY,
-      JSON.stringify({ _v: 1, ...state }),
+      JSON.stringify({ _v: MELODY_POST_UI_SCHEMA_V, ...state }),
     )
   } catch {
     // private mode, quota, or storage disabled
@@ -446,7 +453,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
   /** Last dropped file — re-run analysis when melody post knobs change (same clip). */
   const lastFileRef = useRef<File | null>(null)
 
-  /** One localStorage read per mount — hydrates MELODY POST sliders when JSON shape matches `_v: 1`. */
+  /** One localStorage read per mount — hydrates when `_v` is 1 (migrated to 2) or 2. */
   const melodyPostInitRef = useRef<MelodyPostUiState | null>(null)
   if (melodyPostInitRef.current === null) {
     melodyPostInitRef.current = loadMelodyPostUiStateFromStorage() ?? defaultMelodyPostUiState()
@@ -978,7 +985,13 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                   style={{ color: statusColor, fontFamily: "'DM Mono', monospace" }}
                 >
                   {status}
-                  {result?.bpmSource === 'tags' ? ' · FROM TAGS' : result ? ' · ESTIMATED' : ''}
+                  {result?.bpmSource === 'tags'
+                    ? ' · FROM TAGS'
+                    : result?.bpmSource === 'bpm-prior'
+                      ? ' · BPM PRIOR'
+                      : result
+                        ? ' · ESTIMATED'
+                        : ''}
                 </span>
               </div>
             </section>
@@ -1179,8 +1192,8 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '1px', background: PALETTE.line }}
               >
                 <SliderCell
-                  label="POST ENABLE"
-                  hint="Off = raw melody timing from detector"
+                  label="ENABLE CLEANUP"
+                  hint="Master switch for all the cleanup below. Off = use the detector's raw timing exactly as found."
                   value={nnPostEnabled ? 1 : 0}
                   min={0}
                   max={1}
@@ -1189,8 +1202,8 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                   onChange={n => setNnPostEnabled(n === 1)}
                 />
                 <SliderCell
-                  label="TIME QUANT"
-                  hint="Snap onsets toward grid (needs force > 0)"
+                  label="SNAP TO GRID"
+                  hint="Pull each note's start time onto the beat grid. Needs Grid Strength above 0% to do anything."
                   value={nnTimeQuantize ? 1 : 0}
                   min={0}
                   max={1}
@@ -1199,8 +1212,8 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                   onChange={n => setNnTimeQuantize(n === 1)}
                 />
                 <SliderCell
-                  label="QUANT FORCE"
-                  hint="0 = natural, 100 = full grid"
+                  label="GRID STRENGTH"
+                  hint="How hard notes snap to the grid. 0% keeps the natural feel, 100% locks every note to the grid."
                   value={nnQuantizeForcePct}
                   min={0}
                   max={100}
@@ -1209,8 +1222,8 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                   onChange={setNnQuantizeForcePct}
                 />
                 <SliderCell
-                  label="TIME GRID"
-                  hint="NeuralNote-style division vs whole note"
+                  label="GRID SIZE"
+                  hint="Smallest note spacing the grid snaps to — a bigger fraction means a finer grid."
                   value={nnTimeDivIdx}
                   min={0}
                   max={NEURALNOTE_TIME_DIVISION_LABELS.length - 1}
@@ -1229,8 +1242,8 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 }}
               >
                 <SliderCell
-                  label="MIN NOTE (POST)"
-                  hint="After quantize — min length in ms"
+                  label="SHORTEST NOTE"
+                  hint="Notes shorter than this get dropped or merged. Raise it to kill tiny detection blips."
                   value={nnMinNoteMsPost}
                   min={35}
                   max={580}
@@ -1239,8 +1252,8 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                   onChange={setNnMinNoteMsPost}
                 />
                 <SliderCell
-                  label="VEL GAIN"
-                  hint="Linear velocity multiplier"
+                  label="LOUDNESS"
+                  hint="Scales how loud every note plays. 1.00× leaves the detected levels unchanged."
                   value={nnVelGainPct}
                   min={50}
                   max={150}
@@ -1249,8 +1262,8 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                   onChange={setNnVelGainPct}
                 />
                 <SliderCell
-                  label="VEL COMPRESS"
-                  hint="Push levels toward mid (0 = off)"
+                  label="EVEN LOUDNESS"
+                  hint="Pulls loud and soft notes toward the average. 0% = off, 100% = every note the same volume."
                   value={nnVelCompPct}
                   min={0}
                   max={100}
@@ -1412,12 +1425,17 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 onClick={() => void previewMidi()}
                 icon={
                   previewing ? (
-                    // Stop square — amber when active
-                    <span
-                      className="block size-2"
-                      style={{ background: PALETTE.amber }}
-                      aria-hidden
-                    />
+                    // Pause glyph — two amber bars while playback is running
+                    <span className="flex items-center gap-[3px]" aria-hidden>
+                      <span
+                        className="block"
+                        style={{ width: 3, height: 9, background: PALETTE.amber }}
+                      />
+                      <span
+                        className="block"
+                        style={{ width: 3, height: 9, background: PALETTE.amber }}
+                      />
+                    </span>
                   ) : (
                     // Play triangle
                     <span
@@ -1433,7 +1451,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                     />
                   )
                 }
-                label={previewing ? 'STOP PREVIEW' : 'PREVIEW'}
+                label={previewing ? 'PAUSE' : 'PREVIEW'}
               />
               <ControlButton
                 active={looping}
@@ -1711,7 +1729,7 @@ function SliderCell({
       />
       {hint ? (
         <span
-          className="text-[9px] uppercase tracking-[0.1em]"
+          className="text-[10px] leading-snug tracking-normal"
           style={{ color: PALETTE.textMuted, fontFamily: "'DM Mono', monospace" }}
         >
           {hint}
