@@ -3,6 +3,8 @@ import {
   Bus,
   Car,
   CheckSquare,
+  CircleDot,
+  ClipboardList,
   Container,
   Cpu,
   Disc,
@@ -14,6 +16,7 @@ import {
   Images,
   KeyRound,
   LayoutGrid,
+  Link2,
   Music,
   Paintbrush,
   Piano,
@@ -21,8 +24,10 @@ import {
   School,
   SlidersHorizontal,
   Stethoscope,
+  Truck,
   Wand2,
   Workflow,
+  Wrench,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -106,7 +111,7 @@ export const NAV_SECTIONS: NavSection[] = [
     id:    'cdl',
     title: 'CDL PRAC',
     items: [
-      { id: 'cdl-hub', label: 'All quizzes', icon: GraduationCap, badge: 8 },
+      { id: 'cdl-hub', label: 'All quizzes', icon: GraduationCap, badge: 13 },
       { id: 'cdl-hazmat', label: 'Hazmat (H)', icon: Biohazard },
       { id: 'cdl-air-brakes', label: 'Air Brakes', icon: Disc },
       { id: 'cdl-tanker', label: 'Tanker (N)', icon: Droplets },
@@ -115,6 +120,11 @@ export const NAV_SECTIONS: NavSection[] = [
       { id: 'cdl-school-bus', label: 'School Bus (S)', icon: School },
       { id: 'cdl-doubles-triples', label: 'Doubles / Triples (T)', icon: Container },
       { id: 'cdl-tanker-doubles', label: 'Tanker Doubles', icon: Workflow },
+      { id: 'cdl-pretrip-cabin', label: 'Pre-Trip: In-Cabin', icon: ClipboardList },
+      { id: 'cdl-pretrip-engine-bay', label: 'Pre-Trip: Engine Bay', icon: Wrench },
+      { id: 'cdl-pretrip-steering-axle', label: 'Pre-Trip: Steering Axle', icon: CircleDot },
+      { id: 'cdl-pretrip-coupling', label: 'Pre-Trip: Coupling', icon: Link2 },
+      { id: 'cdl-pretrip-trailer', label: 'Pre-Trip: Trailer', icon: Truck },
     ],
   },
   {

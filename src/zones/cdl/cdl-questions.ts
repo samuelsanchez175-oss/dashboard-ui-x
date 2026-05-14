@@ -17,6 +17,13 @@ export interface CdlQuestion {
   q:    string
   opts: [string, string, string]
   ans:  0 | 1 | 2
+  /**
+   * When true, missing this question forces an "AUTOMATIC FAILURE" verdict
+   * regardless of score — mirrors the pre-trip air brake check, which is
+   * pass/fail with no reset on the real NJ MVC road test. Optional and
+   * omitted on every endorsement bank; only the pre-trip banks use it.
+   */
+  autoFail?: boolean
 }
 
 export const HAZMAT_QUESTIONS: CdlQuestion[] = [
@@ -613,6 +620,206 @@ export const SCHOOL_BUS_QUESTIONS: CdlQuestion[] = [
   { id: 64, q: 'Before pulling away from a stop, the driver must:',                                                                                                                                                                                                                                                                                                                                                                                                                                opts: ['Check the radio', 'Verify with mirrors that no student is in the danger zone, all students are seated, and the area is clear', 'Honk three times'], ans: 1 },
   { id: 65, q: 'The school-bus driver is responsible for:',                                                                                                                                                                                                                                                                                                                                                                                                                                            opts: ['Teaching the route to students', 'The safe transportation, supervision, and well-being of students while in their care', 'Only driving — not student safety'], ans: 1 },
   { id: 66, q: 'The single most important rule for a school-bus driver is:',                                                                                                                                                                                                                                                                                                                                                                                                                                opts: ['Always be on time', 'Children\'s safety comes first — always — every decision is judged by that standard', 'Never use the radio'], ans: 1 },
+]
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * PRE-TRIP INSPECTION banks (NJ MVC Modernized Testing System, Class A).
+ *
+ * These five banks are run by `CdlQuiz` in `sequential` mode — the questions
+ * are authored in real inspection order and play start-to-finish with no
+ * shuffle. Together they walk the full Class A pre-trip: in-cabin, engine
+ * bay, steering axle & side, coupling system, trailer.
+ *
+ * Sourced from the E-Z Wheels Driving School in-cabin and outside-inspection
+ * walkthrough videos + the official Class A checklist. The in-cabin bank is
+ * written for an AUTOMATIC transmission truck (no clutch, no stick/T-bar).
+ * Air brake test questions carry `autoFail: true`.
+ * ───────────────────────────────────────────────────────────────────────── */
+
+export const PRETRIP_CABIN_QUESTIONS: CdlQuestion[] = [
+  { id: 1,  q: 'How must you enter and exit the cab during the CDL road test?', opts: ['Whatever way is most comfortable', 'Using three-point contact — handle, door, and steering wheel', 'By stepping up onto the fuel tank'], ans: 1 },
+  { id: 2,  q: 'Before the examiner gets in the truck, what do you do first?', opts: ['Start the engine and pull forward', 'An external light check', 'Adjust the seat and mirrors'], ans: 1 },
+  { id: 3,  q: 'The external light check is worth:', opts: ['Nothing — it is just a warm-up', 'One point toward your score', 'An automatic pass'], ans: 1 },
+  { id: 4,  q: 'The external light check covers, front and rear:', opts: ['Only the headlights', 'Left and right signals, four-way flashers, high beams, and brake lights', 'Only the brake lights'], ans: 1 },
+  { id: 5,  q: 'When you begin the test inside the cab, you announce that you are going to perform:', opts: ['A safe start', 'A road test', 'A quick once-over'], ans: 0 },
+  { id: 6,  q: 'The safe start is made up of how many things?', opts: ['Two', 'Four', 'Six'], ans: 1 },
+  { id: 7,  q: 'The first item of the safe start is:', opts: ['The seatbelt', 'The horn', 'The mirrors'], ans: 0 },
+  { id: 8,  q: 'When you check the seatbelt, you confirm it is:', opts: ['The correct color for the vehicle', 'Not ripped, torn, or frayed, and that it locks and latches properly', 'Adjustable to any height'], ans: 1 },
+  { id: 9,  q: 'On an automatic transmission truck, the safe-start step after the seatbelt is to confirm:', opts: ['The gear selector is in Neutral', 'The stick shift is in neutral and the T-bar is down', 'The clutch is pressed to the floor'], ans: 0 },
+  { id: 10, q: 'On an automatic truck, the safe start does NOT involve:', opts: ['Checking the seatbelt', 'Pressing a clutch pedal or setting a T-bar / splitter', 'Applying the parking brakes'], ans: 1 },
+  { id: 11, q: 'After confirming the gear selector is in Neutral, the next safe-start step is to:', opts: ['Open the hood', 'Apply both the tractor and trailer parking brakes', 'Rev the engine'], ans: 1 },
+  { id: 12, q: '"Both brakes applied" means the parking brake valves are:', opts: ['Pushed all the way in', 'Pulled out', 'Taped down'], ans: 1 },
+  { id: 13, q: 'The final step of the safe start is to:', opts: ['Honk the horn twice', 'Turn the key to ON and confirm the ABS light comes on and then goes off', 'Flash the high beams'], ans: 1 },
+  { id: 14, q: 'The correct order of the safe start is:', opts: ['Key on / ABS, brakes applied, gear selector, seatbelt', 'Seatbelt, gear selector in Neutral, both brakes applied, key on / ABS light', 'Brakes applied, seatbelt, key on / ABS, gear selector'], ans: 1 },
+  { id: 15, q: 'After the safe start, the next section of the test is:', opts: ['The inside cabin inspection', 'The air brake test', 'The tug test'], ans: 1 },
+  { id: 16, q: 'A mistake during the air brake test results in:', opts: ['A one-point deduction', 'An automatic failure — it is pass/fail with no reset', 'A warning and a retry'], ans: 1, autoFail: true },
+  { id: 17, q: 'The air brake test has how many parts?', opts: ['Two', 'Four', 'Six'], ans: 1, autoFail: true },
+  { id: 18, q: 'The first part of the air brake test is to:', opts: ['Pump the brakes until they lock', 'Lower the air pressure so you can then build it back up', 'Shut the engine off'], ans: 1, autoFail: true },
+  { id: 19, q: 'After lowering it, you build the air pressure back up to:', opts: ['60 to 90 psi', '120 to 140 psi', 'Over 160 psi'], ans: 1, autoFail: true },
+  { id: 20, q: 'You know the air pressure is full when:', opts: ['The buzzer sounds', 'The governor releases between 120 and 140 psi', 'The engine idles down'], ans: 1, autoFail: true },
+  { id: 21, q: 'The second part of the air brake test is:', opts: ['The spring brake check', 'The applied leak test', 'The low-pressure warning check'], ans: 1, autoFail: true },
+  { id: 22, q: 'To set up the applied leak test on an automatic truck, you:', opts: ['Leave it in Neutral and rev the engine', 'Place the gear selector in a drive gear, then turn the truck off', 'Open the hood'], ans: 1, autoFail: true },
+  { id: 23, q: 'After shutting the truck off for the applied leak test, you should:', opts: ['Let go of the key and relax', 'Keep hold of the key, then turn it to the electrical / on position', 'Restart the engine'], ans: 1, autoFail: true },
+  { id: 24, q: 'Why do you keep hold of the key after shutting the truck off for the applied leak test?', opts: ["So you don't forget to turn it back to the electrical position", 'To keep the radio on', 'It is a legal requirement'], ans: 0, autoFail: true },
+  { id: 25, q: 'During the applied leak test, you must not lose more than:', opts: ['4 psi in one minute', '10 psi in one minute', '20 psi in thirty seconds'], ans: 0, autoFail: true },
+  { id: 26, q: 'The applied leak test is timed for:', opts: ['Thirty seconds', 'One full minute', 'Five minutes'], ans: 1, autoFail: true },
+  { id: 27, q: 'The third part of the air brake test checks:', opts: ['The spring brakes', 'The low-pressure warning light and buzzer', 'The parking brake'], ans: 1, autoFail: true },
+  { id: 28, q: 'The low-pressure warning light and buzzer must come on:', opts: ['Only below 20 psi', 'Before the pressure reaches 60 psi', 'Above 100 psi'], ans: 1, autoFail: true },
+  { id: 29, q: 'The fourth and final part of the air brake test checks:', opts: ['The spring brakes', 'The headlights', 'The seatbelt'], ans: 0, autoFail: true },
+  { id: 30, q: 'The spring brakes must pop out between:', opts: ['20 and 40 psi', '60 and 80 psi', '100 and 120 psi'], ans: 0, autoFail: true },
+  { id: 31, q: 'While fanning the pressure down, if only one spring brake valve pops, you should:', opts: ['Push the other one in by hand', 'Keep fanning down without touching them until both pop', 'Stop and restart the test'], ans: 1, autoFail: true },
+  { id: 32, q: 'The correct order of the four air brake test parts is:', opts: ['Spring brakes, applied leak test, warning light, build pressure', 'Lower / build pressure, applied leak test, low-pressure warning, spring brakes', 'Applied leak test, warning light, spring brakes, build pressure'], ans: 1, autoFail: true },
+  { id: 33, q: 'After the air brake test, before starting the cabin inspection, you:', opts: ['Exit the truck', 'Put it back in Neutral, turn the truck on, and build the pressure back up', 'Begin driving'], ans: 1 },
+  { id: 34, q: 'The inside cabin inspection has how many items?', opts: ['Three', 'Six', 'Ten'], ans: 1 },
+  { id: 35, q: 'The first item of the inside cabin inspection is:', opts: ['The horns', 'Lighting indicators', 'Emergency equipment'], ans: 1 },
+  { id: 36, q: 'The correct order of the inside cabin inspection is:', opts: ['Horns, wipers, mirrors, lights, heater, emergency equipment', 'Lighting indicators, emergency equipment, windshield & mirror, wipers & washer, heater & defroster, horns', 'Emergency equipment, lighting indicators, horns, mirrors, heater, wipers'], ans: 1 },
+  { id: 37, q: 'When you check the lighting indicators, you must:', opts: ['Just point at them', 'Touch / turn them on — left, right, high beams, and four-way flashers', 'Leave them alone'], ans: 1 },
+  { id: 38, q: 'After the lighting indicators, the next inside cabin inspection item is:', opts: ['Emergency equipment', 'The horns', 'The heater'], ans: 0 },
+  { id: 39, q: 'The emergency equipment you check includes:', opts: ['A jack and a lug wrench', 'Spare electrical fuses, three reflective triangles, and an ABC fire extinguisher', 'A spare tire and a flashlight'], ans: 1 },
+  { id: 40, q: 'The fire extinguisher must be:', opts: ['Any size, as long as it is red', 'An ABC type, fully charged, dated, with a locking pin', 'Mounted outside the cab'], ans: 1 },
+  { id: 41, q: 'After emergency equipment, the next inside cabin inspection item is:', opts: ['The windshield and mirrors', 'The horns', 'The wipers'], ans: 0 },
+  { id: 42, q: 'When you check the mirrors, you confirm they are:', opts: ['Tinted and folded in', 'Not damaged or cracked, securely mounted, set to drive, clean, with no illegal stickers', 'Identical on both sides'], ans: 1 },
+  { id: 43, q: 'When you check the windshield, you confirm it has:', opts: ['A legal inspection sticker', 'No obstructions, no illegal stickers, and is not cracked or damaged', 'A dark tint strip'], ans: 1 },
+  { id: 44, q: 'After the windshield and mirror, the next inside cabin inspection item is:', opts: ['Wipers and washer', 'Horns', 'Lighting indicators'], ans: 0 },
+  { id: 45, q: 'When you check the wipers and washer, you confirm:', opts: ['They are a name brand', 'The washer fluid sprays and the wipers move smoothly with proper tension and are not dry-rotted', 'They are turned off'], ans: 1 },
+  { id: 46, q: 'The heater and the defroster are:', opts: ['One single item', 'Two separate items — each is checked', 'Not part of the inspection'], ans: 1 },
+  { id: 47, q: 'The last item of the inside cabin inspection is:', opts: ['The seatbelt', 'The horns — both the electrical horn and the air horn', 'The mirrors'], ans: 1 },
+  { id: 48, q: 'After the inside cabin inspection, the final in-cab procedure is:', opts: ['The tug test', 'The road test', 'A second light check'], ans: 0 },
+  { id: 49, q: 'Before performing the tug test, you must confirm that:', opts: ['The doors are locked', 'The air pressure is full, between 120 and 140 psi', 'The radio is off'], ans: 1 },
+  { id: 50, q: 'The tug test checks how many brakes?', opts: ['One', 'Three — the tractor, trailer, and service brakes', 'Two'], ans: 1 },
+  { id: 51, q: 'The correct order of the tug test is:', opts: ['Service brake, tractor brake, trailer brake', 'Tractor brake, trailer brake, service brake', 'Trailer brake, service brake, tractor brake'], ans: 1 },
+  { id: 52, q: 'During the tug test, the brake you are testing is the one that is:', opts: ['Pushed in (released)', 'Pulled out (applied)', 'Removed'], ans: 1 },
+  { id: 53, q: 'On an automatic transmission truck, you perform the tug test by:', opts: ['Feathering the clutch to feel a vibration', 'Gently applying throttle against the held brake to confirm it holds', 'Slamming the accelerator to the floor'], ans: 1 },
+  { id: 54, q: 'When you test the service brake during the tug test, the truck should:', opts: ['Roll backward down the grade', 'Roll forward gently and then stop firmly, without pulling left or right', 'Stall the engine'], ans: 1 },
+  { id: 55, q: 'After the tug test is complete, you:', opts: ['Drive straight to the road portion', 'Put it back in Neutral, apply both brakes, shut it off, and take the key with you', 'Leave the truck running and exit'], ans: 1 },
+  { id: 56, q: 'When the in-cab work is finished, you tell the examiner:', opts: ['"I think I am done"', '"This completes the inside cabin inspection"', 'Nothing — you just get out'], ans: 1 },
+  { id: 57, q: 'To get credit for each safety-critical item, you must:', opts: ['Glance at it', 'Name it, point to and/or touch it, and fully explain what you are inspecting it for', 'Write it on the checklist'], ans: 1 },
+  { id: 58, q: 'About how many points do you need to pass the road skills test?', opts: ['About 22', 'About 50', 'About 100'], ans: 0 },
+  { id: 59, q: 'When you arrive at the MVC, your inspection checklist must be:', opts: ['Already filled out', 'Clean, with no markings on it beforehand', 'Signed by an instructor'], ans: 1 },
+]
+
+export const PRETRIP_ENGINE_BAY_QUESTIONS: CdlQuestion[] = [
+  { id: 1,  q: 'After the inside inspection and external light check, the outside inspection begins with:', opts: ['The front of vehicle / engine area', 'The trailer', 'The rear of the vehicle'], ans: 0 },
+  { id: 2,  q: 'The first item in the front of vehicle / engine area is:', opts: ['The steering system', 'The lenses', 'The fluid levels'], ans: 1 },
+  { id: 3,  q: 'On the headlights, you check that the lenses are:', opts: ['Tinted and amber', 'Clear, proper color, not cracked or damaged, and secure', 'Any color, as long as they light up'], ans: 1 },
+  { id: 4,  q: 'The clearance lights on the front of the vehicle should be what color?', opts: ['Red', 'Amber', 'Blue'], ans: 1 },
+  { id: 5,  q: 'After the lenses, the next section is:', opts: ['Fluid levels', 'The steering system', 'The tires'], ans: 0 },
+  { id: 6,  q: 'To inspect the fluid levels, you first:', opts: ['Start the engine', 'Unlock and open the hood', 'Crawl underneath the truck'], ans: 1 },
+  { id: 7,  q: 'The safe way to open the hood is to:', opts: ['Yank it open quickly', 'Put your foot on the bumper and pull back, taking your time so it does not slam', 'Have a helper lift it'], ans: 1 },
+  { id: 8,  q: 'Is opening the hood required?', opts: ['No — pointing from outside is always fine', 'It is strongly recommended — always open it; examiners may require it and it makes the inspection easier', 'Only on rainy days'], ans: 1 },
+  { id: 9,  q: 'The first fluid you check is the:', opts: ['Brake fluid', 'Coolant reservoir', 'Windshield washer fluid'], ans: 1 },
+  { id: 10, q: 'On the coolant reservoir, you confirm it is:', opts: ['A bright green color', 'Securely mounted, dry, with no cracks or leaks, and hoses not ripped, cut, or frayed', 'A full tank, nothing else'], ans: 1 },
+  { id: 11, q: 'If the coolant reservoir is hot, you should:', opts: ['Open it quickly to check the level', 'Not open it — it could overflow; pointing and explaining is enough', 'Pour cold water in it'], ans: 1 },
+  { id: 12, q: 'To check the engine oil, you:', opts: ['Pull the dipstick, wipe it clean, reinsert it, and confirm the level is above the line', 'Just look at the dashboard gauge', 'Smell the oil for burning'], ans: 0 },
+  { id: 13, q: 'After fluid levels, the next section is:', opts: ['Fluid and air leaks', 'The tires', 'The trailer'], ans: 0 },
+  { id: 14, q: 'On the power steering reservoir, you confirm it is:', opts: ['Completely empty', 'At max / adequate level, not leaking, cracked, or damaged, with hoses clamped', 'Overfilled past the cap'], ans: 1 },
+  { id: 15, q: 'To check the air compressor, you:', opts: ['Shake the truck and watch for movement', 'Listen for audible air leaks and confirm the hoses and lines are sealed and not ripped or torn', 'Ignore it — air leaks are not part of the test'], ans: 1 },
+  { id: 16, q: 'After fluid and air leaks, the next section is:', opts: ['The steering system', 'The trailer lights', 'The fuel tank'], ans: 0 },
+  { id: 17, q: 'The steering system inspection starts at the:', opts: ['Tie rod', 'Power steering reservoir', 'Steering wheel'], ans: 1 },
+  { id: 18, q: 'The power steering reservoir hose connects to the:', opts: ['Power steering gearbox', 'Brake chamber', 'Air compressor'], ans: 0 },
+  { id: 19, q: 'On the power steering gearbox, you confirm it is:', opts: ['Belt-driven with a loose belt', 'Not missing parts, securely mounted to the frame, all nuts and bolts present, and gear-driven with no belt', 'Painted and rust-free only'], ans: 1 },
+  { id: 20, q: 'After the power steering gearbox, the next steering component is the:', opts: ['Tie rod', 'Pitman arm', 'Drag link'], ans: 1 },
+  { id: 21, q: 'The pitman arm is a solid metal component, so the verbiage is:', opts: ['Not ripped, cut, or frayed', 'No bends, no dents, no welding, no excessive rust', 'Between max and fill, cap present'], ans: 1 },
+  { id: 22, q: 'Metal steering components like the pitman arm are secured with a:', opts: ['Castle nut and cotter key (cotter pin)', 'Hose clamp', 'Zip tie'], ans: 0 },
+  { id: 23, q: 'After the pitman arm, the next steering component is the:', opts: ['Tie rod', 'Drag link', 'Steering knuckle'], ans: 1 },
+  { id: 24, q: 'After the drag link comes the:', opts: ['Steering knuckle', 'Pitman arm', 'Tie rod'], ans: 0 },
+  { id: 25, q: 'The last steering component you check is the:', opts: ['Pitman arm', 'Tie rod', 'Drag link'], ans: 1 },
+  { id: 26, q: 'The tie rod is:', opts: ['A fluid reservoir under the hood', 'The skinny long bar that connects on both sides', 'A type of hose'], ans: 1 },
+  { id: 27, q: 'The correct order of the steering components is:', opts: ['Tie rod, drag link, steering knuckle, pitman arm, gearbox', 'Power steering gearbox, pitman arm, drag link, steering knuckle, tie rod', 'Pitman arm, gearbox, tie rod, drag link, steering knuckle'], ans: 1 },
+  { id: 28, q: 'On the checklist, a circle symbol marks a component that is:', opts: ['Metal — use "no bends, no dents, no welding, no rust"', 'Rubber — use "not ripped, cut, or frayed"', 'Fluid — use "between max and fill"'], ans: 0 },
+  { id: 29, q: 'The correct order of the front of vehicle / engine area section is:', opts: ['Steering system, lenses, fluid levels, fluid & air leaks', 'Lenses, fluid levels, fluid & air leaks, steering system', 'Fluid levels, steering system, lenses, fluid & air leaks'], ans: 1 },
+  { id: 30, q: 'Why do you open the hood instead of just pointing?', opts: ['So you can see the components clearly — it makes the inspection easier and is what most examiners expect', 'Because the law requires the hood open at all times', 'To cool the engine down'], ans: 0 },
+]
+
+export const PRETRIP_STEERING_AXLE_QUESTIONS: CdlQuestion[] = [
+  { id: 1,  q: 'After the engine area, the next checklist section is the:', opts: ['Steering axle', 'Trailer', 'Coupling system'], ans: 0 },
+  { id: 2,  q: 'The steering axle section starts with the:', opts: ['Suspension', 'Tires', 'Brake chamber'], ans: 1 },
+  { id: 3,  q: 'The front (steering axle) tires must be:', opts: ['Recapped for extra grip', 'Original — no recaps', 'Any brand of retread'], ans: 1 },
+  { id: 4,  q: 'On the tires you check for:', opts: ['No bubbles and no cuts on the sidewall', 'A matching tread pattern', 'A white sidewall'], ans: 0 },
+  { id: 5,  q: 'The required tread depth on the steering axle tires is:', opts: ['2/32 of an inch', '4/32 of an inch', '8/32 of an inch'], ans: 1 },
+  { id: 6,  q: 'To check tread depth you would use a:', opts: ['Flashlight', 'Tread depth / measuring gauge', 'Fingernail'], ans: 1 },
+  { id: 7,  q: 'The minimum tire pressure is:', opts: ['At least 100 psi', 'At least 50 psi', 'Exactly 80 psi'], ans: 0 },
+  { id: 8,  q: 'To check the tire pressure you would:', opts: ['Kick the tire and listen', 'Use a pressure gauge on the air stem (valve)', 'Press it with your thumb'], ans: 1 },
+  { id: 9,  q: 'After the tires, you check the:', opts: ['Trailer', 'Rims', 'Windshield'], ans: 1 },
+  { id: 10, q: 'The verbiage for the rim (a solid metal component) is:', opts: ['Between max and fill, cap present', 'No bends, no dents, no welding, no excessive rust', 'Not ripped, cut, or frayed'], ans: 1 },
+  { id: 11, q: 'After the rims you check the:', opts: ['Lug nuts', 'Fuel tank', 'Mirrors'], ans: 0 },
+  { id: 12, q: 'On the lug nuts you confirm they are:', opts: ['Painted the same color', 'All present, with no rust trails or shiny metal', 'Finger-tight'], ans: 1 },
+  { id: 13, q: 'Rust trails or shiny metal around a lug nut or axle nut indicate that it is:', opts: ['Brand new', 'Loose', 'The wrong size'], ans: 1 },
+  { id: 14, q: 'While at the wheel, you also mention the axle seal — confirming:', opts: ['No signs of leaks or damage', 'A chrome finish', 'A warranty sticker'], ans: 0 },
+  { id: 15, q: 'After the lug nuts, the next section is:', opts: ['Springs and suspension', 'The trailer', 'The engine'], ans: 0 },
+  { id: 16, q: 'On the leaf springs you confirm they are:', opts: ['Painted black', 'Both present, not scissored, missing, or shifted, and securely mounted', 'Made of rubber'], ans: 1 },
+  { id: 17, q: 'The leaf spring connects to the frame at the:', opts: ['Front mount and rear mount', 'Brake chamber', 'Tie rod'], ans: 0 },
+  { id: 18, q: 'On the spring mounts you confirm they are:', opts: ['Rubber, with no cracks', 'Solid metal, securely mounted to the frame, with all mounting bolts present', 'Filled with hydraulic fluid'], ans: 1 },
+  { id: 19, q: 'On the shock absorber you confirm it is:', opts: ['Leaking hydraulic fluid, which is normal', 'Not leaking hydraulic fluid, and securely mounted to the leaf spring and the frame', 'Disconnected at the top'], ans: 1 },
+  { id: 20, q: 'After the suspension, the next section is:', opts: ['Brake lines and hoses & leaks', 'The fuel tank', 'The coupling system'], ans: 0 },
+  { id: 21, q: 'The brake line connects to the:', opts: ['Fuel tank', 'Brake chamber', 'Steering gearbox'], ans: 1 },
+  { id: 22, q: 'On the brake line you confirm:', opts: ['No rips or tears, no audible leaks, and that it is securely mounted to the brake chamber', 'It is a bright color', 'It is at least a quarter inch thick'], ans: 0 },
+  { id: 23, q: 'On the brake chamber you confirm it is:', opts: ['Empty', 'Not missing components, with all nuts and bolts present and no audible air leaks', 'Leaking slightly, which is acceptable'], ans: 1 },
+  { id: 24, q: 'After the brake lines, you check:', opts: ['Brake contamination', 'The trailer lights', 'The steering wheel'], ans: 0 },
+  { id: 25, q: 'On the push rod and slack adjuster you confirm they are:', opts: ['Not missing parts, with no more than about an inch of play', 'Completely loose', 'Welded solid'], ans: 0 },
+  { id: 26, q: '"Brake contamination" means checking for:', opts: ['Rust on the frame', 'Debris, oil, or any liquid between the brake lining and drum that would prevent friction', 'A dirty windshield'], ans: 1 },
+  { id: 27, q: 'The brake lining should have at least:', opts: ['A quarter inch of material, with no cracks or damage', 'No material left at all', 'One inch of play'], ans: 0 },
+  { id: 28, q: 'After the steering axle is complete, you move to the:', opts: ['Side of the vehicle', 'Trailer', 'Engine bay again'], ans: 0 },
+  { id: 29, q: 'The first item on the side of the vehicle is:', opts: ['The battery', 'Lenses and reflectors', 'The fuel tank'], ans: 1 },
+  { id: 30, q: 'A side marker light from the middle of the vehicle forward should be what color?', opts: ['Red', 'Amber', 'Green'], ans: 1 },
+  { id: 31, q: '"Traffic monitoring devices" on the side of the vehicle refers to the:', opts: ['GPS unit', 'Mirrors and convex mirrors', 'Dash camera only'], ans: 1 },
+  { id: 32, q: 'On the battery you confirm:', opts: ['No corrosion or acid dripping, wires connected and not ripped or torn, and sealed correctly', 'A full charge gauge reading', 'A recent purchase date'], ans: 0 },
+  { id: 33, q: 'On the fuel tank you confirm:', opts: ['It is the largest tank on the truck', 'No leaks, dry, no holes, cap present, straps secure, and gas lines sealed and dry', 'It is painted to match the cab'], ans: 1 },
+  { id: 34, q: 'On the DEF tank you confirm:', opts: ['Not leaking, dry, no holes or damage, cap present, and lines sealed', 'It is filled with water', 'It is optional on newer trucks'], ans: 0 },
+  { id: 35, q: 'The last item on the side of the vehicle is the:', opts: ['Mirrors', 'Frame — not bent or welded, secure, solid metal, with no excessive rust', 'Headlights'], ans: 1 },
+  { id: 36, q: 'The correct order of the steering axle section is:', opts: ['Suspension, tires, rims, brake contamination, lug nuts, brake lines', 'Tires, rims, lug nuts, suspension, brake lines & leaks, brake contamination', 'Brake lines, tires, suspension, rims, lug nuts, brake contamination'], ans: 1 },
+  { id: 37, q: 'If you are inspecting the front steering axle and realize you forgot a component, you:', opts: ['Cannot fix it — the point is lost the moment you notice', 'Can return to it as long as you have not finished the test, but must stay focused on that axle only', 'Must restart the entire inspection'], ans: 1 },
+]
+
+export const PRETRIP_COUPLING_QUESTIONS: CdlQuestion[] = [
+  { id: 1,  q: 'After the side of the vehicle, the next checklist section is the:', opts: ['Combination vehicles only — the coupling system', 'Trailer', 'Rear of the trailer'], ans: 0 },
+  { id: 2,  q: 'The coupling system inspection starts with the:', opts: ['Fifth wheel', 'Air and electric lines & connectors', 'Kingpin'], ans: 1 },
+  { id: 3,  q: 'You begin the lines inspection from the:', opts: ['Rear of the trailer', 'Side of the truck', 'Underneath the fifth wheel'], ans: 1 },
+  { id: 4,  q: 'The electrical wire (cable) should be:', opts: ['Hanging loose for easy access', 'In the locked position, fully plugged in', 'Disconnected during the inspection'], ans: 1 },
+  { id: 5,  q: 'If you checked the electrical connector, you would:', opts: ['Pull it out, confirm nothing is stuck in the prongs, and that the prongs are not damaged or bent', 'Leave it alone — it cannot be checked', 'Cut it open to inspect the wires'], ans: 0 },
+  { id: 6,  q: 'The service line is what color?', opts: ['Red', 'Blue', 'Green'], ans: 1 },
+  { id: 7,  q: 'The emergency line is what color?', opts: ['Red', 'Blue', 'Yellow'], ans: 0 },
+  { id: 8,  q: 'On the service and emergency air lines you confirm they are:', opts: ['Sealed correctly, with no audible air leaks and no rips, cuts, or frays', 'A bright, clean color', 'Wrapped in tape'], ans: 0 },
+  { id: 9,  q: 'As you follow the air lines through, you confirm they are:', opts: ['Coiled as tightly as possible', 'Not touching any truck part, secured, and not tangled', 'Painted to match the truck'], ans: 1 },
+  { id: 10, q: 'The connectors at the ends of the air lines are called:', opts: ['Kingpins', 'Glad hands', 'Slack adjusters'], ans: 1 },
+  { id: 11, q: 'When you check a glad hand, you confirm:', opts: ['The O-ring / rubber seal is present, not bent or cut', 'It is chrome-plated', 'It is welded shut'], ans: 0 },
+  { id: 12, q: 'After reconnecting a glad hand, you make sure it is:', opts: ['Loose so it can swivel', 'Seated nice and even so there are no audible leaks', 'Taped over'], ans: 1 },
+  { id: 13, q: 'Damaged or bent electrical pins would affect:', opts: ['The trailer brakes', 'The trailer lights', 'The engine'], ans: 1 },
+  { id: 14, q: 'After the air and electric lines, you inspect the:', opts: ['Trailer', 'Fifth wheel', 'Fuel tank'], ans: 1 },
+  { id: 15, q: 'The first part of the fifth wheel you check is the:', opts: ['Kingpin', 'Apron', 'Release arm'], ans: 1 },
+  { id: 16, q: 'On the apron you confirm:', opts: ['No holes, and no gap or space between the apron and the fifth wheel / skid plate', 'A rubber coating', 'At least an inch of play'], ans: 0 },
+  { id: 17, q: 'The skid plate is solid metal, so the verbiage is:', opts: ['Not ripped, cut, or frayed', 'No bends, no dents, no welding, no rust', 'Between max and fill'], ans: 1 },
+  { id: 18, q: 'On the fifth wheel platform you confirm it is:', opts: ['Empty and unbolted', 'Not missing parts, all bolts present, a locking pin with a cotter key, mounted to the frame, with no rust trails or shiny metal', 'Leaking grease, which is normal'], ans: 1 },
+  { id: 19, q: 'The release arm should be in the:', opts: ['Full lock position — in is locked, out is release', 'Pulled all the way out position', 'Removed-during-inspection position'], ans: 0 },
+  { id: 20, q: 'When you inspect the kingpin, you should:', opts: ['Crawl underneath the trailer for a close look', 'Point in its direction — never go underneath the trailer, for safety', 'Skip it entirely'], ans: 1 },
+  { id: 21, q: 'On the kingpin you confirm:', opts: ['The locking jaws are around it and it is secure, not bent, welded, or damaged, with no gap, and well greased', 'It is dry and rust-free', 'It spins freely by hand'], ans: 0 },
+  { id: 22, q: 'The kingpin is secured by the fifth wheel\'s:', opts: ['Apron', 'Locking jaws', 'Release arm'], ans: 1 },
+  { id: 23, q: 'Rust trails or shiny metal on the fifth wheel mounting bolts indicate:', opts: ['They are freshly painted', 'They are loose', 'They are over-tightened'], ans: 1 },
+  { id: 24, q: 'The correct order of the coupling system inspection is:', opts: ['Fifth wheel first, then the air and electric lines', 'Air & electric lines, glad hands, then the fifth wheel (apron, skid plate, platform, release arm, kingpin)', 'Kingpin, apron, release arm, then the air lines'], ans: 1 },
+  { id: 25, q: 'Why do you NOT go underneath the trailer to inspect the kingpin?', opts: ['Safety — you point in its direction instead of putting yourself in an unsafe position', 'It is faster to skip it', 'The examiner inspects it for you'], ans: 0 },
+]
+
+export const PRETRIP_TRAILER_QUESTIONS: CdlQuestion[] = [
+  { id: 1,  q: 'After the coupling system, the next checklist section is:', opts: ['Trailer only', 'The engine bay', 'The inside cabin'], ans: 0 },
+  { id: 2,  q: 'The first trailer item you check is the:', opts: ['Reflective tape', 'Landing gear and clearance', 'Rear lenses'], ans: 1 },
+  { id: 3,  q: '"Clearance" for the landing gear means:', opts: ['The trailer is the right height', 'When the truck turns, the landing gear does not hit the truck, and it is fully raised while driving', 'The cargo is balanced'], ans: 1 },
+  { id: 4,  q: 'While driving, the landing gear must be:', opts: ['Partly lowered', 'Fully raised', 'Touching the ground'], ans: 1 },
+  { id: 5,  q: 'To explain operating the landing gear, you say:', opts: ['To lower it, take the crank handle and crank it all the way down until it touches the ground', 'You press a button on the dash', 'It lowers automatically'], ans: 0 },
+  { id: 6,  q: 'The crank handle itself must be:', opts: ['Latched, not hanging', 'Removed and stored in the cab', 'Left hanging for quick access'], ans: 0 },
+  { id: 7,  q: 'The landing gear support frame is solid metal, so the verbiage is:', opts: ['No bends, no dents, no welding', 'Not ripped, cut, or frayed', 'Between max and fill'], ans: 0 },
+  { id: 8,  q: 'After the landing gear, you check the:', opts: ['Reflective tape', 'Kingpin', 'Fuel tank'], ans: 0 },
+  { id: 9,  q: 'DOT reflective tape should cover:', opts: ['Less than 10% of the trailer', 'More than 50% of the trailer', 'Only the corners'], ans: 1 },
+  { id: 10, q: 'DOT tape is what colors?', opts: ['Amber and green', 'Red and white', 'Blue and white'], ans: 1 },
+  { id: 11, q: 'Clearance lights and side markers from the middle of the trailer forward are what color?', opts: ['Red', 'Amber', 'White'], ans: 1 },
+  { id: 12, q: 'Clearance lights and reflectors at the rear of the trailer are what color?', opts: ['Amber', 'Red', 'Green'], ans: 1 },
+  { id: 13, q: 'A common mistake is calling the rear lights amber — at the rear they are always:', opts: ['Amber', 'Red', 'White'], ans: 1 },
+  { id: 14, q: 'After the reflective tape, the last section is the:', opts: ['Rear of the trailer', 'Coupling system', 'Engine bay'], ans: 0 },
+  { id: 15, q: 'At the rear of the trailer you check the:', opts: ['Landing gear', 'Lenses and reflectors', 'Kingpin'], ans: 1 },
+  { id: 16, q: 'Rear signal lights, brake lights, and reflectors should all be what color?', opts: ['Amber', 'Red', 'Green'], ans: 1 },
+  { id: 17, q: 'On all rear lenses you confirm they are:', opts: ['Not cracked or damaged, proper color, and in place', 'Tinted dark', 'The brightest available'], ans: 0 },
+  { id: 18, q: 'You may have the trailer lights on for the rear check by:', opts: ['Turning them on before you exit the cab', 'Asking the examiner to hold a switch', 'They cannot be on during the inspection'], ans: 0 },
+  { id: 19, q: 'The correct order of the trailer section is:', opts: ['Rear lenses, reflective tape, landing gear', 'Landing gear & clearance, reflective tape, rear of trailer lenses & reflectors', 'Reflective tape, rear lenses, landing gear & clearance'], ans: 1 },
+  { id: 20, q: 'Once the rear of the trailer is done:', opts: ['You must start the inspection over', 'You should have reached the points you need — the new test focuses more on the driving maneuvers', 'The test is automatically failed'], ans: 1 },
 ]
 
 export const ANSWER_LABELS = ['A', 'B', 'C'] as const

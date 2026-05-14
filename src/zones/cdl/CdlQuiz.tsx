@@ -13,6 +13,14 @@
  *     "Extended (all N questions)" run via a toggle on the menu screen.
  *   • Pass threshold scales with the active count: ceil(count * 0.8) = the
  *     number of correct answers required at the 80% NJ MVC bar.
+ *
+ * Pre-trip mode:
+ *   • `sequential` runs the full bank in fixed `id` order — no shuffle, no
+ *     sampling — so the test walks through the inspection step by step. It
+ *     also hides the "Extended practice" toggle.
+ *   • A question flagged `autoFail` forces an "AUTOMATIC FAILURE" verdict if
+ *     missed, regardless of score — mirrors the air brake check on the real
+ *     road skills test (pass/fail, no reset).
  */
 import { useMemo, useState } from 'react'
 
@@ -61,13 +69,21 @@ export interface CdlQuizProps {
    * real exam (e.g. Hazmat 30, Air Brakes 25, Tanker 20). The quiz randomly
    * samples this many questions from `questions` when the user starts the
    * default test. If the bank is smaller than `officialCount`, the bank size
-   * is used and the toggle is hidden.
+   * is used and the toggle is hidden. Optional — omit it on `sequential`
+   * tests, where the whole bank always runs.
    */
-  officialCount: number
+  officialCount?: number
+  /**
+   * Pre-trip mode. When true the quiz runs the entire bank in fixed `id`
+   * order — no shuffle, no sampling — so the test walks through the
+   * inspection step by step. Also hides the "Extended practice" toggle.
+   */
+  sequential?: boolean
   /**
    * Optional one-line clarifier shown under the stats row (used by the
    * combo-prep screens — Tanker+Hazmat, Tanker+Doubles — to make clear that
-   * they are not real MVC exams).
+   * they are not real MVC exams, and by the pre-trip tests to note the
+   * sequential walkthrough).
    */
   combinedNotice?: string
 }
@@ -98,6 +114,7 @@ export default function CdlQuiz({
   questions,
   theme,
   officialCount,
+  sequential,
   combinedNotice,
 }: CdlQuizProps) {
   const [mode,        setMode]        = useState<Mode>('menu')
@@ -115,9 +132,9 @@ export default function CdlQuiz({
   const [activeQuestions, setActiveQuestions] = useState<CdlQuestion[]>([])
 
   const bankSize        = questions.length
-  const cappedOfficial  = Math.min(officialCount, bankSize)
-  const hasExtendedMode = bankSize > cappedOfficial
-  const menuCount       = extended ? bankSize : cappedOfficial
+  const cappedOfficial  = Math.min(officialCount ?? bankSize, bankSize)
+  const hasExtendedMode = !sequential && bankSize > cappedOfficial
+  const menuCount       = sequential ? bankSize : extended ? bankSize : cappedOfficial
   const menuPassNeeded  = Math.ceil(menuCount * 0.8)
 
   const total           = activeQuestions.length
@@ -126,14 +143,25 @@ export default function CdlQuiz({
   const answered        = Object.keys(answers).length
   const score           = Object.values(answers).filter(Boolean).length
   const pct             = total > 0 ? Math.round((score / total) * 100) : 0
-  const pass            = score >= passNeeded && total > 0
   const wrong           = useMemo(
     () => activeQuestions.filter(qq => answers[qq.id] === false),
     [activeQuestions, answers],
   )
+  /**
+   * A missed question flagged `autoFail` forces a failing verdict no matter
+   * the percentage — the air brake check on the real road test is pass/fail.
+   */
+  const autoFailed      = useMemo(
+    () => activeQuestions.some(qq => qq.autoFail && answers[qq.id] === false),
+    [activeQuestions, answers],
+  )
+  const pass            = score >= passNeeded && total > 0 && !autoFailed
 
   const startQuiz = () => {
-    setActiveQuestions(sampleQuestions(questions, menuCount))
+    const next = sequential
+      ? [...questions].sort((a, b) => a.id - b.id)
+      : sampleQuestions(questions, menuCount)
+    setActiveQuestions(next)
     setAnswers({}); setSelected(null); setConfirmed(false); setCurrent(0); setMode('quiz')
   }
 
@@ -212,9 +240,14 @@ export default function CdlQuiz({
           <div style={badgeStyle(theme)}>RESULTS</div>
           <h1 style={{ ...titleStyle(theme), fontSize: 52, color: verdictColor }}>{pct}%</h1>
           <p style={{ ...subtitleStyle(theme), color: verdictColor, fontWeight: 700, fontSize: 18, marginBottom: 8 }}>
-            {pass ? '✓ PASSED' : '✗ FAILED'}
+            {autoFailed ? '✗ AUTOMATIC FAILURE' : pass ? '✓ PASSED' : '✗ FAILED'}
           </p>
           <p style={{ ...subtitleStyle(theme), marginBottom: 6 }}>{score} / {total} correct</p>
+          {autoFailed && (
+            <p style={{ ...subtitleStyle(theme), color: theme.bad, fontWeight: 700, fontSize: 11, marginBottom: 6 }}>
+              Missed a critical auto-fail item — the air brake check is pass/fail with no reset on the real exam.
+            </p>
+          )}
           <p style={{ ...subtitleStyle(theme), marginBottom: 28, fontSize: 11 }}>
             ({passNeeded} required to pass at 80%)
           </p>

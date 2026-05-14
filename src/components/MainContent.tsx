@@ -38,6 +38,11 @@ const CdlTankerDoublesPage = lazy(() => import('../zones/cdl/CdlTankerDoublesPag
 const CdlTankerHazmatPage = lazy(() => import('../zones/cdl/CdlTankerHazmatPage'))
 const CdlPassengerPage = lazy(() => import('../zones/cdl/CdlPassengerPage'))
 const CdlSchoolBusPage = lazy(() => import('../zones/cdl/CdlSchoolBusPage'))
+const CdlPreTripCabinPage = lazy(() => import('../zones/cdl/CdlPreTripCabinPage'))
+const CdlPreTripEngineBayPage = lazy(() => import('../zones/cdl/CdlPreTripEngineBayPage'))
+const CdlPreTripSteeringAxlePage = lazy(() => import('../zones/cdl/CdlPreTripSteeringAxlePage'))
+const CdlPreTripCouplingPage = lazy(() => import('../zones/cdl/CdlPreTripCouplingPage'))
+const CdlPreTripTrailerPage = lazy(() => import('../zones/cdl/CdlPreTripTrailerPage'))
 const DevSettings = lazy(() => import('../zones/dev/DevSettings'))
 const DiagnosticsZone = lazy(() => import('../zones/dev/DiagnosticsZone'))
 const NewZonePage = lazy(() => import('../zones/builder/NewZonePage'))
@@ -157,6 +162,21 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
       break
     case 'cdl-school-bus':
       body = <CdlSchoolBusPage />
+      break
+    case 'cdl-pretrip-cabin':
+      body = <CdlPreTripCabinPage />
+      break
+    case 'cdl-pretrip-engine-bay':
+      body = <CdlPreTripEngineBayPage />
+      break
+    case 'cdl-pretrip-steering-axle':
+      body = <CdlPreTripSteeringAxlePage />
+      break
+    case 'cdl-pretrip-coupling':
+      body = <CdlPreTripCouplingPage />
+      break
+    case 'cdl-pretrip-trailer':
+      body = <CdlPreTripTrailerPage />
       break
     case 'web-designer':
       body = <WebDesignerZone key="web-designer-main" onNavigate={onNavigate} />
