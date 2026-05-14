@@ -312,16 +312,38 @@ export default function DevSettings({ onNavigate }: DevSettingsProps) {
                     {section.title}
                   </div>
                   <div className="overflow-x-auto">
-                    <table className="min-w-[800px] w-full text-left text-[11px] md:text-xs">
+                    <table
+                      className="w-full text-left text-[11px] md:text-xs"
+                      style={{
+                        minWidth: '1100px',
+                        // Constrain columns to declared widths so content wraps inside
+                        // the cell instead of squeezing one column to nothing.
+                        tableLayout: 'fixed',
+                      }}
+                    >
+                      {/* Explicit colgroup so column widths stay proportional to the
+                          typical length of text in each cell, regardless of how much
+                          a particular row decides to write. Wide-text columns (Used in,
+                          Source) get more breathing room; single-control columns
+                          (Get key, Test) stay tight. */}
+                      <colgroup>
+                        <col style={{ width: '15rem' }} /> {/* Key(s) */}
+                        <col style={{ width: '10rem' }} /> {/* Role */}
+                        <col style={{ width: '9rem' }} />  {/* Get key */}
+                        <col style={{ width: '17rem' }} /> {/* Used in */}
+                        <col style={{ width: '11rem' }} /> {/* Source */}
+                        <col style={{ width: '13rem' }} /> {/* Local value */}
+                        <col style={{ width: '5rem' }} />  {/* Test */}
+                      </colgroup>
                       <thead style={{ color: 'var(--text-3)' }}>
                         <tr className="border-b" style={{ borderColor: 'var(--border-soft)' }}>
                           <th className="px-2 py-2 font-medium md:px-3">Key(s)</th>
                           <th className="px-2 py-2 font-medium md:px-3">Role</th>
-                          <th className="w-[7.5rem] min-w-[7rem] px-2 py-2 font-medium md:px-3">Get key</th>
-                          <th className="min-w-[10rem] px-2 py-2 font-medium md:px-3">Used in</th>
+                          <th className="px-2 py-2 font-medium md:px-3">Get key</th>
+                          <th className="px-2 py-2 font-medium md:px-3">Used in</th>
                           <th className="px-2 py-2 font-medium md:px-3">Source</th>
-                          <th className="min-w-[11rem] px-2 py-2 font-medium md:px-3">Local value</th>
-                          <th className="w-20 px-2 py-2 text-right font-medium md:px-3">Test</th>
+                          <th className="px-2 py-2 font-medium md:px-3">Local value</th>
+                          <th className="px-2 py-2 text-right font-medium md:px-3">Test</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -362,7 +384,19 @@ export default function DevSettings({ onNavigate }: DevSettingsProps) {
                 Custom &amp; OAuth
               </div>
               <div className="overflow-x-auto">
-                <table className="min-w-[640px] w-full text-left text-[11px] md:text-xs">
+                <table
+                  className="w-full text-left text-[11px] md:text-xs"
+                  style={{ minWidth: '960px', tableLayout: 'fixed' }}
+                >
+                  {/* Proportional column widths — see main table above for rationale. */}
+                  <colgroup>
+                    <col style={{ width: '15rem' }} /> {/* Key(s) */}
+                    <col style={{ width: '10rem' }} /> {/* Role */}
+                    <col style={{ width: '17rem' }} /> {/* Notes */}
+                    <col style={{ width: '11rem' }} /> {/* Source */}
+                    <col style={{ width: '13rem' }} /> {/* Local value */}
+                    <col style={{ width: '6rem' }} />  {/* Actions */}
+                  </colgroup>
                   <thead style={{ color: 'var(--text-3)' }}>
                     <tr className="border-b" style={{ borderColor: 'var(--border-soft)' }}>
                       <th className="px-2 py-2 font-medium md:px-3">Key(s)</th>
@@ -370,7 +404,7 @@ export default function DevSettings({ onNavigate }: DevSettingsProps) {
                       <th className="px-2 py-2 font-medium md:px-3">Notes</th>
                       <th className="px-2 py-2 font-medium md:px-3">Source</th>
                       <th className="px-2 py-2 font-medium md:px-3">Local value</th>
-                      <th className="w-24 px-2 py-2 text-right font-medium md:px-3">Actions</th>
+                      <th className="px-2 py-2 text-right font-medium md:px-3">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -624,7 +658,7 @@ function ModelEnvRow({
       <td className="px-2 py-2 align-top md:px-3">
         <RetrievalLinksList links={entry.retrievalLinks} />
       </td>
-      <td className="max-w-[14rem] px-2 py-2 md:px-3">
+      <td className="px-2 py-2 md:px-3">
         <p className="text-[10px] leading-snug md:text-[11px]" style={{ color: 'var(--text-2)' }}>{entry.oneLinePurpose}</p>
         {harmonyHint && (
           <p className="mt-1 text-[10px] leading-snug md:text-[11px]" style={{ color: 'var(--accent-fg)' }}>{harmonyHint}</p>
