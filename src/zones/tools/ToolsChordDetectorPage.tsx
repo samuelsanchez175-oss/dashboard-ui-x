@@ -594,6 +594,26 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
     void runFile(f)
   }, [pianoLeadFocus, runFile])
 
+  /**
+   * DEV-only test hook — mirrors the latest analysis onto `window.__chordDetectorTest`
+   * so the accuracy tuning harness (`scripts/chord-detector-tune.mjs`) can read full
+   * results (segments, leadNotes, histogram) headlessly. `runId` bumps per published
+   * result; the harness waits for `busy === false` plus a fresh `runId`.
+   */
+  const testRunIdRef = useRef(0)
+  useEffect(() => {
+    if (!import.meta.env.DEV) return
+    if (result) testRunIdRef.current += 1
+    ;(window as unknown as { __chordDetectorTest?: unknown }).__chordDetectorTest = {
+      result,
+      busy,
+      error,
+      fileName,
+      runId: testRunIdRef.current,
+      at: Date.now(),
+    }
+  }, [result, busy, error, fileName])
+
   // Inbound clip pickup (one-shot per route entry).
   useEffect(() => {
     let cancelled = false
@@ -1286,6 +1306,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
               >
                 <input
                   id={inputId}
+                  data-testid="chord-detector-file-input"
                   type="file"
                   accept="audio/*,.mp3,.wav,.m4a,.flac,.aac,.mid,.midi,audio/midi,audio/x-midi"
                   className="sr-only"

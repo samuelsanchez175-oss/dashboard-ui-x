@@ -92,6 +92,59 @@ function histogramFromLeadNotes(notes: readonly LeadNote[]): number[] {
 }
 
 /**
+ * Drop short semitone-flat "onset-shadow" ghosts (iter 5, chord-detector-tuning-log).
+ *
+ * Basic Pitch occasionally spawns a brief note one semitone *below* a longer note that
+ * overlaps it in time — a transient artifact of the higher note's attack, not real
+ * content. On the control clip this produced 20 stable F4 ghosts (all short, all under
+ * F♯4, the most-common note), inflating out-of-key % and completing a phantom F♯-major
+ * scale in the key histogram.
+ *
+ * Conservative on purpose — only drops a note that is (a) short, (b) time-shadowed by a
+ * note exactly +1 semitone, and (c) that neighbor is at least as long — so real semitone
+ * voicings and melodic passing tones (sequential, not shadowed) are left intact.
+ */
+function dropSemitoneFlatOnsetShadows(notes: readonly LeadNote[]): LeadNote[] {
+  /** Only short notes can be shadows. */
+  const MAX_GHOST_SEC = 0.52
+  /**
+   * The +1-semitone parent may overlap the ghost OR sit within this gap of it.
+   * Raw-BP diagnostic (iter 5, chord-detector-tuning-log): the control clip's 20 F4
+   * ghosts do **not** overlap their longer F♯4 parent in raw BP output — they abut it
+   * with a 0–81 ms gap (the slight overlap only appears later, after the engine's
+   * quantise/align pass). So the test is gap-tolerant, not overlap-required.
+   */
+  const NEAR_SEC = 0.1
+  if (notes.length < 2) return notes.map(n => ({ ...n }))
+  const byMidi = new Map<number, LeadNote[]>()
+  for (const n of notes) {
+    const m = Math.round(n.midi)
+    let arr = byMidi.get(m)
+    if (!arr) {
+      arr = []
+      byMidi.set(m, arr)
+    }
+    arr.push(n)
+  }
+  return notes
+    .filter(n => {
+      if (n.durationSec >= MAX_GHOST_SEC) return true
+      const upper = byMidi.get(Math.round(n.midi) + 1)
+      if (!upper) return true
+      const nStart = n.startSec
+      const nEnd = n.startSec + n.durationSec
+      for (const u of upper) {
+        if (u.durationSec < n.durationSec) continue
+        // gap > 0 → separated; gap <= 0 → overlapping. Drop when within NEAR_SEC.
+        const gap = Math.max(nStart - (u.startSec + u.durationSec), u.startSec - nEnd)
+        if (gap <= NEAR_SEC) return false
+      }
+      return true
+    })
+    .map(n => ({ ...n }))
+}
+
+/**
  * Run Basic Pitch on mono audio already at 22050 Hz. Caller trims duration caps.
  * @param basicPitchDecode — partial overrides of `NEURALNOTE_STYLE.basicPitch`.
  */
@@ -140,12 +193,15 @@ export async function transcribeMono22050ToLeadNotes(
     const withBends = addPitchBendsToNoteEvents(contoursAgg, rawNotes)
     const timed = noteFramesToTime(withBends)
 
-    const leadNotes: LeadNote[] = timed.map(n => ({
+    const leadNotesRaw: LeadNote[] = timed.map(n => ({
       midi: n.pitchMidi,
       startSec: n.startTimeSeconds,
       durationSec: Math.max(1 / 128, n.durationSeconds),
       velocity: Math.max(0.08, Math.min(1, n.amplitude)),
     }))
+    /* Clean semitone-flat onset-shadow ghosts before they reach the key histogram and
+     * the beat-level chord blend (engine's `leadNotesRaw`). */
+    const leadNotes = dropSemitoneFlatOnsetShadows(leadNotesRaw)
 
     return {
       ok: true,

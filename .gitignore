@@ -33,6 +33,9 @@ playwright/.cache/
 test-results/
 playwright-report/
 
+# Scratch / local tooling output (e.g. scripts/chord-detector-tune.mjs)
+tmp/
+
 # Tesla virtual key — generated server-side, contains private key
 .tesla-virtual-key.json
 

@@ -3,7 +3,7 @@
  * run the JUCE plugin). Mirrored where applicable:
  * - `NeuralNote/Source/ParameterHelpers.h` — note / split sensitivity, min note duration (ms), MIDI range
  * - `Lib/Model/BasicPitchConstants.h` — 22050 Hz, FFT hop 256 → frame length for min duration
- * - `NeuralNote/Source/ParameterHelpers.h` — time division default index 5 = 1/8, quant force 0
+ * - Chord detector UI defaults: finest time grid (1/64), quant force 1, time quant on, min note 120 ms
  */
 
 import type { LeadNote } from './chord-detector-melody'
@@ -75,16 +75,24 @@ export const NEURALNOTE_STYLE: {
   melodyPost: NeuralNoteStyleMelodyPost
 } = {
   basicPitch: {
-    /** `NOTE_SENSITIVITY` default 0.7 (range 0.05–0.95 in NeuralNote). → `frameThresh = 1 − this` in Spotify decode. */
+    /**
+     * `NOTE_SENSITIVITY` default 0.7 (range 0.05–0.95 in NeuralNote). → `frameThresh = 1 − this` in Spotify decode.
+     * Held at 0.565: iter 2 (chord-detector-tuning-log) raised this to 0.72 to try to recover
+     * the missing E, but BP found zero E at either setting — the extra sensitivity only added
+     * ghost density and more sus4 ambiguity (composite 34 → 39). Reverted.
+     */
     noteSensitivity: 0.565,
     /**
      * `SPLIT_SENSITIVITY` (NeuralNote default 0.5 → `onsetThresh = 1 − this`).
      * **Lower** than 0.5 = higher `onsetThresh` = fewer onset splits (reduces BP over-segmentation in TF.js).
+     * Lowered 0.26 → 0.12 (iter 3, chord-detector-tuning-log): raises `onsetThresh` to ~0.88 so
+     * spurious onsets — the source of the E♯/F♮ ghost notes — need a stronger transient to register.
      */
-    splitSensitivity: 0.26,
+    splitSensitivity: 0.12,
     /**
      * `MINIMUM_NOTE_DURATION` (NeuralNote default 125 ms). **Raised** here so `minNoteLen` frames
      * filter tiny hops before our merge/RMS pass; UI can override via `basicPitchDecode`.
+     * Held at 205: iter 2 lowered this to 120 alongside the sensitivity bump; reverted with it.
      */
     minNoteDurationMs: 205,
     /** `MIN_MIDI_NOTE` / `MAX_MIDI_NOTE` from `BasicPitchConstants.h`. */
@@ -96,14 +104,14 @@ export const NEURALNOTE_STYLE: {
   melodyPost: {
     /** Master switch — when false, `applyNeuralNoteStyleLeadNotes` is a no-op. */
     enabled: true,
-    /** Snap onsets toward the beat grid (`ENABLE_TIME_QUANTIZATION`, default off in NN). */
-    timeQuantizeEnabled: false,
-    /** Index into `NEURALNOTE_TIME_DIVISION_FRACS` (NeuralNote default `TimeDivisionId` = 5 → 1/8). */
-    timeDivisionIndex: 5,
-    /** 0 = natural timing, 1 = full snap (`QUANTIZATION_FORCE` default 0). */
-    quantizeForce: 0,
-    /** Minimum length in ms after other post steps — slightly above NN BP default for cleaner playable lines. */
-    minNoteDurationMs: 132,
+    /** On with POST by default so QUANT FORCE / TIME GRID affect output (NN desktop defaults this off). */
+    timeQuantizeEnabled: true,
+    /** Finest grid = last index (1/64); “TIME GRID all the way” in the chord-detector UI. */
+    timeDivisionIndex: NEURALNOTE_TIME_DIVISION_FRACS.length - 1,
+    /** 1 = full snap toward grid (“QUANT FORCE 100%” in UI). */
+    quantizeForce: 1,
+    /** POST-stage minimum length (ms); UI slider “MIN NOTE (POST)”. */
+    minNoteDurationMs: 120,
     velocityGain: 1.05,
     velocityCompression: 0.1,
   },

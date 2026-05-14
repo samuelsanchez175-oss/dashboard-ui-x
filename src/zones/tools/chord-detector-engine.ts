@@ -62,6 +62,12 @@ export type ChordDetectorAnalyzeOptions = {
    * Set `false` for looser polyphony (e.g. busy non-piano beds).
    */
   pianoLeadFocus?: boolean
+  /**
+   * Optional BPM from sheet / DAW when file tags and autocorrelation are unreliable
+   * (e.g. sparse arpeggios). Used only when `TBPM` (or equivalent) is absent — does
+   * not override embedded metadata. Tag `analyzeChordProgressionFromBlob(blob, { bpmPrior: 70 })`.
+   */
+  bpmPrior?: number
 }
 
 /** Must stay aligned with `mixing-audio-key-estimate` FFT hop / size. */
@@ -91,12 +97,40 @@ export const CHORD_PIPELINE = {
   viterbiSameRoot: 0.026,
   /** Viterbi: root motion by fourth/fifth (common in tonal progressions). */
   viterbiCircleStep: 0.018,
-  /** Subtract from emission for dim / aug / sus4 so they win only on clear evidence. */
-  exoticQualityPenalty: 0.036,
-  /** Post-decode majority filter window (beats); odd ≥1. */
+  /**
+   * Subtract from emission for dim / aug / sus4 so they win only on clear evidence.
+   * Tuned up from 0.036 (iter 1, chord-detector-tuning-log): at 0.036 arpeggiated
+   * sources with weak 3rds decoded ~96% sus4 — the penalty must exceed the
+   * cosine gap between the stacked-fourth sus4 fit and the real triad fit.
+   */
+  exoticQualityPenalty: 0.14,
+  /**
+   * Post-decode majority filter window (beats); odd ≥1.
+   * Held at 3: iter 6 (chord-detector-tuning-log) tried 5 — it cut residual sus4
+   * (5.8% → 2.7%) but over-smoothed harmonic rhythm to ~5 s/chord, well under the
+   * source's per-bar (~3.4 s) rate. Reverted: per-bar fidelity beats a 1.5-pt proxy gain.
+   */
   medianFilterWindow: 3,
   /** Drop merged segments shorter than this many beats (ties to BPM). */
   minChordBeats: 0.48,
+} as const
+
+/**
+ * Causal rolling pitch-class evidence across beats so 16th-note arpeggios
+ * (one pitch at a time) still accumulate triad votes like block chords.
+ * Applied to the **instant** per-beat chroma+lead vector before L2 norm and Viterbi.
+ */
+export const ARPEGGIO_CHORD_WINDOW = {
+  enabled: true,
+  /** Past beats to include with the current beat (e.g. 2 = current + one previous). */
+  beatsMemory: 2,
+  /**
+   * Weight for beat `k` steps in the past: `decay ** k` (current beat k=0).
+   * Lowered 0.72 → 0.45 (iter 4, chord-detector-tuning-log): at 0.72 a beat inherited
+   * ~72% of the previous chord's pitch classes, and the mixed two-chord blob matched
+   * stacked-fourth sus4 templates — the structural driver behind the residual sus4.
+   */
+  decay: 0.45,
 } as const
 
 /**
@@ -123,6 +157,13 @@ const EXPORT_LEAD_PHANTOM = {
 
 function isPianoLeadFocusMode(options?: ChordDetectorAnalyzeOptions): boolean {
   return options?.pianoLeadFocus !== false
+}
+
+function clampOptionalBpmPrior(v: number | undefined): number | undefined {
+  if (v == null || !Number.isFinite(v)) return undefined
+  const r = Math.round(v)
+  if (r < 40 || r > 240) return undefined
+  return r
 }
 
 const TONIC_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'] as const
@@ -157,7 +198,7 @@ export type EstimatedKey = {
 
 export type ChordAnalysisResult = {
   bpm: number
-  bpmSource: 'tags' | 'estimated' | 'midi-tempo'
+  bpmSource: 'tags' | 'estimated' | 'midi-tempo' | 'bpm-prior'
   durationSec: number
   beats: ChordBeat[]
   segments: ChordSegment[]
@@ -318,10 +359,11 @@ function detectChordsFromMidiNotes(
   durationSec: number,
 ): ChordBeat[] {
   if (notes.length === 0) return []
+  const keyPrior = estimateKeyFromPitchClassHistogram(midiPitchClassHistogram(notes))
   const beatSec = 60 / bpm
   const halfWin = beatSec * 0.5
   const beatCount = Math.max(1, Math.floor(durationSec / beatSec))
-  const beatChromas: Float32Array[] = []
+  const rawInstants: Float32Array[] = []
 
   for (let bi = 0; bi < beatCount; bi++) {
     const centerSec = bi * beatSec + halfWin
@@ -338,11 +380,12 @@ function detectChordsFromMidiNotes(
       agg[n.pc] += overlap * n.velocity
     }
 
-    beatChromas.push(l2Normalize12(agg))
+    rawInstants.push(agg)
   }
 
+  const beatChromas = applyArpeggioChordWindowToBeatInstants(rawInstants, ARPEGGIO_CHORD_WINDOW)
   const templates = getStateChordTemplates()
-  const decoded = viterbiChordPath(beatChromas, templates)
+  const decoded = viterbiChordPath(beatChromas, templates, keyPrior)
   return decoded.map((d, bi) => ({
     beatIndex: bi,
     rootPc: d.rootPc,
@@ -483,6 +526,30 @@ function l2Normalize12(v: Float32Array): Float32Array {
   return o
 }
 
+/** Causal decay-weighted sum of per-beat raw PC vectors, then L2 — see `ARPEGGIO_CHORD_WINDOW`. */
+function applyArpeggioChordWindowToBeatInstants(
+  instants: readonly Float32Array[],
+  cfg: typeof ARPEGGIO_CHORD_WINDOW,
+): Float32Array[] {
+  if (!cfg.enabled || cfg.beatsMemory <= 1) {
+    return instants.map(v => l2Normalize12(v))
+  }
+  const B = instants.length
+  const out: Float32Array[] = []
+  for (let bi = 0; bi < B; bi++) {
+    const acc = new Float32Array(12)
+    for (let k = 0; k < cfg.beatsMemory; k++) {
+      const j = bi - k
+      if (j < 0) break
+      const w = cfg.decay ** k
+      const src = instants[j]!
+      for (let c = 0; c < 12; c++) acc[c] += src[c]! * w
+    }
+    out.push(l2Normalize12(acc))
+  }
+  return out
+}
+
 function buildTemplate(rootPc: number, intervals: readonly number[], weights: readonly number[]): Float32Array {
   const v = new Float32Array(12)
   for (let i = 0; i < intervals.length; i++) {
@@ -534,10 +601,38 @@ function isExoticQuality(q: ChordQuality): boolean {
   return q === 'dim' || q === 'aug' || q === 'sus4'
 }
 
-function emissionScore(chromaNorm: Float32Array, state: number, templates: readonly Float32Array[]): number {
+/**
+ * When KK key is a confident major, nudge triad emissions toward tonic / dominant /
+ * relative minor (same cosine scale as templates). Example: B major → B, F#maj, G#m.
+ * Minor-key analog (i / III / VI) left for a later pass — melodic minor / mode mixture.
+ */
+const KEY_PRIOR_MIN_CONFIDENCE = 0.22
+const KEY_PRIOR_TRIAD_BOOST = 0.012
+
+function keyRelativeTriadBoost(state: number, keyPrior: EstimatedKey | undefined): number {
+  if (!keyPrior || keyPrior.mode === 'unknown' || keyPrior.rootPc < 0) return 0
+  if (keyPrior.confidence < KEY_PRIOR_MIN_CONFIDENCE) return 0
+  if (keyPrior.mode !== 'major') return 0
+  const st = unpackChordState(state)
+  const R = keyPrior.rootPc
+  const dom = (R + 7) % 12
+  const relMin = (R + 9) % 12
+  if (st.rootPc === R && st.quality === 'major') return KEY_PRIOR_TRIAD_BOOST
+  if (st.rootPc === dom && st.quality === 'major') return KEY_PRIOR_TRIAD_BOOST
+  if (st.rootPc === relMin && st.quality === 'minor') return KEY_PRIOR_TRIAD_BOOST
+  return 0
+}
+
+function emissionScore(
+  chromaNorm: Float32Array,
+  state: number,
+  templates: readonly Float32Array[],
+  keyPrior?: EstimatedKey,
+): number {
   const { quality } = unpackChordState(state)
   let c = cosineSimilarity(chromaNorm, templates[state]!)
   if (isExoticQuality(quality)) c -= CHORD_PIPELINE.exoticQualityPenalty
+  c += keyRelativeTriadBoost(state, keyPrior)
   return c
 }
 
@@ -558,6 +653,7 @@ function transitionBonus(prev: number, cur: number): number {
 function viterbiChordPath(
   beatChromas: readonly Float32Array[],
   templates: readonly Float32Array[],
+  keyPrior?: EstimatedKey,
 ): { rootPc: number; quality: ChordQuality; confidence: number }[] {
   const B = beatChromas.length
   const S = N_CHORD_STATES
@@ -568,13 +664,13 @@ function viterbiChordPath(
   const back = new Int16Array(B * S)
 
   for (let s = 0; s < S; s++) {
-    dp[s] = emissionScore(beatChromas[0]!, s, templates)
+    dp[s] = emissionScore(beatChromas[0]!, s, templates, keyPrior)
   }
 
   for (let bi = 1; bi < B; bi++) {
     const chroma = beatChromas[bi]!
     for (let s = 0; s < S; s++) {
-      const em = emissionScore(chroma, s, templates)
+      const em = emissionScore(chroma, s, templates, keyPrior)
       let best = -Infinity
       let bestP = 0
       for (let p = 0; p < S; p++) {
@@ -933,8 +1029,10 @@ export async function analyzeChordProgressionFromBlob(
     if (mono.length > maxSamples) mono = mono.subarray(0, maxSamples)
 
     const est = estimateBpmFromMono(mono, sr)
-    const bpm = tagBpm ?? est ?? 120
-    const bpmSource: 'tags' | 'estimated' = tagBpm != null ? 'tags' : 'estimated'
+    const bpmPrior = clampOptionalBpmPrior(options?.bpmPrior)
+    const bpm = tagBpm ?? bpmPrior ?? est ?? 120
+    const bpmSource: ChordAnalysisResult['bpmSource'] =
+      tagBpm != null ? 'tags' : bpmPrior != null ? 'bpm-prior' : 'estimated'
 
     const frames = computeChromaFrameSeries(mono, sr)
     if (!frames) throw new Error('Need more audio — try a longer clip.')
@@ -1003,7 +1101,7 @@ export async function analyzeChordProgressionFromBlob(
     }
 
     const templates = getStateChordTemplates()
-    const beatChromas: Float32Array[] = []
+    const instantBeatEvidence: Float32Array[] = []
     let lastGoodChroma: Float32Array | null = null
 
     const beatCount = Math.max(1, Math.floor(durationSec / beatSec))
@@ -1027,10 +1125,23 @@ export async function analyzeChordProgressionFromBlob(
       for (let k = 0; k < 12; k++) {
         combined[k] = chromaPart[k]! * chromaBlendW + leadPart[k]! * leadScale
       }
-      beatChromas.push(l2Normalize12(combined))
+      instantBeatEvidence.push(combined)
     }
 
-    const decoded = viterbiChordPath(beatChromas, templates)
+    let provisionalPcHist: number[]
+    if (hasBpNotes) {
+      provisionalPcHist = pitchClassHistogramFromBasicPitch.slice()
+    } else {
+      const pcAccum = new Float32Array(12)
+      for (const fr of frames) {
+        for (let k = 0; k < 12; k++) pcAccum[k]! += fr[k]!
+      }
+      const pcSum = pcAccum.reduce((a, b) => a + b, 0)
+      provisionalPcHist = Array.from(pcAccum, x => (pcSum > 0 ? x / pcSum : 0))
+    }
+    const keyPriorForViterbi = estimateKeyFromPitchClassHistogram(provisionalPcHist)
+    const beatChromas = applyArpeggioChordWindowToBeatInstants(instantBeatEvidence, ARPEGGIO_CHORD_WINDOW)
+    const decoded = viterbiChordPath(beatChromas, templates, keyPriorForViterbi)
     const rawBeats: ChordBeat[] = decoded.map((d, bi) => ({
       beatIndex: bi,
       rootPc: d.rootPc,
@@ -1088,12 +1199,7 @@ export async function analyzeChordProgressionFromBlob(
     if (hasBpNotes) {
       pitchClassHistogram = pitchClassHistogramFromBasicPitch
     } else {
-      const pcAccum = new Float32Array(12)
-      for (const fr of frames) {
-        for (let k = 0; k < 12; k++) pcAccum[k]! += fr[k]!
-      }
-      const pcSum = pcAccum.reduce((a, b) => a + b, 0)
-      pitchClassHistogram = Array.from(pcAccum, x => (pcSum > 0 ? x / pcSum : 0))
+      pitchClassHistogram = provisionalPcHist
     }
     const estimatedKey = estimateKeyFromPitchClassHistogram(pitchClassHistogram)
     const uniqueChordCount = new Set(segments.map(s => s.label)).size
