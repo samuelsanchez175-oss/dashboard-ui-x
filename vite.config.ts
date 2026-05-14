@@ -16,9 +16,9 @@ dotenv.config({ path: path.resolve(repoRoot, '.env.local'), override: true, quie
 
 export default defineConfig({
   server: {
-    /** Match common bookmarks; falls back to next port if 5175 is busy. */
+    // Match common bookmarks; fail fast if 5175 is busy (strictPort).
     port: 5175,
-    strictPort: false,
+    strictPort: true,
     host: true,
   },
   build: {

@@ -168,6 +168,20 @@ class PianoEngine {
   }
 
   isMetronomeRunning() { return this.metronomeLoop !== null }
+
+  /**
+   * Hard-stop everything currently sounding from the polysynth.
+   * Use this to interrupt a `playback()` mid-flight (it cancels scheduled
+   * releases by releasing all held voices immediately).
+   */
+  stopAll() {
+    if (!this.synth) return
+    try {
+      this.synth.releaseAll(Tone.now())
+    } catch {
+      /* synth may already be disposed */
+    }
+  }
 }
 
 export const piano = new PianoEngine()

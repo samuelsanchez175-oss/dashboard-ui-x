@@ -1,14 +1,4 @@
-import {
-  ArrowLeft,
-  AudioWaveform,
-  Copy,
-  Download,
-  Loader2,
-  Music,
-  RotateCcw,
-  Scissors,
-  Upload,
-} from 'lucide-react'
+import { ArrowLeft, Loader2, Upload } from 'lucide-react'
 import {
   useCallback,
   useEffect,
@@ -17,24 +7,88 @@ import {
   useRef,
   useState,
   type ChangeEvent,
-  type CSSProperties,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
 
-import Button from '../../components/ui/Button'
-import ZoneHeader from '../../components/ZoneHeader'
-import { getFileById } from '../../components/files-dock/files-store'
+import { getFileById, receiveDockOrFileDrop } from '../../components/files-dock/files-store'
+import { buildChord, CHORD_QUALITIES, ROOTS } from '../../components/piano/chords'
+import { piano } from '../../components/piano/engine'
 import {
   analyzeChordProgressionFromBlob,
   buildChordMidiBlob,
   clipChordSegmentsForExport,
+  clipLeadNotesForExport,
+  NEURALNOTE_STYLE,
+  NEURALNOTE_TIME_DIVISION_LABELS,
   type ChordAnalysisResult,
+  type NeuralNoteStyleMelodyPostInput,
 } from './chord-detector-engine'
 import StudioToolsHeader from './StudioToolsHeader'
+
+/* ── Chord-label → MIDI parser (for piano playback) ──────────────────────────
+ * The chord-detector engine emits labels like:
+ *   "C", "Cm", "C#", "C#m", "Cdim", "Caug", "Csus4", "Dsus4", "G#m", …
+ * We map those onto the piano engine's CHORD_QUALITIES catalog and ROOTS.
+ */
+const ROOT_BY_NAME = new Map<string, number>()
+for (const r of ROOTS) {
+  const flat = r.label.split('/')[1]?.trim()
+  const sharp = r.label.split('/')[0]?.trim().replace(/♯/g, '#').replace(/♭/g, 'b')
+  ROOT_BY_NAME.set(r.id, r.semis)
+  if (sharp) ROOT_BY_NAME.set(sharp, r.semis)
+  if (flat) ROOT_BY_NAME.set(flat.replace(/♭/g, 'b'), r.semis)
+  // Also support the chord-detector-engine's TONIC_SHARP form (no accidentals on naturals).
+  ROOT_BY_NAME.set(r.id.replace('b', '#'), r.semis)
+}
+// Manually patch the simple sharps used by chord-detector-engine ("C#", "D#", "F#", "G#", "A#").
+ROOT_BY_NAME.set('C#', 1)
+ROOT_BY_NAME.set('D#', 3)
+ROOT_BY_NAME.set('F#', 6)
+ROOT_BY_NAME.set('G#', 8)
+ROOT_BY_NAME.set('A#', 10)
+
+/** Parse a chord-detector label into [rootSemis, qualityId]. */
+function parseChordLabel(label: string): { rootSemis: number; qualityId: string } | null {
+  // Two-letter root (e.g. "C#", "Bb") OR one-letter
+  const match = label.match(/^([A-G][#b]?)(.*)$/)
+  if (!match) return null
+  const rootRaw = match[1]!
+  const tail = match[2] ?? ''
+  const rootSemis = ROOT_BY_NAME.get(rootRaw)
+  if (rootSemis == null) return null
+  if (tail === '') return { rootSemis, qualityId: 'maj' }
+  if (tail === 'm') return { rootSemis, qualityId: 'min' }
+  if (tail.startsWith('dim')) return { rootSemis, qualityId: 'dim' }
+  if (tail.startsWith('aug')) return { rootSemis, qualityId: 'aug' }
+  if (tail.startsWith('sus4')) return { rootSemis, qualityId: 'sus4' }
+  if (tail.startsWith('sus2')) return { rootSemis, qualityId: 'sus2' }
+  // Fallback for unrecognized suffixes — play the root triad.
+  return { rootSemis, qualityId: 'maj' }
+}
+
+async function playChordLabel(label: string, gateSec = 0.75): Promise<void> {
+  const parsed = parseChordLabel(label)
+  if (!parsed) return
+  const quality = CHORD_QUALITIES.find(q => q.id === parsed.qualityId)
+  if (!quality) return
+  const midis = buildChord(parsed.rootSemis, 4, quality.intervals, 0)
+  await piano.playChord(midis, gateSec)
+}
 
 interface ToolsChordDetectorPageProps {
   onNavigate: (routeId: string) => void
 }
+
+/** GRAY2020 palette — see ~/.claude/skills/gray2020/SKILL.md for the full design language. */
+const PALETTE = {
+  bg: '#0A0A0C',
+  surface: '#121214',
+  line: '#2C2C30',
+  textMain: '#EAEAEA',
+  textMuted: '#707075',
+  amber: '#F5A623',
+  amberGlow: 'rgba(245, 166, 35, 0.15)',
+} as const
 
 function hueFromLabel(label: string): number {
   let h = 0
@@ -46,28 +100,100 @@ function formatMmSs(seconds: number): string {
   const s = Math.max(0, seconds)
   const m = Math.floor(s / 60)
   const r = s - m * 60
-  const frac = Math.round((r % 1) * 10) / 10
   const whole = Math.floor(r)
-  const dec = frac % 1 > 0.001 ? `.${String(Math.round(frac * 10)).replace(/^0\./, '')}` : ''
-  return `${m}:${String(whole).padStart(2, '0')}${dec}`
+  const dec = Math.round((r - whole) * 10)
+  return `${String(m).padStart(2, '0')}:${String(whole).padStart(2, '0')}.${dec}`
 }
+
+/** Single-key persistence for MELODY POST sliders (`chord-detector:melodyPost:` prefix). */
+const MELODY_POST_LOCAL_STORAGE_KEY = 'chord-detector:melodyPost:ui'
+
+type MelodyPostUiState = {
+  enabled: boolean
+  timeQuantizeEnabled: boolean
+  quantizeForcePct: number
+  timeDivisionIndex: number
+  minNoteDurationMs: number
+  velocityGainPct: number
+  velocityCompressionPct: number
+}
+
+function defaultMelodyPostUiState(): MelodyPostUiState {
+  const m = NEURALNOTE_STYLE.melodyPost
+  return {
+    enabled: m.enabled,
+    timeQuantizeEnabled: m.timeQuantizeEnabled,
+    quantizeForcePct: Math.round(m.quantizeForce * 100),
+    timeDivisionIndex: m.timeDivisionIndex,
+    minNoteDurationMs: m.minNoteDurationMs,
+    velocityGainPct: Math.round(m.velocityGain * 100),
+    velocityCompressionPct: Math.round(m.velocityCompression * 100),
+  }
+}
+
+function clampInt(n: unknown, min: number, max: number, fallback: number): number {
+  if (typeof n !== 'number' || !Number.isFinite(n)) return fallback
+  return Math.max(min, Math.min(max, Math.round(n)))
+}
+
+function loadMelodyPostUiStateFromStorage(): MelodyPostUiState | null {
+  try {
+    const raw = localStorage.getItem(MELODY_POST_LOCAL_STORAGE_KEY)
+    if (!raw) return null
+    const parsed: unknown = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object') return null
+    const o = parsed as Record<string, unknown>
+    if (o._v !== 1) return null
+    const fb = defaultMelodyPostUiState()
+    const maxDiv = NEURALNOTE_TIME_DIVISION_LABELS.length - 1
+    return {
+      enabled: typeof o.enabled === 'boolean' ? o.enabled : fb.enabled,
+      timeQuantizeEnabled:
+        typeof o.timeQuantizeEnabled === 'boolean' ? o.timeQuantizeEnabled : fb.timeQuantizeEnabled,
+      quantizeForcePct: clampInt(o.quantizeForcePct, 0, 100, fb.quantizeForcePct),
+      timeDivisionIndex: clampInt(o.timeDivisionIndex, 0, maxDiv, fb.timeDivisionIndex),
+      minNoteDurationMs: clampInt(o.minNoteDurationMs, 35, 580, fb.minNoteDurationMs),
+      velocityGainPct: clampInt(o.velocityGainPct, 50, 150, fb.velocityGainPct),
+      velocityCompressionPct: clampInt(o.velocityCompressionPct, 0, 100, fb.velocityCompressionPct),
+    }
+  } catch {
+    return null
+  }
+}
+
+function saveMelodyPostUiStateToStorage(state: MelodyPostUiState): void {
+  try {
+    localStorage.setItem(
+      MELODY_POST_LOCAL_STORAGE_KEY,
+      JSON.stringify({ _v: 1, ...state }),
+    )
+  } catch {
+    // private mode, quota, or storage disabled
+  }
+}
+
+/* ── Chord timeline (restyled for GRAY2020, wrap-friendly + click-to-play) ──── */
 
 function ChordTrimTimeline({
   result,
   trimStart,
   trimEnd,
   onTrimChange,
+  playheadSec,
 }: {
   result: ChordAnalysisResult
   trimStart: number
   trimEnd: number
   onTrimChange: (start: number, end: number) => void
+  /** Wall-clock playhead (in seconds) while the inline preview is running. null = idle. */
+  playheadSec: number | null
 }) {
-  const timelineHeadingId = useId()
   const trimRangeId = useId()
   const barRef = useRef<HTMLDivElement>(null)
   const trimLiveRef = useRef({ start: trimStart, end: trimEnd })
   const [dragging, setDragging] = useState<'start' | 'end' | null>(null)
+  const [activeIdx, setActiveIdx] = useState<number | null>(null)
+  const activeClearRef = useRef<number | null>(null)
   const dur = result.durationSec
   const minGap = Math.max(0.2, (60 / result.bpm) * 0.35)
 
@@ -108,72 +234,92 @@ function ChordTrimTimeline({
     }
   }, [dragging, clientXToSec, dur, minGap, onTrimChange])
 
+  useEffect(() => {
+    return () => {
+      if (activeClearRef.current != null) window.clearTimeout(activeClearRef.current)
+    }
+  }, [])
+
   const sp = dur > 0 ? trimStart / dur : 0
   const ep = dur > 0 ? trimEnd / dur : 1
 
+  const handleChipClick = useCallback((idx: number, seg: ChordAnalysisResult['segments'][number]) => {
+    setActiveIdx(idx)
+    if (activeClearRef.current != null) window.clearTimeout(activeClearRef.current)
+    // Hold the chord for the segment's duration, capped so a long held chord doesn't drone.
+    const gate = Math.min(1.6, Math.max(0.4, seg.durationSec * 0.9))
+    void playChordLabel(seg.label, gate)
+    activeClearRef.current = window.setTimeout(() => setActiveIdx(null), Math.max(200, gate * 1000))
+  }, [])
+
   return (
-    <div className="space-y-2">
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h3 id={timelineHeadingId} className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>
-          Chord timeline
-        </h3>
-        <span className="mono text-[10px]" style={{ color: 'var(--text-4)' }}>drag handles · trimmed MIDI</span>
+    <div className="space-y-3">
+      <div className="flex items-baseline justify-between gap-x-4 gap-y-1">
+        <span
+          className="text-[10px] uppercase tracking-[0.15em]"
+          style={{ color: PALETTE.textMuted }}
+        >
+          TIMELINE
+        </span>
+        <span
+          className="text-[10px] uppercase tracking-[0.15em]"
+          style={{ color: PALETTE.textMuted, fontFamily: "'DM Mono', monospace" }}
+        >
+          CLICK A CHORD TO HEAR IT · DRAG HANDLES TO TRIM
+        </span>
       </div>
 
+      {/* Slim proportional trim bar — colored segments by hue, no labels (those live in the grid below) */}
       <div
         ref={barRef}
         role="group"
-        aria-labelledby={timelineHeadingId}
         aria-describedby={trimRangeId}
-        className="relative h-14 w-full touch-none select-none rounded-xl"
-        style={{ border: '1px solid var(--border)' }}
+        className="relative h-6 w-full touch-none select-none"
+        style={{ border: `1px solid ${PALETTE.line}`, background: PALETTE.bg }}
       >
-        <div className="flex h-full w-full overflow-hidden rounded-[inherit]">
+        <div className="flex h-full w-full overflow-hidden">
           {result.segments.map((seg, idx) => {
-            const w = Math.max(2, (seg.durationSec / result.durationSec) * 100)
+            const w = Math.max(0.35, (seg.durationSec / result.durationSec) * 100)
             const hue = hueFromLabel(seg.label)
             return (
               <div
-                key={`${idx}-${seg.startSec}-${seg.label}`}
-                className="flex min-w-0 items-center justify-center border-r border-white/40 px-1 text-center text-[11px] font-semibold text-white shadow-inner last:border-r-0"
+                key={`bar-${idx}-${seg.startSec}`}
                 style={{
                   width: `${w}%`,
-                  background: `linear-gradient(145deg, hsl(${hue} 58% 42%), hsl(${hue} 52% 28%))`,
+                  background: `linear-gradient(145deg, hsl(${hue} 38% 26%), hsl(${hue} 32% 18%))`,
+                  borderRight: idx === result.segments.length - 1 ? 'none' : `1px solid ${PALETTE.bg}`,
                 }}
-                title={`${seg.label} · ${seg.startSec.toFixed(2)}s · ${seg.durationSec.toFixed(2)}s`}
-              >
-                <span className="truncate drop-shadow-sm">{seg.label}</span>
-              </div>
+              />
             )
           })}
         </div>
 
         <div
-          className="pointer-events-none absolute inset-y-0 left-0 bg-black/55"
-          style={{ width: `${sp * 100}%` }}
+          className="pointer-events-none absolute inset-y-0 left-0"
+          style={{ width: `${sp * 100}%`, background: 'rgba(10,10,12,0.72)' }}
           aria-hidden
         />
         <div
-          className="pointer-events-none absolute inset-y-0 right-0 bg-black/55"
-          style={{ width: `${(1 - ep) * 100}%` }}
+          className="pointer-events-none absolute inset-y-0 right-0"
+          style={{ width: `${(1 - ep) * 100}%`, background: 'rgba(10,10,12,0.72)' }}
           aria-hidden
         />
         <div
-          className="pointer-events-none absolute inset-y-0 border-x-2 border-white/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.35)]"
-          style={{ left: `${sp * 100}%`, width: `${Math.max(0, ep - sp) * 100}%` }}
+          className="pointer-events-none absolute inset-y-0"
+          style={{
+            left: `${sp * 100}%`,
+            width: `${Math.max(0, ep - sp) * 100}%`,
+            borderLeft: `1px solid ${PALETTE.amber}`,
+            borderRight: `1px solid ${PALETTE.amber}`,
+          }}
           aria-hidden
         />
 
         <button
           type="button"
           aria-label={`Trim start ${formatMmSs(trimStart)}`}
-          className="absolute inset-y-0 z-10 flex w-4 -translate-x-1/2 cursor-ew-resize items-center justify-center rounded-sm transition"
-          style={{
-            left: `${sp * 100}%`,
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border)',
-            boxShadow: 'var(--shadow-sm)',
-          }}
+          className="absolute inset-y-0 z-10 flex w-3 -translate-x-1/2 cursor-ew-resize items-center justify-center"
+          style={{ left: `${sp * 100}%`, background: PALETTE.amber }}
           onPointerDown={(e: ReactPointerEvent) => {
             e.preventDefault()
             ;(e.target as HTMLButtonElement).setPointerCapture(e.pointerId)
@@ -185,13 +331,8 @@ function ChordTrimTimeline({
         <button
           type="button"
           aria-label={`Trim end ${formatMmSs(trimEnd)}`}
-          className="absolute inset-y-0 z-10 flex w-4 -translate-x-1/2 cursor-ew-resize items-center justify-center rounded-sm transition"
-          style={{
-            left: `${ep * 100}%`,
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border)',
-            boxShadow: 'var(--shadow-sm)',
-          }}
+          className="absolute inset-y-0 z-10 flex w-3 -translate-x-1/2 cursor-ew-resize items-center justify-center"
+          style={{ left: `${ep * 100}%`, background: PALETTE.amber }}
           onPointerDown={(e: ReactPointerEvent) => {
             e.preventDefault()
             ;(e.target as HTMLButtonElement).setPointerCapture(e.pointerId)
@@ -200,21 +341,88 @@ function ChordTrimTimeline({
         >
           <span className="sr-only">End handle</span>
         </button>
+
+        {/* Live playhead marker while previewing */}
+        {playheadSec != null && dur > 0 ? (
+          <div
+            className="pointer-events-none absolute inset-y-0 z-20"
+            style={{
+              left: `${Math.max(0, Math.min(1, playheadSec / dur)) * 100}%`,
+              width: 2,
+              transform: 'translateX(-1px)',
+              background: '#ffffff',
+              boxShadow: `0 0 8px ${PALETTE.amber}`,
+            }}
+            aria-hidden
+          />
+        ) : null}
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]" style={{ color: 'var(--text-3)' }}>
-        <span id={trimRangeId} className="mono tabular-nums">
-          <span style={{ color: 'var(--text-1)' }}>{formatMmSs(trimStart)}</span>
-          <span className="mx-1.5" style={{ color: 'var(--text-4)' }}>→</span>
-          <span style={{ color: 'var(--text-1)' }}>{formatMmSs(trimEnd)}</span>
-          <span className="ml-2 font-medium" style={{ color: 'var(--accent-fg)' }}>
-            ({(trimEnd - trimStart).toFixed(1)}s window)
+      <div
+        className="flex items-center justify-between text-[10px] uppercase tracking-[0.15em]"
+        style={{ color: PALETTE.textMuted }}
+      >
+        <span id={trimRangeId} style={{ fontFamily: "'DM Mono', monospace" }}>
+          <span style={{ color: PALETTE.textMain }}>{formatMmSs(trimStart)}</span>
+          <span className="mx-1.5">→</span>
+          <span style={{ color: PALETTE.textMain }}>{formatMmSs(trimEnd)}</span>
+          <span className="ml-2" style={{ color: PALETTE.amber }}>
+            ({(trimEnd - trimStart).toFixed(1)}s)
           </span>
         </span>
+        <span style={{ fontFamily: "'DM Mono', monospace" }}>
+          {result.segments.length} CHORDS
+        </span>
+      </div>
+
+      {/* Wrapping chord chip grid — each chip plays its chord on click,
+          and the chip whose segment the playhead is over (during inline
+          preview) gets the amber border + glow so users see where playback is. */}
+      <div className="flex flex-wrap gap-1.5">
+        {result.segments.map((seg, idx) => {
+          const hue = hueFromLabel(seg.label)
+          const inRange = seg.startSec + seg.durationSec > trimStart && seg.startSec < trimEnd
+          const userActive = activeIdx === idx
+          const playing =
+            playheadSec != null &&
+            playheadSec >= seg.startSec &&
+            playheadSec < seg.startSec + seg.durationSec
+          const active = userActive || playing
+          return (
+            <button
+              key={`chip-${idx}-${seg.startSec}-${seg.label}`}
+              type="button"
+              onClick={() => handleChipClick(idx, seg)}
+              title={`${seg.label} · ${seg.startSec.toFixed(2)}s · ${seg.durationSec.toFixed(2)}s — click to play`}
+              className="relative flex flex-col items-center justify-center px-2 py-1 text-[11px] font-semibold text-white transition-all duration-100 hover:brightness-125 active:scale-[0.96]"
+              style={{
+                minWidth: 52,
+                background: `linear-gradient(145deg, hsl(${hue} 42% ${inRange ? 32 : 18}%), hsl(${hue} 36% ${inRange ? 22 : 12}%))`,
+                border: `1px solid ${active ? PALETTE.amber : 'rgba(255,255,255,0.06)'}`,
+                opacity: inRange ? 1 : 0.55,
+                fontFamily: "'DM Mono', monospace",
+                boxShadow: active ? `0 0 12px ${PALETTE.amberGlow}` : 'none',
+                transform: playing ? 'translateY(-1px)' : 'none',
+              }}
+              aria-pressed={active}
+              aria-label={`Play ${seg.label} chord at ${seg.startSec.toFixed(1)} seconds`}
+            >
+              <span>{seg.label}</span>
+              <span
+                className="text-[8px] font-normal tabular-nums"
+                style={{ color: 'rgba(255,255,255,0.5)' }}
+              >
+                {formatMmSs(seg.startSec)}
+              </span>
+            </button>
+          )
+        })}
       </div>
     </div>
   )
 }
+
+/* ── Page ────────────────────────────────────────────────────────────────────── */
 
 export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetectorPageProps) {
   const inputId = useId()
@@ -228,6 +436,97 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
   const [trimStart, setTrimStart] = useState(0)
   const [trimEnd, setTrimEnd] = useState(0)
   const [trimCommitted, setTrimCommitted] = useState(false)
+
+  const [dragHover, setDragHover] = useState(false)
+
+  /** Default on: stricter BP + export path for piano / single-line lead (toggle off for denser poly). */
+  const [pianoLeadFocus, setPianoLeadFocus] = useState(true)
+  const skipPianoLeadReanalyzeRef = useRef(true)
+
+  /** Last dropped file — re-run analysis when melody post knobs change (same clip). */
+  const lastFileRef = useRef<File | null>(null)
+
+  /** One localStorage read per mount — hydrates MELODY POST sliders when JSON shape matches `_v: 1`. */
+  const melodyPostInitRef = useRef<MelodyPostUiState | null>(null)
+  if (melodyPostInitRef.current === null) {
+    melodyPostInitRef.current = loadMelodyPostUiStateFromStorage() ?? defaultMelodyPostUiState()
+  }
+  const mpInit = melodyPostInitRef.current
+
+  /**
+   * Melody post-processing inspired by NeuralNote (browser-only; not the C++ plugin).
+   * Defaults follow `NEURALNOTE_STYLE.melodyPost` in `chord-detector-neuralnote-style.ts`.
+   */
+  const [nnPostEnabled, setNnPostEnabled] = useState<boolean>(mpInit.enabled)
+  const [nnTimeQuantize, setNnTimeQuantize] = useState<boolean>(mpInit.timeQuantizeEnabled)
+  const [nnQuantizeForcePct, setNnQuantizeForcePct] = useState<number>(mpInit.quantizeForcePct)
+  const [nnTimeDivIdx, setNnTimeDivIdx] = useState<number>(mpInit.timeDivisionIndex)
+  const [nnMinNoteMsPost, setNnMinNoteMsPost] = useState<number>(mpInit.minNoteDurationMs)
+  const [nnVelGainPct, setNnVelGainPct] = useState<number>(mpInit.velocityGainPct)
+  const [nnVelCompPct, setNnVelCompPct] = useState<number>(mpInit.velocityCompressionPct)
+
+  const melodyPostInput = useMemo((): NeuralNoteStyleMelodyPostInput => ({
+      enabled: nnPostEnabled,
+      timeQuantizeEnabled: nnTimeQuantize,
+      quantizeForce: nnQuantizeForcePct / 100,
+      timeDivisionIndex: nnTimeDivIdx,
+      minNoteDurationMs: nnMinNoteMsPost,
+      velocityGain: nnVelGainPct / 100,
+      velocityCompression: nnVelCompPct / 100,
+    }),
+    [
+      nnPostEnabled,
+      nnTimeQuantize,
+      nnQuantizeForcePct,
+      nnTimeDivIdx,
+      nnMinNoteMsPost,
+      nnVelGainPct,
+      nnVelCompPct,
+    ],
+  )
+
+  useEffect(() => {
+    saveMelodyPostUiStateToStorage({
+      enabled: nnPostEnabled,
+      timeQuantizeEnabled: nnTimeQuantize,
+      quantizeForcePct: nnQuantizeForcePct,
+      timeDivisionIndex: nnTimeDivIdx,
+      minNoteDurationMs: nnMinNoteMsPost,
+      velocityGainPct: nnVelGainPct,
+      velocityCompressionPct: nnVelCompPct,
+    })
+  }, [
+    nnPostEnabled,
+    nnTimeQuantize,
+    nnQuantizeForcePct,
+    nnTimeDivIdx,
+    nnMinNoteMsPost,
+    nnVelGainPct,
+    nnVelCompPct,
+  ])
+
+  /* ── Inline MIDI preview state ── */
+  const [previewing, setPreviewing] = useState(false)
+  const [looping, setLooping] = useState(false)
+  const [playheadSec, setPlayheadSec] = useState<number | null>(null)
+  const previewStartRef = useRef<number>(0)
+  const previewBaseOffsetRef = useRef<number>(0)
+  const previewRafRef = useRef<number>(0)
+  const previewDoneTimeoutRef = useRef<number | null>(null)
+  /** Mirror of `looping` state for use in async callbacks (closures are stale). */
+  const loopingRef = useRef<boolean>(false)
+  /** Mirror of `previewing` state for the RAF/playback callbacks. */
+  const previewingRef = useRef<boolean>(false)
+  /** Tracks "are we in the middle of restarting a loop iteration?" so we don't double-fire. */
+  const loopRestartingRef = useRef<boolean>(false)
+
+  useEffect(() => {
+    loopingRef.current = looping
+  }, [looping])
+
+  useEffect(() => {
+    previewingRef.current = previewing
+  }, [previewing])
 
   useEffect(() => {
     if (!result) return
@@ -244,6 +543,11 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
     return clipChordSegmentsForExport(result.segments, trimStart, trimEnd, result.durationSec)
   }, [result, trimStart, trimEnd])
 
+  const clippedLeadNotes = useMemo(() => {
+    if (!result) return []
+    return clipLeadNotesForExport(result.leadNotes, trimStart, trimEnd, result.durationSec)
+  }, [result, trimStart, trimEnd])
+
   const progressionTextFull = useMemo(() => {
     if (!result?.segments.length) return ''
     return result.segments.map(s => s.label).join(' → ')
@@ -255,24 +559,35 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
   }, [clippedSegments])
 
   const runFile = useCallback(async (file: File) => {
+    lastFileRef.current = file
     setBusy(true)
     setError(null)
     setFileName(file.name)
     setResult(null)
     try {
-      const r = await analyzeChordProgressionFromBlob(file)
+      const r = await analyzeChordProgressionFromBlob(file, {
+        melodyPost: melodyPostInput,
+        pianoLeadFocus,
+      })
       setResult(r)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Analysis failed.')
     } finally {
       setBusy(false)
     }
-  }, [])
+  }, [melodyPostInput, pianoLeadFocus])
 
-  // Receive a clip handed off from the Mixing Audio Grabber (or any other
-  // sender that writes the agreed `inbound-clip-<routeId>` sessionStorage key).
-  // The pickup is one-shot — the key is cleared as soon as it's consumed so
-  // refresh / re-navigation doesn't re-import the clip.
+  useEffect(() => {
+    if (skipPianoLeadReanalyzeRef.current) {
+      skipPianoLeadReanalyzeRef.current = false
+      return
+    }
+    const f = lastFileRef.current
+    if (!f) return
+    void runFile(f)
+  }, [pianoLeadFocus, runFile])
+
+  // Inbound clip pickup (one-shot per route entry).
   useEffect(() => {
     let cancelled = false
     void (async () => {
@@ -287,11 +602,10 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
       const stored = await getFileById(id)
       if (!stored || cancelled) return
       const f = new File([stored.blob], stored.name, { type: stored.mime || 'audio/mpeg' })
-      setInboundNotice(`Loaded clip “${stored.name}” from grabber`)
+      setInboundNotice(`Loaded clip "${stored.name}" from grabber`)
       void runFile(f)
     })()
     return () => { cancelled = true }
-    // Intentionally only on mount: clip pickup is one-shot per route entry.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -304,19 +618,39 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
     [runFile],
   )
 
+  /**
+   * Accept either an OS file drop or a dock-internal drag.
+   *
+   * IMPORTANT: `receiveDockOrFileDrop` reads `e.dataTransfer.getData()`
+   * synchronously up to its first internal await — but the DataTransfer enters
+   * "protected mode" once the drop handler yields to the event loop. So we MUST
+   * call `receiveDockOrFileDrop(e)` BEFORE any other await (and we must NOT use
+   * a dynamic `import()` here, which would create a microtask boundary first).
+   * The previous implementation did exactly that and the dock-MIME read silently
+   * returned an empty string.
+   */
   const onDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault()
+      setDragHover(false)
+      // Call SYNC-prelude function first; it reads dataTransfer before awaiting.
+      const filePromise = receiveDockOrFileDrop(e)
       void (async () => {
-        const { receiveDockOrFileDrop } = await import('../../components/files-dock/files-store')
-        const f = await receiveDockOrFileDrop(e)
-        if (f) {
-          await runFile(f instanceof File ? f : new File([f], 'dock-clip', { type: f.type || 'audio/*' }))
-        }
+        const f = await filePromise
+        if (!f) return
+        const asFile = f instanceof File ? f : new File([f], 'dock-clip', { type: f.type || 'audio/*' })
+        await runFile(asFile)
       })()
     },
     [runFile],
   )
+
+  const onDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setDragHover(true)
+  }, [])
+
+  const onDragLeave = useCallback(() => setDragHover(false), [])
 
   const onTrimChange = useCallback((start: number, end: number) => {
     setTrimStart(start)
@@ -335,9 +669,170 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
     setTrimCommitted(true)
   }, [])
 
+  /**
+   * Stop any in-flight preview: release the polysynth, cancel the RAF that
+   * was driving the playhead, and clear pending done-timeouts so we don't
+   * race with a callback after the user has already pressed stop.
+   *
+   * When `loopRestartingRef.current` is true we're stopping mid-cycle in
+   * preparation for a fresh loop iteration — skip the state reset so the
+   * UI doesn't flicker between "playing" and "idle" on every loop wrap.
+   */
+  const stopPreview = useCallback(() => {
+    piano.stopAll()
+    if (previewRafRef.current) cancelAnimationFrame(previewRafRef.current)
+    previewRafRef.current = 0
+    if (previewDoneTimeoutRef.current != null) {
+      window.clearTimeout(previewDoneTimeoutRef.current)
+      previewDoneTimeoutRef.current = null
+    }
+    if (!loopRestartingRef.current) {
+      setPreviewing(false)
+      previewingRef.current = false
+      setPlayheadSec(null)
+    }
+  }, [])
+
+  /**
+   * Schedule one pass of the chord+lead preview through the piano engine.
+   * Reusable so we can call it again for each loop iteration without rebuilding
+   * the callback dependency graph. Returns the playback's wall-clock duration.
+   */
+  const schedulePreviewPass = useCallback((): number => {
+    if (!result || clippedSegments.length === 0) return 0
+
+    // Build RecordedNote[] for the chord pad…
+    const notes: { midi: number; start: number; duration: number; velocity: number }[] = []
+    for (const seg of clippedSegments) {
+      const quality = CHORD_QUALITIES.find(q => {
+        if (seg.quality === 'major') return q.id === 'maj'
+        if (seg.quality === 'minor') return q.id === 'min'
+        if (seg.quality === 'dim') return q.id === 'dim'
+        if (seg.quality === 'aug') return q.id === 'aug'
+        if (seg.quality === 'sus4') return q.id === 'sus4'
+        return q.id === 'maj'
+      })
+      if (!quality) continue
+      const midis = buildChord(seg.rootPc, 4, quality.intervals, 0)
+      for (const m of midis) {
+        notes.push({
+          midi: m,
+          start: seg.startSec,
+          duration: Math.max(0.1, Math.min(seg.durationSec, 1.6)),
+          velocity: 0.55, // sit chord pad below the lead so melody comes through
+        })
+      }
+    }
+    // …and stack the lead-note track on top so the preview matches what the
+    // exported MIDI will sound like (chord track + lead track).
+    for (const n of clippedLeadNotes) {
+      notes.push({
+        midi: n.midi,
+        start: n.startSec,
+        duration: Math.max(0.06, Math.min(n.durationSec, 2.5)),
+        velocity: Math.max(0.35, Math.min(1, n.velocity * 0.9)),
+      })
+    }
+    if (notes.length === 0) return 0
+
+    let totalDuration = clippedSegments.reduce(
+      (acc, s) => Math.max(acc, s.startSec + s.durationSec),
+      0,
+    )
+    for (const n of clippedLeadNotes) {
+      totalDuration = Math.max(totalDuration, n.startSec + n.durationSec)
+    }
+
+    previewStartRef.current = performance.now() / 1000
+    previewBaseOffsetRef.current = trimStart
+    setPlayheadSec(trimStart)
+
+    // Drive the playhead via a RAF loop synced to wall-clock.
+    const tick = () => {
+      const elapsed = performance.now() / 1000 - previewStartRef.current
+      if (elapsed > totalDuration + 0.05) {
+        // Pass ended — looping is handled by the playback `onDone` below; just
+        // stop advancing the playhead here.
+        return
+      }
+      setPlayheadSec(previewBaseOffsetRef.current + elapsed)
+      previewRafRef.current = requestAnimationFrame(tick)
+    }
+    previewRafRef.current = requestAnimationFrame(tick)
+
+    // Schedule the actual playback through the piano engine.
+    void piano.playback(notes, () => {
+      // playback's `onDone` fires shortly after the last note's end.
+      // If looping is on, restart the next pass; otherwise stop cleanly.
+      if (loopingRef.current && previewingRef.current) {
+        loopRestartingRef.current = true
+        stopPreview() // suppresses state reset because loopRestarting=true
+        loopRestartingRef.current = false
+        // Tiny gap between iterations so the synth's release tail finishes.
+        window.setTimeout(() => {
+          if (previewingRef.current) schedulePreviewPass()
+        }, 120)
+      } else {
+        stopPreview()
+      }
+    })
+
+    // Safety net — if onDone is delayed/missed for any reason, force-stop.
+    if (previewDoneTimeoutRef.current != null) window.clearTimeout(previewDoneTimeoutRef.current)
+    previewDoneTimeoutRef.current = window.setTimeout(() => {
+      if (loopingRef.current && previewingRef.current) {
+        loopRestartingRef.current = true
+        stopPreview()
+        loopRestartingRef.current = false
+        schedulePreviewPass()
+      } else {
+        stopPreview()
+      }
+    }, (totalDuration + 1.5) * 1000)
+
+    return totalDuration
+  }, [result, clippedSegments, clippedLeadNotes, stopPreview, trimStart])
+
+  /**
+   * User-facing toggle. First press: ensure audio is live, mark previewing,
+   * schedule the first pass. Second press: stop. Looping is handled inside
+   * `schedulePreviewPass`'s `onDone` callback.
+   */
+  const previewMidi = useCallback(async () => {
+    if (!result || clippedSegments.length === 0) return
+    if (previewingRef.current) {
+      stopPreview()
+      return
+    }
+    await piano.ensureStarted()
+    setPreviewing(true)
+    previewingRef.current = true
+    const duration = schedulePreviewPass()
+    if (duration <= 0) {
+      stopPreview()
+    }
+  }, [result, clippedSegments, stopPreview, schedulePreviewPass])
+
+  // Stop any preview when the trim changes (the clipped segments are different now).
+  useEffect(() => {
+    if (previewing) stopPreview()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trimStart, trimEnd])
+
+  // Cleanup on unmount — release the synth & cancel RAF.
+  useEffect(() => {
+    return () => {
+      piano.stopAll()
+      if (previewRafRef.current) cancelAnimationFrame(previewRafRef.current)
+      if (previewDoneTimeoutRef.current != null) window.clearTimeout(previewDoneTimeoutRef.current)
+    }
+  }, [])
+
   const downloadMidi = useCallback(() => {
     if (!result || clippedSegments.length === 0) return
-    const blob = buildChordMidiBlob(clippedSegments, result.bpm)
+    // Pass the (trimmed) lead-note track so the exported MIDI carries melody
+    // on top of the chord backbone — closer to the source audio than triads alone.
+    const blob = buildChordMidiBlob(clippedSegments, result.bpm, clippedLeadNotes)
     const base = (fileName ?? 'clip').replace(/\.[^/.]+$/, '')
     const tag = isSelectionTrimmed ? '-trim' : ''
     const url = URL.createObjectURL(blob)
@@ -346,7 +841,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
     a.download = `${base}-chords${tag}.mid`
     a.click()
     URL.revokeObjectURL(url)
-  }, [clippedSegments, fileName, isSelectionTrimmed, result])
+  }, [clippedSegments, clippedLeadNotes, fileName, isSelectionTrimmed, result])
 
   const copyProgression = useCallback(async () => {
     const text = progressionTextExport || progressionTextFull
@@ -358,15 +853,28 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
     }
   }, [progressionTextExport, progressionTextFull])
 
-  const card: CSSProperties = {
-    background: 'var(--bg-card)',
-    border: '1px solid var(--border)',
-    boxShadow: 'var(--shadow-sm)',
-  }
-  const label: CSSProperties = { color: 'var(--text-4)', fontFamily: "'DM Mono', monospace" }
+  const reset = useCallback(() => {
+    lastFileRef.current = null
+    setFileName(null)
+    setResult(null)
+    setError(null)
+    setInboundNotice(null)
+    setTrimStart(0)
+    setTrimEnd(0)
+    setTrimCommitted(false)
+  }, [])
+
+  /* ── Derived display values ── */
+  const bpmDisplay = result ? String(result.bpm).padStart(3, '0') : '---'
+  const chordCount = result?.segments.length ?? 0
+  const status = busy ? 'ANALYZING' : result ? 'DECODED' : 'IDLE'
+  const statusColor = busy ? PALETTE.amber : result ? PALETTE.textMain : PALETTE.textMuted
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden" style={{ background: 'var(--bg-canvas)' }}>
+    <div
+      className="flex min-h-0 flex-1 flex-col overflow-hidden"
+      style={{ background: 'var(--bg-canvas)', color: 'var(--text-1)' }}
+    >
       <StudioToolsHeader
         toolId="tools-chord-detector"
         crumbs={[{ label: 'Workspace' }, { label: 'Tools' }, { label: 'Chord Detector', emphasis: true }]}
@@ -374,13 +882,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
           <button
             type="button"
             onClick={() => onNavigate('tools-hub')}
-            className="mr-2 rounded-lg p-2 transition"
-            style={{
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border)',
-              color: 'var(--text-2)',
-              boxShadow: 'var(--shadow-sm)',
-            }}
+            className="mr-2 rounded-lg border border-slate-200 bg-white p-2 text-slate-600 shadow-sm transition hover:bg-slate-50"
             aria-label="Back to Tools Hub"
           >
             <ArrowLeft className="size-4" strokeWidth={2} />
@@ -388,224 +890,944 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
         }
       />
 
-      <div className="flex-1 overflow-auto px-8 pb-16 pt-8">
-        <div className="mx-auto w-full max-w-3xl">
-          <ZoneHeader
-            eyebrow="ANALYSIS"
-            title="Chord Detector"
-            icon={AudioWaveform}
-            description="Offline chromagram + triad templates per beat — same BPM engine as Key & BPM Finder (energy autocorrelation + embedded TBPM when present). Export a compact MIDI sketch of block chords for your DAW."
-            className="mb-3"
-          />
-          <p
-            className="mb-8 mt-3 rounded-xl px-4 py-3 text-xs leading-relaxed"
+      <div className="flex-1 overflow-auto" style={{ background: PALETTE.bg }}>
+        <div className="mx-auto flex w-full flex-col" style={{ minHeight: 'calc(100dvh - 56px)' }}>
+          <div
+            className="grid w-full flex-1"
             style={{
-              background: 'var(--accent-soft)',
-              border: '1px solid var(--border)',
-              color: 'var(--text-2)',
+              gridTemplateRows: `auto auto auto auto ${result ? 'auto auto' : ''} 1fr auto`,
+              gap: '1px',
+              background: PALETTE.line,
             }}
           >
-            Heuristic only: dense mixes, borrowed chords, and jazz voicings confuse template matchers. For ML-grade
-            transcription in production, pair this UI with models such as{' '}
-            <a
-              className="font-medium underline underline-offset-2"
-              style={{ color: 'var(--accent-fg)', textDecorationColor: 'var(--accent)' }}
-              href="https://github.com/spotify/basic-pitch"
-              target="_blank"
-              rel="noreferrer"
+            {/* ── Header ── */}
+            <header
+              className="flex items-center justify-between px-6 py-4"
+              style={{ background: PALETTE.surface }}
             >
-              Spotify Basic Pitch
-            </a>{' '}
-            or dedicated chord APIs — this page gives you an instant local baseline plus MIDI out.
-          </p>
-
-          <label htmlFor={inputId} className="block cursor-pointer">
-            <input id={inputId} type="file" accept="audio/*,.mp3,.wav,.m4a,.flac,.aac" className="sr-only" onChange={onInputChange} />
-            <div
-              onDragOver={e => e.preventDefault()}
-              onDrop={onDrop}
-              className="flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-6 py-14 text-center transition"
-              style={{
-                background: 'var(--bg-card)',
-                borderColor: 'var(--border-strong)',
-                boxShadow: 'var(--shadow-sm)',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.borderColor = 'var(--accent)'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.borderColor = 'var(--border-strong)'
-              }}
-            >
-              {busy ? (
-                <Loader2 className="size-8 animate-spin" style={{ color: 'var(--accent)' }} aria-hidden />
-              ) : (
-                <Upload className="size-8" style={{ color: 'var(--text-4)' }} strokeWidth={1.5} aria-hidden />
-              )}
-              <div>
-                <span className="text-sm font-medium" style={{ color: 'var(--text-1)' }}>
-                  {busy ? 'Analyzing chords…' : 'Drop audio here or click to browse'}
-                </span>
-                <p className="mt-1 text-xs" style={{ color: 'var(--text-3)' }}>
-                  First ~96s analyzed in-browser — WAV/MP3/M4A/FLAC.
-                </p>
+              <PillButton label="UTIL.06" decorative />
+              <div
+                className="text-[10px] uppercase tracking-[0.2em]"
+                style={{ color: PALETTE.textMuted, fontFamily: "'DM Mono', monospace" }}
+              >
+                CHORD_DET
               </div>
-            </div>
-          </label>
+              <PillButton label="RESET" onClick={reset} />
+            </header>
 
-          {inboundNotice && (
-            <p
-              className="mt-4 inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium"
+            {/* ── Hero (sidebar + BPM + status dots) ── */}
+            <section
+              className="grid"
               style={{
-                background: 'var(--accent-soft)',
-                border: '1px solid var(--border)',
-                color: 'var(--accent-fg)',
+                gridTemplateColumns: '2.5rem 1fr',
+                gap: '1px',
+                background: PALETTE.line,
               }}
-              role="status"
             >
-              {inboundNotice}
-            </p>
-          )}
-
-          {error && (
-            <p className="mt-4 text-sm" role="alert" style={{ color: 'var(--bad)' }}>
-              {error}
-            </p>
-          )}
-
-          {result && (
-            <div className="mt-8 space-y-6">
-              <div className="rounded-2xl p-6" style={card}>
-                <div
-                  className="flex flex-wrap items-start justify-between gap-4 pb-4"
-                  style={{ borderBottom: '1px solid var(--border)' }}
+              <div
+                className="flex flex-col items-center justify-between py-6"
+                style={{ background: PALETTE.surface }}
+              >
+                <CircleNum n={1} />
+                <span
+                  className="text-[9px] uppercase tracking-[0.2em]"
+                  style={{
+                    writingMode: 'vertical-rl',
+                    transform: 'rotate(180deg)',
+                    color: PALETTE.textMuted,
+                  }}
                 >
-                  <div>
-                    <div className="text-sm font-medium" style={{ color: 'var(--text-1)' }}>{fileName ?? 'Clip'}</div>
-                    {trimCommitted ? (
-                      <div className="mt-2 space-y-1">
-                        <p className="text-lg font-semibold tabular-nums" style={{ color: 'var(--text-1)' }}>
-                          {exportDurationSec.toFixed(1)}s{' '}
-                          <span className="text-sm font-medium" style={{ color: 'var(--accent-fg)' }}>export duration</span>
-                        </p>
-                        <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-                          Full analyzed clip{' '}
-                          <span className="tabular-nums font-medium" style={{ color: 'var(--text-2)' }}>{result.durationSec.toFixed(1)}s</span>
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="mt-1 space-y-1">
-                        <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-                          Analyzed duration{' '}
-                          <span className="tabular-nums font-medium" style={{ color: 'var(--text-1)' }}>{result.durationSec.toFixed(1)}s</span>
-                        </p>
-                        {isSelectionTrimmed ? (
-                          <p className="text-xs font-medium" style={{ color: 'var(--accent-fg)' }}>
-                            Selection {(trimEnd - trimStart).toFixed(1)}s — tap{' '}
-                            <span className="font-semibold">Apply trim</span> to lock this as the export length shown above.
-                          </p>
-                        ) : null}
-                      </div>
-                    )}
-                  </div>
-                  <dl className="flex gap-6 text-right">
-                    <div>
-                      <dt className="mono text-[10px] uppercase tracking-wide" style={label}>BPM</dt>
-                      <dd className="text-xl font-semibold tabular-nums" style={{ color: 'var(--text-1)' }}>{result.bpm}</dd>
-                      <dd className="text-[10px]" style={{ color: 'var(--text-4)' }}>{result.bpmSource === 'tags' ? 'From tags' : 'Estimated'}</dd>
-                    </div>
-                  </dl>
-                </div>
-
-                <div className="mt-5">
-                  <ChordTrimTimeline result={result} trimStart={trimStart} trimEnd={trimEnd} onTrimChange={onTrimChange} />
-                </div>
-
-                <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={applyTrim}
-                    disabled={!isSelectionTrimmed}
-                    className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition disabled:pointer-events-none disabled:opacity-40"
-                    style={{
-                      background: 'var(--accent-soft)',
-                      border: '1px solid var(--border)',
-                      color: 'var(--accent-fg)',
-                      boxShadow: 'var(--shadow-sm)',
-                    }}
-                  >
-                    <Scissors className="size-3.5 shrink-0" aria-hidden />
-                    Apply trim
-                  </button>
-                  <button
-                    type="button"
-                    onClick={resetTrim}
-                    className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium transition"
-                    style={{
-                      background: 'var(--bg-card)',
-                      border: '1px solid var(--border)',
-                      color: 'var(--text-2)',
-                      boxShadow: 'var(--shadow-sm)',
-                    }}
-                  >
-                    <RotateCcw className="size-3.5 shrink-0" aria-hidden />
-                    Reset range
-                  </button>
-                </div>
-
-                <div className="mt-6 flex flex-wrap gap-2">
-                  <Button
-                    variant="primary"
-                    onClick={downloadMidi}
-                    disabled={clippedSegments.length === 0}
-                    leading={<Download className="size-4 shrink-0" aria-hidden />}
-                  >
-                    Export MIDI
-                  </Button>
-                  <button
-                    type="button"
-                    onClick={copyProgression}
-                    disabled={!progressionTextExport && !progressionTextFull}
-                    className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition disabled:opacity-50"
-                    style={{
-                      background: 'var(--bg-card)',
-                      border: '1px solid var(--border)',
-                      color: 'var(--text-2)',
-                      boxShadow: 'var(--shadow-sm)',
-                    }}
-                  >
-                    <Copy className="size-4 shrink-0" aria-hidden />
-                    Copy progression
-                  </button>
-                </div>
-
-                {(progressionTextExport || progressionTextFull) ? (
-                  <p
-                    className="mono mt-4 rounded-lg px-3 py-2 text-xs leading-relaxed"
-                    style={{ background: 'var(--bg-muted)', color: 'var(--text-2)' }}
-                  >
-                    {progressionTextExport || progressionTextFull}
-                  </p>
-                ) : null}
+                  BASIC PITCH
+                </span>
+                <CircleNum n={2} />
               </div>
 
               <div
-                className="rounded-2xl border border-dashed px-5 py-4 text-xs leading-relaxed"
-                style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-3)' }}
+                className="relative flex min-w-0 flex-col items-center justify-center overflow-hidden px-4 py-8"
+                style={{ background: PALETTE.surface }}
               >
-                <div className="flex items-start gap-2">
-                  <Music className="mt-0.5 size-4 shrink-0" style={{ color: 'var(--accent)' }} aria-hidden />
-                  <div>
-                    <strong className="font-medium" style={{ color: 'var(--text-1)' }}>MIDI export</strong> uses the trimmed window only.
-                    Notes are re-zeroed at the selection start. Import into Logic, Ableton, Reaper, etc., then swap instruments
-                    or voice-lead.
+                <span
+                  className="absolute right-4 top-4 text-[10px] tracking-[0.1em]"
+                  style={{ color: PALETTE.textMuted }}
+                >
+                  TEMPO BPM
+                </span>
+
+                <div
+                  className="max-w-full select-none text-center"
+                  style={{
+                    fontFamily: "'DM Mono', monospace",
+                    // Cap at 9rem and use cqw (container-width) where supported, falling back to a smaller vw value.
+                    fontSize: 'clamp(3.5rem, 11vw, 9rem)',
+                    fontWeight: 400,
+                    lineHeight: 1,
+                    letterSpacing: '-0.05em',
+                    color: result ? PALETTE.textMain : PALETTE.textMuted,
+                    textShadow: busy ? `0 0 24px ${PALETTE.amberGlow}` : 'none',
+                    transition: 'color 0.1s ease, text-shadow 0.1s ease',
+                    whiteSpace: 'nowrap',
+                  }}
+                  aria-live="polite"
+                  aria-label={result ? `Detected tempo ${result.bpm} BPM` : 'No tempo detected'}
+                >
+                  {bpmDisplay}
+                </div>
+
+                <span
+                  className="mt-4 text-[10px] uppercase tracking-[0.2em]"
+                  style={{ color: statusColor, fontFamily: "'DM Mono', monospace" }}
+                >
+                  {status}
+                  {result?.bpmSource === 'tags' ? ' · FROM TAGS' : result ? ' · ESTIMATED' : ''}
+                </span>
+              </div>
+            </section>
+
+            <section
+              className="border-b px-6 py-2.5"
+              style={{ background: PALETTE.surface, borderColor: PALETTE.line }}
+            >
+              <p
+                className="text-center text-[10px] leading-relaxed tracking-wide"
+                style={{ color: PALETTE.textMuted, fontFamily: "'DM Mono', monospace" }}
+              >
+                Transcription uses Spotify Basic Pitch (TensorFlow.js) with optional NeuralNote-inspired
+                post-processing below — not the NeuralNote desktop plugin.
+              </p>
+              <p
+                className="mt-2 text-center text-[10px] leading-snug tracking-wide"
+                style={{ color: PALETTE.textMuted, fontFamily: "'DM Mono', monospace" }}
+              >
+                Tuned for piano and lead-note lines first; the chord timeline is a secondary harmonic guide.
+              </p>
+              <label
+                className="mx-auto mt-3 flex max-w-md cursor-pointer select-none items-center justify-center gap-2.5 text-[10px] uppercase tracking-[0.12em]"
+                style={{ color: PALETTE.textMain, fontFamily: "'DM Mono', monospace" }}
+              >
+                <input
+                  type="checkbox"
+                  className="size-3.5 accent-amber-500"
+                  checked={pianoLeadFocus}
+                  onChange={e => setPianoLeadFocus(e.target.checked)}
+                  aria-label="Piano and lead focus mode"
+                />
+                <span style={{ color: pianoLeadFocus ? PALETTE.amber : PALETTE.textMuted }}>
+                  Piano / lead focus
+                </span>
+                <span className="normal-case tracking-normal" style={{ color: PALETTE.textMuted }}>
+                  — stricter notes & calmer poly (re-runs clip)
+                </span>
+              </label>
+            </section>
+
+            {/* ── Stats ── */}
+            <section className="flex flex-col" style={{ background: PALETTE.surface }}>
+              <div
+                className="flex items-center justify-between border-b px-6 py-3 text-[11px] uppercase tracking-[0.15em]"
+                style={{ borderColor: PALETTE.line, color: PALETTE.textMain }}
+              >
+                <span>STATISTICS</span>
+                <span
+                  className="flex items-center gap-1.5"
+                  style={{ fontFamily: "'DM Mono', monospace", color: PALETTE.textMuted }}
+                >
+                  <span
+                    className="block size-1.5 rounded-full"
+                    style={{
+                      background: busy ? PALETTE.amber : result ? PALETTE.amber : PALETTE.textMuted,
+                      boxShadow: busy || result ? `0 0 6px ${PALETTE.amber}` : 'none',
+                    }}
+                    aria-hidden
+                  />
+                  {busy ? 'WORKING' : result ? 'LIVE' : 'IDLE'}
+                </span>
+              </div>
+              <div
+                className="grid"
+                style={{ gridTemplateColumns: '1fr 1fr', gap: '1px', background: PALETTE.line }}
+              >
+                <StatCell
+                  label="DURATION"
+                  value={result ? `${result.durationSec.toFixed(1)}s` : '—'}
+                />
+                <StatCell
+                  label="CHORDS"
+                  value={result ? String(chordCount).padStart(2, '0') : '—'}
+                />
+              </div>
+              <div
+                className="grid"
+                style={{ gridTemplateColumns: '1fr 1fr', gap: '1px', background: PALETTE.line, borderTop: `1px solid ${PALETTE.line}` }}
+              >
+                <StatCell
+                  label="TRIM START"
+                  value={result ? formatMmSs(trimStart) : '—'}
+                />
+                <StatCell
+                  label="EXPORT WINDOW"
+                  value={result ? `${exportDurationSec.toFixed(1)}s` : '—'}
+                  valueColor={isSelectionTrimmed ? PALETTE.amber : PALETTE.textMain}
+                />
+              </div>
+              {/* New row — pretty-midi-derived stats + lead-note count */}
+              <div
+                className="grid"
+                style={{
+                  gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                  gap: '1px',
+                  background: PALETTE.line,
+                  borderTop: `1px solid ${PALETTE.line}`,
+                }}
+              >
+                <StatCell
+                  label="KEY (KK)"
+                  value={
+                    result
+                      ? `${result.estimatedKey.label} · ${(result.estimatedKey.confidence * 100).toFixed(0)}%`
+                      : '—'
+                  }
+                  valueColor={
+                    result
+                      ? result.estimatedKey.confidence > 0.65
+                        ? PALETTE.amber
+                        : PALETTE.textMain
+                      : PALETTE.textMuted
+                  }
+                />
+                <StatCell
+                  label="UNIQUE CHORDS"
+                  value={result ? String(result.uniqueChordCount).padStart(2, '0') : '—'}
+                />
+                <StatCell
+                  label="LEAD NOTES"
+                  value={
+                    result
+                      ? `${String(clippedLeadNotes.length).padStart(3, '0')}${
+                          isSelectionTrimmed && result.leadNotes.length !== clippedLeadNotes.length
+                            ? ` / ${result.leadNotes.length}`
+                            : ''
+                        }`
+                      : '—'
+                  }
+                  valueColor={
+                    result && clippedLeadNotes.length > 0 ? PALETTE.amber : PALETTE.textMain
+                  }
+                />
+                <StatCell
+                  label="INPUT TYPE"
+                  value={result ? result.inputType.toUpperCase() : '—'}
+                  valueColor={result?.inputType === 'midi' ? PALETTE.amber : PALETTE.textMain}
+                />
+              </div>
+
+              {/* Pitch class histogram strip — pretty-midi `get_pitch_class_histogram` */}
+              {result ? (
+                <div
+                  className="flex flex-col gap-1 border-t px-6 py-3"
+                  style={{ borderColor: PALETTE.line, background: PALETTE.surface }}
+                >
+                  <div
+                    className="flex items-center justify-between text-[10px] uppercase tracking-[0.15em]"
+                    style={{ color: PALETTE.textMuted }}
+                  >
+                    <span>PITCH CLASS HISTOGRAM</span>
+                    <span style={{ fontFamily: "'DM Mono', monospace" }}>C → B</span>
                   </div>
+                  <PitchClassHistogram
+                    values={result.pitchClassHistogram}
+                    rootPc={result.estimatedKey.rootPc}
+                  />
+                </div>
+              ) : null}
+            </section>
+
+            {/* ── Melody post (NeuralNote-style, browser-only) ─────────────────────── */}
+            <section className="flex flex-col" style={{ background: PALETTE.surface }}>
+              <div
+                className="flex flex-wrap items-center justify-between gap-2 border-b px-6 py-3 text-[11px] uppercase tracking-[0.15em]"
+                style={{ borderColor: PALETTE.line, color: PALETTE.textMain }}
+              >
+                <span>MELODY POST</span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className="max-w-[min(420px,85vw)] text-[9px] normal-case leading-snug tracking-normal"
+                    style={{ color: PALETTE.textMuted }}
+                  >
+                    Inspired by NeuralNote workflow (quantize / min length / levels). Not the JUCE plugin.
+                  </span>
+                  <button
+                    type="button"
+                    disabled={!lastFileRef.current || busy}
+                    onClick={() => {
+                      const f = lastFileRef.current
+                      if (f) void runFile(f)
+                    }}
+                    className="rounded border px-2 py-1 text-[9px] uppercase tracking-[0.12em] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                    style={{
+                      borderColor: PALETTE.amber,
+                      color: PALETTE.amber,
+                      fontFamily: "'DM Mono', monospace",
+                      background: 'transparent',
+                    }}
+                  >
+                    Re-run clip
+                  </button>
                 </div>
               </div>
-            </div>
-          )}
+              <div
+                className="grid"
+                style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '1px', background: PALETTE.line }}
+              >
+                <SliderCell
+                  label="POST ENABLE"
+                  hint="Off = raw melody timing from detector"
+                  value={nnPostEnabled ? 1 : 0}
+                  min={0}
+                  max={1}
+                  step={1}
+                  suffix={nnPostEnabled ? 'on' : 'off'}
+                  onChange={n => setNnPostEnabled(n === 1)}
+                />
+                <SliderCell
+                  label="TIME QUANT"
+                  hint="Snap onsets toward grid (needs force > 0)"
+                  value={nnTimeQuantize ? 1 : 0}
+                  min={0}
+                  max={1}
+                  step={1}
+                  suffix={nnTimeQuantize ? 'on' : 'off'}
+                  onChange={n => setNnTimeQuantize(n === 1)}
+                />
+                <SliderCell
+                  label="QUANT FORCE"
+                  hint="0 = natural, 100 = full grid"
+                  value={nnQuantizeForcePct}
+                  min={0}
+                  max={100}
+                  step={1}
+                  suffix="%"
+                  onChange={setNnQuantizeForcePct}
+                />
+                <SliderCell
+                  label="TIME GRID"
+                  hint="NeuralNote-style division vs whole note"
+                  value={nnTimeDivIdx}
+                  min={0}
+                  max={NEURALNOTE_TIME_DIVISION_LABELS.length - 1}
+                  step={1}
+                  suffix={NEURALNOTE_TIME_DIVISION_LABELS[nnTimeDivIdx] ?? ''}
+                  onChange={setNnTimeDivIdx}
+                />
+              </div>
+              <div
+                className="grid border-t"
+                style={{
+                  gridTemplateColumns: '1fr 1fr 1fr',
+                  gap: '1px',
+                  background: PALETTE.line,
+                  borderColor: PALETTE.line,
+                }}
+              >
+                <SliderCell
+                  label="MIN NOTE (POST)"
+                  hint="After quantize — min length in ms"
+                  value={nnMinNoteMsPost}
+                  min={35}
+                  max={580}
+                  step={5}
+                  suffix="ms"
+                  onChange={setNnMinNoteMsPost}
+                />
+                <SliderCell
+                  label="VEL GAIN"
+                  hint="Linear velocity multiplier"
+                  value={nnVelGainPct}
+                  min={50}
+                  max={150}
+                  step={5}
+                  suffix={`×${(nnVelGainPct / 100).toFixed(2)}`}
+                  onChange={setNnVelGainPct}
+                />
+                <SliderCell
+                  label="VEL COMPRESS"
+                  hint="Push levels toward mid (0 = off)"
+                  value={nnVelCompPct}
+                  min={0}
+                  max={100}
+                  step={5}
+                  suffix="%"
+                  onChange={setNnVelCompPct}
+                />
+              </div>
+            </section>
+
+            {/* ── Drop zone (interaction slot). Accepts OS files AND dock items. ── */}
+            <section
+              className="flex items-center justify-center p-6"
+              style={{ background: PALETTE.surface }}
+            >
+              <label
+                htmlFor={inputId}
+                className="block w-full cursor-pointer"
+                style={{ maxWidth: 'clamp(320px, 80vw, 720px)' }}
+              >
+                <input
+                  id={inputId}
+                  type="file"
+                  accept="audio/*,.mp3,.wav,.m4a,.flac,.aac,.mid,.midi,audio/midi,audio/x-midi"
+                  className="sr-only"
+                  onChange={onInputChange}
+                />
+                <div
+                  onDragOver={onDragOver}
+                  onDragLeave={onDragLeave}
+                  onDrop={onDrop}
+                  className="flex flex-col items-center justify-center gap-3 px-6 py-10 text-center transition-colors"
+                  style={{
+                    background: dragHover ? `${PALETTE.amber}10` : 'transparent',
+                    border: `1px dashed ${dragHover ? PALETTE.amber : PALETTE.line}`,
+                  }}
+                >
+                  {busy ? (
+                    <Loader2 className="size-8 animate-spin" style={{ color: PALETTE.amber }} aria-hidden />
+                  ) : (
+                    <Upload className="size-8" style={{ color: dragHover ? PALETTE.amber : PALETTE.textMuted }} strokeWidth={1.5} aria-hidden />
+                  )}
+                  <div className="flex flex-col items-center gap-1">
+                    <span
+                      className="text-[12px] uppercase tracking-[0.2em]"
+                      style={{
+                        color: dragHover ? PALETTE.amber : PALETTE.textMain,
+                        fontFamily: "'DM Mono', monospace",
+                      }}
+                    >
+                      {busy ? 'ANALYZING…' : dragHover ? 'RELEASE TO LOAD' : 'DROP AUDIO HERE'}
+                    </span>
+                    <span
+                      className="text-[10px] uppercase tracking-[0.15em]"
+                      style={{ color: PALETTE.textMuted, fontFamily: "'DM Mono', monospace" }}
+                    >
+                      OS FILE · DOCK ITEM · CLICK TO BROWSE
+                    </span>
+                    <span
+                      className="text-[10px] tracking-[0.1em]"
+                      style={{ color: PALETTE.textMuted }}
+                    >
+                      ~96s analyzed in-browser — WAV / MP3 / M4A / FLAC / MID
+                    </span>
+                  </div>
+
+                  {fileName ? (
+                    <div
+                      className="mt-2 max-w-full truncate rounded-none px-3 py-1 text-[11px]"
+                      style={{
+                        border: `1px solid ${PALETTE.line}`,
+                        color: PALETTE.textMain,
+                        fontFamily: "'DM Mono', monospace",
+                      }}
+                      title={fileName}
+                    >
+                      {fileName}
+                    </div>
+                  ) : null}
+                </div>
+              </label>
+            </section>
+
+            {/* ── Status banner ── */}
+            {(inboundNotice || error) && (
+              <section
+                className="flex items-center gap-3 px-6 py-3"
+                style={{
+                  background: PALETTE.surface,
+                  borderLeft: `2px solid ${error ? '#ef4444' : PALETTE.amber}`,
+                }}
+              >
+                <span
+                  className="text-[10px] uppercase tracking-[0.15em]"
+                  style={{ color: error ? '#ef4444' : PALETTE.amber, fontFamily: "'DM Mono', monospace" }}
+                >
+                  {error ? 'ERROR' : 'INBOUND'}
+                </span>
+                <span className="text-[11px]" style={{ color: PALETTE.textMain }}>
+                  {error ?? inboundNotice}
+                </span>
+              </section>
+            )}
+
+            {/* ── Timeline + progression (only when result exists) ── */}
+            {result && (
+              <section
+                className="flex flex-col gap-5 px-6 py-5"
+                style={{ background: PALETTE.surface }}
+              >
+                <ChordTrimTimeline
+                  result={result}
+                  trimStart={trimStart}
+                  trimEnd={trimEnd}
+                  onTrimChange={onTrimChange}
+                  playheadSec={playheadSec}
+                />
+
+                {(progressionTextExport || progressionTextFull) ? (
+                  <div className="flex flex-col gap-2">
+                    <span
+                      className="text-[10px] uppercase tracking-[0.15em]"
+                      style={{ color: PALETTE.textMuted }}
+                    >
+                      PROGRESSION
+                      {trimCommitted ? ' · TRIMMED' : ''}
+                    </span>
+                    <p
+                      className="px-3 py-2 text-[12px] leading-relaxed"
+                      style={{
+                        border: `1px solid ${PALETTE.line}`,
+                        background: PALETTE.bg,
+                        color: PALETTE.textMain,
+                        fontFamily: "'DM Mono', monospace",
+                      }}
+                    >
+                      {progressionTextExport || progressionTextFull}
+                    </p>
+                  </div>
+                ) : null}
+              </section>
+            )}
+
+            {/* Flex spacer when no result */}
+            <div style={{ background: PALETTE.surface }} />
+
+            {/* ── Controls ── */}
+            <section
+              className="grid"
+              style={{
+                gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr',
+                gap: '1px',
+                background: PALETTE.line,
+              }}
+            >
+              <ControlButton
+                active={previewing}
+                disabled={!result || clippedSegments.length === 0}
+                onClick={() => void previewMidi()}
+                icon={
+                  previewing ? (
+                    // Stop square — amber when active
+                    <span
+                      className="block size-2"
+                      style={{ background: PALETTE.amber }}
+                      aria-hidden
+                    />
+                  ) : (
+                    // Play triangle
+                    <span
+                      className="block"
+                      style={{
+                        width: 0,
+                        height: 0,
+                        borderTop: '4px solid transparent',
+                        borderBottom: '4px solid transparent',
+                        borderLeft: `6px solid ${!result || clippedSegments.length === 0 ? PALETTE.textMuted : PALETTE.textMain}`,
+                      }}
+                      aria-hidden
+                    />
+                  )
+                }
+                label={previewing ? 'STOP PREVIEW' : 'PREVIEW'}
+              />
+              <ControlButton
+                active={looping}
+                disabled={!result || clippedSegments.length === 0}
+                onClick={() => setLooping(v => !v)}
+                icon={
+                  // CSS-only loop glyph: a hollow ring (open on the right) with
+                  // an arrowhead at the top — needs *individual* border-side
+                  // properties so React's style reconciler doesn't warn about
+                  // mixing the `border` shorthand with `borderRightColor`.
+                  (() => {
+                    const ringColor =
+                      looping
+                        ? PALETTE.amber
+                        : !result || clippedSegments.length === 0
+                          ? PALETTE.textMuted
+                          : PALETTE.textMain
+                    return (
+                      <span
+                        className="relative block"
+                        style={{
+                          width: 12,
+                          height: 12,
+                          borderTopWidth: 2,
+                          borderRightWidth: 2,
+                          borderBottomWidth: 2,
+                          borderLeftWidth: 2,
+                          borderStyle: 'solid',
+                          borderTopColor: ringColor,
+                          borderBottomColor: ringColor,
+                          borderLeftColor: ringColor,
+                          borderRightColor: 'transparent',
+                          borderRadius: '50%',
+                        }}
+                        aria-hidden
+                      >
+                        <span
+                          className="absolute"
+                          style={{
+                            right: -2,
+                            top: -1,
+                            width: 0,
+                            height: 0,
+                            borderTop: '3px solid transparent',
+                            borderBottom: '3px solid transparent',
+                            borderLeft: `4px solid ${ringColor}`,
+                          }}
+                        />
+                      </span>
+                    )
+                  })()
+                }
+                label={looping ? 'LOOP · ON' : 'LOOP'}
+              />
+              <ControlButton
+                active={trimCommitted}
+                disabled={!result || !isSelectionTrimmed}
+                onClick={applyTrim}
+                icon={
+                  <span
+                    className="block size-2"
+                    style={{
+                      background: trimCommitted ? PALETTE.amber : PALETTE.textMain,
+                    }}
+                    aria-hidden
+                  />
+                }
+                label={trimCommitted ? 'TRIM APPLIED' : 'APPLY TRIM'}
+              />
+              <ControlButton
+                active={false}
+                disabled={!result}
+                onClick={resetTrim}
+                icon={
+                  <span
+                    className="block"
+                    style={{
+                      width: 8,
+                      height: 8,
+                      border: `1px solid ${PALETTE.textMain}`,
+                    }}
+                    aria-hidden
+                  />
+                }
+                label="RESET TRIM"
+              />
+              <ControlButton
+                active={false}
+                disabled={!result || clippedSegments.length === 0}
+                onClick={downloadMidi}
+                icon={<DownloadGlyph color={!result || clippedSegments.length === 0 ? PALETTE.textMuted : PALETTE.textMain} />}
+                label="EXPORT MIDI"
+              />
+            </section>
+
+            {/* ── Secondary copy progression button row ── */}
+            <section
+              style={{ background: PALETTE.line, padding: '1px 0 0 0' }}
+            >
+              <ControlButton
+                active={false}
+                disabled={!progressionTextExport && !progressionTextFull}
+                onClick={() => void copyProgression()}
+                icon={
+                  <span
+                    className="block"
+                    style={{
+                      width: 8,
+                      height: 8,
+                      border: `1px solid ${PALETTE.textMain}`,
+                      background: 'transparent',
+                    }}
+                    aria-hidden
+                  />
+                }
+                label="COPY PROGRESSION"
+              />
+            </section>
+          </div>
         </div>
       </div>
     </div>
+  )
+}
+
+/* ── GRAY2020 sub-components ─────────────────────────────────────────────────── */
+
+function PillButton({
+  label,
+  onClick,
+  active,
+  decorative,
+}: {
+  label: string
+  onClick?: () => void
+  active?: boolean
+  decorative?: boolean
+}) {
+  const sharedStyle: React.CSSProperties = {
+    border: `1px solid ${active ? PALETTE.amber : PALETTE.line}`,
+    color: active ? PALETTE.amber : decorative ? PALETTE.textMuted : PALETTE.textMain,
+    background: 'transparent',
+    fontFamily: "'DM Mono', monospace",
+  }
+  if (decorative) {
+    return (
+      <span
+        className="rounded-full px-3 py-1.5 text-[10px] uppercase tracking-[0.15em]"
+        style={sharedStyle}
+        aria-hidden
+      >
+        {label}
+      </span>
+    )
+  }
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-full px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] transition-colors"
+      style={sharedStyle}
+      aria-pressed={active}
+    >
+      {label}
+    </button>
+  )
+}
+
+function CircleNum({ n }: { n: number }) {
+  return (
+    <span
+      className="grid place-items-center rounded-full"
+      style={{
+        width: '1.2rem',
+        height: '1.2rem',
+        border: `1px solid ${PALETTE.line}`,
+        fontFamily: "'DM Mono', monospace",
+        fontSize: '0.55rem',
+        color: PALETTE.textMuted,
+      }}
+      aria-hidden
+    >
+      {n}
+    </span>
+  )
+}
+
+function StatCell({ label, value, valueColor }: { label: string; value: string; valueColor?: string }) {
+  return (
+    <div
+      className="flex items-center justify-between px-6 py-4"
+      style={{ background: PALETTE.surface }}
+    >
+      <span className="text-[10px] uppercase tracking-[0.1em]" style={{ color: PALETTE.textMuted }}>
+        {label}
+      </span>
+      <span
+        className="text-[13px]"
+        style={{
+          fontFamily: "'DM Mono', monospace",
+          color: valueColor ?? PALETTE.textMain,
+        }}
+      >
+        {value}
+      </span>
+    </div>
+  )
+}
+
+/**
+ * Slider cell in GRAY2020 style — label + live value readout above a hairline
+ * range slider. The slider thumb tints amber when the value differs from the
+ * column's midpoint (so it's obvious you've moved off the default).
+ */
+function SliderCell({
+  label,
+  hint,
+  value,
+  min,
+  max,
+  step,
+  suffix,
+  onChange,
+}: {
+  label: string
+  hint?: string
+  value: number
+  min: number
+  max: number
+  step?: number
+  suffix?: string
+  onChange: (n: number) => void
+}) {
+  const mid = (min + max) / 2
+  const moved = Math.abs(value - mid) > (max - min) * 0.05
+  return (
+    <div
+      className="flex flex-col justify-between gap-2 px-6 py-4"
+      style={{ background: PALETTE.surface, minHeight: 80 }}
+    >
+      <div className="flex items-baseline justify-between">
+        <span
+          className="text-[10px] uppercase tracking-[0.1em]"
+          style={{ color: PALETTE.textMuted }}
+        >
+          {label}
+        </span>
+        <span
+          className="text-[13px] tabular-nums"
+          style={{
+            fontFamily: "'DM Mono', monospace",
+            color: moved ? PALETTE.amber : PALETTE.textMain,
+          }}
+        >
+          {value}
+          {suffix ? <span style={{ color: PALETTE.textMuted, marginLeft: 2 }}>{suffix}</span> : null}
+        </span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step ?? 1}
+        value={value}
+        onChange={e => {
+          const n = Number(e.target.value)
+          if (Number.isFinite(n)) onChange(n)
+        }}
+        className="h-1 w-full appearance-none"
+        style={{
+          background: PALETTE.line,
+          accentColor: PALETTE.amber,
+        }}
+        aria-label={`${label} slider`}
+      />
+      {hint ? (
+        <span
+          className="text-[9px] uppercase tracking-[0.1em]"
+          style={{ color: PALETTE.textMuted, fontFamily: "'DM Mono', monospace" }}
+        >
+          {hint}
+        </span>
+      ) : null}
+    </div>
+  )
+}
+
+function ControlButton({
+  active,
+  disabled,
+  onClick,
+  icon,
+  label,
+}: {
+  active: boolean
+  disabled?: boolean
+  onClick: () => void
+  icon: React.ReactNode
+  label: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="flex items-center justify-center gap-2 py-5 text-[11px] uppercase tracking-[0.2em] transition-colors disabled:cursor-not-allowed"
+      style={{
+        background: PALETTE.surface,
+        color: disabled ? PALETTE.textMuted : active ? PALETTE.amber : PALETTE.textMain,
+        opacity: disabled ? 0.5 : 1,
+      }}
+    >
+      {icon}
+      {label}
+    </button>
+  )
+}
+
+/**
+ * Pretty-midi style pitch-class histogram — 12 bars labelled C → B. The
+ * detected tonic (rootPc) is highlighted in amber so the key estimate is
+ * cross-readable against the raw note distribution.
+ */
+function PitchClassHistogram({ values, rootPc }: { values: number[]; rootPc: number }) {
+  const NAMES = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'] as const
+  const max = Math.max(0.0001, ...values)
+  return (
+    <div className="flex items-end gap-1" style={{ height: 60 }}>
+      {values.map((v, i) => {
+        const h = Math.max(2, (v / max) * 56)
+        const isTonic = i === rootPc
+        return (
+          <div key={i} className="flex flex-1 flex-col items-center gap-1">
+            <div
+              className="w-full"
+              style={{
+                height: `${h}px`,
+                background: isTonic
+                  ? `linear-gradient(to top, ${PALETTE.amber}, rgba(245,166,35,0.35))`
+                  : `linear-gradient(to top, ${PALETTE.line}, rgba(112,112,117,0.25))`,
+                boxShadow: isTonic ? `0 0 8px ${PALETTE.amberGlow}` : 'none',
+                transition: 'height 0.3s ease',
+              }}
+              title={`${NAMES[i]} ${(v * 100).toFixed(1)}%`}
+            />
+            <span
+              className="text-[9px] tracking-[0.05em]"
+              style={{
+                color: isTonic ? PALETTE.amber : PALETTE.textMuted,
+                fontFamily: "'DM Mono', monospace",
+              }}
+            >
+              {NAMES[i]}
+            </span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function DownloadGlyph({ color }: { color: string }) {
+  return (
+    <span className="relative flex h-3 w-3 items-end justify-center" aria-hidden>
+      <span
+        className="absolute top-0 block"
+        style={{
+          width: 2,
+          height: 6,
+          background: color,
+          left: 'calc(50% - 1px)',
+        }}
+      />
+      <span
+        className="absolute"
+        style={{
+          top: 4,
+          left: 'calc(50% - 3px)',
+          width: 0,
+          height: 0,
+          borderLeft: '3px solid transparent',
+          borderRight: '3px solid transparent',
+          borderTop: `3px solid ${color}`,
+        }}
+      />
+      <span
+        className="absolute bottom-0 block"
+        style={{
+          width: 8,
+          height: 2,
+          background: color,
+          left: 'calc(50% - 4px)',
+        }}
+      />
+    </span>
   )
 }
