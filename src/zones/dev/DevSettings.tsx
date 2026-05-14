@@ -10,6 +10,7 @@ import {
   ChevronDown,
   ChevronRight,
   ClipboardCopy,
+  ExternalLink,
   Eye,
   EyeOff,
   Info,
@@ -22,6 +23,8 @@ import {
   XCircle,
   Zap,
 } from 'lucide-react'
+
+import { explainProbeError } from './probe-error-guidance'
 
 import { SecureVault } from '../../components/vault'
 import AddDocumentedEnvDialog from '../../components/dev/AddDocumentedEnvDialog'
@@ -513,6 +516,56 @@ export default function DevSettings({ onNavigate }: DevSettingsProps) {
   )
 }
 
+/**
+ * ProbeFixHint — when a "Test" probe fails, parse the upstream error string
+ * into a human-readable hint + deep links to the provider page that fixes the
+ * problem (enable the API, edit key restrictions, top up billing, etc.).
+ *
+ * Renders nothing when the message isn't recognized AND the storage key has
+ * no known landing page.
+ */
+function ProbeFixHint({ message, storageKey }: { message: string; storageKey: string }) {
+  const guidance = explainProbeError(message, storageKey)
+  if (!guidance) return null
+  return (
+    <div
+      className="mt-1.5 rounded-md border px-2 py-1.5 text-[10px] leading-snug"
+      style={{
+        borderColor: 'color-mix(in oklab, var(--bad) 25%, var(--border))',
+        background: 'color-mix(in oklab, var(--bad) 6%, var(--bg-card))',
+        color: 'var(--text-2)',
+      }}
+    >
+      <p className="font-semibold" style={{ color: 'var(--text-1)' }}>
+        {guidance.headline}
+      </p>
+      <p className="mt-0.5">{guidance.body}</p>
+      {guidance.links.length > 0 ? (
+        <ul className="mt-1 flex flex-wrap gap-1.5">
+          {guidance.links.map(link => (
+            <li key={link.href}>
+              <a
+                href={link.href}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 font-medium"
+                style={{
+                  borderColor: 'var(--border-strong)',
+                  background: 'var(--bg-card)',
+                  color: 'var(--accent)',
+                }}
+              >
+                <ExternalLink className="size-2.5" aria-hidden />
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  )
+}
+
 function ModelEnvRow({
   entry,
   storedValue,
@@ -640,11 +693,26 @@ function ModelEnvRow({
               )}
             </label>
             {probe && (
-              <p className="mt-1 text-[9px] md:text-[10px]" role="status" style={{ color: probe.ok ? 'var(--good)' : 'var(--bad)' }}>
-                {probe.ok
-                  ? <><CheckCircle2 className="mr-0.5 inline size-3" aria-hidden />{probe.ms} ms{probe.note ? ` · ${probe.note}` : ''}</>
-                  : <><XCircle className="mr-0.5 inline size-3" aria-hidden />{probe.message}</>}
-              </p>
+              <>
+                <p
+                  className="mt-1 text-[9px] md:text-[10px]"
+                  role="status"
+                  style={{ color: probe.ok ? 'var(--good)' : 'var(--bad)' }}
+                >
+                  {probe.ok ? (
+                    <>
+                      <CheckCircle2 className="mr-0.5 inline size-3" aria-hidden />
+                      {probe.ms} ms{probe.note ? ` · ${probe.note}` : ''}
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="mr-0.5 inline size-3" aria-hidden />
+                      {probe.message}
+                    </>
+                  )}
+                </p>
+                {!probe.ok ? <ProbeFixHint message={probe.message} storageKey={entry.storageKey} /> : null}
+              </>
             )}
           </>
         )}
@@ -744,9 +812,12 @@ function CustomEnvRow({
           )}
         </label>
         {probe && (
-          <p className="mt-1 text-[9px]" role="status" style={{ color: probe.ok ? 'var(--good)' : 'var(--bad)' }}>
-            {probe.ok ? `OK ${probe.ms} ms` : probe.message}
-          </p>
+          <>
+            <p className="mt-1 text-[9px]" role="status" style={{ color: probe.ok ? 'var(--good)' : 'var(--bad)' }}>
+              {probe.ok ? `OK ${probe.ms} ms` : probe.message}
+            </p>
+            {!probe.ok ? <ProbeFixHint message={probe.message} storageKey={row.envKey} /> : null}
+          </>
         )}
       </td>
       <td className="px-2 py-2 text-right md:px-3">

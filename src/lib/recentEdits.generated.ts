@@ -20,7 +20,7 @@ export const RECENT_EDITS: Record<string, string> = {
   "mixing-audio-grab": "2026-05-13T00:40:08-04:00",
   "pulse": "2026-05-13T00:40:08-04:00",
   "rhyme-studio": "2026-05-13T00:40:08-04:00",
-  "tesla": "2026-05-13T19:16:02-04:00",
+  "tesla": "2026-05-13T19:59:11-04:00",
   "tools-arrangement-pad": "2026-05-13T00:40:08-04:00",
   "tools-chord-detector": "2026-05-13T00:40:08-04:00",
   "tools-hub": "2026-05-13T00:40:08-04:00",
