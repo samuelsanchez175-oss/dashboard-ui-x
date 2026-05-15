@@ -161,6 +161,26 @@ function sortNotesByVelDescThenMidi(a: LeadNote, b: LeadNote): number {
 }
 
 /**
+ * Pick up to `n` notes from `group`, ALWAYS keeping the edge voice (`'hi'` = highest MIDI,
+ * `'lo'` = lowest), then filling the rest by velocity.
+ *
+ * The outer voices carry the music — the melody sits on top, the bass on the bottom — but
+ * a transcription's velocity (≈ amplitude) often ranks an inner voice louder than the
+ * melody. A pure velocity cap then silently drops the top line. Pinning the edge before
+ * the velocity fill is what stops "missing top notes" when a polyphony cap fires
+ * (chord-detector-midi-export-debug, Bug 3).
+ */
+function pickKeepingEdge(group: readonly LeadNote[], n: number, keep: 'hi' | 'lo'): LeadNote[] {
+  if (n <= 0) return []
+  if (group.length <= n) return group.map(g => ({ ...g }))
+  const edge = group.reduce((best, c) =>
+    keep === 'hi' ? (c.midi > best.midi ? c : best) : (c.midi < best.midi ? c : best),
+  )
+  const rest = group.filter(c => c !== edge).sort(sortNotesByVelDescThenMidi).slice(0, n - 1)
+  return [edge, ...rest].map(g => ({ ...g }))
+}
+
+/**
  * Per onset chain (sorted `startSec`, adjacent gap ≤ `onsetEpsilonSec`), cap distinct
  * rounded MIDI pitches. Strongest velocity wins per pitch; then either global top-K by
  * velocity or split-hand caps when `splitAtMidi` is set.
@@ -209,16 +229,27 @@ export function enforceTwoHandPianoPolyphony(
     if (candidates.length <= K) return candidates
 
     if (o.splitAtMidi == null || !Number.isFinite(o.splitAtMidi)) {
-      return [...candidates].sort(sortNotesByVelDescThenMidi).slice(0, K)
+      // Velocity-only cap, but the top voice (melody) always survives.
+      return pickKeepingEdge(candidates, K, 'hi')
     }
 
     const split = o.splitAtMidi
     const below = candidates.filter(c => c.midi < split)
     const above = candidates.filter(c => c.midi >= split)
-    const belowPick = [...below].sort(sortNotesByVelDescThenMidi).slice(0, maxBelow)
-    const abovePick = [...above].sort(sortNotesByVelDescThenMidi).slice(0, maxAbove)
+    // Each hand keeps its edge voice: bass below, melody above.
+    const belowPick = pickKeepingEdge(below, maxBelow, 'lo')
+    const abovePick = pickKeepingEdge(above, maxAbove, 'hi')
     let chosen = belowPick.concat(abovePick)
-    if (chosen.length > K) chosen = [...chosen].sort(sortNotesByVelDescThenMidi).slice(0, K)
+    if (chosen.length > K) {
+      // Global trim still protects the outermost two voices.
+      const top = chosen.reduce((a, b) => (b.midi > a.midi ? b : a))
+      const bot = chosen.reduce((a, b) => (b.midi < a.midi ? b : a))
+      const mid = chosen
+        .filter(c => c !== top && c !== bot)
+        .sort(sortNotesByVelDescThenMidi)
+        .slice(0, Math.max(0, K - 2))
+      chosen = [bot, top, ...mid]
+    }
     return chosen
   }
 
@@ -531,8 +562,13 @@ export function thinPolyphonicLeadNotesByTimeWindow(
     if (bucket.length <= cap) {
       out.push(...bucket.map(n => ({ ...n })))
     } else {
-      const sorted = [...bucket].sort((a, b) => b.velocity - a.velocity || b.durationSec - a.durationSec)
-      out.push(...sorted.slice(0, cap).map(n => ({ ...n })))
+      // Always keep the window's top voice, then fill the rest by velocity — a pure
+      // velocity cap drops quiet melody notes (chord-detector-midi-export-debug, Bug 3).
+      const top = bucket.reduce((b, c) => (c.midi > b.midi ? c : b))
+      const rest = bucket
+        .filter(n => n !== top)
+        .sort((a, b) => b.velocity - a.velocity || b.durationSec - a.durationSec)
+      out.push(...[top, ...rest.slice(0, cap - 1)].map(n => ({ ...n })))
     }
     bucket = []
   }
@@ -720,7 +756,7 @@ function refineOnePitchLaneForMidiExport(
     const winLo = Math.max(0, s0 - S)
     const onsetSearchHi = n.midi < 48 ? 0.038 : 0.02
     const winHi = Math.min(fullDurationSec, s0 + onsetSearchHi)
-    let tFlux = fluxPeakTimeInRange(curve, winLo, winHi)
+    const tFlux = fluxPeakTimeInRange(curve, winLo, winHi)
     let newStart = tFlux - preroll
     newStart = Math.max(winLo, Math.min(winHi, newStart))
     newStart = Math.max(0, Math.min(newStart, e0 - minDur))

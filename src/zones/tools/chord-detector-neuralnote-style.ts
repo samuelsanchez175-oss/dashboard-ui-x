@@ -106,8 +106,12 @@ export const NEURALNOTE_STYLE: {
     enabled: true,
     /** On with POST by default so QUANT FORCE / TIME GRID affect output (NN desktop defaults this off). */
     timeQuantizeEnabled: true,
-    /** Finest grid = last index (1/64); “TIME GRID all the way” in the chord-detector UI. */
-    timeDivisionIndex: NEURALNOTE_TIME_DIVISION_FRACS.length - 1,
+    /**
+     * Quantize grid = straight 1/16 (its 1/16-triplet sibling is always also a snap target).
+     * Was the finest division (1/64): too fine to land notes on musical positions, so the
+     * export read as "off-grid" in a DAW (docs/chord-detector-midi-export-debug.md, Bug 1).
+     */
+    timeDivisionIndex: NEURALNOTE_TIME_DIVISION_FRACS.indexOf(1 / 16),
     /** 1 = full snap toward grid (“QUANT FORCE 100%” in UI). */
     quantizeForce: 1,
     /** POST-stage minimum length (ms); UI slider “MIN NOTE (POST)”. */
@@ -198,6 +202,40 @@ function scaleVelocity(v: number, gain: number, compression: number): number {
 }
 
 /**
+ * Signed circular-mean phase of note onsets against a grid of step `gridSec`.
+ * Returns where the music's own grid sits relative to t=0, in [-gridSec/2, gridSec/2).
+ * Circular mean so onsets straddling the wrap boundary still average correctly — this
+ * is what lets the quantizer find the real downbeat instead of assuming bar 1 = t=0.
+ */
+function circularGridPhaseSec(notes: readonly LeadNote[], gridSec: number): number {
+  if (notes.length === 0 || !(gridSec > 0)) return 0
+  let sx = 0
+  let sy = 0
+  for (const n of notes) {
+    const theta = ((((n.startSec % gridSec) + gridSec) % gridSec) / gridSec) * 2 * Math.PI
+    sx += Math.cos(theta)
+    sy += Math.sin(theta)
+  }
+  let phase = (Math.atan2(sy, sx) / (2 * Math.PI)) * gridSec
+  if (phase >= gridSec / 2) phase -= gridSec
+  if (phase < -gridSec / 2) phase += gridSec
+  return phase
+}
+
+/**
+ * Snap `t` to the nearest line of EITHER phase-anchored grid (`gridA` or `gridB`),
+ * blended by `force` (1 = full snap). Mirrors a DAW "1/16 & 1/16-triplet" quantize:
+ * straight 16ths and 16th-triplets are both valid targets, nearest wins.
+ */
+function snapToDualGrid(t: number, phaseSec: number, gridA: number, gridB: number, force: number): number {
+  const snapOne = (g: number): number => (g > 0 ? phaseSec + Math.round((t - phaseSec) / g) * g : t)
+  const a = snapOne(gridA)
+  const b = snapOne(gridB)
+  const target = Math.abs(t - a) <= Math.abs(t - b) ? a : b
+  return t + (target - t) * Math.max(0, Math.min(1, force))
+}
+
+/**
  * Apply optional time quantize, minimum duration, and velocity shaping.
  * Min-duration and overlap repair run **per rounded MIDI pitch** so polyphonic
  * chords are not serialized or clipped against other pitches.
@@ -223,10 +261,23 @@ export function applyNeuralNoteStyleLeadNotes(
     velocity: scaleVelocity(n.velocity, o.velocityGain, o.velocityCompression),
   }))
 
-  if (qf > 0) {
+  if (qf > 0 && Number.isFinite(bpm) && bpm >= 1) {
+    /*
+     * Quantize to a MUSICAL grid (the selected division + its triplet sibling), phase-
+     * aligned to the music's own downbeat, then shift so that downbeat lands on t=0 — a
+     * DAW-import-ready bar grid.
+     *
+     * Replaces a t=0-anchored single-division snap: at the finest division (1/64) that
+     * snap was too fine to land notes on musical positions, and anchoring at t=0 baked
+     * in the music's lead-in offset (see docs/chord-detector-midi-export-debug.md, Bug 1).
+     */
+    const secondsPerQn = 60 / bpm
+    const gridPrimary = divFrac * 4 * secondsPerQn
+    const gridTriplet = gridPrimary * (2 / 3)
+    const phase = circularGridPhaseSec(working, gridPrimary)
     working = working.map(n => ({
       ...n,
-      startSec: Math.max(0, quantizeLeadStartSec(n.startSec, bpm, divFrac, qf, 0)),
+      startSec: Math.max(0, snapToDualGrid(n.startSec, phase, gridPrimary, gridTriplet, qf) - phase),
     }))
   }
 
@@ -248,7 +299,7 @@ export function applyNeuralNoteStyleLeadNotes(
     const laneAdj: LeadNote[] = []
     for (let i = 0; i < lane.length; i++) {
       const n = lane[i]!
-      let start = n.startSec
+      const start = n.startSec
       let end = start + n.durationSec
       const next = lane[i + 1]
       const roomEnd = (next?.startSec ?? fullDurationSec) - 1e-4

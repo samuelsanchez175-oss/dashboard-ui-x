@@ -147,6 +147,12 @@ function dropSemitoneFlatOnsetShadows(notes: readonly LeadNote[]): LeadNote[] {
 /**
  * Run Basic Pitch on mono audio already at 22050 Hz. Caller trims duration caps.
  * @param basicPitchDecode — partial overrides of `NEURALNOTE_STYLE.basicPitch`.
+ *
+ * NOTE (chord-detector-midi-export-debug, Bug 3): high-shelf pre-emphasis on the input
+ * was tried here to recover high notes — it did not (max pitch unchanged, total notes
+ * slightly down), so it was reverted. BP's high-register ceiling on a given source is
+ * input/model-bounded; the export pipeline is verified to preserve every high note BP
+ * does detect.
  */
 export async function transcribeMono22050ToLeadNotes(
   mono22050: Float32Array,
@@ -202,6 +208,12 @@ export async function transcribeMono22050ToLeadNotes(
     /* Clean semitone-flat onset-shadow ghosts before they reach the key histogram and
      * the beat-level chord blend (engine's `leadNotesRaw`). */
     const leadNotes = dropSemitoneFlatOnsetShadows(leadNotesRaw)
+
+    /* DEV-only: expose the true pre-filter BP output so the MIDI-debug harness can
+     * tell whether the ghost filter (vs Basic Pitch itself) thins the high register. */
+    if (import.meta.env.DEV) {
+      ;(globalThis as unknown as { __bpRawNotes?: unknown }).__bpRawNotes = leadNotesRaw.map(n => ({ ...n }))
+    }
 
     return {
       ok: true,

@@ -20,8 +20,10 @@ import {
   clipLeadNotesForExport,
   NEURALNOTE_STYLE,
   NEURALNOTE_TIME_DIVISION_LABELS,
+  validateChordOutput,
   type ChordAnalysisResult,
   type NeuralNoteStyleMelodyPostInput,
+  type ValidationReport,
 } from './chord-detector-engine'
 import StudioToolsHeader from './StudioToolsHeader'
 
@@ -88,6 +90,8 @@ const PALETTE = {
   textMuted: '#707075',
   amber: '#F5A623',
   amberGlow: 'rgba(245, 166, 35, 0.15)',
+  /** "Pass" indicator for the Output Check panel — muted to fit the instrument-panel look. */
+  green: '#54C98E',
 } as const
 
 function hueFromLabel(label: string): number {
@@ -565,6 +569,17 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
     return clippedSegments.map(s => s.label).join(' → ')
   }, [clippedSegments])
 
+  /** Output-quality checks for the "Output check" panel — recomputed per analysis. */
+  const validationReport = useMemo<ValidationReport | null>(
+    () => (result ? validateChordOutput(result) : null),
+    [result],
+  )
+
+  /** Loop stat readout — e.g. "4 bars ×7" or "—". */
+  const loopDisplay = result?.loop.found
+    ? `${result.loop.barCount} bar${result.loop.barCount > 1 ? 's' : ''} ×${result.loop.repeats}`
+    : '—'
+
   const runFile = useCallback(async (file: File) => {
     lastFileRef.current = file
     setBusy(true)
@@ -609,10 +624,11 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
       busy,
       error,
       fileName,
+      validationReport,
       runId: testRunIdRef.current,
       at: Date.now(),
     }
-  }, [result, busy, error, fileName])
+  }, [result, busy, error, fileName, validationReport])
 
   // Inbound clip pickup (one-shot per route entry).
   useEffect(() => {
@@ -1077,7 +1093,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
               </div>
               <div
                 className="grid"
-                style={{ gridTemplateColumns: '1fr 1fr', gap: '1px', background: PALETTE.line }}
+                style={{ gridTemplateColumns: '1fr 1fr 1fr', gap: '1px', background: PALETTE.line }}
               >
                 <StatCell
                   label="DURATION"
@@ -1086,6 +1102,16 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 <StatCell
                   label="CHORDS"
                   value={result ? String(chordCount).padStart(2, '0') : '—'}
+                />
+                <StatCell
+                  label="LOOP"
+                  value={result ? loopDisplay : '—'}
+                  valueColor={result?.loop.found ? PALETTE.amber : PALETTE.textMain}
+                  title={
+                    result?.loop.found
+                      ? `The piece repeats a ${result.loop.barCount}-bar pattern ${result.loop.repeats} times.`
+                      : 'No clear repeating loop was found (through-composed, or the clip is too short).'
+                  }
                 />
               </div>
               <div
@@ -1172,6 +1198,9 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                   />
                 </div>
               ) : null}
+
+              {/* Output check — heuristic pass/warn report on the exported MIDI's quality */}
+              {result && validationReport ? <OutputCheckPanel report={validationReport} /> : null}
             </section>
 
             {/* ── Melody post (NeuralNote-style, browser-only) ─────────────────────── */}
@@ -1660,11 +1689,23 @@ function CircleNum({ n }: { n: number }) {
   )
 }
 
-function StatCell({ label, value, valueColor }: { label: string; value: string; valueColor?: string }) {
+function StatCell({
+  label,
+  value,
+  valueColor,
+  title,
+}: {
+  label: string
+  value: string
+  valueColor?: string
+  /** Optional hover hint explaining the stat in plain words. */
+  title?: string
+}) {
   return (
     <div
       className="flex items-center justify-between px-6 py-4"
       style={{ background: PALETTE.surface }}
+      title={title}
     >
       <span className="text-[10px] uppercase tracking-[0.1em]" style={{ color: PALETTE.textMuted }}>
         {label}
@@ -1678,6 +1719,64 @@ function StatCell({ label, value, valueColor }: { label: string; value: string; 
       >
         {value}
       </span>
+    </div>
+  )
+}
+
+/**
+ * Output check panel — a pass / warn report on the exported MIDI's quality, rendered
+ * after every analysis. Plain-words labels and a readable detail line (no 9px all-caps),
+ * per the `clear-ui-labels` skill. A single coloured dot per row carries the status.
+ */
+function OutputCheckPanel({ report }: { report: ValidationReport }) {
+  const allOk = report.warnCount === 0
+  return (
+    <div
+      className="flex flex-col border-t"
+      style={{ borderColor: PALETTE.line, background: PALETTE.surface }}
+    >
+      <div
+        className="flex items-center justify-between px-6 py-3 text-[10px] uppercase tracking-[0.15em]"
+        style={{ color: PALETTE.textMuted }}
+      >
+        <span>OUTPUT CHECK</span>
+        <span
+          style={{
+            fontFamily: "'DM Mono', monospace",
+            color: allOk ? PALETTE.green : PALETTE.amber,
+          }}
+        >
+          {report.passCount}/{report.checks.length} OK
+        </span>
+      </div>
+      <div className="flex flex-col px-6 pb-3">
+        {report.checks.map(c => (
+          <div key={c.id} className="flex items-start gap-3 py-1.5">
+            <span
+              aria-hidden
+              style={{
+                width: 7,
+                height: 7,
+                borderRadius: '50%',
+                background: c.status === 'pass' ? PALETTE.green : PALETTE.amber,
+                marginTop: 5,
+                flexShrink: 0,
+              }}
+            />
+            <div className="flex flex-col">
+              <span className="text-[11px]" style={{ color: PALETTE.textMain }}>
+                {c.label}
+              </span>
+              <span
+                className="text-[10px] leading-snug tracking-normal"
+                style={{ color: PALETTE.textMuted }}
+              >
+                {c.detail}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

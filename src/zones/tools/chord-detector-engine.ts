@@ -30,9 +30,19 @@ import {
   PIANO_LEAD_RELAXED_BASIC_PITCH,
 } from './chord-detector-neuralnote-style'
 import type { NeuralNoteBasicPitchDecode, NeuralNoteStyleMelodyPostInput } from './chord-detector-neuralnote-style'
+import { detectBarLoop } from './chord-detector-loops'
+import type { LoopInfo } from './chord-detector-loops'
+import { structureLeadNotes } from './chord-detector-structure'
 
 /** Re-export: RMS/flux snap + post-BP merge + chord onset align tunables (see `chord-detector-melody.ts`). */
 export { CHORD_ONSET_ALIGN, MIDI_EXPORT_NOTE_MERGE, MIDI_EXPORT_TIMING, PIANO_TWO_HAND_EXPORT, PIANO_TWO_HAND_RELAXED }
+
+/** Re-export: bar-loop detection, 2nd-pass structuring, output validation (Part 3). */
+export { detectBarLoop } from './chord-detector-loops'
+export type { LoopInfo } from './chord-detector-loops'
+export { structureLeadNotes, STRUCTURE_PASS } from './chord-detector-structure'
+export { validateChordOutput, VALIDATION_THRESHOLDS } from './chord-detector-validation'
+export type { ValidationCheck, ValidationReport } from './chord-detector-validation'
 
 /** NeuralNote-inspired defaults (Basic Pitch decode + optional melody post). */
 export {
@@ -224,6 +234,11 @@ export type ChordAnalysisResult = {
    * just the chord skeleton — so the exported MIDI sounds closer to the source.
    */
   leadNotes: LeadNote[]
+  /**
+   * Bar-level loop detection — whether the piece is a repeating loop, the repeating
+   * unit's length in bars, and how many times it repeats. See `chord-detector-loops.ts`.
+   */
+  loop: LoopInfo
 }
 
 /* ── pretty-midi-style key estimation (Krumhansl-Kessler probe-tone profiles) ──
@@ -472,6 +487,7 @@ export async function analyzeChordProgressionFromMidiBlob(
       beatTimesSec: [],
       downbeatTimesSec: [],
       leadNotes: [],
+      loop: detectBarLoop([], bpm, Math.max(0, durationSec)),
     }
   }
 
@@ -500,6 +516,9 @@ export async function analyzeChordProgressionFromMidiBlob(
     ...PIANO_TWO_HAND_EXPORT,
     ...(!isPianoLeadFocusMode(options) ? PIANO_TWO_HAND_RELAXED : {}),
   })
+  /* Part 3 — bar-loop detection + 2nd-pass structuring (also runs on the MIDI-input path). */
+  const loop = detectBarLoop(leadNotes, bpm, durationSec)
+  leadNotes = structureLeadNotes(leadNotes, loop, bpm)
 
   return {
     bpm,
@@ -514,6 +533,7 @@ export async function analyzeChordProgressionFromMidiBlob(
     beatTimesSec,
     downbeatTimesSec,
     leadNotes,
+    loop,
   }
 }
 
@@ -1158,9 +1178,21 @@ export async function analyzeChordProgressionFromBlob(
       segments = refineChordSegmentBoundariesFromCurve(rmsFluxCurve, segments, beatSec)
     }
     const ph = isPianoLeadFocusMode(options) ? EXPORT_LEAD_PHANTOM.strict : EXPORT_LEAD_PHANTOM.relaxed
+
+    /* DEV-only per-stage capture — `scripts/chord-detector-midi-debug.mjs` reads
+     * `window.__chordPipelineStages` to see which export stage drops top notes,
+     * splits sustains, or shifts onsets. No-op in production builds. */
+    const __leadStages: { stage: string; count: number; notes: LeadNote[] }[] = []
+    const dbgStage = (stage: string, ns: readonly LeadNote[]): void => {
+      if (import.meta.env.DEV) __leadStages.push({ stage, count: ns.length, notes: ns.map(n => ({ ...n })) })
+    }
+    dbgStage('0-raw', leadNotesRaw)
+
     /* Merge/drop for export only — `leadNotesRaw` stays unmerged for beat-level chord blend. */
     let leadForMidi = mergeAdjacentSamePitchNotes(leadNotesRaw, MIDI_EXPORT_NOTE_MERGE.samePitchMaxGapSec)
+    dbgStage('1-merge', leadForMidi)
     leadForMidi = collapseOctaveDuplicatesNearOnsets(leadForMidi, 0.042)
+    dbgStage('2-octaveCollapse', leadForMidi)
     leadForMidi = dropSimultaneousPitchOutliers(
       leadForMidi,
       ph.outlier1.clusterSec,
@@ -1168,18 +1200,26 @@ export async function analyzeChordProgressionFromBlob(
       ph.outlier1.minSemi,
       ph.outlier1.maxVelRatio,
     )
+    dbgStage('3-outlier1', leadForMidi)
     leadForMidi = thinPolyphonicLeadNotesByTimeWindow(leadForMidi, ph.thinWinSec, ph.thinMaxVoices)
+    dbgStage('4-thinPoly', leadForMidi)
     leadForMidi = debounceIsolatedBassBlips(leadForMidi, 40, 41, 72, 0.18, 0.11)
+    dbgStage('5-debounceBass', leadForMidi)
     leadForMidi = dropLowRegisterNotesShorterThan(leadForMidi, 48, 0.135)
+    dbgStage('6-dropLowShort', leadForMidi)
     leadForMidi = dropLeadNotesShorterThan(leadForMidi, MIDI_EXPORT_NOTE_MERGE.minNoteSecAfterMerge)
+    dbgStage('7-dropShort', leadForMidi)
     let leadNotes = rmsFluxCurve
       ? refineLeadNotesForMidiExport(rmsFluxCurve, leadForMidi, durationSec)
       : leadForMidi
+    dbgStage('8-rmsRefine', leadNotes)
 
     // NeuralNote-inspired post (quant / min length / velocity) — optional; does not replace BP polyphony.
     leadNotes = applyNeuralNoteStyleLeadNotes(leadNotes, bpm, durationSec, options?.melodyPost)
+    dbgStage('9-neuralNotePost', leadNotes)
     // Co-align straggling chord onsets for export/preview (after merge + per-pitch RMS refine).
     leadNotes = alignChordOnsetsInLeadNotes(leadNotes, { ...CHORD_ONSET_ALIGN, bpm })
+    dbgStage('10-onsetAlign', leadNotes)
     // RMS refine can nudge simultaneous windows — light second outlier pass (export only).
     leadNotes = dropSimultaneousPitchOutliers(
       leadNotes,
@@ -1188,11 +1228,27 @@ export async function analyzeChordProgressionFromBlob(
       ph.outlier2.minSemi,
       ph.outlier2.maxVelRatio,
     )
+    dbgStage('11-outlier2', leadNotes)
     // Solo-piano polyphony cap last on export so onset align + outlier passes cannot re-stack >K voices.
     leadNotes = enforceTwoHandPianoPolyphony(leadNotes, {
       ...PIANO_TWO_HAND_EXPORT,
       ...(!isPianoLeadFocusMode(options) ? PIANO_TWO_HAND_RELAXED : {}),
     })
+    dbgStage('12-twoHandCap', leadNotes)
+    /* Final same-pitch merge. The stage-1 merge runs on raw BP notes, but RMS refine,
+     * quantize, and onset-align all move note timing afterwards — creating fresh sub-
+     * perceptual gaps and same-pitch overlaps. One last merge collapses those so a held
+     * note exports as ONE note, not two fragments (chord-detector-midi-export-debug, Bug 4). */
+    leadNotes = mergeAdjacentSamePitchNotes(leadNotes, MIDI_EXPORT_NOTE_MERGE.samePitchMaxGapSec)
+    dbgStage('13-finalMerge', leadNotes)
+    /* Part 3 — stage 14: bar-loop detection + 2nd-pass structuring (re-snap starts,
+     * quantize note lengths, trim loop-seam straddlers). */
+    const loop = detectBarLoop(leadNotes, bpm, durationSec)
+    leadNotes = structureLeadNotes(leadNotes, loop, bpm)
+    dbgStage('14-structure', leadNotes)
+    if (import.meta.env.DEV) {
+      ;(globalThis as unknown as { __chordPipelineStages?: unknown }).__chordPipelineStages = __leadStages
+    }
 
     // ── New (pretty-midi-derived) ─────────────────────────────────────────────
     let pitchClassHistogram: number[]
@@ -1219,6 +1275,7 @@ export async function analyzeChordProgressionFromBlob(
       beatTimesSec,
       downbeatTimesSec,
       leadNotes,
+      loop,
     }
   } finally {
     await ctx.close().catch(() => {})
