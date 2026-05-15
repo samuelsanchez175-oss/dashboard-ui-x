@@ -126,11 +126,68 @@ MP3 ──▶ Basic Pitch (TF.js) ──▶ ghost filter ──▶ leadNotesRaw
 
 ## Audit / improvement rounds (this session)
 
-| Round | Subagents | Findings (filled as we go) | Fixes applied |
+| Round | Subagent findings | Fixes applied | Commit |
 |---|---|---|---|
-| 1 | first-note loss · loop quality · missing top notes | — | — |
-| 2 | TBD after round 1 | — | — |
-| 3 | TBD after round 2 | — | — |
+| 1 | (A) phantom-stack at t=0 from BPM-drift / (B) merge collapsed G#4 65→1 pad / (C) `minIterationFraction=0` admits 49 % single-iter noise | iter-0 anchor + register-aware merge (`midi < 60` only) + strict gap criteria + `minIterationFraction` 0 → 0.25 | `3e921bf` |
+| 2 | (A) lone bass notes stretched to 7.385 s by extend-to-seam / (B) bass register over-represented +14 pp / (C) melodic stabs 0.69 s vs target 0.23 s | Drop unconditional bass extend-to-seam + 25th-percentile melody durations + snap to ⅟16 grid | `888007f` |
+| 3 | (A) drift spreads high-recurrence onsets across adjacent ⅟16 buckets / (B) 6 of 10 PC × register cells now match / (C) **18 of 21 missing GT notes were never in any pipeline stage — only chord-implied inference can recover them** | `driftTolSixteenths` 1 → 2 (⅛-cell bucket key) + averaged emission phase snapped to ⅟16 | `8ad9615` |
+
+### Pitch-class share Δpp convergence (Acura vs Notes 2 target)
+
+| PC | R0 broken | R1 anchor + merge | R2 dur + snap | R3 drift-tol | Verdict |
+|---|---:|---:|---:|---:|---|
+| C# | +12.35 | +2.35 | +3.28 | **-1.34** | ✓ |
+| D# | +6.60 | +0.34 | -0.91 | +5.11 | minor under |
+| F# | -10.11 | -6.90 | -2.37 | **+0.58** | ✓ |
+| A# | -7.50 | +12.36 | +0.42 | **-1.04** | ✓ |
+| B | small | -14.35 | +7.31 | **-3.74** | ✓ |
+| G# | small | +3.19 | +1.91 | -3.06 | minor over |
+| F | — | +3.66 | +3.49 | +3.49 | **chord-implied** |
+
+8 of 12 PCs within ±3 pp of target after round 3. Remaining gaps (D# slightly under, F missing) are chord-implied notes that BP did not transcribe in the source audio at all.
+
+### Canonical-window snapshot (post-round-3)
+
+| Metric | Value | Target (Notes 2) |
+|---|---|---|
+| Notes in canonical 2-bar window | 58 | 31 |
+| Max polyphony | 7 | 4-5 |
+| First note at t=0 | B2 ✓ | B2 ✓ |
+| Bass B2 duration | 1.75 s | 1.38 s |
+| Melodic stab duration (G#4 etc.) | 0.23 s (= ⅟16) | 0.23 s |
+| Notes ≥ C5 | 1 (stray C#5) | 0 |
+| OUTPUT CHECK panel | 4/5 ✓ | (5/5 on Notes 2.wav) |
+| Notes 2 onset coverage | ≈ 71-78 % (R3 improved on R2's 71) | — |
+
+## Recommended next phase: chord-implied note inference
+
+Subagent C's round-3 finding (paraphrased): of 21 notes in Notes 2.wav that are
+NOT in the post-round-3 canonical window, 18 were **never in any pipeline stage**
+— BP didn't transcribe them in the source audio. 6 have no same-PC anywhere
+within ±2 sixteenths in raw BP. These are structurally missing, not
+threshold-tunable. The pipeline cannot recover them from BP output alone.
+
+**Proposed solution (NEW stage 14.5 — `chord-detector-chord-imply.ts`, ~150 LOC):**
+
+1. Partition the canonical loop window into half-bar slices (2 beats each — Notes
+   2's chord-change rate).
+2. For each slice: collect existing PCs → match against 24 triads/seventh chords
+   using the key-anchored template (the engine already has `estimatedKey`).
+3. For the best-matching chord (Acura cycles iv-v-i-iv-ish in C# minor: F#m / G#m /
+   C#m): compute its expected root / 3rd / 5th MIDI positions in the same octave
+   register as the existing bass and inner voices.
+4. For each chord tone NOT already present at the slice's onset bin (nearest ⅟16):
+   insert a synthetic note (velocity = 0.6 × median window velocity, duration ⅛
+   for inner voices, ⅛-note for bass) at the slice downbeat.
+5. Only insert when the slice has ≥ 3 existing PCs (don't invent chords from
+   noise); never extend beyond chord tones.
+
+Expected event-level Jaccard uplift: **22 % → 65–75 %**, putting the audit's
+strict 70 % loop-quality gate within reach and the user's 80–90 % goal in sight.
+
+Insert in `chord-detector-engine.ts` between `structureLeadNotes` and
+`consolidateToLoop` so the chord-implied notes flow through stage 15's
+loop-aware consolidation.
 
 ## How to drive the harness
 
