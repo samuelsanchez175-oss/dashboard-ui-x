@@ -95,9 +95,14 @@ export function consolidateToLoop(
     })
   }
 
-  /* Per-pitch lane clamp + final-note tail handling. Two same-pitch notes inside
-   * one loop unit shouldn't overlap; the LAST note in each lane may run all the way
-   * to the loop boundary so the seam is filled. */
+  /* Per-pitch lane: merge adjacent same-pitch consensus notes (gap ≤ ~1/32 note)
+   * before clamping. Consolidation creates NEW same-pitch adjacency by pulling
+   * notes from different loop iterations into one canonical window — BP often
+   * transcribes a sustained bass note as a string of 1/16 hits, and after the
+   * union those hits land back-to-back at every sixteenth of the loop. Without
+   * this merge, the export looks like staccato when the source is sustained.
+   * Then clamp + extend last-in-lane to the loop boundary so the seam is filled. */
+  const mergeGapSec = (loop.barSec / 32) /* one 1/32 note */
   const byMidi = new Map<number, LeadNote[]>()
   for (const n of consensus) {
     let lane = byMidi.get(n.midi)
@@ -110,11 +115,30 @@ export function consolidateToLoop(
   const out: LeadNote[] = []
   for (const lane of byMidi.values()) {
     lane.sort((a, b) => a.startSec - b.startSec)
-    for (let i = 0; i < lane.length; i++) {
-      const n = lane[i]!
-      const next = lane[i + 1]
+    /* In-place merge: walk the lane, extending the current note when the next one
+     * starts within `mergeGapSec` of its end. Velocity is averaged so a softer
+     * continuation pulls a louder onset down a touch (matches how BP transcribes
+     * sustained notes as a decaying chain of hits). */
+    const merged: LeadNote[] = []
+    for (const n of lane) {
+      const last = merged[merged.length - 1]
+      if (last) {
+        const gap = n.startSec - (last.startSec + last.durationSec)
+        if (gap <= mergeGapSec) {
+          const end = Math.max(last.startSec + last.durationSec, n.startSec + n.durationSec)
+          last.durationSec = end - last.startSec
+          last.velocity = (last.velocity + n.velocity) / 2
+          continue
+        }
+      }
+      merged.push({ ...n })
+    }
+    for (let i = 0; i < merged.length; i++) {
+      const n = merged[i]!
+      const next = merged[i + 1]
       let end = n.startSec + n.durationSec
       if (next) end = Math.min(end, next.startSec - 1e-4)
+      else end = unitSec /* extend the last note in each lane to the loop boundary */
       end = Math.min(end, unitSec)
       out.push({
         midi: n.midi,
