@@ -40,17 +40,25 @@ flowchart TD
     LOOP --> STRUCT
     STRUCT --> LEAD["final leadNotes"]
 
+    CHROMA --> AUDIT["auditChordAnalysis<br/>(missing-note gaps, per-period loop scores, key cross-check)<br/>→ AuditReport"]
+    LEAD --> AUDIT
+    SEG --> AUDIT
+    KEY --> AUDIT
+    LOOP --> AUDIT
+
     LEAD --> RESULT
-    SEG --> RESULT["ChordAnalysisResult<br/>{ bpm, key, segments, leadNotes, loop, … }"]
+    SEG --> RESULT["ChordAnalysisResult<br/>{ bpm, key, segments, leadNotes, loop, audit, … }"]
     KEY --> RESULT
     BPM --> RESULT
     LOOP --> RESULT
+    AUDIT --> RESULT
     MIDIPATH --> RESULT
 
     RESULT --> VAL["validateChordOutput → ValidationReport"]
     RESULT --> MIDI["buildChordMidiBlob → .mid (download)"]
 
     VAL --> PANEL["OUTPUT CHECK panel<br/>(5 pass/warn rows)"]
+    RESULT --> APANEL["AUDIT panel<br/>(missing notes · loop quality · key/BPM/scale)"]
     RESULT --> STATS["stats grid<br/>(KEY · BPM · LOOP · CHORDS · …)"]
 ```
 
@@ -71,7 +79,8 @@ flowchart TD
 | K | 14-stage export | engine + `chord-detector-melody` + `chord-detector-structure` | `leadNotesRaw`, BPM, RMS curve | clean `leadNotes` | See §3 | Turn BP's noisy poly notes into a clean MIDI export |
 | L | Loop detect | `chord-detector-loops` | final `leadNotes`, BPM | `LoopInfo` | Bar-fingerprint self-similarity | Stat readout + Stage 14 seam-trim |
 | M | Validate | `chord-detector-validation` | full result | `ValidationReport` | 5 heuristic pass/warn checks | "OUTPUT CHECK" panel |
-| N | MIDI export | engine | `leadNotes`, `bpm` | `Blob (audio/midi)` | `new Midi()` + `addNote` per lead note | Download button |
+| N | Audit | `chord-detector-audit` | leadNotes + segments + key + loop + aggregate chroma PC dist | `AuditReport` | Missing-note candidates (chroma share − note share), per-period loop scores, key/scale cross-check vs chord progression (relative-key tolerant) | "AUDIT" panel |
+| O | MIDI export | engine | `leadNotes`, `bpm` | `Blob (audio/midi)` | `new Midi()` + `addNote` per lead note | Download button |
 
 ## 3. The 14-stage lead-note export pipeline
 
@@ -160,9 +169,12 @@ flowchart LR
     stages1to12["stages 1–12"] --> P3
     P3["C · per-pitch RMS revisit<br/>after onset-align"] --> S13
     S13["13 · merge"] --> S14
-    S14["14 · structure"] --> P4
-    P4["D · post-structure consensus<br/>across loop repeats"] --> EXPORT
+    S14["14 · structure"] --> S15
+    S15["15 · audit<br/>(read-only — adds AuditReport)"]:::landed
+    S15 --> P4
+    P4["D · loop-consensus consolidate<br/>(post-audit, opt-in)"] --> EXPORT
     EXPORT["MIDI export"]
+    classDef landed fill:#1e2c1f,stroke:#54C98E,color:#eaeaea;
 ```
 
 - **A — pre-emphasis** (lift highs before BP): *tried in Part 2, reverted as negative
@@ -174,9 +186,16 @@ flowchart LR
 - **C — per-pitch RMS revisit** (between stage 10 and 13): re-check note ends against
   RMS after onset-align nudges; might recover sustain that align trims. Risk: re-creates
   splits that 13's merge then has to clean up.
-- **D — loop-consensus consolidation** (after stage 14): the path the user explicitly
-  *rejected* in Part 3 (the "consolidate to one clean loop" alternative). Still on the
-  shelf if "clean every repetition in place" stops being enough.
+- **15 — audit pass (LANDED)** — `chord-detector-audit.ts`: read-only post-pipeline
+  pass that reports missing-note candidates (source chroma share vs lead-note share,
+  flagged at ≥5 pp deficit), per-period loop quality (1/2/4/8/16 bars with mean +
+  cleanest Jaccard + a clean/partial/no rating), and a key/BPM/scale cross-check
+  against the chord progression with relative-key tolerance. Surfaces as the AUDIT
+  panel under OUTPUT CHECK. Does not mutate the export.
+- **D — loop-consensus consolidate** (post-audit, opt-in): the path the user explicitly
+  *rejected* in the Part 3 brainstorm (the "consolidate to one clean loop"
+  alternative). Still on the shelf if the audit's "loop overall: clean" + a future
+  toggle want to fold all repetitions into one canonical bar window.
 
 Any new step that **rearranges note timing** should run **before** stage 9 (so the
 quantize is the source of truth) **or** be its own structuring pass that mirrors what
