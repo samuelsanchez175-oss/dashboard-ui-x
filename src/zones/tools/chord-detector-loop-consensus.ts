@@ -107,25 +107,43 @@ export function consolidateToLoop(
     b.iterationsSeen.add(iter)
   }
 
-  /* One consensus note per (midi, phase) bucket. Median duration so a single long-
-   * lingering ghost doesn't stretch the canonical note. Mean velocity.
+  /* One consensus note per (midi, phase) bucket. Mean velocity.
    *
    * Iter-0 anchor: a bucket that iteration 0 actually had survives unconditionally,
    * regardless of `minOccurrences`. This means the first note of the export always
    * matches the first note of the source's first iteration — phase-drift phantoms
    * (where late-iteration onsets snap into a phase=0 bucket they don't really
-   * belong in) can only get in if they also clear the cross-iteration threshold. */
+   * belong in) can only get in if they also clear the cross-iteration threshold.
+   *
+   * Duration is register-aware and quantised to the ⅟16 grid (so stage 14's
+   * "all lengths on the grid" invariant still holds after stage 15):
+   *   - Bass (midi < bassMergeMidiCeiling): median of observed durations, rounded
+   *     to the nearest ⅟16 multiple. Sustained pads keep their full ring.
+   *   - Melody (midi ≥ bassMergeMidiCeiling): 25th percentile capped at 1.5 × ⅟16,
+   *     rounded to the nearest ⅟16 multiple — so each stab snaps to exactly one
+   *     ⅟16. BP's duration estimates skew long for staccato melodic stabs (it
+   *     smears short events). Picking a lower quantile + the cap keeps each stab
+   *     from running into its successor. Notes 2.wav's melodic stabs sit around
+   *     one sixteenth (~0.23 s at 65 BPM); this matches it. */
+  const sixteenthDurForCap = loop.barSec / 16
+  const melodyStabDurCap = sixteenthDurForCap * LOOP_CONSENSUS.mergeMaxDurSixteenths
+  const quantToSixteenths = (d: number) =>
+    Math.max(sixteenthDurForCap, Math.round(d / sixteenthDurForCap) * sixteenthDurForCap)
   const consensus: LeadNote[] = []
   for (const b of buckets.values()) {
     const anchored = b.iterationsSeen.has(0)
     if (!anchored && b.iterationsSeen.size < minOccurrences) continue
     const durs = [...b.durationsSec].sort((a, b2) => a - b2)
-    const medianDur = durs[Math.floor(durs.length / 2)]!
+    const isMelody = b.midi >= LOOP_CONSENSUS.bassMergeMidiCeiling
+    const rawDur = isMelody
+      ? Math.min(durs[Math.floor(durs.length / 4)]!, melodyStabDurCap)
+      : durs[Math.floor(durs.length / 2)]!
+    const chosenDur = quantToSixteenths(rawDur)
     const meanVel = b.velocities.reduce((a, b2) => a + b2, 0) / b.velocities.length
     consensus.push({
       midi: b.midi,
       startSec: b.phaseSec,
-      durationSec: Math.min(medianDur, Math.max(1e-3, unitSec - b.phaseSec)),
+      durationSec: Math.min(chosenDur, Math.max(1e-3, unitSec - b.phaseSec)),
       velocity: Math.max(0.1, Math.min(1, meanVel)),
     })
   }
@@ -190,11 +208,12 @@ export function consolidateToLoop(
       if (next) {
         /* Clamp so two same-pitch notes don't overlap inside the canonical window. */
         end = Math.min(end, next.startSec - 1e-4)
-      } else if (isBassLane) {
-        /* Bass: extend the last note to the seam so a sustained pad reads as held
-         * across the loop boundary. Melody lanes keep their natural duration. */
-        end = unitSec
       }
+      /* No unconditional "extend last note to seam." Round-1 had a bass-lane branch
+       * that stretched the trailing note in every bass lane to `unitSec`; the round-2
+       * audit found this fired even for short single-stab notes (lone B2 → 7.385 s)
+       * because lanes with only one entry skip the `next` clamp and fall through.
+       * Trust the bucket's own duration (median for bass, capped quantile for melody). */
       end = Math.min(end, unitSec)
       out.push({
         midi: n.midi,
