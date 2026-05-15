@@ -11,7 +11,7 @@ import {
 } from 'react'
 
 import { getFileById, receiveDockOrFileDrop } from '../../components/files-dock/files-store'
-import { buildChord, CHORD_QUALITIES, ROOTS } from '../../components/piano/chords'
+import { buildChord, CHORD_QUALITIES } from '../../components/piano/chords'
 import { piano } from '../../components/piano/engine'
 import {
   analyzeChordProgressionFromBlob,
@@ -26,56 +26,6 @@ import {
   type ValidationReport,
 } from './chord-detector-engine'
 import StudioToolsHeader from './StudioToolsHeader'
-
-/* ── Chord-label → MIDI parser (for piano playback) ──────────────────────────
- * The chord-detector engine emits labels like:
- *   "C", "Cm", "C#", "C#m", "Cdim", "Caug", "Csus4", "Dsus4", "G#m", …
- * We map those onto the piano engine's CHORD_QUALITIES catalog and ROOTS.
- */
-const ROOT_BY_NAME = new Map<string, number>()
-for (const r of ROOTS) {
-  const flat = r.label.split('/')[1]?.trim()
-  const sharp = r.label.split('/')[0]?.trim().replace(/♯/g, '#').replace(/♭/g, 'b')
-  ROOT_BY_NAME.set(r.id, r.semis)
-  if (sharp) ROOT_BY_NAME.set(sharp, r.semis)
-  if (flat) ROOT_BY_NAME.set(flat.replace(/♭/g, 'b'), r.semis)
-  // Also support the chord-detector-engine's TONIC_SHARP form (no accidentals on naturals).
-  ROOT_BY_NAME.set(r.id.replace('b', '#'), r.semis)
-}
-// Manually patch the simple sharps used by chord-detector-engine ("C#", "D#", "F#", "G#", "A#").
-ROOT_BY_NAME.set('C#', 1)
-ROOT_BY_NAME.set('D#', 3)
-ROOT_BY_NAME.set('F#', 6)
-ROOT_BY_NAME.set('G#', 8)
-ROOT_BY_NAME.set('A#', 10)
-
-/** Parse a chord-detector label into [rootSemis, qualityId]. */
-function parseChordLabel(label: string): { rootSemis: number; qualityId: string } | null {
-  // Two-letter root (e.g. "C#", "Bb") OR one-letter
-  const match = label.match(/^([A-G][#b]?)(.*)$/)
-  if (!match) return null
-  const rootRaw = match[1]!
-  const tail = match[2] ?? ''
-  const rootSemis = ROOT_BY_NAME.get(rootRaw)
-  if (rootSemis == null) return null
-  if (tail === '') return { rootSemis, qualityId: 'maj' }
-  if (tail === 'm') return { rootSemis, qualityId: 'min' }
-  if (tail.startsWith('dim')) return { rootSemis, qualityId: 'dim' }
-  if (tail.startsWith('aug')) return { rootSemis, qualityId: 'aug' }
-  if (tail.startsWith('sus4')) return { rootSemis, qualityId: 'sus4' }
-  if (tail.startsWith('sus2')) return { rootSemis, qualityId: 'sus2' }
-  // Fallback for unrecognized suffixes — play the root triad.
-  return { rootSemis, qualityId: 'maj' }
-}
-
-async function playChordLabel(label: string, gateSec = 0.75): Promise<void> {
-  const parsed = parseChordLabel(label)
-  if (!parsed) return
-  const quality = CHORD_QUALITIES.find(q => q.id === parsed.qualityId)
-  if (!quality) return
-  const midis = buildChord(parsed.rootSemis, 4, quality.intervals, 0)
-  await piano.playChord(midis, gateSec)
-}
 
 interface ToolsChordDetectorPageProps {
   onNavigate: (routeId: string) => void
@@ -93,12 +43,6 @@ const PALETTE = {
   /** "Pass" indicator for the Output Check panel — muted to fit the instrument-panel look. */
   green: '#54C98E',
 } as const
-
-function hueFromLabel(label: string): number {
-  let h = 0
-  for (let i = 0; i < label.length; i++) h = (h * 31 + label.charCodeAt(i)) >>> 0
-  return h % 360
-}
 
 function formatMmSs(seconds: number): string {
   const s = Math.max(0, seconds)
@@ -183,9 +127,20 @@ function saveMelodyPostUiStateToStorage(state: MelodyPostUiState): void {
   }
 }
 
-/* ── Chord timeline (restyled for GRAY2020, wrap-friendly + click-to-play) ──── */
+/* ── Piano roll (NeuralNote-style MIDI view, replaces ChordTrimTimeline) ─────── */
 
-function ChordTrimTimeline({
+/**
+ * Vertical piano keyboard on the left, time-aligned note bars on the right.
+ *
+ * Renders `result.leadNotes` (the melody/lead transcribed by Basic Pitch — same
+ * data the MIDI export emits). Chord segments are NOT drawn as triads here;
+ * they live in the chip strip below, and the engine's `buildChordMidiBlob`
+ * prefers leadNotes over segments so what you see is what you export.
+ *
+ * Trim "brackets" replace the old trim handles: two amber vertical lines with
+ * a dimmed overlay outside [trimStart, trimEnd]. Drag the bracket to retrim.
+ */
+function PianoRoll({
   result,
   trimStart,
   trimEnd,
@@ -196,15 +151,13 @@ function ChordTrimTimeline({
   trimStart: number
   trimEnd: number
   onTrimChange: (start: number, end: number) => void
-  /** Wall-clock playhead (in seconds) while the inline preview is running. null = idle. */
   playheadSec: number | null
 }) {
   const trimRangeId = useId()
-  const barRef = useRef<HTMLDivElement>(null)
-  const trimLiveRef = useRef({ start: trimStart, end: trimEnd })
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const [width, setWidth] = useState(880)
   const [dragging, setDragging] = useState<'start' | 'end' | null>(null)
-  const [activeIdx, setActiveIdx] = useState<number | null>(null)
-  const activeClearRef = useRef<number | null>(null)
+  const trimLiveRef = useRef({ start: trimStart, end: trimEnd })
   const dur = result.durationSec
   const minGap = Math.max(0.2, (60 / result.bpm) * 0.35)
 
@@ -212,26 +165,79 @@ function ChordTrimTimeline({
     trimLiveRef.current = { start: trimStart, end: trimEnd }
   }, [trimStart, trimEnd])
 
-  const clientXToSec = useCallback(
-    (clientX: number): number => {
-      const el = barRef.current
-      if (!el || dur <= 0) return 0
-      const r = el.getBoundingClientRect()
-      const ratio = Math.min(1, Math.max(0, (clientX - r.left) / r.width))
+  // Track the SVG's actual width — the piano-key strip stays fixed, the roll
+  // stretches to fill. Without this we'd guess (and bars would misalign).
+  useEffect(() => {
+    const el = wrapRef.current
+    if (!el) return
+    setWidth(el.getBoundingClientRect().width)
+    const ro = new ResizeObserver(entries => {
+      for (const e of entries) setWidth(e.contentRect.width)
+    })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
+  /** Auto-fit pitch range to the note set, with 2-semitone padding and a
+   * 2-octave minimum so a 3-note clip still draws as a piano roll. */
+  const { lo, hi } = useMemo(() => {
+    const notes = result.leadNotes
+    if (!notes.length) return { lo: 48, hi: 84 } // C3..C6 default
+    let mn = notes[0].midi
+    let mx = notes[0].midi
+    for (const n of notes) {
+      if (n.midi < mn) mn = n.midi
+      if (n.midi > mx) mx = n.midi
+    }
+    mn = Math.max(0, mn - 2)
+    mx = Math.min(127, mx + 2)
+    const span = mx - mn
+    if (span < 24) {
+      const grow = Math.ceil((24 - span) / 2)
+      mn = Math.max(0, mn - grow)
+      mx = Math.min(127, mx + grow)
+    }
+    return { lo: mn, hi: mx }
+  }, [result.leadNotes])
+
+  const keyWidth = 48
+  const height = 280
+  const rollLeft = keyWidth
+  const rollWidth = Math.max(40, width - keyWidth)
+  const innerTop = 6
+  const innerBottom = 6
+  const rowH = (height - innerTop - innerBottom) / (hi - lo + 1)
+
+  const midiToY = useCallback(
+    (m: number): number => innerTop + (hi - m) * rowH,
+    [hi, innerTop, rowH],
+  )
+  const timeToX = useCallback(
+    (t: number): number => (dur <= 0 ? rollLeft : rollLeft + (t / dur) * rollWidth),
+    [dur, rollLeft, rollWidth],
+  )
+  const xToTime = useCallback(
+    (x: number): number => {
+      if (dur <= 0) return 0
+      const ratio = Math.min(1, Math.max(0, (x - rollLeft) / rollWidth))
       return ratio * dur
     },
-    [dur],
+    [dur, rollLeft, rollWidth],
   )
 
+  // Trim-handle drag — mirrors ChordTrimTimeline's window listeners.
   useEffect(() => {
     if (!dragging) return
     const onMove = (e: PointerEvent): void => {
-      const sec = clientXToSec(e.clientX)
+      const el = wrapRef.current
+      if (!el) return
+      const r = el.getBoundingClientRect()
+      const t = xToTime(e.clientX - r.left)
       const { start, end } = trimLiveRef.current
       if (dragging === 'start') {
-        onTrimChange(Math.max(0, Math.min(sec, end - minGap)), end)
+        onTrimChange(Math.max(0, Math.min(t, end - minGap)), end)
       } else {
-        onTrimChange(start, Math.min(dur, Math.max(sec, start + minGap)))
+        onTrimChange(start, Math.min(dur, Math.max(t, start + minGap)))
       }
     }
     const onUp = (): void => setDragging(null)
@@ -243,94 +249,227 @@ function ChordTrimTimeline({
       window.removeEventListener('pointerup', onUp)
       window.removeEventListener('pointercancel', onUp)
     }
-  }, [dragging, clientXToSec, dur, minGap, onTrimChange])
+  }, [dragging, dur, minGap, onTrimChange, xToTime])
 
-  useEffect(() => {
-    return () => {
-      if (activeClearRef.current != null) window.clearTimeout(activeClearRef.current)
-    }
-  }, [])
+  // 4/4 beat grid — heavier line every 4 beats (one bar).
+  const secPerBeat = 60 / Math.max(1, result.bpm)
+  const beats: number[] = []
+  for (let t = 0; t < dur + 1e-3; t += secPerBeat) beats.push(t)
 
-  const sp = dur > 0 ? trimStart / dur : 0
-  const ep = dur > 0 ? trimEnd / dur : 1
+  const isBlackKey = (m: number): boolean => {
+    const pc = ((m % 12) + 12) % 12
+    return pc === 1 || pc === 3 || pc === 6 || pc === 8 || pc === 10
+  }
 
-  const handleChipClick = useCallback((idx: number, seg: ChordAnalysisResult['segments'][number]) => {
-    setActiveIdx(idx)
-    if (activeClearRef.current != null) window.clearTimeout(activeClearRef.current)
-    // Hold the chord for the segment's duration, capped so a long held chord doesn't drone.
-    const gate = Math.min(1.6, Math.max(0.4, seg.durationSec * 0.9))
-    void playChordLabel(seg.label, gate)
-    activeClearRef.current = window.setTimeout(() => setActiveIdx(null), Math.max(200, gate * 1000))
-  }, [])
+  const notes = result.leadNotes
+  const tx0 = timeToX(trimStart)
+  const tx1 = timeToX(trimEnd)
+
+  // Octave labels (C-1 through C9 — Cn where MIDI is 12*(n+1))
+  const octaveLabels: Array<{ midi: number; label: string }> = []
+  for (let m = lo; m <= hi; m++) {
+    if (m % 12 === 0) octaveLabels.push({ midi: m, label: `C${Math.floor(m / 12) - 1}` })
+  }
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-baseline justify-between gap-x-4 gap-y-1">
+    <div className="space-y-2">
+      <div className="flex items-baseline justify-between gap-x-4">
         <span
           className="text-[10px] uppercase tracking-[0.15em]"
           style={{ color: PALETTE.textMuted }}
         >
-          TIMELINE
+          PIANO ROLL
         </span>
         <span
           className="text-[10px] uppercase tracking-[0.15em]"
           style={{ color: PALETTE.textMuted, fontFamily: "'DM Mono', monospace" }}
         >
-          CLICK A CHORD TO HEAR IT · DRAG HANDLES TO TRIM
+          {String(notes.length).padStart(3, '0')} NOTES · DRAG BRACKETS TO TRIM
         </span>
       </div>
 
-      {/* Slim proportional trim bar — colored segments by hue, no labels (those live in the grid below) */}
       <div
-        ref={barRef}
+        ref={wrapRef}
+        className="relative w-full touch-none select-none"
+        style={{ height, border: `1px solid ${PALETTE.line}`, background: PALETTE.bg }}
         role="group"
         aria-describedby={trimRangeId}
-        className="relative h-6 w-full touch-none select-none"
-        style={{ border: `1px solid ${PALETTE.line}`, background: PALETTE.bg }}
       >
-        <div className="flex h-full w-full overflow-hidden">
-          {result.segments.map((seg, idx) => {
-            const w = Math.max(0.35, (seg.durationSec / result.durationSec) * 100)
-            const hue = hueFromLabel(seg.label)
+        <svg
+          width="100%"
+          height={height}
+          viewBox={`0 0 ${Math.max(1, width)} ${height}`}
+          preserveAspectRatio="none"
+          style={{ display: 'block' }}
+        >
+          {/* Black-key row tint (subtle, in the roll area only). */}
+          {(() => {
+            const rows: React.JSX.Element[] = []
+            for (let m = lo; m <= hi; m++) {
+              if (!isBlackKey(m)) continue
+              rows.push(
+                <rect
+                  key={`brow-${m}`}
+                  x={rollLeft}
+                  y={midiToY(m)}
+                  width={rollWidth}
+                  height={rowH}
+                  fill="rgba(255,255,255,0.022)"
+                />,
+              )
+            }
+            return rows
+          })()}
+
+          {/* Octave dividers — slightly stronger than beat lines. */}
+          {octaveLabels.map(({ midi }) => (
+            <line
+              key={`octl-${midi}`}
+              x1={rollLeft}
+              y1={midiToY(midi) + rowH}
+              x2={Math.max(1, width)}
+              y2={midiToY(midi) + rowH}
+              stroke="rgba(255,255,255,0.10)"
+              strokeWidth={0.6}
+            />
+          ))}
+
+          {/* Beat / bar grid (4/4 assumed). */}
+          {beats.map((t, i) => {
+            const x = timeToX(t)
+            const isBar = i % 4 === 0
             return (
-              <div
-                key={`bar-${idx}-${seg.startSec}`}
-                style={{
-                  width: `${w}%`,
-                  background: `linear-gradient(145deg, hsl(${hue} 38% 26%), hsl(${hue} 32% 18%))`,
-                  borderRight: idx === result.segments.length - 1 ? 'none' : `1px solid ${PALETTE.bg}`,
-                }}
+              <line
+                key={`beat-${i}`}
+                x1={x}
+                y1={0}
+                x2={x}
+                y2={height}
+                stroke={isBar ? 'rgba(255,255,255,0.11)' : 'rgba(255,255,255,0.04)'}
+                strokeWidth={isBar ? 1 : 0.5}
               />
             )
           })}
-        </div>
 
-        <div
-          className="pointer-events-none absolute inset-y-0 left-0"
-          style={{ width: `${sp * 100}%`, background: 'rgba(10,10,12,0.72)' }}
-          aria-hidden
-        />
-        <div
-          className="pointer-events-none absolute inset-y-0 right-0"
-          style={{ width: `${(1 - ep) * 100}%`, background: 'rgba(10,10,12,0.72)' }}
-          aria-hidden
-        />
-        <div
-          className="pointer-events-none absolute inset-y-0"
-          style={{
-            left: `${sp * 100}%`,
-            width: `${Math.max(0, ep - sp) * 100}%`,
-            borderLeft: `1px solid ${PALETTE.amber}`,
-            borderRight: `1px solid ${PALETTE.amber}`,
-          }}
-          aria-hidden
-        />
+          {/* Notes — opacity scales with velocity so dynamics read at a glance. */}
+          {notes.map((n, i) => {
+            const x = timeToX(n.startSec)
+            const w = Math.max(2, timeToX(n.startSec + n.durationSec) - x)
+            const y = midiToY(n.midi)
+            const opacity = 0.45 + Math.min(1, Math.max(0, n.velocity)) * 0.55
+            return (
+              <rect
+                key={`n-${i}`}
+                x={x}
+                y={y + 1}
+                width={w}
+                height={Math.max(1, rowH - 2)}
+                fill={PALETTE.amber}
+                opacity={opacity}
+                rx={1}
+              />
+            )
+          })}
 
+          {/* Outside-trim dim overlay. */}
+          {tx0 > rollLeft && (
+            <rect x={rollLeft} y={0} width={tx0 - rollLeft} height={height} fill="rgba(10,10,12,0.65)" />
+          )}
+          {tx1 < rollLeft + rollWidth && (
+            <rect x={tx1} y={0} width={rollLeft + rollWidth - tx1} height={height} fill="rgba(10,10,12,0.65)" />
+          )}
+
+          {/* Trim brackets. */}
+          <line x1={tx0} y1={0} x2={tx0} y2={height} stroke={PALETTE.amber} strokeWidth={1.5} />
+          <line x1={tx1} y1={0} x2={tx1} y2={height} stroke={PALETTE.amber} strokeWidth={1.5} />
+
+          {/* Playhead while previewing. */}
+          {playheadSec != null && playheadSec >= 0 && playheadSec <= dur && (
+            <line
+              x1={timeToX(playheadSec)}
+              y1={0}
+              x2={timeToX(playheadSec)}
+              y2={height}
+              stroke="#ffffff"
+              strokeOpacity={0.9}
+              strokeWidth={1}
+            />
+          )}
+
+          {/* Piano-key strip on the left. Drawn LAST so it covers notes that
+              hang past the boundary on the left (none should, but defensive). */}
+          <rect x={0} y={0} width={keyWidth} height={height} fill="#16161A" />
+          {(() => {
+            const keys: React.JSX.Element[] = []
+            for (let m = lo; m <= hi; m++) {
+              const y = midiToY(m)
+              if (isBlackKey(m)) {
+                keys.push(
+                  <rect
+                    key={`key-${m}`}
+                    x={0}
+                    y={y + 1}
+                    width={keyWidth * 0.62}
+                    height={Math.max(1, rowH - 2)}
+                    fill="#0A0A0C"
+                  />,
+                )
+              } else {
+                keys.push(
+                  <rect
+                    key={`key-${m}`}
+                    x={0}
+                    y={y}
+                    width={keyWidth}
+                    height={rowH}
+                    fill="#1C1C20"
+                  />,
+                )
+                keys.push(
+                  <line
+                    key={`keyl-${m}`}
+                    x1={0}
+                    y1={y + rowH}
+                    x2={keyWidth}
+                    y2={y + rowH}
+                    stroke="rgba(0,0,0,0.55)"
+                    strokeWidth={0.4}
+                  />,
+                )
+              }
+            }
+            return keys
+          })()}
+          <line
+            x1={keyWidth}
+            y1={0}
+            x2={keyWidth}
+            y2={height}
+            stroke={PALETTE.line}
+            strokeWidth={1}
+          />
+
+          {octaveLabels.map(({ midi, label }) => (
+            <text
+              key={`oct-${midi}`}
+              x={keyWidth - 4}
+              y={midiToY(midi) + rowH * 0.72}
+              textAnchor="end"
+              fontSize={9}
+              fill={PALETTE.textMuted}
+              fontFamily="'DM Mono', monospace"
+            >
+              {label}
+            </text>
+          ))}
+        </svg>
+
+        {/* DOM hit targets on top of the SVG — bigger and easier to grab than the SVG line. */}
         <button
           type="button"
           aria-label={`Trim start ${formatMmSs(trimStart)}`}
-          className="absolute inset-y-0 z-10 flex w-3 -translate-x-1/2 cursor-ew-resize items-center justify-center"
-          style={{ left: `${sp * 100}%`, background: PALETTE.amber }}
+          className="absolute top-0 z-10 h-full w-3 -translate-x-1/2 cursor-ew-resize"
+          style={{ left: tx0, background: 'transparent' }}
           onPointerDown={(e: ReactPointerEvent) => {
             e.preventDefault()
             ;(e.target as HTMLButtonElement).setPointerCapture(e.pointerId)
@@ -342,8 +481,8 @@ function ChordTrimTimeline({
         <button
           type="button"
           aria-label={`Trim end ${formatMmSs(trimEnd)}`}
-          className="absolute inset-y-0 z-10 flex w-3 -translate-x-1/2 cursor-ew-resize items-center justify-center"
-          style={{ left: `${ep * 100}%`, background: PALETTE.amber }}
+          className="absolute top-0 z-10 h-full w-3 -translate-x-1/2 cursor-ew-resize"
+          style={{ left: tx1, background: 'transparent' }}
           onPointerDown={(e: ReactPointerEvent) => {
             e.preventDefault()
             ;(e.target as HTMLButtonElement).setPointerCapture(e.pointerId)
@@ -352,21 +491,6 @@ function ChordTrimTimeline({
         >
           <span className="sr-only">End handle</span>
         </button>
-
-        {/* Live playhead marker while previewing */}
-        {playheadSec != null && dur > 0 ? (
-          <div
-            className="pointer-events-none absolute inset-y-0 z-20"
-            style={{
-              left: `${Math.max(0, Math.min(1, playheadSec / dur)) * 100}%`,
-              width: 2,
-              transform: 'translateX(-1px)',
-              background: '#ffffff',
-              boxShadow: `0 0 8px ${PALETTE.amber}`,
-            }}
-            aria-hidden
-          />
-        ) : null}
       </div>
 
       <div
@@ -382,52 +506,8 @@ function ChordTrimTimeline({
           </span>
         </span>
         <span style={{ fontFamily: "'DM Mono', monospace" }}>
-          {result.segments.length} CHORDS
+          {result.bpm.toFixed(1)} BPM · {result.bpmSource.toUpperCase()}
         </span>
-      </div>
-
-      {/* Wrapping chord chip grid — each chip plays its chord on click,
-          and the chip whose segment the playhead is over (during inline
-          preview) gets the amber border + glow so users see where playback is. */}
-      <div className="flex flex-wrap gap-1.5">
-        {result.segments.map((seg, idx) => {
-          const hue = hueFromLabel(seg.label)
-          const inRange = seg.startSec + seg.durationSec > trimStart && seg.startSec < trimEnd
-          const userActive = activeIdx === idx
-          const playing =
-            playheadSec != null &&
-            playheadSec >= seg.startSec &&
-            playheadSec < seg.startSec + seg.durationSec
-          const active = userActive || playing
-          return (
-            <button
-              key={`chip-${idx}-${seg.startSec}-${seg.label}`}
-              type="button"
-              onClick={() => handleChipClick(idx, seg)}
-              title={`${seg.label} · ${seg.startSec.toFixed(2)}s · ${seg.durationSec.toFixed(2)}s — click to play`}
-              className="relative flex flex-col items-center justify-center px-2 py-1 text-[11px] font-semibold text-white transition-all duration-100 hover:brightness-125 active:scale-[0.96]"
-              style={{
-                minWidth: 52,
-                background: `linear-gradient(145deg, hsl(${hue} 42% ${inRange ? 32 : 18}%), hsl(${hue} 36% ${inRange ? 22 : 12}%))`,
-                border: `1px solid ${active ? PALETTE.amber : 'rgba(255,255,255,0.06)'}`,
-                opacity: inRange ? 1 : 0.55,
-                fontFamily: "'DM Mono', monospace",
-                boxShadow: active ? `0 0 12px ${PALETTE.amberGlow}` : 'none',
-                transform: playing ? 'translateY(-1px)' : 'none',
-              }}
-              aria-pressed={active}
-              aria-label={`Play ${seg.label} chord at ${seg.startSec.toFixed(1)} seconds`}
-            >
-              <span>{seg.label}</span>
-              <span
-                className="text-[8px] font-normal tabular-nums"
-                style={{ color: 'rgba(255,255,255,0.5)' }}
-              >
-                {formatMmSs(seg.startSec)}
-              </span>
-            </button>
-          )
-        })}
       </div>
     </div>
   )
@@ -608,6 +688,29 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
     if (!f) return
     void runFile(f)
   }, [pianoLeadFocus, runFile])
+
+  /** Skip the very first melodyPost effect so we don't trigger an analysis on
+   * mount before the user has even dropped a file. */
+  const skipMelodyPostReanalyzeRef = useRef(true)
+
+  /**
+   * Live re-run on slider changes. 400ms debounce keeps the analyzer from
+   * thrashing while the user is mid-drag; the trailing edge fires once they
+   * settle. No-op until a file has been loaded — the user's first analysis
+   * still happens on drop, not on mount.
+   */
+  useEffect(() => {
+    if (skipMelodyPostReanalyzeRef.current) {
+      skipMelodyPostReanalyzeRef.current = false
+      return
+    }
+    const f = lastFileRef.current
+    if (!f) return
+    const handle = window.setTimeout(() => {
+      void runFile(f)
+    }, 400)
+    return () => window.clearTimeout(handle)
+  }, [melodyPostInput, runFile])
 
   /**
    * DEV-only test hook — mirrors the latest analysis onto `window.__chordDetectorTest`
@@ -1424,7 +1527,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 className="flex flex-col gap-5 px-6 py-5"
                 style={{ background: PALETTE.surface }}
               >
-                <ChordTrimTimeline
+                <PianoRoll
                   result={result}
                   trimStart={trimStart}
                   trimEnd={trimEnd}
