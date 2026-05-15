@@ -170,7 +170,18 @@ export function consolidateToLoop(
     Math.max(sixteenthDurForCap, Math.round(d / sixteenthDurForCap) * sixteenthDurForCap)
   const consensus: LeadNote[] = []
   for (const b of buckets.values()) {
-    const anchored = b.iterationsSeen.has(0)
+    /* Iter-0 anchor (round-1) made buckets that iteration 0 had survive even when
+     * they didn't clear the cross-iteration threshold. Round-3's drift-tolerant
+     * bucketing made that anchor too generous: drift-adjacent same-pitch onsets
+     * now bucket together correctly, so anything REAL in iter-0 will also appear
+     * in adjacent iterations. A sup=1 bucket whose only iteration is iter-0 is
+     * almost certainly a one-off BP misfire — six such phantoms survived in the
+     * post-round-3 canonical window before this guard.
+     *
+     * Require the anchor to be backed by at least one OTHER iteration. Real iter-0
+     * loop content will always have a sibling in iter-1, iter-2, etc. — even with
+     * the wider ⅛ drift cell. Genuine BP false positives that only fire once won't. */
+    const anchored = b.iterationsSeen.has(0) && b.iterationsSeen.size >= 2
     if (!anchored && b.iterationsSeen.size < minOccurrences) continue
     const durs = [...b.durationsSec].sort((a, b2) => a - b2)
     const isMelody = b.midi >= LOOP_CONSENSUS.bassMergeMidiCeiling
