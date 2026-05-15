@@ -33,6 +33,8 @@ import type { NeuralNoteBasicPitchDecode, NeuralNoteStyleMelodyPostInput } from 
 import { detectBarLoop } from './chord-detector-loops'
 import type { LoopInfo } from './chord-detector-loops'
 import { structureLeadNotes } from './chord-detector-structure'
+import { auditChordAnalysis } from './chord-detector-audit'
+import type { AuditReport } from './chord-detector-audit'
 
 /** Re-export: RMS/flux snap + post-BP merge + chord onset align tunables (see `chord-detector-melody.ts`). */
 export { CHORD_ONSET_ALIGN, MIDI_EXPORT_NOTE_MERGE, MIDI_EXPORT_TIMING, PIANO_TWO_HAND_EXPORT, PIANO_TWO_HAND_RELAXED }
@@ -43,6 +45,8 @@ export type { LoopInfo } from './chord-detector-loops'
 export { structureLeadNotes, STRUCTURE_PASS } from './chord-detector-structure'
 export { validateChordOutput, VALIDATION_THRESHOLDS } from './chord-detector-validation'
 export type { ValidationCheck, ValidationReport } from './chord-detector-validation'
+export { auditChordAnalysis } from './chord-detector-audit'
+export type { AuditReport, AuditMissingNote, AuditLoopPeriod, AuditKeyBpmScale } from './chord-detector-audit'
 
 /** NeuralNote-inspired defaults (Basic Pitch decode + optional melody post). */
 export {
@@ -239,6 +243,12 @@ export type ChordAnalysisResult = {
    * unit's length in bars, and how many times it repeats. See `chord-detector-loops.ts`.
    */
   loop: LoopInfo
+  /**
+   * Post-pipeline audit — missing-note candidates against the source chroma, per-period
+   * loop-quality scores, and a key/BPM/scale cross-check with the chord progression.
+   * See `chord-detector-audit.ts`.
+   */
+  audit: AuditReport
 }
 
 /* ── pretty-midi-style key estimation (Krumhansl-Kessler probe-tone profiles) ──
@@ -488,6 +498,16 @@ export async function analyzeChordProgressionFromMidiBlob(
       downbeatTimesSec: [],
       leadNotes: [],
       loop: detectBarLoop([], bpm, Math.max(0, durationSec)),
+      audit: auditChordAnalysis({
+        leadNotes: [],
+        segments: [],
+        bpm,
+        bpmSource,
+        durationSec: Math.max(0, durationSec),
+        estimatedKey: { label: '—', rootPc: -1, mode: 'unknown', confidence: 0 },
+        loop: detectBarLoop([], bpm, Math.max(0, durationSec)),
+        chromaPcDist: null,
+      }),
     }
   }
 
@@ -519,6 +539,18 @@ export async function analyzeChordProgressionFromMidiBlob(
   /* Part 3 — bar-loop detection + 2nd-pass structuring (also runs on the MIDI-input path). */
   const loop = detectBarLoop(leadNotes, bpm, durationSec)
   leadNotes = structureLeadNotes(leadNotes, loop, bpm)
+  /* Post-pipeline audit. MIDI input has no source chroma, so missing-note detection is
+   * inactive on this path — loop + key/scale cross-check still run. */
+  const audit = auditChordAnalysis({
+    leadNotes,
+    segments,
+    bpm,
+    bpmSource,
+    durationSec,
+    estimatedKey,
+    loop,
+    chromaPcDist: null,
+  })
 
   return {
     bpm,
@@ -534,6 +566,7 @@ export async function analyzeChordProgressionFromMidiBlob(
     downbeatTimesSec,
     leadNotes,
     loop,
+    audit,
   }
 }
 
@@ -1262,6 +1295,28 @@ export async function analyzeChordProgressionFromBlob(
     const beatTimesSec = getBeatTimes(bpm, durationSec)
     const downbeatTimesSec = getDownbeatTimes(beatTimesSec, 4)
 
+    /* Source-chroma fingerprint: aggregate per-frame chroma into a normalized 12-bin
+     * distribution so the audit can compare chroma energy ↔ lead-note coverage and
+     * surface "PC has source energy but no notes" candidates. */
+    const chromaPcAccum = new Float64Array(12)
+    for (const fr of frames) {
+      for (let k = 0; k < 12; k++) chromaPcAccum[k]! += fr[k]!
+    }
+    const chromaPcSum = chromaPcAccum.reduce((a, b) => a + b, 0)
+    const chromaPcDist: number[] = chromaPcSum > 0
+      ? Array.from(chromaPcAccum, x => x / chromaPcSum)
+      : new Array<number>(12).fill(0)
+    const audit = auditChordAnalysis({
+      leadNotes,
+      segments,
+      bpm,
+      bpmSource,
+      durationSec,
+      estimatedKey,
+      loop,
+      chromaPcDist,
+    })
+
     return {
       bpm,
       bpmSource,
@@ -1276,6 +1331,7 @@ export async function analyzeChordProgressionFromBlob(
       downbeatTimesSec,
       leadNotes,
       loop,
+      audit,
     }
   } finally {
     await ctx.close().catch(() => {})

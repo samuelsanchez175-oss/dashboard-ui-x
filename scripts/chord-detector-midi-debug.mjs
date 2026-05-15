@@ -107,6 +107,7 @@ async function capture() {
       bpRawNotes: trim(window.__bpRawNotes || []),
       loop: r.loop ?? null,
       validationReport: t.validationReport ?? null,
+      audit: r.audit ?? null,
       stages: (window.__chordPipelineStages || []).map((s) => ({
         stage: s.stage,
         count: s.count,
@@ -338,6 +339,25 @@ async function main() {
     }
   } else {
     console.log(`\n[Part 3 — Output check]  not captured (page hook didn't expose validationReport)`)
+  }
+
+  if (a.audit) {
+    const A = a.audit
+    console.log(`\n[Part 3 — Audit]`)
+    const kbs = A.keyBpmScale
+    console.log(`  key/bpm/scale: ${kbs.keyLabel}  ${kbs.bpm} BPM  ${kbs.scale}  (chord-implied top: ${kbs.chordImpliedKeys[0]?.keyLabel ?? '—'} ${kbs.chordImpliedKeys[0]?.diatonicCount ?? 0}/${kbs.chordImpliedKeys[0]?.total ?? 0}  agree=${kbs.chordAgreesWithKey})`)
+    console.log(`  loop overall: ${A.loopAudit.overall}`)
+    for (const p of A.loopAudit.perPeriod) {
+      console.log(`    ${String(p.period).padStart(2)} bar${p.period > 1 ? 's' : ''}  mean ${(p.meanSimilarity * 100).toFixed(0)}%  best ${(p.cleanest * 100).toFixed(0)}%  ${p.rating}`)
+    }
+    if (A.missingNoteCandidates.length === 0) {
+      console.log(`  missing notes: none flagged`)
+    } else {
+      console.log(`  possible missing notes:`)
+      for (const m of A.missingNoteCandidates) {
+        console.log(`    ${m.pc.padEnd(3)} source ${(m.chromaShare * 100).toFixed(0)}%  output ${(m.noteShare * 100).toFixed(0)}%  deficit +${(m.deficit * 100).toFixed(0)}pp${m.atSec != null ? `  @${m.atSec.toFixed(1)}s` : ''}`)
+      }
+    }
   }
 
   if (a.consoleErrors.length) console.log(`\npage console errors: ${a.consoleErrors.length}`)

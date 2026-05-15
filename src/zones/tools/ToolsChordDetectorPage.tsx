@@ -21,6 +21,7 @@ import {
   NEURALNOTE_STYLE,
   NEURALNOTE_TIME_DIVISION_LABELS,
   validateChordOutput,
+  type AuditReport,
   type ChordAnalysisResult,
   type NeuralNoteStyleMelodyPostInput,
   type ValidationReport,
@@ -1611,6 +1612,9 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
             {/* ── Output check — moved out of STATISTICS, sits under the piano roll ── */}
             {result && validationReport ? <OutputCheckPanel report={validationReport} /> : null}
 
+            {/* ── Audit — checks the output against the source: missing notes, loop quality, key/BPM/scale ── */}
+            {result ? <AuditPanel report={result.audit} /> : null}
+
             {/* ── Statistics — moved to the bottom (marginTop: auto pushes it to the floor) ── */}
             <section
               className="flex flex-col"
@@ -1879,6 +1883,114 @@ function OutputCheckPanel({ report }: { report: ValidationReport }) {
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Audit panel — checks the output against the source. Three sub-sections, plain labels
+ * + readable detail rows (per the `clear-ui-labels` skill):
+ *   • Key · BPM · scale, with a chord-progression cross-check
+ *   • Loop quality at each candidate period (1 / 2 / 4 / 8 / 16 bars)
+ *   • Possible missing notes — pitch classes the source's chroma carries but the
+ *     output's lead notes barely cover
+ */
+function AuditPanel({ report }: { report: AuditReport }) {
+  const kbs = report.keyBpmScale
+  return (
+    <div className="flex flex-col" style={{ background: PALETTE.surface }}>
+      <div
+        className="flex items-center justify-between border-b px-6 py-3 text-[10px] uppercase tracking-[0.15em]"
+        style={{ borderColor: PALETTE.line, color: PALETTE.textMuted }}
+      >
+        <span>AUDIT</span>
+        <span style={{ fontFamily: "'DM Mono', monospace" }}>
+          {report.missingNoteCandidates.length === 0 ? 'COVERAGE OK' : `${report.missingNoteCandidates.length} GAP${report.missingNoteCandidates.length === 1 ? '' : 'S'}`}
+        </span>
+      </div>
+
+      {/* Key · BPM · scale */}
+      <div className="flex flex-col gap-1 px-6 py-3">
+        <span className="text-[10px] uppercase tracking-[0.1em]" style={{ color: PALETTE.textMuted }}>
+          Key · BPM · scale
+        </span>
+        <div className="flex flex-col gap-1 text-[11px] leading-snug" style={{ color: PALETTE.textMain }}>
+          <span style={{ fontFamily: "'DM Mono', monospace" }}>
+            {kbs.keyLabel} · {Math.round(kbs.keyConfidence * 100)}% confidence · {kbs.scale} scale
+          </span>
+          <span style={{ fontFamily: "'DM Mono', monospace" }}>
+            {kbs.bpm} BPM ({kbs.bpmSource})
+          </span>
+          <span style={{ color: kbs.chordAgreesWithKey ? PALETTE.green : PALETTE.amber }}>
+            {kbs.chordAgreesWithKey
+              ? `Chord progression sits inside ${kbs.keyLabel} — the histogram and the chords agree.`
+              : `Chords lean ${kbs.chordImpliedKeys[0]?.keyLabel ?? '—'} (${kbs.chordImpliedKeys[0]?.diatonicCount ?? 0}/${kbs.chordImpliedKeys[0]?.total ?? 0} diatonic) — possible key disagreement.`}
+          </span>
+        </div>
+      </div>
+
+      {/* Loop quality */}
+      <div
+        className="flex flex-col gap-1 border-t px-6 py-3"
+        style={{ borderColor: PALETTE.line }}
+      >
+        <span className="text-[10px] uppercase tracking-[0.1em]" style={{ color: PALETTE.textMuted }}>
+          Loop quality
+        </span>
+        {report.loopAudit.perPeriod.length === 0 ? (
+          <span className="text-[11px] leading-snug" style={{ color: PALETTE.textMuted }}>
+            Clip is too short to measure looping (need at least two bars of the same period).
+          </span>
+        ) : (
+          <div className="flex flex-col gap-0.5 text-[11px]" style={{ fontFamily: "'DM Mono', monospace" }}>
+            {report.loopAudit.perPeriod.map(p => {
+              const ratingColor =
+                p.rating === 'clean' ? PALETTE.green : p.rating === 'partial' ? PALETTE.amber : PALETTE.textMuted
+              return (
+                <div key={p.period} className="flex items-center gap-3">
+                  <span style={{ minWidth: 52, color: PALETTE.textMain }}>
+                    {p.period} bar{p.period > 1 ? 's' : ''}
+                  </span>
+                  <span style={{ minWidth: 88, color: PALETTE.textMuted }}>
+                    mean {(p.meanSimilarity * 100).toFixed(0)}%
+                  </span>
+                  <span style={{ minWidth: 84, color: PALETTE.textMuted }}>
+                    best {(p.cleanest * 100).toFixed(0)}%
+                  </span>
+                  <span style={{ color: ratingColor }}>{p.rating}</span>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Possible missing notes */}
+      <div
+        className="flex flex-col gap-1 border-t px-6 py-3"
+        style={{ borderColor: PALETTE.line }}
+      >
+        <span className="text-[10px] uppercase tracking-[0.1em]" style={{ color: PALETTE.textMuted }}>
+          Possible missing notes
+        </span>
+        {report.missingNoteCandidates.length === 0 ? (
+          <span className="text-[11px] leading-snug" style={{ color: PALETTE.green }}>
+            Lead-note coverage tracks the source chroma — no pitch class is conspicuously under-represented.
+          </span>
+        ) : (
+          <div className="flex flex-col gap-0.5 text-[11px]" style={{ color: PALETTE.textMain, fontFamily: "'DM Mono', monospace" }}>
+            {report.missingNoteCandidates.map(m => (
+              <div key={m.pc} className="flex items-baseline gap-2">
+                <span style={{ color: PALETTE.amber, minWidth: 30 }}>{m.pc}</span>
+                <span style={{ color: PALETTE.textMuted }}>
+                  source {(m.chromaShare * 100).toFixed(0)}% vs output {(m.noteShare * 100).toFixed(0)}%
+                  {m.atSec != null ? ` — listen around ${m.atSec.toFixed(1)}s` : ''}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
