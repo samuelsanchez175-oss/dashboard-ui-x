@@ -35,7 +35,26 @@ export const LOOP_CONSENSUS = {
    * missing content from iteration 0.
    */
   minIterationFraction: 0.25,
-  /** Phase quantisation grid (one sixteenth of the bar). */
+  /**
+   * Drift tolerance for the bucket key. Bucketing by (midi, ⅟16-phase) is too
+   * tight when the detected `unitSec` doesn't perfectly match the track's actual
+   * loop period — BPM estimation is rarely accurate to better than ~2 %, and over
+   * 13 iterations that compounds into ⅟8+ of phase drift. Onsets that ARE the same
+   * recurring loop event end up in different ⅟16 buckets, so no single bucket
+   * clears `minIterationFraction` even though the recurrence is real.
+   *
+   * 2 = a ⅛-note-wide cell. A G#4 stab at pos-7 of the loop that drifts to pos-6
+   * or pos-8 in other iterations still buckets together. Within each bucket the
+   * emission phase is the AVERAGE of observed positions (snapped to ⅟16 for the
+   * export grid), so we keep ⅟16 resolution on output despite the looser key.
+   *
+   * Round-3 audit: this single change is expected to lift the Acura / Notes 2.wav
+   * coverage from ~71 % to ~84 % by recovering 4 high-recurrence onsets that BP
+   * actually caught but drift spread across adjacent ⅟16 buckets.
+   */
+  driftTolSixteenths: 2,
+  /** Phase emission grid (one sixteenth of the bar) — preserves stage-14's
+   * "all lengths and starts on the ⅟16 grid" invariant on output. */
   phaseGridSixteenths: 1,
   /**
    * Below this MIDI value the per-pitch lane treats consecutive same-pitch hits as
@@ -72,8 +91,11 @@ export function consolidateToLoop(
   if (!Number.isFinite(bpm) || bpm < 1) return notes.map(n => ({ ...n }))
 
   const unitSec = loop.barCount * loop.barSec
-  const sixteenthSec = (loop.barSec / 16) * LOOP_CONSENSUS.phaseGridSixteenths
-  if (!(unitSec > 0) || !(sixteenthSec > 0)) return notes.map(n => ({ ...n }))
+  const emissionGridSec = (loop.barSec / 16) * LOOP_CONSENSUS.phaseGridSixteenths
+  const driftCellSec = (loop.barSec / 16) * LOOP_CONSENSUS.driftTolSixteenths
+  if (!(unitSec > 0) || !(emissionGridSec > 0) || !(driftCellSec > 0)) {
+    return notes.map(n => ({ ...n }))
+  }
 
   /* Estimate how many iterations of the loop the input actually spans, so the
    * iteration-fraction threshold has the right denominator. */
@@ -84,7 +106,9 @@ export function consolidateToLoop(
 
   type Bucket = {
     midi: number
-    phaseSec: number
+    phaseCellSec: number       /* bucket key — wide enough to absorb drift */
+    phaseSum: number           /* sum of raw observed phases — averaged on emit */
+    observationCount: number   /* denominator for phaseSum */
     durationsSec: number[]
     velocities: number[]
     iterationsSeen: Set<number>
@@ -94,14 +118,29 @@ export function consolidateToLoop(
     const iter = Math.floor(n.startSec / unitSec)
     if (iter < 0) continue
     const phaseRaw = n.startSec - iter * unitSec
-    const phaseSec = Math.max(0, Math.min(unitSec - 1e-6, Math.round(phaseRaw / sixteenthSec) * sixteenthSec))
+    /* Cell key uses the drift-tolerance grid (typically ⅛), so onsets that the
+     * BPM mismatch spreads across two adjacent ⅟16 cells still merge here. */
+    const phaseCellSec = Math.max(
+      0,
+      Math.min(unitSec - 1e-6, Math.round(phaseRaw / driftCellSec) * driftCellSec),
+    )
     const midi = Math.round(n.midi)
-    const key = `${midi}:${phaseSec.toFixed(4)}`
+    const key = `${midi}:${phaseCellSec.toFixed(4)}`
     let b = buckets.get(key)
     if (!b) {
-      b = { midi, phaseSec, durationsSec: [], velocities: [], iterationsSeen: new Set() }
+      b = {
+        midi,
+        phaseCellSec,
+        phaseSum: 0,
+        observationCount: 0,
+        durationsSec: [],
+        velocities: [],
+        iterationsSeen: new Set(),
+      }
       buckets.set(key, b)
     }
+    b.phaseSum += phaseRaw
+    b.observationCount += 1
     b.durationsSec.push(Math.max(1e-3, n.durationSec))
     b.velocities.push(n.velocity)
     b.iterationsSeen.add(iter)
@@ -140,10 +179,19 @@ export function consolidateToLoop(
       : durs[Math.floor(durs.length / 2)]!
     const chosenDur = quantToSixteenths(rawDur)
     const meanVel = b.velocities.reduce((a, b2) => a + b2, 0) / b.velocities.length
+    /* Emission phase: average of observed positions, then snapped to the ⅟16
+     * emission grid. Averaging within a drift-tolerant cell beats picking the
+     * cell centre — it lets the canonical window track where the recurrence
+     * actually clusters rather than which ⅟16 bin won the rounding lottery. */
+    const avgPhase = b.phaseSum / Math.max(1, b.observationCount)
+    const emitPhase = Math.max(
+      0,
+      Math.min(unitSec - 1e-6, Math.round(avgPhase / emissionGridSec) * emissionGridSec),
+    )
     consensus.push({
       midi: b.midi,
-      startSec: b.phaseSec,
-      durationSec: Math.min(chosenDur, Math.max(1e-3, unitSec - b.phaseSec)),
+      startSec: emitPhase,
+      durationSec: Math.min(chosenDur, Math.max(1e-3, unitSec - emitPhase)),
       velocity: Math.max(0.1, Math.min(1, meanVel)),
     })
   }
