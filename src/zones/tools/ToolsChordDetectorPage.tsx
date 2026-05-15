@@ -1039,9 +1039,8 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
       <div className="flex-1 overflow-auto" style={{ background: PALETTE.bg }}>
         <div className="mx-auto flex w-full flex-col" style={{ minHeight: 'calc(100dvh - 56px)' }}>
           <div
-            className="grid w-full flex-1"
+            className="flex w-full flex-1 flex-col"
             style={{
-              gridTemplateRows: `auto auto auto auto ${result ? 'auto auto' : ''} 1fr auto`,
               gap: '1px',
               background: PALETTE.line,
             }}
@@ -1172,398 +1171,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
               </label>
             </section>
 
-            {/* ── Stats ── */}
-            <section className="flex flex-col" style={{ background: PALETTE.surface }}>
-              <div
-                className="flex items-center justify-between border-b px-6 py-3 text-[11px] uppercase tracking-[0.15em]"
-                style={{ borderColor: PALETTE.line, color: PALETTE.textMain }}
-              >
-                <span>STATISTICS</span>
-                <span
-                  className="flex items-center gap-1.5"
-                  style={{ fontFamily: "'DM Mono', monospace", color: PALETTE.textMuted }}
-                >
-                  <span
-                    className="block size-1.5 rounded-full"
-                    style={{
-                      background: busy ? PALETTE.amber : result ? PALETTE.amber : PALETTE.textMuted,
-                      boxShadow: busy || result ? `0 0 6px ${PALETTE.amber}` : 'none',
-                    }}
-                    aria-hidden
-                  />
-                  {busy ? 'WORKING' : result ? 'LIVE' : 'IDLE'}
-                </span>
-              </div>
-              <div
-                className="grid"
-                style={{ gridTemplateColumns: '1fr 1fr 1fr', gap: '1px', background: PALETTE.line }}
-              >
-                <StatCell
-                  label="DURATION"
-                  value={result ? `${result.durationSec.toFixed(1)}s` : '—'}
-                />
-                <StatCell
-                  label="CHORDS"
-                  value={result ? String(chordCount).padStart(2, '0') : '—'}
-                />
-                <StatCell
-                  label="LOOP"
-                  value={result ? loopDisplay : '—'}
-                  valueColor={result?.loop.found ? PALETTE.amber : PALETTE.textMain}
-                  title={
-                    result?.loop.found
-                      ? `The piece repeats a ${result.loop.barCount}-bar pattern ${result.loop.repeats} times.`
-                      : 'No clear repeating loop was found (through-composed, or the clip is too short).'
-                  }
-                />
-              </div>
-              <div
-                className="grid"
-                style={{ gridTemplateColumns: '1fr 1fr', gap: '1px', background: PALETTE.line, borderTop: `1px solid ${PALETTE.line}` }}
-              >
-                <StatCell
-                  label="TRIM START"
-                  value={result ? formatMmSs(trimStart) : '—'}
-                />
-                <StatCell
-                  label="EXPORT WINDOW"
-                  value={result ? `${exportDurationSec.toFixed(1)}s` : '—'}
-                  valueColor={isSelectionTrimmed ? PALETTE.amber : PALETTE.textMain}
-                />
-              </div>
-              {/* New row — pretty-midi-derived stats + lead-note count */}
-              <div
-                className="grid"
-                style={{
-                  gridTemplateColumns: '1fr 1fr 1fr 1fr',
-                  gap: '1px',
-                  background: PALETTE.line,
-                  borderTop: `1px solid ${PALETTE.line}`,
-                }}
-              >
-                <StatCell
-                  label="KEY (KK)"
-                  value={
-                    result
-                      ? `${result.estimatedKey.label} · ${(result.estimatedKey.confidence * 100).toFixed(0)}%`
-                      : '—'
-                  }
-                  valueColor={
-                    result
-                      ? result.estimatedKey.confidence > 0.65
-                        ? PALETTE.amber
-                        : PALETTE.textMain
-                      : PALETTE.textMuted
-                  }
-                />
-                <StatCell
-                  label="UNIQUE CHORDS"
-                  value={result ? String(result.uniqueChordCount).padStart(2, '0') : '—'}
-                />
-                <StatCell
-                  label="LEAD NOTES"
-                  value={
-                    result
-                      ? `${String(clippedLeadNotes.length).padStart(3, '0')}${
-                          isSelectionTrimmed && result.leadNotes.length !== clippedLeadNotes.length
-                            ? ` / ${result.leadNotes.length}`
-                            : ''
-                        }`
-                      : '—'
-                  }
-                  valueColor={
-                    result && clippedLeadNotes.length > 0 ? PALETTE.amber : PALETTE.textMain
-                  }
-                />
-                <StatCell
-                  label="INPUT TYPE"
-                  value={result ? result.inputType.toUpperCase() : '—'}
-                  valueColor={result?.inputType === 'midi' ? PALETTE.amber : PALETTE.textMain}
-                />
-              </div>
-
-              {/* Pitch class histogram strip — pretty-midi `get_pitch_class_histogram` */}
-              {result ? (
-                <div
-                  className="flex flex-col gap-1 border-t px-6 py-3"
-                  style={{ borderColor: PALETTE.line, background: PALETTE.surface }}
-                >
-                  <div
-                    className="flex items-center justify-between text-[10px] uppercase tracking-[0.15em]"
-                    style={{ color: PALETTE.textMuted }}
-                  >
-                    <span>PITCH CLASS HISTOGRAM</span>
-                    <span style={{ fontFamily: "'DM Mono', monospace" }}>C → B</span>
-                  </div>
-                  <PitchClassHistogram
-                    values={result.pitchClassHistogram}
-                    rootPc={result.estimatedKey.rootPc}
-                  />
-                </div>
-              ) : null}
-
-              {/* Output check — heuristic pass/warn report on the exported MIDI's quality */}
-              {result && validationReport ? <OutputCheckPanel report={validationReport} /> : null}
-            </section>
-
-            {/* ── Melody post (NeuralNote-style, browser-only) ─────────────────────── */}
-            <section className="flex flex-col" style={{ background: PALETTE.surface }}>
-              <div
-                className="flex flex-wrap items-center justify-between gap-2 border-b px-6 py-3 text-[11px] uppercase tracking-[0.15em]"
-                style={{ borderColor: PALETTE.line, color: PALETTE.textMain }}
-              >
-                <span>MELODY POST</span>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span
-                    className="max-w-[min(420px,85vw)] text-[9px] normal-case leading-snug tracking-normal"
-                    style={{ color: PALETTE.textMuted }}
-                  >
-                    Inspired by NeuralNote workflow (quantize / min length / levels). Not the JUCE plugin.
-                  </span>
-                  <button
-                    type="button"
-                    disabled={!lastFileRef.current || busy}
-                    onClick={() => {
-                      const f = lastFileRef.current
-                      if (f) void runFile(f)
-                    }}
-                    className="rounded border px-2 py-1 text-[9px] uppercase tracking-[0.12em] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-                    style={{
-                      borderColor: PALETTE.amber,
-                      color: PALETTE.amber,
-                      fontFamily: "'DM Mono', monospace",
-                      background: 'transparent',
-                    }}
-                  >
-                    Re-run clip
-                  </button>
-                </div>
-              </div>
-              <div
-                className="grid"
-                style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '1px', background: PALETTE.line }}
-              >
-                <SliderCell
-                  label="ENABLE CLEANUP"
-                  hint="Master switch for all the cleanup below. Off = use the detector's raw timing exactly as found."
-                  value={nnPostEnabled ? 1 : 0}
-                  min={0}
-                  max={1}
-                  step={1}
-                  suffix={nnPostEnabled ? 'on' : 'off'}
-                  onChange={n => setNnPostEnabled(n === 1)}
-                />
-                <SliderCell
-                  label="SNAP TO GRID"
-                  hint="Pull each note's start time onto the beat grid. Needs Grid Strength above 0% to do anything."
-                  value={nnTimeQuantize ? 1 : 0}
-                  min={0}
-                  max={1}
-                  step={1}
-                  suffix={nnTimeQuantize ? 'on' : 'off'}
-                  onChange={n => setNnTimeQuantize(n === 1)}
-                />
-                <SliderCell
-                  label="GRID STRENGTH"
-                  hint="How hard notes snap to the grid. 0% keeps the natural feel, 100% locks every note to the grid."
-                  value={nnQuantizeForcePct}
-                  min={0}
-                  max={100}
-                  step={1}
-                  suffix="%"
-                  onChange={setNnQuantizeForcePct}
-                />
-                <SliderCell
-                  label="GRID SIZE"
-                  hint="Smallest note spacing the grid snaps to — a bigger fraction means a finer grid."
-                  value={nnTimeDivIdx}
-                  min={0}
-                  max={NEURALNOTE_TIME_DIVISION_LABELS.length - 1}
-                  step={1}
-                  suffix={NEURALNOTE_TIME_DIVISION_LABELS[nnTimeDivIdx] ?? ''}
-                  onChange={setNnTimeDivIdx}
-                />
-              </div>
-              <div
-                className="grid border-t"
-                style={{
-                  gridTemplateColumns: '1fr 1fr 1fr',
-                  gap: '1px',
-                  background: PALETTE.line,
-                  borderColor: PALETTE.line,
-                }}
-              >
-                <SliderCell
-                  label="SHORTEST NOTE"
-                  hint="Notes shorter than this get dropped or merged. Raise it to kill tiny detection blips."
-                  value={nnMinNoteMsPost}
-                  min={35}
-                  max={580}
-                  step={5}
-                  suffix="ms"
-                  onChange={setNnMinNoteMsPost}
-                />
-                <SliderCell
-                  label="LOUDNESS"
-                  hint="Scales how loud every note plays. 1.00× leaves the detected levels unchanged."
-                  value={nnVelGainPct}
-                  min={50}
-                  max={150}
-                  step={5}
-                  suffix={`×${(nnVelGainPct / 100).toFixed(2)}`}
-                  onChange={setNnVelGainPct}
-                />
-                <SliderCell
-                  label="EVEN LOUDNESS"
-                  hint="Pulls loud and soft notes toward the average. 0% = off, 100% = every note the same volume."
-                  value={nnVelCompPct}
-                  min={0}
-                  max={100}
-                  step={5}
-                  suffix="%"
-                  onChange={setNnVelCompPct}
-                />
-              </div>
-            </section>
-
-            {/* ── Drop zone (interaction slot). Accepts OS files AND dock items. ── */}
-            <section
-              className="flex items-center justify-center p-6"
-              style={{ background: PALETTE.surface }}
-            >
-              <label
-                htmlFor={inputId}
-                className="block w-full cursor-pointer"
-                style={{ maxWidth: 'clamp(320px, 80vw, 720px)' }}
-              >
-                <input
-                  id={inputId}
-                  data-testid="chord-detector-file-input"
-                  type="file"
-                  accept="audio/*,.mp3,.wav,.m4a,.flac,.aac,.mid,.midi,audio/midi,audio/x-midi"
-                  className="sr-only"
-                  onChange={onInputChange}
-                />
-                <div
-                  onDragOver={onDragOver}
-                  onDragLeave={onDragLeave}
-                  onDrop={onDrop}
-                  className="flex flex-col items-center justify-center gap-3 px-6 py-10 text-center transition-colors"
-                  style={{
-                    background: dragHover ? `${PALETTE.amber}10` : 'transparent',
-                    border: `1px dashed ${dragHover ? PALETTE.amber : PALETTE.line}`,
-                  }}
-                >
-                  {busy ? (
-                    <Loader2 className="size-8 animate-spin" style={{ color: PALETTE.amber }} aria-hidden />
-                  ) : (
-                    <Upload className="size-8" style={{ color: dragHover ? PALETTE.amber : PALETTE.textMuted }} strokeWidth={1.5} aria-hidden />
-                  )}
-                  <div className="flex flex-col items-center gap-1">
-                    <span
-                      className="text-[12px] uppercase tracking-[0.2em]"
-                      style={{
-                        color: dragHover ? PALETTE.amber : PALETTE.textMain,
-                        fontFamily: "'DM Mono', monospace",
-                      }}
-                    >
-                      {busy ? 'ANALYZING…' : dragHover ? 'RELEASE TO LOAD' : 'DROP AUDIO HERE'}
-                    </span>
-                    <span
-                      className="text-[10px] uppercase tracking-[0.15em]"
-                      style={{ color: PALETTE.textMuted, fontFamily: "'DM Mono', monospace" }}
-                    >
-                      OS FILE · DOCK ITEM · CLICK TO BROWSE
-                    </span>
-                    <span
-                      className="text-[10px] tracking-[0.1em]"
-                      style={{ color: PALETTE.textMuted }}
-                    >
-                      ~96s analyzed in-browser — WAV / MP3 / M4A / FLAC / MID
-                    </span>
-                  </div>
-
-                  {fileName ? (
-                    <div
-                      className="mt-2 max-w-full truncate rounded-none px-3 py-1 text-[11px]"
-                      style={{
-                        border: `1px solid ${PALETTE.line}`,
-                        color: PALETTE.textMain,
-                        fontFamily: "'DM Mono', monospace",
-                      }}
-                      title={fileName}
-                    >
-                      {fileName}
-                    </div>
-                  ) : null}
-                </div>
-              </label>
-            </section>
-
-            {/* ── Status banner ── */}
-            {(inboundNotice || error) && (
-              <section
-                className="flex items-center gap-3 px-6 py-3"
-                style={{
-                  background: PALETTE.surface,
-                  borderLeft: `2px solid ${error ? '#ef4444' : PALETTE.amber}`,
-                }}
-              >
-                <span
-                  className="text-[10px] uppercase tracking-[0.15em]"
-                  style={{ color: error ? '#ef4444' : PALETTE.amber, fontFamily: "'DM Mono', monospace" }}
-                >
-                  {error ? 'ERROR' : 'INBOUND'}
-                </span>
-                <span className="text-[11px]" style={{ color: PALETTE.textMain }}>
-                  {error ?? inboundNotice}
-                </span>
-              </section>
-            )}
-
-            {/* ── Timeline + progression (only when result exists) ── */}
-            {result && (
-              <section
-                className="flex flex-col gap-5 px-6 py-5"
-                style={{ background: PALETTE.surface }}
-              >
-                <PianoRoll
-                  result={result}
-                  trimStart={trimStart}
-                  trimEnd={trimEnd}
-                  onTrimChange={onTrimChange}
-                  playheadSec={playheadSec}
-                />
-
-                {(progressionTextExport || progressionTextFull) ? (
-                  <div className="flex flex-col gap-2">
-                    <span
-                      className="text-[10px] uppercase tracking-[0.15em]"
-                      style={{ color: PALETTE.textMuted }}
-                    >
-                      PROGRESSION
-                      {trimCommitted ? ' · TRIMMED' : ''}
-                    </span>
-                    <p
-                      className="px-3 py-2 text-[12px] leading-relaxed"
-                      style={{
-                        border: `1px solid ${PALETTE.line}`,
-                        background: PALETTE.bg,
-                        color: PALETTE.textMain,
-                        fontFamily: "'DM Mono', monospace",
-                      }}
-                    >
-                      {progressionTextExport || progressionTextFull}
-                    </p>
-                  </div>
-                ) : null}
-              </section>
-            )}
-
-            {/* Flex spacer when no result */}
-            <div style={{ background: PALETTE.surface }} />
-
-            {/* ── Controls ── */}
+            {/* ── Controls (moved up to where Statistics used to live) — preview / loop / trim / export ── */}
             <section
               className="grid"
               style={{
@@ -1700,7 +1308,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
               />
             </section>
 
-            {/* ── Secondary copy progression button row ── */}
+            {/* ── Copy progression (continues the controls row) ── */}
             <section
               style={{ background: PALETTE.line, padding: '1px 0 0 0' }}
             >
@@ -1722,6 +1330,396 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 }
                 label="COPY PROGRESSION"
               />
+            </section>
+
+            {/* ── Drop zone (interaction slot). Accepts OS files AND dock items. ── */}
+            <section
+              className="flex items-center justify-center p-6"
+              style={{ background: PALETTE.surface }}
+            >
+              <label
+                htmlFor={inputId}
+                className="block w-full cursor-pointer"
+                style={{ maxWidth: 'clamp(320px, 80vw, 720px)' }}
+              >
+                <input
+                  id={inputId}
+                  data-testid="chord-detector-file-input"
+                  type="file"
+                  accept="audio/*,.mp3,.wav,.m4a,.flac,.aac,.mid,.midi,audio/midi,audio/x-midi"
+                  className="sr-only"
+                  onChange={onInputChange}
+                />
+                <div
+                  onDragOver={onDragOver}
+                  onDragLeave={onDragLeave}
+                  onDrop={onDrop}
+                  className="flex flex-col items-center justify-center gap-3 px-6 py-10 text-center transition-colors"
+                  style={{
+                    background: dragHover ? `${PALETTE.amber}10` : 'transparent',
+                    border: `1px dashed ${dragHover ? PALETTE.amber : PALETTE.line}`,
+                  }}
+                >
+                  {busy ? (
+                    <Loader2 className="size-8 animate-spin" style={{ color: PALETTE.amber }} aria-hidden />
+                  ) : (
+                    <Upload className="size-8" style={{ color: dragHover ? PALETTE.amber : PALETTE.textMuted }} strokeWidth={1.5} aria-hidden />
+                  )}
+                  <div className="flex flex-col items-center gap-1">
+                    <span
+                      className="text-[12px] uppercase tracking-[0.2em]"
+                      style={{
+                        color: dragHover ? PALETTE.amber : PALETTE.textMain,
+                        fontFamily: "'DM Mono', monospace",
+                      }}
+                    >
+                      {busy ? 'ANALYZING…' : dragHover ? 'RELEASE TO LOAD' : 'DROP AUDIO HERE'}
+                    </span>
+                    <span
+                      className="text-[10px] uppercase tracking-[0.15em]"
+                      style={{ color: PALETTE.textMuted, fontFamily: "'DM Mono', monospace" }}
+                    >
+                      OS FILE · DOCK ITEM · CLICK TO BROWSE
+                    </span>
+                    <span
+                      className="text-[10px] tracking-[0.1em]"
+                      style={{ color: PALETTE.textMuted }}
+                    >
+                      ~96s analyzed in-browser — WAV / MP3 / M4A / FLAC / MID
+                    </span>
+                  </div>
+
+                  {fileName ? (
+                    <div
+                      className="mt-2 max-w-full truncate rounded-none px-3 py-1 text-[11px]"
+                      style={{
+                        border: `1px solid ${PALETTE.line}`,
+                        color: PALETTE.textMain,
+                        fontFamily: "'DM Mono', monospace",
+                      }}
+                      title={fileName}
+                    >
+                      {fileName}
+                    </div>
+                  ) : null}
+                </div>
+              </label>
+            </section>
+
+            {/* ── Melody post (NeuralNote-style, browser-only) — moved here, directly under the drop zone ── */}
+            <section className="flex flex-col" style={{ background: PALETTE.surface }}>
+              <div
+                className="flex flex-wrap items-center justify-between gap-2 border-b px-6 py-3 text-[11px] uppercase tracking-[0.15em]"
+                style={{ borderColor: PALETTE.line, color: PALETTE.textMain }}
+              >
+                <span>MELODY POST</span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className="max-w-[min(420px,85vw)] text-[9px] normal-case leading-snug tracking-normal"
+                    style={{ color: PALETTE.textMuted }}
+                  >
+                    Inspired by NeuralNote workflow (quantize / min length / levels). Not the JUCE plugin.
+                  </span>
+                  <button
+                    type="button"
+                    disabled={!lastFileRef.current || busy}
+                    onClick={() => {
+                      const f = lastFileRef.current
+                      if (f) void runFile(f)
+                    }}
+                    className="rounded border px-2 py-1 text-[9px] uppercase tracking-[0.12em] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                    style={{
+                      borderColor: PALETTE.amber,
+                      color: PALETTE.amber,
+                      fontFamily: "'DM Mono', monospace",
+                      background: 'transparent',
+                    }}
+                  >
+                    Re-run clip
+                  </button>
+                </div>
+              </div>
+              <div
+                className="grid"
+                style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '1px', background: PALETTE.line }}
+              >
+                <SliderCell
+                  label="ENABLE CLEANUP"
+                  hint="Master switch for all the cleanup below. Off = use the detector's raw timing exactly as found."
+                  value={nnPostEnabled ? 1 : 0}
+                  min={0}
+                  max={1}
+                  step={1}
+                  suffix={nnPostEnabled ? 'on' : 'off'}
+                  onChange={n => setNnPostEnabled(n === 1)}
+                />
+                <SliderCell
+                  label="SNAP TO GRID"
+                  hint="Pull each note's start time onto the beat grid. Needs Grid Strength above 0% to do anything."
+                  value={nnTimeQuantize ? 1 : 0}
+                  min={0}
+                  max={1}
+                  step={1}
+                  suffix={nnTimeQuantize ? 'on' : 'off'}
+                  onChange={n => setNnTimeQuantize(n === 1)}
+                />
+                <SliderCell
+                  label="GRID STRENGTH"
+                  hint="How hard notes snap to the grid. 0% keeps the natural feel, 100% locks every note to the grid."
+                  value={nnQuantizeForcePct}
+                  min={0}
+                  max={100}
+                  step={1}
+                  suffix="%"
+                  onChange={setNnQuantizeForcePct}
+                />
+                <SliderCell
+                  label="GRID SIZE"
+                  hint="Smallest note spacing the grid snaps to — a bigger fraction means a finer grid."
+                  value={nnTimeDivIdx}
+                  min={0}
+                  max={NEURALNOTE_TIME_DIVISION_LABELS.length - 1}
+                  step={1}
+                  suffix={NEURALNOTE_TIME_DIVISION_LABELS[nnTimeDivIdx] ?? ''}
+                  onChange={setNnTimeDivIdx}
+                />
+              </div>
+              <div
+                className="grid border-t"
+                style={{
+                  gridTemplateColumns: '1fr 1fr 1fr',
+                  gap: '1px',
+                  background: PALETTE.line,
+                  borderColor: PALETTE.line,
+                }}
+              >
+                <SliderCell
+                  label="SHORTEST NOTE"
+                  hint="Notes shorter than this get dropped or merged. Raise it to kill tiny detection blips."
+                  value={nnMinNoteMsPost}
+                  min={35}
+                  max={580}
+                  step={5}
+                  suffix="ms"
+                  onChange={setNnMinNoteMsPost}
+                />
+                <SliderCell
+                  label="LOUDNESS"
+                  hint="Scales how loud every note plays. 1.00× leaves the detected levels unchanged."
+                  value={nnVelGainPct}
+                  min={50}
+                  max={150}
+                  step={5}
+                  suffix={`×${(nnVelGainPct / 100).toFixed(2)}`}
+                  onChange={setNnVelGainPct}
+                />
+                <SliderCell
+                  label="EVEN LOUDNESS"
+                  hint="Pulls loud and soft notes toward the average. 0% = off, 100% = every note the same volume."
+                  value={nnVelCompPct}
+                  min={0}
+                  max={100}
+                  step={5}
+                  suffix="%"
+                  onChange={setNnVelCompPct}
+                />
+              </div>
+            </section>
+
+            {/* ── Status banner ── */}
+            {(inboundNotice || error) && (
+              <section
+                className="flex items-center gap-3 px-6 py-3"
+                style={{
+                  background: PALETTE.surface,
+                  borderLeft: `2px solid ${error ? '#ef4444' : PALETTE.amber}`,
+                }}
+              >
+                <span
+                  className="text-[10px] uppercase tracking-[0.15em]"
+                  style={{ color: error ? '#ef4444' : PALETTE.amber, fontFamily: "'DM Mono', monospace" }}
+                >
+                  {error ? 'ERROR' : 'INBOUND'}
+                </span>
+                <span className="text-[11px]" style={{ color: PALETTE.textMain }}>
+                  {error ?? inboundNotice}
+                </span>
+              </section>
+            )}
+
+            {/* ── Timeline + progression (only when result exists) ── */}
+            {result && (
+              <section
+                className="flex flex-col gap-5 px-6 py-5"
+                style={{ background: PALETTE.surface }}
+              >
+                <PianoRoll
+                  result={result}
+                  trimStart={trimStart}
+                  trimEnd={trimEnd}
+                  onTrimChange={onTrimChange}
+                  playheadSec={playheadSec}
+                />
+
+                {(progressionTextExport || progressionTextFull) ? (
+                  <div className="flex flex-col gap-2">
+                    <span
+                      className="text-[10px] uppercase tracking-[0.15em]"
+                      style={{ color: PALETTE.textMuted }}
+                    >
+                      PROGRESSION
+                      {trimCommitted ? ' · TRIMMED' : ''}
+                    </span>
+                    <p
+                      className="px-3 py-2 text-[12px] leading-relaxed"
+                      style={{
+                        border: `1px solid ${PALETTE.line}`,
+                        background: PALETTE.bg,
+                        color: PALETTE.textMain,
+                        fontFamily: "'DM Mono', monospace",
+                      }}
+                    >
+                      {progressionTextExport || progressionTextFull}
+                    </p>
+                  </div>
+                ) : null}
+              </section>
+            )}
+
+            {/* ── Pitch class histogram — moved out of STATISTICS, sits directly under the piano roll ── */}
+            {result ? (
+              <section
+                className="flex flex-col gap-1 px-6 py-3"
+                style={{ background: PALETTE.surface }}
+              >
+                <div
+                  className="flex items-center justify-between text-[10px] uppercase tracking-[0.15em]"
+                  style={{ color: PALETTE.textMuted }}
+                >
+                  <span>PITCH CLASS HISTOGRAM</span>
+                  <span style={{ fontFamily: "'DM Mono', monospace" }}>C → B</span>
+                </div>
+                <PitchClassHistogram
+                  values={result.pitchClassHistogram}
+                  rootPc={result.estimatedKey.rootPc}
+                />
+              </section>
+            ) : null}
+
+            {/* ── Output check — moved out of STATISTICS, sits under the piano roll ── */}
+            {result && validationReport ? <OutputCheckPanel report={validationReport} /> : null}
+
+            {/* ── Statistics — moved to the bottom (marginTop: auto pushes it to the floor) ── */}
+            <section
+              className="flex flex-col"
+              style={{ background: PALETTE.surface, marginTop: 'auto' }}
+            >
+              <div
+                className="flex items-center justify-between border-b px-6 py-3 text-[11px] uppercase tracking-[0.15em]"
+                style={{ borderColor: PALETTE.line, color: PALETTE.textMain }}
+              >
+                <span>STATISTICS</span>
+                <span
+                  className="flex items-center gap-1.5"
+                  style={{ fontFamily: "'DM Mono', monospace", color: PALETTE.textMuted }}
+                >
+                  <span
+                    className="block size-1.5 rounded-full"
+                    style={{
+                      background: busy ? PALETTE.amber : result ? PALETTE.amber : PALETTE.textMuted,
+                      boxShadow: busy || result ? `0 0 6px ${PALETTE.amber}` : 'none',
+                    }}
+                    aria-hidden
+                  />
+                  {busy ? 'WORKING' : result ? 'LIVE' : 'IDLE'}
+                </span>
+              </div>
+              <div
+                className="grid"
+                style={{ gridTemplateColumns: '1fr 1fr 1fr', gap: '1px', background: PALETTE.line }}
+              >
+                <StatCell
+                  label="DURATION"
+                  value={result ? `${result.durationSec.toFixed(1)}s` : '—'}
+                />
+                <StatCell
+                  label="CHORDS"
+                  value={result ? String(chordCount).padStart(2, '0') : '—'}
+                />
+                <StatCell
+                  label="LOOP"
+                  value={result ? loopDisplay : '—'}
+                  valueColor={result?.loop.found ? PALETTE.amber : PALETTE.textMain}
+                  title={
+                    result?.loop.found
+                      ? `The piece repeats a ${result.loop.barCount}-bar pattern ${result.loop.repeats} times.`
+                      : 'No clear repeating loop was found (through-composed, or the clip is too short).'
+                  }
+                />
+              </div>
+              <div
+                className="grid"
+                style={{ gridTemplateColumns: '1fr 1fr', gap: '1px', background: PALETTE.line, borderTop: `1px solid ${PALETTE.line}` }}
+              >
+                <StatCell
+                  label="TRIM START"
+                  value={result ? formatMmSs(trimStart) : '—'}
+                />
+                <StatCell
+                  label="EXPORT WINDOW"
+                  value={result ? `${exportDurationSec.toFixed(1)}s` : '—'}
+                  valueColor={isSelectionTrimmed ? PALETTE.amber : PALETTE.textMain}
+                />
+              </div>
+              <div
+                className="grid"
+                style={{
+                  gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                  gap: '1px',
+                  background: PALETTE.line,
+                  borderTop: `1px solid ${PALETTE.line}`,
+                }}
+              >
+                <StatCell
+                  label="KEY (KK)"
+                  value={
+                    result
+                      ? `${result.estimatedKey.label} · ${(result.estimatedKey.confidence * 100).toFixed(0)}%`
+                      : '—'
+                  }
+                  valueColor={
+                    result
+                      ? result.estimatedKey.confidence > 0.65
+                        ? PALETTE.amber
+                        : PALETTE.textMain
+                      : PALETTE.textMuted
+                  }
+                />
+                <StatCell
+                  label="UNIQUE CHORDS"
+                  value={result ? String(result.uniqueChordCount).padStart(2, '0') : '—'}
+                />
+                <StatCell
+                  label="LEAD NOTES"
+                  value={
+                    result
+                      ? `${String(clippedLeadNotes.length).padStart(3, '0')}${
+                          isSelectionTrimmed && result.leadNotes.length !== clippedLeadNotes.length
+                            ? ` / ${result.leadNotes.length}`
+                            : ''
+                        }`
+                      : '—'
+                  }
+                  valueColor={
+                    result && clippedLeadNotes.length > 0 ? PALETTE.amber : PALETTE.textMain
+                  }
+                />
+                <StatCell
+                  label="INPUT TYPE"
+                  value={result ? result.inputType.toUpperCase() : '—'}
+                  valueColor={result?.inputType === 'midi' ? PALETTE.amber : PALETTE.textMain}
+                />
+              </div>
             </section>
           </div>
         </div>
@@ -1835,8 +1833,8 @@ function OutputCheckPanel({ report }: { report: ValidationReport }) {
   const allOk = report.warnCount === 0
   return (
     <div
-      className="flex flex-col border-t"
-      style={{ borderColor: PALETTE.line, background: PALETTE.surface }}
+      className="flex flex-col"
+      style={{ background: PALETTE.surface }}
     >
       <div
         className="flex items-center justify-between px-6 py-3 text-[10px] uppercase tracking-[0.15em]"
