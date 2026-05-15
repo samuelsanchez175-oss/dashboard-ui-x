@@ -27,8 +27,21 @@ export type LoopInfo = {
 
 /** Common musical loop lengths to test, smallest first (the fundamental period wins). */
 const LOOP_CANDIDATE_PERIODS = [1, 2, 4, 8, 16] as const
-/** Mean bar self-similarity a period must clear to count as a loop. */
-const LOOP_SIM_THRESHOLD = 0.7
+/**
+ * Mean bar self-similarity for the strict-loop path: if the best period clears this,
+ * the piece is clearly a loop regardless of how the other periods score.
+ */
+const LOOP_SIM_STRICT = 0.7
+/**
+ * Stand-out path — accept the best period even at a lower absolute score when it
+ * dominates the rest. Real piano transcriptions of looping material rarely clear
+ * 0.7 because BP varies per iteration; what they DO show is one period scoring
+ * much higher than the others. `LOOP_SIM_FLOOR` is the absolute minimum the best
+ * period must hit; `LOOP_SIM_RATIO` is how much higher than the second-best it must
+ * sit. Both must hold AND at least two candidate periods must have been compared.
+ */
+const LOOP_SIM_FLOOR = 0.15
+const LOOP_SIM_RATIO = 1.5
 
 function emptyLoop(barSec: number, totalBars: number): LoopInfo {
   return { found: false, barCount: 0, repeats: 0, confidence: 0, barSec, totalBars }
@@ -63,6 +76,8 @@ export function detectBarLoop(notes: readonly LeadNote[], bpm: number, durationS
     fingerprints[bar]!.add(`${Math.round(n.midi)}:${pos16}`)
   }
 
+  /* Score every candidate period; decision happens after we can see the full curve. */
+  const scores: { period: number; mean: number }[] = []
   for (const period of LOOP_CANDIDATE_PERIODS) {
     if (2 * period > totalBars) continue
     let sum = 0
@@ -71,13 +86,38 @@ export function detectBarLoop(notes: readonly LeadNote[], bpm: number, durationS
       sum += jaccard(fingerprints[i]!, fingerprints[i + period]!)
       count++
     }
-    const mean = count > 0 ? sum / count : 0
-    if (mean >= LOOP_SIM_THRESHOLD) {
+    scores.push({ period, mean: count > 0 ? sum / count : 0 })
+  }
+  if (scores.length === 0) return emptyLoop(barSec, totalBars)
+
+  /* Strict path — smallest period that clears LOOP_SIM_STRICT wins (preserves the
+   * fundamental-period preference for clean loops). */
+  for (const s of scores) {
+    if (s.mean >= LOOP_SIM_STRICT) {
       return {
         found: true,
-        barCount: period,
-        repeats: Math.floor(totalBars / period),
-        confidence: mean,
+        barCount: s.period,
+        repeats: Math.floor(totalBars / s.period),
+        confidence: s.mean,
+        barSec,
+        totalBars,
+      }
+    }
+  }
+
+  /* Stand-out path — accept the dominant period at a lower absolute score, but only
+   * when there's a second candidate to compare against (we need a baseline to call
+   * it "dominant"). Real piano transcriptions of looping material live here. */
+  if (scores.length >= 2) {
+    const ranked = [...scores].sort((a, b) => b.mean - a.mean)
+    const best = ranked[0]!
+    const second = ranked[1]!
+    if (best.mean >= LOOP_SIM_FLOOR && best.mean >= LOOP_SIM_RATIO * Math.max(1e-6, second.mean)) {
+      return {
+        found: true,
+        barCount: best.period,
+        repeats: Math.floor(totalBars / best.period),
+        confidence: best.mean,
         barSec,
         totalBars,
       }

@@ -35,6 +35,7 @@ import type { LoopInfo } from './chord-detector-loops'
 import { structureLeadNotes } from './chord-detector-structure'
 import { auditChordAnalysis } from './chord-detector-audit'
 import type { AuditReport } from './chord-detector-audit'
+import { consolidateToLoop } from './chord-detector-loop-consensus'
 
 /** Re-export: RMS/flux snap + post-BP merge + chord onset align tunables (see `chord-detector-melody.ts`). */
 export { CHORD_ONSET_ALIGN, MIDI_EXPORT_NOTE_MERGE, MIDI_EXPORT_TIMING, PIANO_TWO_HAND_EXPORT, PIANO_TWO_HAND_RELAXED }
@@ -47,6 +48,7 @@ export { validateChordOutput, VALIDATION_THRESHOLDS } from './chord-detector-val
 export type { ValidationCheck, ValidationReport } from './chord-detector-validation'
 export { auditChordAnalysis } from './chord-detector-audit'
 export type { AuditReport, AuditMissingNote, AuditLoopPeriod, AuditKeyBpmScale } from './chord-detector-audit'
+export { consolidateToLoop, LOOP_CONSENSUS } from './chord-detector-loop-consensus'
 
 /** NeuralNote-inspired defaults (Basic Pitch decode + optional melody post). */
 export {
@@ -552,19 +554,41 @@ export async function analyzeChordProgressionFromMidiBlob(
     chromaPcDist: null,
   })
 
+  /* Part 3 — stage 15: collapse to a single P-bar loop window when one is found
+   * (same logic as the audio path — see that branch for the rationale). */
+  let finalLeadNotes = leadNotes
+  let finalDurationSec = durationSec
+  let finalSegments: ChordSegment[] = segments
+  let finalUniqueChordCount = uniqueChordCount
+  let finalBeats: ChordBeat[] = smoothed
+  let finalBeatTimesSec: number[] = beatTimesSec
+  let finalDownbeatTimesSec: number[] = downbeatTimesSec
+  if (loop.found) {
+    finalLeadNotes = consolidateToLoop(leadNotes, loop, bpm)
+    const unitSec = loop.barCount * loop.barSec
+    finalDurationSec = unitSec
+    finalSegments = segments
+      .filter(s => s.startSec < unitSec)
+      .map(s => ({ ...s, durationSec: Math.min(s.durationSec, unitSec - s.startSec) }))
+    finalUniqueChordCount = new Set(finalSegments.map(s => s.label)).size
+    finalBeats = smoothed.filter(b => b.beatIndex * (60 / bpm) < unitSec)
+    finalBeatTimesSec = beatTimesSec.filter(t => t < unitSec)
+    finalDownbeatTimesSec = downbeatTimesSec.filter(t => t < unitSec)
+  }
+
   return {
     bpm,
     bpmSource,
-    durationSec,
-    beats: smoothed,
-    segments,
+    durationSec: finalDurationSec,
+    beats: finalBeats,
+    segments: finalSegments,
     inputType: 'midi',
     pitchClassHistogram: pcHist,
     estimatedKey,
-    uniqueChordCount,
-    beatTimesSec,
-    downbeatTimesSec,
-    leadNotes,
+    uniqueChordCount: finalUniqueChordCount,
+    beatTimesSec: finalBeatTimesSec,
+    downbeatTimesSec: finalDownbeatTimesSec,
+    leadNotes: finalLeadNotes,
     loop,
     audit,
   }
@@ -1317,19 +1341,45 @@ export async function analyzeChordProgressionFromBlob(
       chromaPcDist,
     })
 
+    /* Part 3 — stage 15: when the piece is a recognized loop, collapse all repetitions
+     * into ONE canonical P-bar window (union of notes across iterations — notes BP
+     * caught in some iterations but missed in others get filled in from their siblings).
+     * The audit above ran on the full-output lead-note stream so its per-period scores
+     * and missing-note flags still describe the whole clip. */
+    let finalLeadNotes = leadNotes
+    let finalDurationSec = durationSec
+    let finalSegments: ChordSegment[] = segments
+    let finalUniqueChordCount = uniqueChordCount
+    let finalBeats: ChordBeat[] = smoothed
+    let finalBeatTimesSec: number[] = beatTimesSec
+    let finalDownbeatTimesSec: number[] = downbeatTimesSec
+    if (loop.found) {
+      finalLeadNotes = consolidateToLoop(leadNotes, loop, bpm)
+      const unitSec = loop.barCount * loop.barSec
+      finalDurationSec = unitSec
+      finalSegments = segments
+        .filter(s => s.startSec < unitSec)
+        .map(s => ({ ...s, durationSec: Math.min(s.durationSec, unitSec - s.startSec) }))
+      finalUniqueChordCount = new Set(finalSegments.map(s => s.label)).size
+      finalBeats = smoothed.filter(b => b.beatIndex * (60 / bpm) < unitSec)
+      finalBeatTimesSec = beatTimesSec.filter(t => t < unitSec)
+      finalDownbeatTimesSec = downbeatTimesSec.filter(t => t < unitSec)
+      dbgStage('15-loopConsensus', finalLeadNotes)
+    }
+
     return {
       bpm,
       bpmSource,
-      durationSec,
-      beats: smoothed,
-      segments,
+      durationSec: finalDurationSec,
+      beats: finalBeats,
+      segments: finalSegments,
       inputType: 'audio',
       pitchClassHistogram,
       estimatedKey,
-      uniqueChordCount,
-      beatTimesSec,
-      downbeatTimesSec,
-      leadNotes,
+      uniqueChordCount: finalUniqueChordCount,
+      beatTimesSec: finalBeatTimesSec,
+      downbeatTimesSec: finalDownbeatTimesSec,
+      leadNotes: finalLeadNotes,
       loop,
       audit,
     }
