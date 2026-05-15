@@ -38,10 +38,12 @@ flowchart TD
     EXPORT --> LOOP["detectBarLoop<br/>(bar self-similarity, period ∈ {1,2,4,8,16})<br/>→ LoopInfo"]
     EXPORT --> STRUCT["stage 14: structureLeadNotes<br/>(2nd pass — uses LoopInfo)"]
     LOOP --> STRUCT
-    STRUCT --> LEAD["final leadNotes"]
+    STRUCT --> AUDIT
+    STRUCT --> CONSOL["stage 15: consolidateToLoop<br/>(only when loop.found)<br/>→ canonical P-bar window"]
+    LOOP --> CONSOL
+    CONSOL --> LEAD["final leadNotes"]
 
     CHROMA --> AUDIT["auditChordAnalysis<br/>(missing-note gaps, per-period loop scores, key cross-check)<br/>→ AuditReport"]
-    LEAD --> AUDIT
     SEG --> AUDIT
     KEY --> AUDIT
     LOOP --> AUDIT
@@ -80,12 +82,16 @@ flowchart TD
 | L | Loop detect | `chord-detector-loops` | final `leadNotes`, BPM | `LoopInfo` | Bar-fingerprint self-similarity | Stat readout + Stage 14 seam-trim |
 | M | Validate | `chord-detector-validation` | full result | `ValidationReport` | 5 heuristic pass/warn checks | "OUTPUT CHECK" panel |
 | N | Audit | `chord-detector-audit` | leadNotes + segments + key + loop + aggregate chroma PC dist | `AuditReport` | Missing-note candidates (chroma share − note share), per-period loop scores, key/scale cross-check vs chord progression (relative-key tolerant) | "AUDIT" panel |
-| O | MIDI export | engine | `leadNotes`, `bpm` | `Blob (audio/midi)` | `new Midi()` + `addNote` per lead note | Download button |
+| O | Loop consensus | `chord-detector-loop-consensus` | post-structure `leadNotes`, `LoopInfo`, BPM | canonical-window `leadNotes` (when `loop.found`) | Buckets notes by `(midi, ⅟16 phase in loop)`, unions across iterations, per-pitch lane merge for sustained-as-hits patterns | One clean loopable window when a loop is found |
+| P | MIDI export | engine | final `leadNotes`, `bpm` | `Blob (audio/midi)` | `new Midi()` + `addNote` per lead note | Download button |
 
-## 3. The 14-stage lead-note export pipeline
+## 3. The 14-stage lead-note export pipeline (+ stage 15 loop-consensus)
 
 This is the heart of the export. **Stages 1–13 = Part 2** (the bug-fix pipeline);
-**stage 14 = Part 3** (the new structuring pass).
+**stage 14 = Part 3** (the structuring pass); **stage 15 = loop-consensus
+consolidation** — runs conditionally after the audit when `detectBarLoop` finds the
+piece is a P-bar repeating loop, collapsing all iterations into one canonical P-bar
+window (union of notes across iterations).
 
 ```mermaid
 flowchart LR
@@ -103,8 +109,9 @@ flowchart LR
     S11["11 · dropSimultaneousPitchOutliers (pass 2)"] --> S12
     S12["12 · enforceTwoHandPianoPolyphony<br/>(maxAbove=4, keeps top + bass)"] --> S13
     S13["13 · mergeAdjacentSamePitchNotes<br/>(final merge — Part 2 Bug 4)"] --> S14
-    S14["14 · structureLeadNotes<br/>① re-snap to 1/16/1/16-T<br/>② quantize lengths to 1/16 multiples<br/>③ seam-trim across loop boundaries<br/>④ merge touching same-pitch pairs<br/>← Part 3"] --> OUT
-    OUT["final leadNotes<br/>354 notes (control MP3)"]
+    S14["14 · structureLeadNotes<br/>① re-snap to 1/16/1/16-T<br/>② quantize lengths to 1/16 multiples<br/>③ seam-trim across loop boundaries<br/>④ merge touching same-pitch pairs<br/>← Part 3"] --> S15
+    S15["15 · consolidateToLoop<br/>(only when loop.found)<br/>① bucket by (midi, ⅟16 phase)<br/>② union notes across iterations<br/>③ per-pitch lane merge (gap ≤ ⅟32)<br/>④ extend last in lane to seam"] --> OUT
+    OUT["final leadNotes<br/>354 notes (no loop) / 28 notes (2-bar loop, Acura Integurl)"]
 ```
 
 ### Per-stage attrition (control MP3)
@@ -142,7 +149,11 @@ flowchart LR
 | Stage 14 | `postQuantizeMergeGapSec` | 0.045 | Final touching-pair merge |
 | Chord decode | `exoticQualityPenalty` | 0.14 | sus4/aug/dim emission penalty |
 | Chord decode | `decay` (arp window) | 0.45 | Previous-bar memory weight |
-| Loop | `LOOP_SIM_THRESHOLD` | 0.7 | Min mean bar Jaccard to count |
+| Loop | `LOOP_SIM_STRICT` | 0.7 | Mean Jaccard for the strict-loop path (clean repeat) |
+| Loop | `LOOP_SIM_FLOOR` | 0.15 | Absolute minimum for the stand-out path |
+| Loop | `LOOP_SIM_RATIO` | 1.5 | Best/second-best ratio for the stand-out path |
+| Stage 15 | `minIterationFraction` | 0 | Min loop iterations a (midi,phase) bucket must appear in |
+| Stage 15 | `phaseGridSixteenths` | 1 | Phase quantisation step inside the loop unit |
 | Validation | `onGridTolMs` | 10 | "On the grid" tolerance |
 | Validation | `dupGapSec` | 0.045 | Same-pitch duplicate window |
 
@@ -169,10 +180,10 @@ flowchart LR
     stages1to12["stages 1–12"] --> P3
     P3["C · per-pitch RMS revisit<br/>after onset-align"] --> S13
     S13["13 · merge"] --> S14
-    S14["14 · structure"] --> S15
-    S15["15 · audit<br/>(read-only — adds AuditReport)"]:::landed
-    S15 --> P4
-    P4["D · loop-consensus consolidate<br/>(post-audit, opt-in)"] --> EXPORT
+    S14["14 · structure"] --> AUDIT
+    AUDIT["audit pass<br/>(read-only — adds AuditReport)"]:::landed
+    AUDIT --> S15
+    S15["15 · loop-consensus<br/>(conditional on loop.found)"]:::landed --> EXPORT
     EXPORT["MIDI export"]
     classDef landed fill:#1e2c1f,stroke:#54C98E,color:#eaeaea;
 ```
@@ -192,10 +203,23 @@ flowchart LR
   cleanest Jaccard + a clean/partial/no rating), and a key/BPM/scale cross-check
   against the chord progression with relative-key tolerance. Surfaces as the AUDIT
   panel under OUTPUT CHECK. Does not mutate the export.
-- **D — loop-consensus consolidate** (post-audit, opt-in): the path the user explicitly
-  *rejected* in the Part 3 brainstorm (the "consolidate to one clean loop"
-  alternative). Still on the shelf if the audit's "loop overall: clean" + a future
-  toggle want to fold all repetitions into one canonical bar window.
+- **15 — loop-consensus consolidate (LANDED)** — `chord-detector-loop-consensus.ts`:
+  runs after the audit when `detectBarLoop` reports `loop.found`. Buckets notes by
+  `(rounded midi, quantised phase inside the loop unit)`, takes the union across
+  iterations so any note BP caught in some iterations but missed in others gets
+  filled in from its siblings, then per-pitch-lane merges adjacent fragments
+  (gap ≤ ⅟32) so a sustained bass note that BP transcribed as a chain of ⅟16 hits
+  comes back out as one long note. Engine also filters `segments`, `beats`,
+  `downbeatTimesSec` and `uniqueChordCount` to the first iteration when this fires,
+  so the UI shows one canonical loop window. The audit above still runs on the
+  full-length stream, so its per-period scores and missing-note flags continue to
+  describe the whole clip.
+  - **detectBarLoop dual acceptance:** the strict 0.7 mean-Jaccard gate still wins
+    on clean repeats. A second "stand-out" path accepts the best period at a much
+    lower absolute score (≥0.15) when it dominates the runner-up by ≥1.5×. Real
+    piano transcriptions of looping material rarely clear 0.7 because BP varies
+    per iteration — they DO show one period scoring much higher than the rest.
+    On Acura Integurl: 2-bar period at 22% vs next-best 9% triggers stand-out.
 
 Any new step that **rearranges note timing** should run **before** stage 9 (so the
 quantize is the source of truth) **or** be its own structuring pass that mirrors what
