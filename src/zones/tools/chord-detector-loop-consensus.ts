@@ -19,14 +19,42 @@ import type { LoopInfo } from './chord-detector-loops'
 
 export const LOOP_CONSENSUS = {
   /**
-   * A note at the same (rounded midi, quantised phase) appearing in this fraction of
-   * loop iterations counts as a "real" consensus note. Set to 0 (any occurrence) to
-   * be maximally inclusive of notes BP only caught once — the missing-note story is
-   * exactly "fill in what some iterations had and others didn't."
+   * Cross-iteration support threshold. A (midi, ⅟16-phase) bucket is admitted to the
+   * canonical window when EITHER iteration 0 had it (always — see "iter-0 anchor"
+   * below) OR the bucket appears in this fraction of loop iterations.
+   *
+   * Why not 0: at 0 every single-iteration sighting gets in. On the Acura test, 49 %
+   * of buckets came from only one of 13 iterations — that's BP-transcription noise
+   * plus phase-drift artefacts (the detected `unitSec` rarely matches the track's
+   * true period to better than ⅟16, so late iterations' onsets snap into the wrong
+   * phase bucket and inject phantom notes that never belonged in any single iteration).
+   *
+   * 0.25 → bucket must appear in ⌈0.25 × N⌉ iterations (≥ 4 of 13 on Acura). Combined
+   * with the iter-0 anchor below it preserves what iteration 0 actually had AND lets
+   * persistent later-iteration notes (≥ 4 iterations of support) fill in genuinely
+   * missing content from iteration 0.
    */
-  minIterationFraction: 0,
+  minIterationFraction: 0.25,
   /** Phase quantisation grid (one sixteenth of the bar). */
   phaseGridSixteenths: 1,
+  /**
+   * Below this MIDI value the per-pitch lane treats consecutive same-pitch hits as
+   * fragments of one sustained note and merges them (BP commonly transcribes a held
+   * bass pad as a chain of ⅟16 hits). At or above this value every same-pitch onset
+   * is its own musical event — a melodic riff playing the same pitch multiple times
+   * in one bar must NOT be glued into a single held pad. C4 = 60.
+   */
+  bassMergeMidiCeiling: 60,
+  /**
+   * For the bass register: a merge fires only when both adjacent notes look like
+   * single ⅟16 stabs (`durationSec ≤ mergeMaxDurSixteenths × sixteenthSec`) AND the
+   * gap between them is small and non-negative-ish. A negative gap means the
+   * predecessor's note ALREADY ran into the successor — that's a long held note,
+   * not a chain of hits, so we should NOT fuse.
+   */
+  mergeMaxDurSixteenths: 1.5,
+  mergeMaxGapSixteenths: 0.5,
+  mergeMinGapSixteenths: -0.25,
 } as const
 
 /**
@@ -80,10 +108,17 @@ export function consolidateToLoop(
   }
 
   /* One consensus note per (midi, phase) bucket. Median duration so a single long-
-   * lingering ghost doesn't stretch the canonical note. Mean velocity. */
+   * lingering ghost doesn't stretch the canonical note. Mean velocity.
+   *
+   * Iter-0 anchor: a bucket that iteration 0 actually had survives unconditionally,
+   * regardless of `minOccurrences`. This means the first note of the export always
+   * matches the first note of the source's first iteration — phase-drift phantoms
+   * (where late-iteration onsets snap into a phase=0 bucket they don't really
+   * belong in) can only get in if they also clear the cross-iteration threshold. */
   const consensus: LeadNote[] = []
   for (const b of buckets.values()) {
-    if (b.iterationsSeen.size < minOccurrences) continue
+    const anchored = b.iterationsSeen.has(0)
+    if (!anchored && b.iterationsSeen.size < minOccurrences) continue
     const durs = [...b.durationsSec].sort((a, b2) => a - b2)
     const medianDur = durs[Math.floor(durs.length / 2)]!
     const meanVel = b.velocities.reduce((a, b2) => a + b2, 0) / b.velocities.length
@@ -95,14 +130,28 @@ export function consolidateToLoop(
     })
   }
 
-  /* Per-pitch lane: merge adjacent same-pitch consensus notes (gap ≤ ~1/32 note)
-   * before clamping. Consolidation creates NEW same-pitch adjacency by pulling
-   * notes from different loop iterations into one canonical window — BP often
-   * transcribes a sustained bass note as a string of 1/16 hits, and after the
-   * union those hits land back-to-back at every sixteenth of the loop. Without
-   * this merge, the export looks like staccato when the source is sustained.
-   * Then clamp + extend last-in-lane to the loop boundary so the seam is filled. */
-  const mergeGapSec = (loop.barSec / 32) /* one 1/32 note */
+  /* Per-pitch lane: handle two situations.
+   *
+   * BASS REGISTER (midi < bassMergeMidiCeiling): BP transcribes a sustained pad as
+   * a chain of ⅟16 hits. The union pulls every iteration's hits into one window so
+   * each ⅟16 phase ends up with its own bucket. We want to fuse those back into
+   * a held note — but ONLY when the predecessor's note looks like a single ⅟16
+   * stab (short duration) AND the gap to the next hit is near-zero-and-non-negative
+   * (real continuation, not "the predecessor already ran past the next phase").
+   *
+   * MELODIC REGISTER (midi ≥ bassMergeMidiCeiling): every same-pitch hit is its
+   * own musical event. NO merge — a riff that plays G#4 multiple times in one bar
+   * keeps those as separate notes. Just clamp overlaps so durations don't run into
+   * the next bucket and bleed past the loop seam.
+   *
+   * The previous loose `gap ≤ mergeGapSec` rule fused notes whose `gap` was
+   * deeply negative (predecessor's median duration ran into the next phase), which
+   * is exactly the failure mode that collapsed 28 F#4 phase buckets to one 7-second
+   * pad. The strict criteria below reject that. */
+  const sixteenthDur = loop.barSec / 16
+  const mergeMaxDurSec = sixteenthDur * LOOP_CONSENSUS.mergeMaxDurSixteenths
+  const mergeMaxGapSec = sixteenthDur * LOOP_CONSENSUS.mergeMaxGapSixteenths
+  const mergeMinGapSec = sixteenthDur * LOOP_CONSENSUS.mergeMinGapSixteenths
   const byMidi = new Map<number, LeadNote[]>()
   for (const n of consensus) {
     let lane = byMidi.get(n.midi)
@@ -115,16 +164,17 @@ export function consolidateToLoop(
   const out: LeadNote[] = []
   for (const lane of byMidi.values()) {
     lane.sort((a, b) => a.startSec - b.startSec)
-    /* In-place merge: walk the lane, extending the current note when the next one
-     * starts within `mergeGapSec` of its end. Velocity is averaged so a softer
-     * continuation pulls a louder onset down a touch (matches how BP transcribes
-     * sustained notes as a decaying chain of hits). */
+    const isBassLane = (lane[0]?.midi ?? 127) < LOOP_CONSENSUS.bassMergeMidiCeiling
+
     const merged: LeadNote[] = []
     for (const n of lane) {
       const last = merged[merged.length - 1]
-      if (last) {
+      if (last && isBassLane) {
         const gap = n.startSec - (last.startSec + last.durationSec)
-        if (gap <= mergeGapSec) {
+        const looksLikeShortStabs =
+          last.durationSec <= mergeMaxDurSec && n.durationSec <= mergeMaxDurSec
+        const gapInBand = gap >= mergeMinGapSec && gap <= mergeMaxGapSec
+        if (looksLikeShortStabs && gapInBand) {
           const end = Math.max(last.startSec + last.durationSec, n.startSec + n.durationSec)
           last.durationSec = end - last.startSec
           last.velocity = (last.velocity + n.velocity) / 2
@@ -137,8 +187,14 @@ export function consolidateToLoop(
       const n = merged[i]!
       const next = merged[i + 1]
       let end = n.startSec + n.durationSec
-      if (next) end = Math.min(end, next.startSec - 1e-4)
-      else end = unitSec /* extend the last note in each lane to the loop boundary */
+      if (next) {
+        /* Clamp so two same-pitch notes don't overlap inside the canonical window. */
+        end = Math.min(end, next.startSec - 1e-4)
+      } else if (isBassLane) {
+        /* Bass: extend the last note to the seam so a sustained pad reads as held
+         * across the loop boundary. Melody lanes keep their natural duration. */
+        end = unitSec
+      }
       end = Math.min(end, unitSec)
       out.push({
         midi: n.midi,
