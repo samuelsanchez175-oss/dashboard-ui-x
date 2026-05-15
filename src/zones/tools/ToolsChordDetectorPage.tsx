@@ -1174,11 +1174,15 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
               </label>
             </section>
 
-            {/* ── Controls (moved up to where Statistics used to live) — preview / loop / trim / export ── */}
+            {/* ── Controls (moved up to where Statistics used to live) — preview / loop / trim / export.
+                 8-column grid (each cell = 1/8 of the row) with 3 empty spacers grouping the five
+                 controls into playback (PREVIEW + LOOP), trim (APPLY TRIM + RESET TRIM), and
+                 export (EXPORT MIDI). The spacers carry the same surface fill as the buttons so
+                 the row reads as one continuous panel with breathing room between groups. ── */}
             <section
               className="grid"
               style={{
-                gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr',
+                gridTemplateColumns: 'repeat(8, minmax(0, 1fr))',
                 gap: '1px',
                 background: PALETTE.line,
               }}
@@ -1270,6 +1274,8 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 }
                 label={looping ? 'LOOP · ON' : 'LOOP'}
               />
+              {/* Spacer between playback group and trim group. */}
+              <div aria-hidden style={{ background: PALETTE.surface }} />
               <ControlButton
                 active={trimCommitted}
                 disabled={!result || !isSelectionTrimmed}
@@ -1289,6 +1295,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 active={false}
                 disabled={!result}
                 onClick={resetTrim}
+                /* RESET TRIM sits next to APPLY TRIM — they're a pair. */
                 icon={
                   <span
                     className="block"
@@ -1302,6 +1309,8 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 }
                 label="RESET TRIM"
               />
+              {/* Spacer between trim group and export. */}
+              <div aria-hidden style={{ background: PALETTE.surface }} />
               <ControlButton
                 active={false}
                 disabled={!result || (clippedLeadNotes.length === 0 && clippedSegments.length === 0)}
@@ -1309,6 +1318,8 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 icon={<DownloadGlyph color={!result || (clippedLeadNotes.length === 0 && clippedSegments.length === 0) ? PALETTE.textMuted : PALETTE.textMain} />}
                 label="EXPORT MIDI"
               />
+              {/* Trailing spacer balances the row so EXPORT MIDI doesn't sit hard on the right edge. */}
+              <div aria-hidden style={{ background: PALETTE.surface }} />
             </section>
 
             {/* ── Copy progression (continues the controls row) ── */}
@@ -1432,8 +1443,8 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                     }}
                     className="rounded border px-2 py-1 text-[9px] uppercase tracking-[0.12em] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                     style={{
-                      borderColor: PALETTE.amber,
-                      color: PALETTE.amber,
+                      borderColor: PALETTE.green,
+                      color: PALETTE.green,
                       fontFamily: "'DM Mono', monospace",
                       background: 'transparent',
                     }}
