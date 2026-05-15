@@ -840,54 +840,56 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
   }, [])
 
   /**
-   * Schedule one pass of the chord+lead preview through the piano engine.
-   * Reusable so we can call it again for each loop iteration without rebuilding
-   * the callback dependency graph. Returns the playback's wall-clock duration.
+   * Schedule one pass of the preview through the piano engine. The preview must match
+   * what `buildChordMidiBlob` actually exports: when lead notes exist (the preferred
+   * branch), play ONLY the lead-note track; otherwise fall back to chord triads built
+   * from the segments (the legacy branch). No more chord pad stacked on top of the
+   * lead — that double-play was producing two sounds at once.
    */
   const schedulePreviewPass = useCallback((): number => {
-    if (!result || clippedSegments.length === 0) return 0
+    if (!result) return 0
 
-    // Build RecordedNote[] for the chord pad…
     const notes: { midi: number; start: number; duration: number; velocity: number }[] = []
-    for (const seg of clippedSegments) {
-      const quality = CHORD_QUALITIES.find(q => {
-        if (seg.quality === 'major') return q.id === 'maj'
-        if (seg.quality === 'minor') return q.id === 'min'
-        if (seg.quality === 'dim') return q.id === 'dim'
-        if (seg.quality === 'aug') return q.id === 'aug'
-        if (seg.quality === 'sus4') return q.id === 'sus4'
-        return q.id === 'maj'
-      })
-      if (!quality) continue
-      const midis = buildChord(seg.rootPc, 4, quality.intervals, 0)
-      for (const m of midis) {
+    let totalDuration = 0
+
+    if (clippedLeadNotes.length > 0) {
+      // Preferred branch: play only the lead-note track — the exact notes the export writes.
+      for (const n of clippedLeadNotes) {
         notes.push({
-          midi: m,
-          start: seg.startSec,
-          duration: Math.max(0.1, Math.min(seg.durationSec, 1.6)),
-          velocity: 0.55, // sit chord pad below the lead so melody comes through
+          midi: n.midi,
+          start: n.startSec,
+          duration: Math.max(0.06, Math.min(n.durationSec, 2.5)),
+          velocity: Math.max(0.35, Math.min(1, n.velocity * 0.9)),
         })
+        totalDuration = Math.max(totalDuration, n.startSec + n.durationSec)
+      }
+    } else if (clippedSegments.length > 0) {
+      // Legacy fallback: no lead notes (very short clip / MIDI-only path) — match the
+      // export's segment-triad branch by synthesising the same triads here.
+      for (const seg of clippedSegments) {
+        const quality = CHORD_QUALITIES.find(q => {
+          if (seg.quality === 'major') return q.id === 'maj'
+          if (seg.quality === 'minor') return q.id === 'min'
+          if (seg.quality === 'dim') return q.id === 'dim'
+          if (seg.quality === 'aug') return q.id === 'aug'
+          if (seg.quality === 'sus4') return q.id === 'sus4'
+          return q.id === 'maj'
+        })
+        if (!quality) continue
+        const midis = buildChord(seg.rootPc, 4, quality.intervals, 0)
+        for (const m of midis) {
+          notes.push({
+            midi: m,
+            start: seg.startSec,
+            duration: Math.max(0.1, Math.min(seg.durationSec, 1.6)),
+            velocity: 0.7,
+          })
+        }
+        totalDuration = Math.max(totalDuration, seg.startSec + seg.durationSec)
       }
     }
-    // …and stack the lead-note track on top so the preview matches what the
-    // exported MIDI will sound like (chord track + lead track).
-    for (const n of clippedLeadNotes) {
-      notes.push({
-        midi: n.midi,
-        start: n.startSec,
-        duration: Math.max(0.06, Math.min(n.durationSec, 2.5)),
-        velocity: Math.max(0.35, Math.min(1, n.velocity * 0.9)),
-      })
-    }
-    if (notes.length === 0) return 0
 
-    let totalDuration = clippedSegments.reduce(
-      (acc, s) => Math.max(acc, s.startSec + s.durationSec),
-      0,
-    )
-    for (const n of clippedLeadNotes) {
-      totalDuration = Math.max(totalDuration, n.startSec + n.durationSec)
-    }
+    if (notes.length === 0) return 0
 
     previewStartRef.current = performance.now() / 1000
     previewBaseOffsetRef.current = trimStart
@@ -945,7 +947,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
    * `schedulePreviewPass`'s `onDone` callback.
    */
   const previewMidi = useCallback(async () => {
-    if (!result || clippedSegments.length === 0) return
+    if (!result || (clippedLeadNotes.length === 0 && clippedSegments.length === 0)) return
     if (previewingRef.current) {
       stopPreview()
       return
@@ -975,7 +977,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
   }, [])
 
   const downloadMidi = useCallback(() => {
-    if (!result || clippedSegments.length === 0) return
+    if (!result || (clippedLeadNotes.length === 0 && clippedSegments.length === 0)) return
     // Pass the (trimmed) lead-note track so the exported MIDI carries melody
     // on top of the chord backbone — closer to the source audio than triads alone.
     const blob = buildChordMidiBlob(clippedSegments, result.bpm, clippedLeadNotes)
@@ -1182,7 +1184,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
             >
               <ControlButton
                 active={previewing}
-                disabled={!result || clippedSegments.length === 0}
+                disabled={!result || (clippedLeadNotes.length === 0 && clippedSegments.length === 0)}
                 onClick={() => void previewMidi()}
                 icon={
                   previewing ? (
@@ -1206,7 +1208,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                         height: 0,
                         borderTop: '4px solid transparent',
                         borderBottom: '4px solid transparent',
-                        borderLeft: `6px solid ${!result || clippedSegments.length === 0 ? PALETTE.textMuted : PALETTE.textMain}`,
+                        borderLeft: `6px solid ${!result || (clippedLeadNotes.length === 0 && clippedSegments.length === 0) ? PALETTE.textMuted : PALETTE.textMain}`,
                       }}
                       aria-hidden
                     />
@@ -1216,7 +1218,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
               />
               <ControlButton
                 active={looping}
-                disabled={!result || clippedSegments.length === 0}
+                disabled={!result || (clippedLeadNotes.length === 0 && clippedSegments.length === 0)}
                 onClick={() => setLooping(v => !v)}
                 icon={
                   // CSS-only loop glyph: a hollow ring (open on the right) with
@@ -1227,7 +1229,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                     const ringColor =
                       looping
                         ? PALETTE.amber
-                        : !result || clippedSegments.length === 0
+                        : !result || (clippedLeadNotes.length === 0 && clippedSegments.length === 0)
                           ? PALETTE.textMuted
                           : PALETTE.textMain
                     return (
@@ -1301,9 +1303,9 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
               />
               <ControlButton
                 active={false}
-                disabled={!result || clippedSegments.length === 0}
+                disabled={!result || (clippedLeadNotes.length === 0 && clippedSegments.length === 0)}
                 onClick={downloadMidi}
-                icon={<DownloadGlyph color={!result || clippedSegments.length === 0 ? PALETTE.textMuted : PALETTE.textMain} />}
+                icon={<DownloadGlyph color={!result || (clippedLeadNotes.length === 0 && clippedSegments.length === 0) ? PALETTE.textMuted : PALETTE.textMain} />}
                 label="EXPORT MIDI"
               />
             </section>
