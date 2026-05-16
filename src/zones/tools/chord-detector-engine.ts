@@ -36,6 +36,7 @@ import { structureLeadNotes } from './chord-detector-structure'
 import { auditChordAnalysis } from './chord-detector-audit'
 import type { AuditReport } from './chord-detector-audit'
 import { consolidateToLoop } from './chord-detector-loop-consensus'
+import { inferChordImpliedNotes } from './chord-detector-chord-imply'
 
 /** Re-export: RMS/flux snap + post-BP merge + chord onset align tunables (see `chord-detector-melody.ts`). */
 export { CHORD_ONSET_ALIGN, MIDI_EXPORT_NOTE_MERGE, MIDI_EXPORT_TIMING, PIANO_TWO_HAND_EXPORT, PIANO_TWO_HAND_RELAXED }
@@ -49,6 +50,8 @@ export type { ValidationCheck, ValidationReport } from './chord-detector-validat
 export { auditChordAnalysis } from './chord-detector-audit'
 export type { AuditReport, AuditMissingNote, AuditLoopPeriod, AuditKeyBpmScale } from './chord-detector-audit'
 export { consolidateToLoop, LOOP_CONSENSUS } from './chord-detector-loop-consensus'
+export { inferChordImpliedNotes, CHORD_IMPLY } from './chord-detector-chord-imply'
+export type { ChordImplyInput } from './chord-detector-chord-imply'
 
 /** NeuralNote-inspired defaults (Basic Pitch decode + optional melody post). */
 export {
@@ -84,6 +87,14 @@ export type ChordDetectorAnalyzeOptions = {
    * not override embedded metadata. Tag `analyzeChordProgressionFromBlob(blob, { bpmPrior: 70 })`.
    */
   bpmPrior?: number
+  /**
+   * Stage 14.5 — chord-implied note inference. When enabled (default on the audio
+   * path, OFF on the MIDI path), reads the chord progression and inserts missing
+   * chord-tones at each half-bar slot's first existing onset. See
+   * `chord-detector-chord-imply.ts` for the algorithm + guardrails. Pass `false`
+   * to disable and ship the raw transcription.
+   */
+  inferChordTones?: boolean
 }
 
 /** Must stay aligned with `mixing-audio-key-estimate` FFT hop / size. */
@@ -541,6 +552,13 @@ export async function analyzeChordProgressionFromMidiBlob(
   /* Part 3 — bar-loop detection + 2nd-pass structuring (also runs on the MIDI-input path). */
   const loop = detectBarLoop(leadNotes, bpm, durationSec)
   leadNotes = structureLeadNotes(leadNotes, loop, bpm)
+  /* Stage 14.5 — chord-implied note inference. MIDI input represents the user's
+   * intent verbatim; we don't want to silently add chord-tones they didn't write,
+   * so this stage is OFF by default on the MIDI path. Opt in with
+   * `options.inferChordTones === true` if you want chord-fill on MIDI input too. */
+  if (options?.inferChordTones === true) {
+    leadNotes = inferChordImpliedNotes({ leadNotes, segments, estimatedKey, bpm })
+  }
   /* Post-pipeline audit. MIDI input has no source chroma, so missing-note detection is
    * inactive on this path — loop + key/scale cross-check still run. */
   const audit = auditChordAnalysis({
@@ -1302,6 +1320,18 @@ export async function analyzeChordProgressionFromBlob(
     const uniqueChordCount = new Set(segments.map(s => s.label)).size
     const beatTimesSec = getBeatTimes(bpm, durationSec)
     const downbeatTimesSec = getDownbeatTimes(beatTimesSec, 4)
+
+    /* Stage 14.5 — chord-implied note inference. Audit's "missing notes" flag
+     * identifies chord-tones that BP didn't see; this stage acts on that gap by
+     * synthesizing the missing chord-tones at the first existing onset of each
+     * half-bar slot. Defaults ON for the audio path (BP commonly misses inner
+     * chord voices); opt out with `options.inferChordTones === false`. The audit
+     * below then sees the enriched output, so its missing-note flag reflects
+     * what's actually exported. */
+    if (options?.inferChordTones !== false) {
+      leadNotes = inferChordImpliedNotes({ leadNotes, segments, estimatedKey, bpm })
+      dbgStage('14.5-chordImply', leadNotes)
+    }
 
     /* Source-chroma fingerprint: aggregate per-frame chroma into a normalized 12-bin
      * distribution so the audit can compare chroma energy ↔ lead-note coverage and

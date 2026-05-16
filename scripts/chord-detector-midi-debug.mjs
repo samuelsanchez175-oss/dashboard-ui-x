@@ -103,6 +103,13 @@ async function capture() {
       bpmSource: r.bpmSource,
       durationSec: r.durationSec,
       segmentCount: r.segments.length,
+      segments: r.segments.map((s) => ({
+        label: s.label,
+        rootPc: s.rootPc,
+        quality: s.quality,
+        startSec: s.startSec,
+        durationSec: s.durationSec,
+      })),
       leadNotes: trim(r.leadNotes),
       bpRawNotes: trim(window.__bpRawNotes || []),
       loop: r.loop ?? null,
@@ -262,7 +269,7 @@ async function main() {
 
   mkdirSync(OUT_DIR, { recursive: true })
   const outPath = path.join(OUT_DIR, `${LABEL}.json`)
-  writeFileSync(outPath, JSON.stringify({ input: INPUT, bpm: a.bpm, bpmSource: a.bpmSource, durationSec: a.durationSec, stages: a.stages, finalNotes, splits, top, grid, struct }, null, 2))
+  writeFileSync(outPath, JSON.stringify({ input: INPUT, bpm: a.bpm, bpmSource: a.bpmSource, durationSec: a.durationSec, segments: a.segments, stages: a.stages, finalNotes, splits, top, grid, struct }, null, 2))
 
   /* ── Report ── */
   console.log(`\n=== ${LABEL}  |  bpm ${a.bpm} (${a.bpmSource})  dur ${r2(a.durationSec, 2)}s  segments ${a.segmentCount} ===`)
