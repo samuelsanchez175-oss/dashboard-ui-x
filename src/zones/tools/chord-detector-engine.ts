@@ -554,41 +554,25 @@ export async function analyzeChordProgressionFromMidiBlob(
     chromaPcDist: null,
   })
 
-  /* Part 3 — stage 15: collapse to a single P-bar loop window when one is found
-   * (same logic as the audio path — see that branch for the rationale). */
-  let finalLeadNotes = leadNotes
-  let finalDurationSec = durationSec
-  let finalSegments: ChordSegment[] = segments
-  let finalUniqueChordCount = uniqueChordCount
-  let finalBeats: ChordBeat[] = smoothed
-  let finalBeatTimesSec: number[] = beatTimesSec
-  let finalDownbeatTimesSec: number[] = downbeatTimesSec
-  if (loop.found) {
-    finalLeadNotes = consolidateToLoop(leadNotes, loop, bpm)
-    const unitSec = loop.barCount * loop.barSec
-    finalDurationSec = unitSec
-    finalSegments = segments
-      .filter(s => s.startSec < unitSec)
-      .map(s => ({ ...s, durationSec: Math.min(s.durationSec, unitSec - s.startSec) }))
-    finalUniqueChordCount = new Set(finalSegments.map(s => s.label)).size
-    finalBeats = smoothed.filter(b => b.beatIndex * (60 / bpm) < unitSec)
-    finalBeatTimesSec = beatTimesSec.filter(t => t < unitSec)
-    finalDownbeatTimesSec = downbeatTimesSec.filter(t => t < unitSec)
-  }
-
+  /* Stage 15 (loop-consensus consolidation) is no longer auto-applied. The result
+   * always carries the full-length stream. The UI exposes an EXTRACT LOOP button
+   * that, when a loop is detected, derives the canonical P-bar window on demand
+   * via `consolidateToLoop(result.leadNotes, result.loop, result.bpm)`. This keeps
+   * "what came out of the pipeline" === "what the user sees by default" instead
+   * of silently truncating the export to one canonical iteration. */
   return {
     bpm,
     bpmSource,
-    durationSec: finalDurationSec,
-    beats: finalBeats,
-    segments: finalSegments,
+    durationSec,
+    beats: smoothed,
+    segments,
     inputType: 'midi',
     pitchClassHistogram: pcHist,
     estimatedKey,
-    uniqueChordCount: finalUniqueChordCount,
-    beatTimesSec: finalBeatTimesSec,
-    downbeatTimesSec: finalDownbeatTimesSec,
-    leadNotes: finalLeadNotes,
+    uniqueChordCount,
+    beatTimesSec,
+    downbeatTimesSec,
+    leadNotes,
     loop,
     audit,
   }
@@ -1341,45 +1325,26 @@ export async function analyzeChordProgressionFromBlob(
       chromaPcDist,
     })
 
-    /* Part 3 — stage 15: when the piece is a recognized loop, collapse all repetitions
-     * into ONE canonical P-bar window (union of notes across iterations — notes BP
-     * caught in some iterations but missed in others get filled in from their siblings).
-     * The audit above ran on the full-output lead-note stream so its per-period scores
-     * and missing-note flags still describe the whole clip. */
-    let finalLeadNotes = leadNotes
-    let finalDurationSec = durationSec
-    let finalSegments: ChordSegment[] = segments
-    let finalUniqueChordCount = uniqueChordCount
-    let finalBeats: ChordBeat[] = smoothed
-    let finalBeatTimesSec: number[] = beatTimesSec
-    let finalDownbeatTimesSec: number[] = downbeatTimesSec
-    if (loop.found) {
-      finalLeadNotes = consolidateToLoop(leadNotes, loop, bpm)
-      const unitSec = loop.barCount * loop.barSec
-      finalDurationSec = unitSec
-      finalSegments = segments
-        .filter(s => s.startSec < unitSec)
-        .map(s => ({ ...s, durationSec: Math.min(s.durationSec, unitSec - s.startSec) }))
-      finalUniqueChordCount = new Set(finalSegments.map(s => s.label)).size
-      finalBeats = smoothed.filter(b => b.beatIndex * (60 / bpm) < unitSec)
-      finalBeatTimesSec = beatTimesSec.filter(t => t < unitSec)
-      finalDownbeatTimesSec = downbeatTimesSec.filter(t => t < unitSec)
-      dbgStage('15-loopConsensus', finalLeadNotes)
-    }
+    /* Stage 15 (loop-consensus consolidation) is no longer auto-applied. The result
+     * carries the full-length stream — what you see is what the pipeline produced.
+     * The UI exposes an EXTRACT LOOP button that derives the canonical P-bar window
+     * on demand via `consolidateToLoop(...)`. The audit and loop info are still
+     * computed and carried in the result for the panels. */
+    if (loop.found) dbgStage('15-loopConsensus', consolidateToLoop(leadNotes, loop, bpm))
 
     return {
       bpm,
       bpmSource,
-      durationSec: finalDurationSec,
-      beats: finalBeats,
-      segments: finalSegments,
+      durationSec,
+      beats: smoothed,
+      segments,
       inputType: 'audio',
       pitchClassHistogram,
       estimatedKey,
-      uniqueChordCount: finalUniqueChordCount,
-      beatTimesSec: finalBeatTimesSec,
-      downbeatTimesSec: finalDownbeatTimesSec,
-      leadNotes: finalLeadNotes,
+      uniqueChordCount,
+      beatTimesSec,
+      downbeatTimesSec,
+      leadNotes,
       loop,
       audit,
     }

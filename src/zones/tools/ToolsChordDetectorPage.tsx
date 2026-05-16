@@ -18,6 +18,7 @@ import {
   buildChordMidiBlob,
   clipChordSegmentsForExport,
   clipLeadNotesForExport,
+  consolidateToLoop,
   NEURALNOTE_STYLE,
   NEURALNOTE_TIME_DIVISION_LABELS,
   validateChordOutput,
@@ -601,6 +602,13 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
   const [previewing, setPreviewing] = useState(false)
   const [looping, setLooping] = useState(false)
   const [playheadSec, setPlayheadSec] = useState<number | null>(null)
+  /**
+   * EXTRACT LOOP toggle. Default off — the export shows the full pipeline output.
+   * When on AND a loop was detected, `effectiveLeadNotes` swaps in the canonical
+   * P-bar window produced by `consolidateToLoop`, and the rest of the page (preview,
+   * piano roll, MIDI export, copy progression) follows along.
+   */
+  const [extractLoopActive, setExtractLoopActive] = useState(false)
   const previewStartRef = useRef<number>(0)
   const previewBaseOffsetRef = useRef<number>(0)
   const previewRafRef = useRef<number>(0)
@@ -627,18 +635,50 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
     setTrimCommitted(false)
   }, [result])
 
+  /* When EXTRACT LOOP toggles, reset the trim to match the new effective duration —
+   * trimEnd from the full track is meaningless inside a 2-bar loop window and vice
+   * versa. Without this the user would see a confusingly truncated piano roll. */
+  useEffect(() => {
+    if (!result) return
+    setTrimStart(0)
+    setTrimEnd(extractLoopActive && result.loop.found ? result.loop.barCount * result.loop.barSec : result.durationSec)
+    setTrimCommitted(false)
+  }, [extractLoopActive, result])
+
+  /**
+   * Effective lead notes — what the export, preview, piano roll and copy-progression
+   * all use. Default: the full pipeline output. When EXTRACT LOOP is active AND the
+   * analysis found a loop, swap in the canonical P-bar window (stage 15 on demand).
+   */
+  const effectiveLeadNotes = useMemo(() => {
+    if (!result) return []
+    if (extractLoopActive && result.loop.found) {
+      return consolidateToLoop(result.leadNotes, result.loop, result.bpm)
+    }
+    return result.leadNotes
+  }, [result, extractLoopActive])
+
+  /** Effective duration mirrors `effectiveLeadNotes`: full track or one canonical loop. */
+  const effectiveDurationSec = useMemo(() => {
+    if (!result) return 0
+    if (extractLoopActive && result.loop.found) {
+      return result.loop.barCount * result.loop.barSec
+    }
+    return result.durationSec
+  }, [result, extractLoopActive])
+
   const exportDurationSec = result ? Math.max(0, trimEnd - trimStart) : 0
-  const isSelectionTrimmed = result ? exportDurationSec < result.durationSec - 0.08 : false
+  const isSelectionTrimmed = result ? exportDurationSec < effectiveDurationSec - 0.08 : false
 
   const clippedSegments = useMemo(() => {
     if (!result) return []
-    return clipChordSegmentsForExport(result.segments, trimStart, trimEnd, result.durationSec)
-  }, [result, trimStart, trimEnd])
+    return clipChordSegmentsForExport(result.segments, trimStart, trimEnd, effectiveDurationSec)
+  }, [result, effectiveDurationSec, trimStart, trimEnd])
 
   const clippedLeadNotes = useMemo(() => {
     if (!result) return []
-    return clipLeadNotesForExport(result.leadNotes, trimStart, trimEnd, result.durationSec)
-  }, [result, trimStart, trimEnd])
+    return clipLeadNotesForExport(effectiveLeadNotes, trimStart, trimEnd, effectiveDurationSec)
+  }, [result, effectiveLeadNotes, effectiveDurationSec, trimStart, trimEnd])
 
   const progressionTextFull = useMemo(() => {
     if (!result?.segments.length) return ''
@@ -808,9 +848,9 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
   const resetTrim = useCallback(() => {
     if (!result) return
     setTrimStart(0)
-    setTrimEnd(result.durationSec)
+    setTrimEnd(effectiveDurationSec)
     setTrimCommitted(false)
-  }, [result])
+  }, [result, effectiveDurationSec])
 
   const applyTrim = useCallback(() => {
     setTrimCommitted(true)
@@ -1174,15 +1214,17 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
               </label>
             </section>
 
-            {/* ── Controls (moved up to where Statistics used to live) — preview / loop / trim / export.
-                 8-column grid (each cell = 1/8 of the row) with 3 empty spacers grouping the five
-                 controls into playback (PREVIEW + LOOP), trim (APPLY TRIM + RESET TRIM), and
-                 export (EXPORT MIDI). The spacers carry the same surface fill as the buttons so
-                 the row reads as one continuous panel with breathing room between groups. ── */}
+            {/* ── Controls — 4-column × 2-row grid (8 cells) so labels never wrap.
+                 Row 1 (playback + trim group):
+                   PREVIEW · LOOP · APPLY TRIM · RESET TRIM
+                 Row 2 (output group):
+                   EXPORT MIDI · EXTRACT LOOP · COPY PROGRESSION · spacer
+                 EXTRACT LOOP is opt-in stage-15 consolidation — pulls a 2-bar
+                 canonical window out of the full-track output. ── */}
             <section
               className="grid"
               style={{
-                gridTemplateColumns: 'repeat(8, minmax(0, 1fr))',
+                gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
                 gap: '1px',
                 background: PALETTE.line,
               }}
@@ -1274,8 +1316,6 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 }
                 label={looping ? 'LOOP · ON' : 'LOOP'}
               />
-              {/* Spacer between playback group and trim group. */}
-              <div aria-hidden style={{ background: PALETTE.surface }} />
               <ControlButton
                 active={trimCommitted}
                 disabled={!result || !isSelectionTrimmed}
@@ -1309,8 +1349,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 }
                 label="RESET TRIM"
               />
-              {/* Spacer between trim group and export. */}
-              <div aria-hidden style={{ background: PALETTE.surface }} />
+              {/* ── Row 2: output group ── */}
               <ControlButton
                 active={false}
                 disabled={!result || (clippedLeadNotes.length === 0 && clippedSegments.length === 0)}
@@ -1318,14 +1357,39 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 icon={<DownloadGlyph color={!result || (clippedLeadNotes.length === 0 && clippedSegments.length === 0) ? PALETTE.textMuted : PALETTE.textMain} />}
                 label="EXPORT MIDI"
               />
-              {/* Trailing spacer balances the row so EXPORT MIDI doesn't sit hard on the right edge. */}
-              <div aria-hidden style={{ background: PALETTE.surface }} />
-            </section>
-
-            {/* ── Copy progression (continues the controls row) ── */}
-            <section
-              style={{ background: PALETTE.line, padding: '1px 0 0 0' }}
-            >
+              {/* EXTRACT LOOP — applies stage-15 consolidation on demand. Disabled when
+                  no loop was detected. Active state shows amber to mirror LOOP playback's
+                  "engaged" look. Clicking again returns the export to the full track. */}
+              <ControlButton
+                active={extractLoopActive}
+                disabled={!result || !result.loop.found}
+                onClick={() => setExtractLoopActive(v => !v)}
+                icon={
+                  (() => {
+                    const tint =
+                      extractLoopActive
+                        ? PALETTE.amber
+                        : !result || !result.loop.found
+                          ? PALETTE.textMuted
+                          : PALETTE.textMain
+                    return (
+                      <span
+                        className="block"
+                        style={{
+                          width: 12,
+                          height: 7,
+                          borderTop: `2px solid ${tint}`,
+                          borderBottom: `2px solid ${tint}`,
+                          borderLeft: `1px solid ${tint}`,
+                          borderRight: `1px solid ${tint}`,
+                        }}
+                        aria-hidden
+                      />
+                    )
+                  })()
+                }
+                label={extractLoopActive ? 'LOOP · ACTIVE' : 'EXTRACT LOOP'}
+              />
               <ControlButton
                 active={false}
                 disabled={!progressionTextExport && !progressionTextFull}
@@ -1344,6 +1408,8 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 }
                 label="COPY PROGRESSION"
               />
+              {/* Trailing spacer fills the 8th cell so the row reads as a single panel. */}
+              <div aria-hidden style={{ background: PALETTE.surface }} />
             </section>
 
             {/* ── Drop zone (interaction slot). Accepts OS files AND dock items. ── */}
@@ -1568,7 +1634,15 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 style={{ background: PALETTE.surface }}
               >
                 <PianoRoll
-                  result={result}
+                  /* When EXTRACT LOOP is active, hand the piano roll an "as-if loop"
+                   * view of the analysis: same chord segments + key + bpm, but the
+                   * lead notes and duration come from the consolidated P-bar window
+                   * so what the user sees matches what gets exported. */
+                  result={
+                    extractLoopActive && result.loop.found
+                      ? { ...result, leadNotes: effectiveLeadNotes, durationSec: effectiveDurationSec }
+                      : result
+                  }
                   trimStart={trimStart}
                   trimEnd={trimEnd}
                   onTrimChange={onTrimChange}
