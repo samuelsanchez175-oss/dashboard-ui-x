@@ -249,8 +249,30 @@ export type ChordAnalysisResult = {
    * MIDI notes when the source is a `.mid` file). Adds melodic / lead content
    * on top of the harmonic backbone — what the source actually plays, not
    * just the chord skeleton — so the exported MIDI sounds closer to the source.
+   *
+   * This is the MERGED stream — combination of all register passes when the
+   * multi-pass BP path is active. For the three-track export, use the
+   * `leadTrack` / `harmonyTrack` / `bassTrack` fields below, each carrying
+   * the notes from one register-stratified pass.
    */
   leadNotes: LeadNote[]
+  /**
+   * Three-track split — one note stream per register pass. Populated when the
+   * register-stratified multi-pass BP path runs (the default for audio input
+   * after the v2 pipeline upgrade). Empty arrays when only the legacy single-
+   * pass path was used. The UI surfaces these as three separate "Export MIDI"
+   * buttons (Lead / Harmony / Bass).
+   *
+   *   leadTrack    — high register (midi ≥ 60), melody-tuned BP pass
+   *   harmonyTrack — mid register (midi 48-72), inner-voice chords
+   *   bassTrack    — low register (midi < 48), sustained-bass-tuned pass
+   *
+   * Notes appear in only one track (deduplicated at the engine level), so
+   * exporting all three reconstructs the merged leadNotes stream exactly.
+   */
+  leadTrack: LeadNote[]
+  harmonyTrack: LeadNote[]
+  bassTrack: LeadNote[]
   /**
    * Bar-level loop detection — whether the piece is a repeating loop, the repeating
    * unit's length in bars, and how many times it repeats. See `chord-detector-loops.ts`.
@@ -510,6 +532,9 @@ export async function analyzeChordProgressionFromMidiBlob(
       beatTimesSec: [],
       downbeatTimesSec: [],
       leadNotes: [],
+      leadTrack: [],
+      harmonyTrack: [],
+      bassTrack: [],
       loop: detectBarLoop([], bpm, Math.max(0, durationSec)),
       audit: auditChordAnalysis({
         leadNotes: [],
@@ -578,6 +603,9 @@ export async function analyzeChordProgressionFromMidiBlob(
    * via `consolidateToLoop(result.leadNotes, result.loop, result.bpm)`. This keeps
    * "what came out of the pipeline" === "what the user sees by default" instead
    * of silently truncating the export to one canonical iteration. */
+  /* MIDI input path doesn't run the register-stratified multi-pass — the user's
+   * own MIDI represents their intent verbatim. Track fields stay empty so the
+   * UI shows ONE export button (full track) for MIDI input. */
   return {
     bpm,
     bpmSource,
@@ -591,6 +619,9 @@ export async function analyzeChordProgressionFromMidiBlob(
     beatTimesSec,
     downbeatTimesSec,
     leadNotes,
+    leadTrack: [],
+    harmonyTrack: [],
+    bassTrack: [],
     loop,
     audit,
   }
@@ -727,6 +758,147 @@ function transitionBonus(prev: number, cur: number): number {
 }
 
 /**
+ * Key-aware Viterbi transition prior. Adds a log-probability adjustment for the
+ * transition prev → next based on the diatonic role of each chord in the detected
+ * key. Returns 0 (no adjustment) when the key prior is missing, low-confidence,
+ * or unknown, so the decoder gracefully falls back to the key-blind transitionBonus.
+ *
+ * Music theory rationale (treating C as the F#-major-style "tonic" placeholder —
+ * the boost depends on scale degree, not absolute pitch):
+ *
+ *  - I → IV, IV → V, V → I, ii → V are the "engine" of tonal harmony. The
+ *    descending-fifths backbone (ii → V → I) resolves rooted tritone tension
+ *    inside the V chord and underpins essentially all functional progressions
+ *    from common-practice through jazz. I → IV opens a plagal motion and ii → V
+ *    sets up the dominant. We score these strongest.
+ *  - I → V (subdominant-to-dominant launch) and vi → IV (the pop-music
+ *    "axis" turn) are also extremely common — same strong tier.
+ *  - I → vi (deceptive-adjacent), vi → ii (descending-fifth into the predominant),
+ *    IV → I (plagal cadence) are routine but a little less load-bearing → medium.
+ *  - Any diatonic-to-diatonic motion not already named gets a mild positive
+ *    bias just for staying inside the scale.
+ *  - Non-diatonic motion (e.g. bII, bIII as a chord root in a major key, or any
+ *    secondary dominant) gets a small negative bias. bII in major is the
+ *    Neapolitan — real but rare; everything else here is borrowed / chromatic
+ *    and should require strong emission evidence to win.
+ *
+ * Minor-key handling uses the natural-minor scale degrees with the standard
+ * substitution that V is the *major* dominant (harmonic minor), since that's
+ * what nearly all real minor-key progressions use for cadences.
+ *
+ * Same-chord transitions return 0 here — the existing self-transition score
+ * (CHORD_PIPELINE.viterbiStay) already handles persistence, and biasing it
+ * further would let popular diatonic chords sit forever.
+ *
+ * State convention note: states are packed as `root*Q + qualityIndex` with
+ * Q = QUALITY_CONFIG.length (currently 5: major, minor, dim, aug, sus4).
+ * Only major and minor triads receive a key-aware boost — exotic qualities
+ * (dim/aug/sus4) already pay an emission penalty and shouldn't be promoted
+ * by progression priors. They simply receive 0.
+ */
+const KEY_PRIOR_TRANSITION_MIN_CONFIDENCE = 0.22
+const KEY_TRANSITION_STRONG = 0.04
+const KEY_TRANSITION_MEDIUM = 0.02
+const KEY_TRANSITION_MILD = 0.008
+const KEY_TRANSITION_NON_DIATONIC = -0.02
+
+/** Pitch-class offsets (relative to tonic) of the major scale, used for diatonic membership. */
+const MAJOR_SCALE_OFFSETS = [0, 2, 4, 5, 7, 9, 11] as const
+/** Natural-minor scale offsets relative to tonic. (Raised-7 is handled via the V boost below.) */
+const MINOR_SCALE_OFFSETS = [0, 2, 3, 5, 7, 8, 10] as const
+
+/**
+ * Scale-degree role of a chord (root pitch class + quality) in a key.
+ * Returns null when the root is not in the diatonic scale.
+ *
+ * Encoded role values:
+ *   major key: 1M, 4M, 5M, 6m, 2m, 3m, 7d (diatonic qualities)
+ *   minor key: 1m, 4m, 5M (raised-7 leading-tone V), 6M, 3M, 7M, 2d
+ *
+ * We accept "close enough" qualities (e.g. a major V over a 5d in pure natural minor)
+ * because real harmonic-minor V is what most songs play.
+ */
+function diatonicRole(
+  rootPc: number,
+  quality: ChordQuality,
+  keyRootPc: number,
+  keyMode: 'major' | 'minor',
+): string | null {
+  if (quality !== 'major' && quality !== 'minor') return null
+  const degreePc = (rootPc - keyRootPc + 12) % 12
+  if (keyMode === 'major') {
+    // Major-key diatonic triad qualities by scale degree:
+    // I major (0), ii minor (2), iii minor (4), IV major (5), V major (7), vi minor (9), vii° (11, dim — skipped above).
+    if (degreePc === 0 && quality === 'major') return 'I'
+    if (degreePc === 2 && quality === 'minor') return 'ii'
+    if (degreePc === 4 && quality === 'minor') return 'iii'
+    if (degreePc === 5 && quality === 'major') return 'IV'
+    if (degreePc === 7 && quality === 'major') return 'V'
+    if (degreePc === 9 && quality === 'minor') return 'vi'
+    // Diatonic root but wrong quality (e.g. ii as major, IV as minor) is borrowed — not pure diatonic.
+    if (MAJOR_SCALE_OFFSETS.includes(degreePc as typeof MAJOR_SCALE_OFFSETS[number])) return 'diatonic'
+    return null
+  }
+  // Minor key
+  // i minor (0), ii° (2), III major (3), iv minor (5), v minor / V major (7), VI major (8), VII major (10).
+  if (degreePc === 0 && quality === 'minor') return 'i'
+  if (degreePc === 3 && quality === 'major') return 'III'
+  if (degreePc === 5 && quality === 'minor') return 'iv'
+  if (degreePc === 7 && quality === 'major') return 'V' // harmonic-minor V
+  if (degreePc === 7 && quality === 'minor') return 'v'
+  if (degreePc === 8 && quality === 'major') return 'VI'
+  if (degreePc === 10 && quality === 'major') return 'VII'
+  if (MINOR_SCALE_OFFSETS.includes(degreePc as typeof MINOR_SCALE_OFFSETS[number])) return 'diatonic'
+  return null
+}
+
+function keyRelativeTransitionLogProb(
+  prevState: number,
+  nextState: number,
+  keyPrior: EstimatedKey | undefined,
+): number {
+  if (prevState < 0 || prevState === nextState) return 0
+  if (!keyPrior || keyPrior.mode === 'unknown' || keyPrior.rootPc < 0) return 0
+  if (keyPrior.confidence < KEY_PRIOR_TRANSITION_MIN_CONFIDENCE) return 0
+  const a = unpackChordState(prevState)
+  const b = unpackChordState(nextState)
+  // Only major/minor triads carry progression-theory weight here.
+  if ((a.quality !== 'major' && a.quality !== 'minor') ||
+      (b.quality !== 'major' && b.quality !== 'minor')) return 0
+  const roleA = diatonicRole(a.rootPc, a.quality, keyPrior.rootPc, keyPrior.mode)
+  const roleB = diatonicRole(b.rootPc, b.quality, keyPrior.rootPc, keyPrior.mode)
+  if (roleA === null || roleB === null) return KEY_TRANSITION_NON_DIATONIC
+
+  if (keyPrior.mode === 'major') {
+    // Strong functional motions.
+    if (roleA === 'I' && roleB === 'IV') return KEY_TRANSITION_STRONG
+    if (roleA === 'IV' && roleB === 'V') return KEY_TRANSITION_STRONG
+    if (roleA === 'V' && roleB === 'I') return KEY_TRANSITION_STRONG
+    if (roleA === 'I' && roleB === 'V') return KEY_TRANSITION_STRONG
+    if (roleA === 'ii' && roleB === 'V') return KEY_TRANSITION_STRONG
+    if (roleA === 'vi' && roleB === 'IV') return KEY_TRANSITION_STRONG
+    // Medium-strength routine moves.
+    if (roleA === 'I' && roleB === 'vi') return KEY_TRANSITION_MEDIUM
+    if (roleA === 'vi' && roleB === 'ii') return KEY_TRANSITION_MEDIUM
+    if (roleA === 'IV' && roleB === 'I') return KEY_TRANSITION_MEDIUM
+  } else {
+    // Minor-key analogs: i-iv-V-i is the workhorse.
+    if (roleA === 'i' && roleB === 'iv') return KEY_TRANSITION_STRONG
+    if (roleA === 'iv' && roleB === 'V') return KEY_TRANSITION_STRONG
+    if (roleA === 'V' && roleB === 'i') return KEY_TRANSITION_STRONG
+    if (roleA === 'i' && roleB === 'V') return KEY_TRANSITION_STRONG
+    if (roleA === 'VI' && roleB === 'iv') return KEY_TRANSITION_STRONG // minor-key "axis" turn
+    if (roleA === 'i' && roleB === 'VI') return KEY_TRANSITION_MEDIUM
+    if (roleA === 'VI' && roleB === 'III') return KEY_TRANSITION_MEDIUM
+    if (roleA === 'iv' && roleB === 'i') return KEY_TRANSITION_MEDIUM
+    if (roleA === 'III' && roleB === 'VII') return KEY_TRANSITION_MEDIUM
+  }
+
+  // Both chords diatonic but no named functional move — mild positive bias.
+  return KEY_TRANSITION_MILD
+}
+
+/**
  * Viterbi decode over (root, quality) states — reduces one-beat outliers vs greedy argmax.
  */
 function viterbiChordPath(
@@ -753,7 +925,7 @@ function viterbiChordPath(
       let best = -Infinity
       let bestP = 0
       for (let p = 0; p < S; p++) {
-        const sc = dp[p]! + transitionBonus(p, s)
+        const sc = dp[p]! + transitionBonus(p, s) + keyRelativeTransitionLogProb(p, s, keyPrior)
         if (sc > best) {
           best = sc
           bestP = p
@@ -1103,7 +1275,12 @@ export async function analyzeChordProgressionFromBlob(
     const sr = audioBuffer.sampleRate
     let mono = monoDownmix(audioBuffer)
 
-    const maxSec = 96
+    /* Per the v2 pipeline brief — cap analysis at the first 60 seconds. This
+     * bounds runtime + memory for the multi-pass (register-stratified) BP
+     * + source-separation + CQT-validation stack added in this revision, and
+     * matches the export contract: the three-track MIDI also covers the
+     * first 60 s of the source. */
+    const maxSec = 60
     const maxSamples = Math.floor(maxSec * sr)
     if (mono.length > maxSamples) mono = mono.subarray(0, maxSamples)
 
@@ -1273,6 +1450,13 @@ export async function analyzeChordProgressionFromBlob(
       : leadForMidi
     dbgStage('8-rmsRefine', leadNotes)
 
+    /* Register-stratified split — populated by the multi-pass BP module once
+     * integrated (see `chord-detector-register-pass.ts`). Until that lands,
+     * leave null so the return block falls back to a single-track export. */
+    let registerSplit: { lead: LeadNote[]; harmony: LeadNote[]; bass: LeadNote[] } | null = null
+    /* This is the integration anchor — the multi-pass module will populate
+     * registerSplit here based on the same audio + bpm. */
+
     // NeuralNote-inspired post (quant / min length / velocity) — optional; does not replace BP polyphony.
     leadNotes = applyNeuralNoteStyleLeadNotes(leadNotes, bpm, durationSec, options?.melodyPost)
     dbgStage('9-neuralNotePost', leadNotes)
@@ -1362,6 +1546,16 @@ export async function analyzeChordProgressionFromBlob(
      * computed and carried in the result for the panels. */
     if (loop.found) dbgStage('15-loopConsensus', consolidateToLoop(leadNotes, loop, bpm))
 
+    /* Three-track split. Populated by the register-stratified multi-pass BP
+     * helper (see `chord-detector-register-pass.ts`). For now, until the
+     * multi-pass module wires in, fall back to placing ALL notes in the lead
+     * track and leaving harmony/bass empty — that way the 3-button UI still
+     * works (just with two empty exports). The integration step replaces
+     * these defaults with the real splits. */
+    const leadTrack = registerSplit?.lead ?? leadNotes
+    const harmonyTrack = registerSplit?.harmony ?? []
+    const bassTrack = registerSplit?.bass ?? []
+
     return {
       bpm,
       bpmSource,
@@ -1375,6 +1569,9 @@ export async function analyzeChordProgressionFromBlob(
       beatTimesSec,
       downbeatTimesSec,
       leadNotes,
+      leadTrack,
+      harmonyTrack,
+      bassTrack,
       loop,
       audit,
     }

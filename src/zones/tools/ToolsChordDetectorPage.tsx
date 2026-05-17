@@ -1,4 +1,4 @@
-import { ArrowLeft, Loader2, Upload } from 'lucide-react'
+import { ArrowLeft, Bell, Loader2, Upload } from 'lucide-react'
 import {
   useCallback,
   useEffect,
@@ -27,7 +27,9 @@ import {
   type NeuralNoteStyleMelodyPostInput,
   type ValidationReport,
 } from './chord-detector-engine'
-import StudioToolsHeader from './StudioToolsHeader'
+/* StudioToolsHeader removed — its back button / Local-Connected pill / bell
+ * are now baked into the page's primary header below so we don't have two
+ * stacked nav strips doing the same job. */
 
 interface ToolsChordDetectorPageProps {
   onNavigate: (routeId: string) => void
@@ -1064,21 +1066,6 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
       className="flex min-h-0 flex-1 flex-col overflow-hidden"
       style={{ background: 'var(--bg-canvas)', color: 'var(--text-1)' }}
     >
-      <StudioToolsHeader
-        toolId="tools-chord-detector"
-        crumbs={[{ label: 'Workspace' }, { label: 'Tools' }, { label: 'Chord Detector', emphasis: true }]}
-        leftExtra={
-          <button
-            type="button"
-            onClick={() => onNavigate('tools-hub')}
-            className="mr-2 rounded-lg border border-slate-200 bg-white p-2 text-slate-600 shadow-sm transition hover:bg-slate-50"
-            aria-label="Back to Tools Hub"
-          >
-            <ArrowLeft className="size-4" strokeWidth={2} />
-          </button>
-        }
-      />
-
       <div className="flex-1 overflow-auto" style={{ background: PALETTE.bg }}>
         <div className="mx-auto flex w-full flex-col" style={{ minHeight: 'calc(100dvh - 56px)' }}>
           <div
@@ -1088,131 +1075,139 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
               background: PALETTE.line,
             }}
           >
-            {/* ── Header ── */}
+            {/* ── Header ── merged from the previous double-bar setup.
+                 Left: back arrow.
+                 Center: tool title — flips to the uploaded file name when one is loaded.
+                 Right: LOCAL · CONNECTED pill, notification bell, RESET. */}
             <header
-              className="flex items-center justify-between px-6 py-4"
+              className="flex items-center justify-between gap-3 px-6 py-3"
               style={{ background: PALETTE.surface }}
             >
-              <PillButton label="UTIL.06" decorative />
-              <div
-                className="text-[10px] uppercase tracking-[0.2em]"
-                style={{ color: PALETTE.textMuted, fontFamily: "'DM Mono', monospace" }}
-              >
-                CHORD_DET
+              <div className="flex min-w-0 items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => onNavigate('tools-hub')}
+                  aria-label="Back to Tools Hub"
+                  className="rounded-md p-1.5 transition-colors"
+                  style={{
+                    border: `1px solid ${PALETTE.line}`,
+                    color: PALETTE.textMain,
+                    background: 'transparent',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = PALETTE.bg)}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <ArrowLeft className="size-4" strokeWidth={2} />
+                </button>
+                <span
+                  className="truncate text-[13px] uppercase tracking-[0.18em]"
+                  style={{
+                    color: fileName ? PALETTE.textMain : PALETTE.textMuted,
+                    fontFamily: "'DM Mono', monospace",
+                  }}
+                  title={fileName ?? 'Chord Detector'}
+                >
+                  {fileName ?? 'Chord Detector'}
+                </span>
               </div>
-              <PillButton label="RESET" onClick={reset} />
+              <div className="flex shrink-0 items-center gap-2">
+                <span
+                  className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] uppercase tracking-[0.15em]"
+                  style={{
+                    background: 'color-mix(in oklab, #54C98E 16%, transparent)',
+                    color: PALETTE.green,
+                    border: `1px solid color-mix(in oklab, ${PALETTE.green} 35%, transparent)`,
+                    fontFamily: "'DM Mono', monospace",
+                  }}
+                >
+                  <span
+                    className="inline-block size-1.5 animate-pulse rounded-full"
+                    style={{ background: PALETTE.green }}
+                    aria-hidden
+                  />
+                  Local · connected
+                </span>
+                <button
+                  type="button"
+                  aria-label="Notifications (placeholder)"
+                  className="rounded-md p-1.5 transition-colors"
+                  style={{
+                    border: `1px solid ${PALETTE.line}`,
+                    color: PALETTE.textMain,
+                    background: 'transparent',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = PALETTE.bg)}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <Bell className="size-[14px]" strokeWidth={1.8} />
+                </button>
+                <PillButton label="RESET" onClick={reset} />
+              </div>
             </header>
 
-            {/* ── Hero (sidebar + BPM + status dots) ── */}
+            {/* ── Hero — 3-stat strip (BPM / KEY / SCALE) replaces the old big-BPM
+                 display. Each cell is a labeled stat. The BASIC PITCH vertical
+                 column is gone; status text moves under the stats. ── */}
             <section
               className="grid"
               style={{
-                gridTemplateColumns: '2.5rem 1fr',
+                gridTemplateColumns: '1fr 1fr 1fr',
                 gap: '1px',
                 background: PALETTE.line,
               }}
             >
-              <div
-                className="flex flex-col items-center justify-between py-6"
-                style={{ background: PALETTE.surface }}
-              >
-                <CircleNum n={1} />
-                <span
-                  className="text-[9px] uppercase tracking-[0.2em]"
-                  style={{
-                    writingMode: 'vertical-rl',
-                    transform: 'rotate(180deg)',
-                    color: PALETTE.textMuted,
-                  }}
-                >
-                  BASIC PITCH
-                </span>
-                <CircleNum n={2} />
-              </div>
-
-              <div
-                className="relative flex min-w-0 flex-col items-center justify-center overflow-hidden px-4 py-8"
-                style={{ background: PALETTE.surface }}
-              >
-                <span
-                  className="absolute right-4 top-4 text-[10px] tracking-[0.1em]"
-                  style={{ color: PALETTE.textMuted }}
-                >
-                  TEMPO BPM
-                </span>
-
-                <div
-                  className="max-w-full select-none text-center"
-                  style={{
-                    fontFamily: "'DM Mono', monospace",
-                    // Cap at 9rem and use cqw (container-width) where supported, falling back to a smaller vw value.
-                    fontSize: 'clamp(3.5rem, 11vw, 9rem)',
-                    fontWeight: 400,
-                    lineHeight: 1,
-                    letterSpacing: '-0.05em',
-                    color: result ? PALETTE.textMain : PALETTE.textMuted,
-                    textShadow: busy ? `0 0 24px ${PALETTE.amberGlow}` : 'none',
-                    transition: 'color 0.1s ease, text-shadow 0.1s ease',
-                    whiteSpace: 'nowrap',
-                  }}
-                  aria-live="polite"
-                  aria-label={result ? `Detected tempo ${result.bpm} BPM` : 'No tempo detected'}
-                >
-                  {bpmDisplay}
-                </div>
-
-                <span
-                  className="mt-4 text-[10px] uppercase tracking-[0.2em]"
-                  style={{ color: statusColor, fontFamily: "'DM Mono', monospace" }}
-                >
-                  {status}
-                  {result?.bpmSource === 'tags'
-                    ? ' · FROM TAGS'
+              <HeroStat
+                label="TEMPO · BPM"
+                value={result ? String(result.bpm) : '—'}
+                detail={
+                  result?.bpmSource === 'tags'
+                    ? 'from tags'
                     : result?.bpmSource === 'bpm-prior'
-                      ? ' · BPM PRIOR'
+                      ? 'bpm prior'
                       : result
-                        ? ' · ESTIMATED'
-                        : ''}
-                </span>
-              </div>
+                        ? 'estimated'
+                        : busy
+                          ? 'reading…'
+                          : 'idle'
+                }
+                busy={busy}
+              />
+              <HeroStat
+                label="KEY"
+                value={
+                  result?.estimatedKey.confidence && result.estimatedKey.confidence > 0.3
+                    ? result.estimatedKey.label
+                    : '—'
+                }
+                detail={
+                  result?.estimatedKey.confidence
+                    ? `${Math.round(result.estimatedKey.confidence * 100)}% conf`
+                    : busy
+                      ? 'reading…'
+                      : 'idle'
+                }
+                busy={busy}
+              />
+              <HeroStat
+                label="SCALE · MODE"
+                value={
+                  result?.estimatedKey.mode && result.estimatedKey.mode !== 'unknown'
+                    ? result.estimatedKey.mode.toUpperCase()
+                    : '—'
+                }
+                detail={
+                  result?.uniqueChordCount
+                    ? `${result.uniqueChordCount} chord${result.uniqueChordCount === 1 ? '' : 's'}`
+                    : busy
+                      ? 'reading…'
+                      : 'idle'
+                }
+                busy={busy}
+              />
             </section>
 
-            <section
-              className="border-b px-6 py-2.5"
-              style={{ background: PALETTE.surface, borderColor: PALETTE.line }}
-            >
-              <p
-                className="text-center text-[10px] leading-relaxed tracking-wide"
-                style={{ color: PALETTE.textMuted, fontFamily: "'DM Mono', monospace" }}
-              >
-                Transcription uses Spotify Basic Pitch (TensorFlow.js) with optional NeuralNote-inspired
-                post-processing below — not the NeuralNote desktop plugin.
-              </p>
-              <p
-                className="mt-2 text-center text-[10px] leading-snug tracking-wide"
-                style={{ color: PALETTE.textMuted, fontFamily: "'DM Mono', monospace" }}
-              >
-                Tuned for piano and lead-note lines first; the chord timeline is a secondary harmonic guide.
-              </p>
-              <label
-                className="mx-auto mt-3 flex max-w-md cursor-pointer select-none items-center justify-center gap-2.5 text-[10px] uppercase tracking-[0.12em]"
-                style={{ color: PALETTE.textMain, fontFamily: "'DM Mono', monospace" }}
-              >
-                <input
-                  type="checkbox"
-                  className="size-3.5 accent-amber-500"
-                  checked={pianoLeadFocus}
-                  onChange={e => setPianoLeadFocus(e.target.checked)}
-                  aria-label="Piano and lead focus mode"
-                />
-                <span style={{ color: pianoLeadFocus ? PALETTE.amber : PALETTE.textMuted }}>
-                  Piano / lead focus
-                </span>
-                <span className="normal-case tracking-normal" style={{ color: PALETTE.textMuted }}>
-                  — stricter notes & calmer poly (re-runs clip)
-                </span>
-              </label>
-            </section>
+            {/* Transcription passage + piano-lead-focus checkbox removed —
+                the toggle is now a button in the controls row below. */}
 
             {/* ── Controls — 4-column × 2-row grid (8 cells) so labels never wrap.
                  Row 1 (playback + trim group):
@@ -1224,7 +1219,11 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
             <section
               className="grid"
               style={{
-                gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+                /* 3 cols × 3 rows = 9 cells, one per button — every cell now
+                 * carries a real control instead of spacer fillers. With the
+                 * upcoming 3 export buttons (Lead/Harmony/Bass replacing the
+                 * single EXPORT MIDI), the grid expands to 4 × 3 = 12 cells. */
+                gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
                 gap: '1px',
                 background: PALETTE.line,
               }}
@@ -1408,8 +1407,54 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 }
                 label="COPY PROGRESSION"
               />
-              {/* Trailing spacer fills the 8th cell so the row reads as a single panel. */}
-              <div aria-hidden style={{ background: PALETTE.surface }} />
+              {/* Piano / lead focus — toggle that lives next to COPY PROGRESSION.
+                  Active state amber-on-dark, inactive muted. The label intentionally
+                  spells out the trade-off because users will see this button often. */}
+              <ControlButton
+                active={pianoLeadFocus}
+                disabled={false}
+                onClick={() => setPianoLeadFocus(v => !v)}
+                icon={
+                  <span
+                    className="block size-2"
+                    style={{
+                      background: pianoLeadFocus ? PALETTE.amber : PALETTE.textMuted,
+                      borderRadius: '50%',
+                    }}
+                    aria-hidden
+                  />
+                }
+                label={pianoLeadFocus ? 'PIANO / LEAD · ON' : 'PIANO / LEAD'}
+              />
+              {/* Re-run clip — green-on-dark so it stands out as the "redo with
+                  changed settings" action. Disabled until a clip has been run. */}
+              <button
+                type="button"
+                disabled={!lastFileRef.current || busy}
+                onClick={() => {
+                  const f = lastFileRef.current
+                  if (f) void runFile(f)
+                }}
+                className="flex items-center justify-center gap-2 py-5 text-[11px] uppercase tracking-[0.2em] transition-colors disabled:cursor-not-allowed"
+                style={{
+                  background: PALETTE.surface,
+                  color: !lastFileRef.current || busy ? PALETTE.textMuted : PALETTE.green,
+                  border: `1px solid ${
+                    !lastFileRef.current || busy ? PALETTE.line : PALETTE.green
+                  }`,
+                  opacity: !lastFileRef.current || busy ? 0.5 : 1,
+                }}
+              >
+                <span
+                  className="block size-2"
+                  style={{
+                    background: !lastFileRef.current || busy ? PALETTE.textMuted : PALETTE.green,
+                    borderRadius: '50%',
+                  }}
+                  aria-hidden
+                />
+                RE-RUN CLIP
+              </button>
             </section>
 
             {/* ── Drop zone (interaction slot). Accepts OS files AND dock items. ── */}
@@ -1486,7 +1531,11 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
               </label>
             </section>
 
-            {/* ── Melody post (NeuralNote-style, browser-only) — moved here, directly under the drop zone ── */}
+            {/* MELODY POST removed — its Re-run clip button is now in the
+                controls row, and the slider knobs are intentionally hidden
+                in this build (defaults are tuned). Re-add as an Advanced
+                drawer later if needed. */}
+            {false && (
             <section className="flex flex-col" style={{ background: PALETTE.surface }}>
               <div
                 className="flex flex-wrap items-center justify-between gap-2 border-b px-6 py-3 text-[11px] uppercase tracking-[0.15em]"
@@ -1605,6 +1654,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 />
               </div>
             </section>
+            )}
 
             {/* ── Status banner ── */}
             {(inboundNotice || error) && (
@@ -1820,6 +1870,65 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
 }
 
 /* ── GRAY2020 sub-components ─────────────────────────────────────────────────── */
+
+/**
+ * Hero stat cell — one of three columns in the top stat strip. Shows a labelled
+ * value (BPM / KEY / SCALE) and a small detail line under it (confidence,
+ * source, chord count, etc). The whole cell pulses amber while a clip is being
+ * processed so the user gets visual feedback that work is happening.
+ */
+function HeroStat({
+  label,
+  value,
+  detail,
+  busy,
+}: {
+  label: string
+  value: string
+  detail: string
+  busy: boolean
+}) {
+  return (
+    <div
+      className="relative flex min-w-0 flex-col items-center justify-center overflow-hidden px-4 py-7"
+      style={{
+        background: PALETTE.surface,
+        transition: 'box-shadow 0.2s ease',
+        boxShadow: busy ? `inset 0 0 24px ${PALETTE.amberGlow}` : 'none',
+      }}
+    >
+      <span
+        className="absolute left-4 top-3 text-[9px] tracking-[0.15em]"
+        style={{ color: PALETTE.textMuted, fontFamily: "'DM Mono', monospace" }}
+      >
+        {label}
+      </span>
+      <div
+        className="mt-3 max-w-full select-none text-center"
+        style={{
+          fontFamily: "'DM Mono', monospace",
+          fontSize: 'clamp(2rem, 5.5vw, 3.4rem)',
+          fontWeight: 400,
+          lineHeight: 1.05,
+          letterSpacing: '-0.03em',
+          color: value === '—' ? PALETTE.textMuted : PALETTE.textMain,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}
+        aria-live="polite"
+      >
+        {value}
+      </div>
+      <span
+        className="mt-2 text-[9px] uppercase tracking-[0.18em]"
+        style={{ color: PALETTE.textMuted, fontFamily: "'DM Mono', monospace" }}
+      >
+        {detail}
+      </span>
+    </div>
+  )
+}
 
 function PillButton({
   label,
