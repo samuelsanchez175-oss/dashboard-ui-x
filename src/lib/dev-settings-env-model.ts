@@ -15,6 +15,7 @@ export type DevSettingsRetrievalLink = {
 export type DevSettingsSectionId =
   | 'google-youtube'
   | 'gemini-harmony'
+  | 'chord-detector'
   | 'feeds'
   | 'openai'
   | 'tesla-fleet'
@@ -51,6 +52,7 @@ export type DevSettingsEnvModelEntry = {
 export const DEV_SETTINGS_SECTION_META: readonly { id: DevSettingsSectionId; title: string }[] = [
   { id: 'google-youtube', title: 'Google & YouTube' },
   { id: 'gemini-harmony', title: 'Gemini & Harmony' },
+  { id: 'chord-detector', title: 'Chord Detector' },
   { id: 'feeds', title: 'Feeds & syndication' },
   { id: 'openai', title: 'OpenAI-compatible' },
   { id: 'tesla-fleet', title: 'Tesla Fleet' },
@@ -137,13 +139,14 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     oneLinePurpose: 'Primary Google AI Studio key for Gemini routes and most Gemini-powered features.',
     usedIn: [
       '`GET /api/gemini/health` — list models',
-      '`POST /api/gemini/generate` — BFF text generation (e.g. Tools → Phonetics inspector, Mixing board AI)',
+      '`POST /api/gemini/generate` — BFF text generation (e.g. Tools → Phonetics inspector, Mixing board AI, Chord Detector AI POLISH)',
       '`POST /api/gemini/ping` — Agent Farm + Diagnostics upstream smoke',
       '`POST /api/harmony/client-projects/build-prompt` — when `HARMONY_CLIENT_PROJECTS_AI_KEY` is unset',
       '`GET /api/harmony/client-projects/ai-health` — fallback `source: gemini` when Harmony override empty',
       '`AgentFarm.tsx` / `agent-farm-live.ts` — Usage tab + integration gates',
       '`src/lib/route-connection.ts` — warns when Agent Farm Usage needs Gemini',
       '`src/zones/dev/DiagnosticsZone.tsx` (via `dashboard-diagnostics.ts`) — optional Gemini ping in full checks',
+      '`src/zones/tools/chord-detector-llm-polish.ts` — AI POLISH button in Tools → Chord Detector',
     ],
     optional: false,
     scope: 'server',
@@ -171,6 +174,37 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     sectionId: 'gemini-harmony',
     supportsLocalScratch: true,
     sourceResolutionNote: 'Same API family as Gemini; only Client Projects routes prefer this key.',
+    retrievalLinks: [{ label: 'Google AI Studio', href: 'https://aistudio.google.com/apikey' }],
+  },
+  /* ── Chord Detector ────────────────────────────────────────────────────────
+   * The chord detector's AI POLISH button (`runAiPolish` in
+   * `ToolsChordDetectorPage.tsx`) posts the symbolic progression to Gemini
+   * via the shared `/api/gemini/generate` route. It deliberately re-uses the
+   * SAME `GEMINI_API_KEY` storage as the primary Gemini entry above —
+   * editing the field here writes to the same localStorage scratch slot, so
+   * the value stays in sync with the Gemini & Harmony section. This row
+   * exists so users browsing Settings can find the chord detector by name
+   * instead of having to know it's "a Gemini thing". */
+  {
+    id: 'chord-detector-gemini',
+    storageKey: 'GEMINI_API_KEY',
+    envKeys: ['GEMINI_API_KEY'],
+    label: 'Chord Detector AI POLISH',
+    role: 'Gemini (shared key)',
+    oneLinePurpose:
+      'AI POLISH sends the detected progression + key + audit findings to Gemini 2.0 Flash for a session-musician review (suggested key, style hint, per-chord corrections, missing pitch classes).',
+    usedIn: [
+      '`Tools → Chord Detector → 🤖 AI POLISH` button',
+      '`src/zones/tools/chord-detector-llm-polish.ts` — strict-JSON polish prompt',
+      '`POST /api/gemini/generate` — same BFF route as every other Gemini consumer',
+    ],
+    optional: true,
+    scope: 'server',
+    inputKind: 'secret',
+    sectionId: 'chord-detector',
+    supportsLocalScratch: true,
+    sourceResolutionNote:
+      'Shared with the primary Gemini key above — editing here updates the same value used by Gemini & Harmony.',
     retrievalLinks: [{ label: 'Google AI Studio', href: 'https://aistudio.google.com/apikey' }],
   },
   {

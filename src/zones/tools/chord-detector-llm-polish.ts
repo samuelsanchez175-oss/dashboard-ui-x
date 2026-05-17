@@ -147,12 +147,24 @@ export async function polishChordResult(
       | { ok?: false; message?: string }
 
     if (!res.ok || !json || !('ok' in json) || json.ok !== true) {
+      const bffMessage =
+        typeof json === 'object' && 'message' in json && typeof json.message === 'string'
+          ? json.message
+          : null
+      /* The dev BFF returns "Set GEMINI_API_KEY." when neither the
+       * `x-user-key-gemini-api-key` header (from Settings → Chord Detector
+       * or Gemini & Harmony) nor `process.env.GEMINI_API_KEY` is set.
+       * Surface a friendlier message that points the user at the fix. */
+      if (bffMessage && /GEMINI_API_KEY/i.test(bffMessage)) {
+        return {
+          ok: false,
+          message:
+            'No Gemini API key found. Open Settings → "Chord Detector" (or "Gemini & Harmony") and paste your Google AI Studio key — same field, shared with every other Gemini feature.',
+        }
+      }
       return {
         ok: false,
-        message:
-          (typeof json === 'object' && 'message' in json && typeof json.message === 'string'
-            ? json.message
-            : null) ?? `Gemini request failed (HTTP ${res.status}).`,
+        message: bffMessage ?? `Gemini request failed (HTTP ${res.status}).`,
       }
     }
     const text = ((json as { ok: true; preview: string | null }).preview ?? '').trim()
@@ -205,7 +217,7 @@ export async function polishChordResult(
   } catch (err) {
     return {
       ok: false,
-      message: `Could not reach the Gemini endpoint. Is GEMINI_API_KEY set in the dev server? (${
+      message: `Could not reach /api/gemini/generate. Is the dev server running? Settings → "Chord Detector" is where the API key lives. (${
         err instanceof Error ? err.message : String(err)
       })`,
     }
