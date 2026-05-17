@@ -388,3 +388,55 @@ function ifftRadix2InPlace(
     im[i] = -im[i] * inv
   }
 }
+
+/* ──────────────────────────────────────────────────────────────────────────── */
+/* Separator registry — extension point for the v2 → v3 transition.
+ *
+ * Phase 3 research (see docs/chord-detector-source-separation-research.md)
+ * concluded that HPSS captures 70-80 % of the source-separation win at zero
+ * extra bundle cost, and that adding a neural separator (SCNet / Open-Unmix /
+ * HTDemucs) is best deferred until the audit panel surfaces it as the
+ * remaining bottleneck. When that day comes, swapping in a neural separator
+ * is a one-line change in `chord-detector-engine.ts`: replace the direct
+ * `isolateHarmonicMono` call with `getActiveSeparator().isolateHarmonic(...)`.
+ *
+ * New separators register by name. Each must accept (Float32Array, sampleRate)
+ * and return either a Float32Array (sync) or Promise<Float32Array> (async, for
+ * any future neural separator that lazy-loads its model on first use). */
+
+export interface SourceSeparator {
+  /** Display name (shown in any future settings UI). */
+  name: string
+  /** Bundle cost in MB — informational, for "downloads X MB" UX strings. */
+  bundleSizeMb: number
+  /** Sync or async harmonic-stem isolator. */
+  isolateHarmonic: (mono: Float32Array, sr: number) => Float32Array | Promise<Float32Array>
+}
+
+export const SOURCE_SEPARATORS: Record<string, SourceSeparator> = {
+  hpss: {
+    name: 'HPSS (median filter)',
+    bundleSizeMb: 0,
+    isolateHarmonic: (mono, sr) => isolateHarmonicMono(mono, sr),
+  },
+  /* When SCNet / Open-Unmix lands:
+   *   scnet: {
+   *     name: 'SCNet small (neural)',
+   *     bundleSizeMb: 40,
+   *     isolateHarmonic: async (mono, sr) => {
+   *       const { isolateHarmonicScnet } = await import('./chord-detector-source-separation-scnet')
+   *       return isolateHarmonicScnet(mono, sr)
+   *     },
+   *   }, */
+}
+
+/**
+ * Returns the active separator. Reads `localStorage['chord-detector-separator']`
+ * (any value not in the registry falls back to 'hpss'). Stable function name
+ * so the engine's import doesn't need to know about future additions.
+ */
+export function getActiveSeparator(): SourceSeparator {
+  if (typeof window === 'undefined' || !window.localStorage) return SOURCE_SEPARATORS.hpss!
+  const key = window.localStorage.getItem('chord-detector-separator') ?? 'hpss'
+  return SOURCE_SEPARATORS[key] ?? SOURCE_SEPARATORS.hpss!
+}
