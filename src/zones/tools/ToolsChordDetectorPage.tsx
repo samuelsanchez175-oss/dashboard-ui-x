@@ -15,12 +15,14 @@ import { buildChord, CHORD_QUALITIES } from '../../components/piano/chords'
 import { piano } from '../../components/piano/engine'
 import {
   analyzeChordProgressionFromBlob,
+  applyChordCorrections,
   buildChordMidiBlob,
   clipChordSegmentsForExport,
   clipLeadNotesForExport,
   consolidateToLoop,
   NEURALNOTE_STYLE,
   NEURALNOTE_TIME_DIVISION_LABELS,
+  parseKeyLabel,
   validateChordOutput,
   type AuditReport,
   type ChordAnalysisResult,
@@ -530,12 +532,19 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
   /* Phase 2 — AI Polish (Gemini). State for the on-demand LLM assessment.
    * `aiBusy` blocks repeat clicks while a request is in flight. `aiResult`
    * is either the parsed Gemini response or an error message. Both reset
-   * on every fresh analysis (file drop / RE-RUN CLIP). */
+   * on every fresh analysis (file drop / RE-RUN CLIP).
+   *
+   * `aiAppliedSnapshot` is the pre-polish `result` snapshot, kept around so
+   * REVERT can restore it after APPLY has rewritten segment labels / the
+   * estimated key. `null` when polish hasn't been applied yet. */
   const [aiBusy, setAiBusy] = useState(false)
   const [aiResult, setAiResult] = useState<
     | { ok: true; summary: string; suggestedKey: string | null; inferredStyle: string | null; chordCorrections: Array<{ segmentIndex: number; currentLabel: string; suggestedLabel: string; rationale: string }>; missingPCs: string[] }
     | { ok: false; message: string }
     | null
+  >(null)
+  const [aiAppliedSnapshot, setAiAppliedSnapshot] = useState<
+    { before: ChordAnalysisResult; afterApply: ChordAnalysisResult } | null
   >(null)
 
   const [trimStart, setTrimStart] = useState(0)
@@ -714,6 +723,10 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
     setError(null)
     setFileName(file.name)
     setResult(null)
+    /* Fresh analysis — drop any prior AI POLISH response + applied snapshot
+     * so the panel disappears until the user clicks AI POLISH again. */
+    setAiResult(null)
+    setAiAppliedSnapshot(null)
     try {
       const r = await analyzeChordProgressionFromBlob(file, {
         melodyPost: melodyPostInput,
@@ -1071,11 +1084,43 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
     }
   }, [result, aiBusy])
 
-  /* Reset aiResult whenever a fresh analysis lands — stale LLM corrections
-   * shouldn't linger after the user re-runs the clip with new settings. */
-  useEffect(() => {
-    setAiResult(null)
-  }, [result])
+  /* Why no useEffect-on-result here: APPLY and REVERT both mutate `result`
+   * intentionally, and any effect watching `result` would wrongly clear
+   * polish state on those code paths. Polish reset is therefore done
+   * explicitly at the two real "fresh analysis" sites: `runFile` (file drop
+   * / RE-RUN CLIP) and `reset` (RESET button). */
+
+  /**
+   * APPLY the polish suggestions to the displayed analysis. Mutates
+   * `result.segments` (per-chord label corrections) and `result.estimatedKey`
+   * (when the LLM gave a non-null `suggestedKey`). Stashes the pre-apply
+   * result so REVERT can restore it. The piano-roll component renders
+   * `leadNotes` (the recorded melody) — those don't change here, but the
+   * progression text, KEY hero stat, chord-MIDI export, and AUDIT panel all
+   * re-derive from segments / estimatedKey, so the user sees the polish
+   * propagate everywhere it should.
+   */
+  const applyAiPolish = useCallback(() => {
+    if (!result || !aiResult || !aiResult.ok) return
+    if (aiAppliedSnapshot) return // already applied — nothing to do until REVERT
+    const nextSegments = applyChordCorrections(result.segments, aiResult.chordCorrections)
+    const nextKey =
+      (aiResult.suggestedKey && parseKeyLabel(aiResult.suggestedKey)) || result.estimatedKey
+    const nextResult: ChordAnalysisResult = {
+      ...result,
+      segments: nextSegments,
+      estimatedKey: nextKey,
+    }
+    setAiAppliedSnapshot({ before: result, afterApply: nextResult })
+    setResult(nextResult)
+  }, [result, aiResult, aiAppliedSnapshot])
+
+  /** REVERT to the pre-polish snapshot. No-op if APPLY was never clicked. */
+  const revertAiPolish = useCallback(() => {
+    if (!aiAppliedSnapshot) return
+    setResult(aiAppliedSnapshot.before)
+    setAiAppliedSnapshot(null)
+  }, [aiAppliedSnapshot])
 
   const copyProgression = useCallback(async () => {
     const text = progressionTextExport || progressionTextFull
@@ -1096,6 +1141,9 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
     setTrimStart(0)
     setTrimEnd(0)
     setTrimCommitted(false)
+    /* RESET also drops the polish state — no analysis means no panel. */
+    setAiResult(null)
+    setAiAppliedSnapshot(null)
   }, [])
 
   /* ── Derived display values ── */
@@ -1846,8 +1894,17 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
             {/* ── AI POLISH — Gemini's structured assessment of the progression.
                  Only rendered after the user clicks AI POLISH (aiResult lands
                  in state). Shows the summary + suggested key + style hint +
-                 per-chord corrections + LLM-inferred missing PCs. ── */}
-            {aiResult ? <AiPolishPanel result={aiResult} /> : null}
+                 per-chord corrections + LLM-inferred missing PCs. APPLY
+                 rewrites segment labels + the estimated key in-place; REVERT
+                 restores the pre-apply snapshot. ── */}
+            {aiResult ? (
+              <AiPolishPanel
+                result={aiResult}
+                applied={!!aiAppliedSnapshot}
+                onApply={applyAiPolish}
+                onRevert={revertAiPolish}
+              />
+            ) : null}
           </div>
         </div>
       </div>
@@ -1982,38 +2039,89 @@ function CircleNum({ n }: { n: number }) {
  * per the `clear-ui-labels` skill. A single coloured dot per row carries the status.
  */
 /**
- * AI POLISH panel — renders the structured Gemini response. Three sub-sections:
- * the model's narrative summary at the top, the inferred style + suggested key
- * pills next, then a sparse list of per-chord corrections + missing PCs. Hidden
- * until the user clicks AI POLISH; replaced on every fresh analysis.
+ * AI POLISH panel — renders the structured Gemini response and exposes
+ * APPLY / REVERT for the suggestion set. The narrative summary, inferred
+ * style, suggested key, per-chord corrections, and missing-PC list are all
+ * surfaced; APPLY rewrites `result.segments` (each correction's label,
+ * rootPc, quality) and `result.estimatedKey` in-place. REVERT swaps the
+ * pre-apply snapshot back.
  *
- * Read-only for now — the corrections don't auto-apply to `result.segments`.
- * Apply-buttons land in a follow-up once we trust the LLM's calibration.
+ * Important UX note: the piano roll shows lead notes (the recorded melody),
+ * which APPLY does NOT change — polish is symbolic-only and operates on
+ * chord labels / key. The progression text, KEY hero stat, and exported
+ * chord-track MIDI all re-derive from segments, so those DO update. The
+ * banner at the bottom of the panel spells this out so users don't expect
+ * notes to move in the roll.
  */
 function AiPolishPanel({
   result,
+  applied,
+  onApply,
+  onRevert,
 }: {
   result:
     | { ok: true; summary: string; suggestedKey: string | null; inferredStyle: string | null; chordCorrections: Array<{ segmentIndex: number; currentLabel: string; suggestedLabel: string; rationale: string }>; missingPCs: string[] }
     | { ok: false; message: string }
+  applied: boolean
+  onApply: () => void
+  onRevert: () => void
 }) {
+  const canApply =
+    result.ok && (result.chordCorrections.length > 0 || !!result.suggestedKey)
   return (
     <section className="flex flex-col" style={{ background: PALETTE.surface }}>
       <div
-        className="flex items-center justify-between border-b px-6 py-3 text-[11px] uppercase tracking-[0.15em]"
+        className="flex items-center justify-between gap-3 border-b px-6 py-3 text-[11px] uppercase tracking-[0.15em]"
         style={{ borderColor: PALETTE.line, color: PALETTE.amber }}
       >
-        <span>🤖 AI POLISH (GEMINI)</span>
-        <span
-          className="rounded-full px-2 py-0.5 text-[9px] normal-case tracking-normal"
-          style={{
-            background: result.ok ? 'color-mix(in oklab, #54C98E 14%, transparent)' : 'color-mix(in oklab, #ef4444 18%, transparent)',
-            color: result.ok ? PALETTE.green : '#ef4444',
-            border: `1px solid ${result.ok ? PALETTE.green : '#ef4444'}`,
-          }}
-        >
-          {result.ok ? 'response received' : 'request failed'}
-        </span>
+        <span className="shrink-0">🤖 AI POLISH (GEMINI)</span>
+        <div className="flex items-center gap-2">
+          <span
+            className="rounded-full px-2 py-0.5 text-[9px] normal-case tracking-normal"
+            style={{
+              background: applied
+                ? 'color-mix(in oklab, #F5A623 18%, transparent)'
+                : result.ok
+                  ? 'color-mix(in oklab, #54C98E 14%, transparent)'
+                  : 'color-mix(in oklab, #ef4444 18%, transparent)',
+              color: applied ? PALETTE.amber : result.ok ? PALETTE.green : '#ef4444',
+              border: `1px solid ${applied ? PALETTE.amber : result.ok ? PALETTE.green : '#ef4444'}`,
+            }}
+          >
+            {applied ? 'applied' : result.ok ? 'response received' : 'request failed'}
+          </span>
+          {result.ok && (applied ? (
+            <button
+              type="button"
+              onClick={onRevert}
+              className="rounded-md px-3 py-1 text-[10px] uppercase tracking-[0.12em] transition-colors"
+              style={{
+                background: 'transparent',
+                color: PALETTE.textMain,
+                border: `1px solid ${PALETTE.line}`,
+                fontFamily: "'DM Mono', monospace",
+              }}
+            >
+              ↺ REVERT
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onApply}
+              disabled={!canApply}
+              title={canApply ? 'Apply suggested chord-label + key corrections to the displayed analysis.' : 'Nothing to apply — Gemini had no corrections.'}
+              className="rounded-md px-3 py-1 text-[10px] uppercase tracking-[0.12em] transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+              style={{
+                background: canApply ? PALETTE.amberGlow : 'transparent',
+                color: canApply ? PALETTE.amber : PALETTE.textMuted,
+                border: `1px solid ${canApply ? PALETTE.amber : PALETTE.line}`,
+                fontFamily: "'DM Mono', monospace",
+              }}
+            >
+              ✓ APPLY
+            </button>
+          ))}
+        </div>
       </div>
 
       {!result.ok ? (
@@ -2116,6 +2224,37 @@ function AiPolishPanel({
               </div>
             </div>
           )}
+
+          {/* Scope explainer — sets expectations about what APPLY actually changes
+              so users don't expect notes to move in the piano roll. */}
+          <p
+            className="border-t pt-3 text-[10px] leading-relaxed"
+            style={{
+              borderColor: PALETTE.line,
+              color: PALETTE.textMuted,
+              fontFamily: "'DM Mono', monospace",
+            }}
+          >
+            {applied ? (
+              <>
+                <strong style={{ color: PALETTE.amber }}>APPLIED.</strong>{' '}
+                Chord labels in the progression text + KEY hero stat now reflect
+                Gemini&apos;s suggestions. The exported chord-track MIDI uses
+                the corrected (root, quality) per segment. Melody notes in the
+                piano roll are unchanged — polish only edits symbols, never the
+                recorded notes. Hit <strong>REVERT</strong> to go back.
+              </>
+            ) : (
+              <>
+                <strong style={{ color: PALETTE.textMain }}>What APPLY changes:</strong>{' '}
+                chord-label corrections rewrite the matching segment&apos;s label
+                + (root, quality); the exported chord-track MIDI re-derives from
+                those. Suggested key replaces the KEY hero stat. Melody notes in
+                the piano roll <strong>do not move</strong> — polish is
+                symbolic-only. REVERT restores everything in one click.
+              </>
+            )}
+          </p>
         </div>
       )}
     </section>

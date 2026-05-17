@@ -1043,6 +1043,152 @@ export function formatChordLabel(rootPc: number, quality: ChordQuality): string 
   }
 }
 
+/* ──────────────────────────────────────────────────────────────────────────── */
+/* Chord label parsing — used by AI POLISH to apply LLM-suggested corrections.
+ *
+ * The engine's quality vocabulary is intentionally small ({major, minor, dim,
+ * aug, sus4}) because Viterbi decodes over those five buckets. The LLM may
+ * suggest 7ths, 9ths, sus2, etc; we map those down to the closest triad so
+ * the segment's (rootPc, quality) stays decodable by the rest of the
+ * pipeline. The original (richer) label is kept verbatim in `displayLabel`
+ * for the progression-text and panel rendering. */
+
+/** Pitch-class lookup for `parseChordLabel`. Supports # / b accidentals and
+ *  the Unicode ♯ / ♭ glyphs the LLM occasionally emits. */
+const ROOT_PC_LOOKUP: Record<string, number> = {
+  C: 0, 'C#': 1, 'C♯': 1, Db: 1, 'D♭': 1,
+  D: 2, 'D#': 3, 'D♯': 3, Eb: 3, 'E♭': 3,
+  E: 4, Fb: 4, 'F♭': 4,
+  F: 5, 'F#': 6, 'F♯': 6, Gb: 6, 'G♭': 6,
+  G: 7, 'G#': 8, 'G♯': 8, Ab: 8, 'A♭': 8,
+  A: 9, 'A#': 10, 'A♯': 10, Bb: 10, 'B♭': 10,
+  B: 11, Cb: 11, 'C♭': 11,
+}
+
+/**
+ * Parse a chord label like "F#m", "Cmaj7", "G7", "Dsus4", "F#m7♭5" into
+ * `{ rootPc, quality, displayLabel }`. Returns `null` if the label can't be
+ * tokenised (unknown root, garbled suffix). The `displayLabel` is the original
+ * input — callers can store it on the segment so the panel renders the
+ * suggested label as-typed (e.g. "Cmaj7") even when `quality` collapses to
+ * `'major'` for the engine.
+ */
+export function parseChordLabel(
+  label: string,
+): { rootPc: number; quality: ChordQuality; displayLabel: string } | null {
+  const trimmed = label.trim()
+  if (!trimmed) return null
+
+  /* Root parse: try the two-char form first (handles C#, Db, F♯, G♭), fall
+   * back to the single-letter form. */
+  let rootEnd = 0
+  let rootPc = -1
+  if (trimmed.length >= 2) {
+    const two = trimmed.slice(0, 2)
+    if (two in ROOT_PC_LOOKUP) {
+      rootPc = ROOT_PC_LOOKUP[two]!
+      rootEnd = 2
+    }
+  }
+  if (rootPc < 0) {
+    const one = trimmed.slice(0, 1)
+    if (one in ROOT_PC_LOOKUP) {
+      rootPc = ROOT_PC_LOOKUP[one]!
+      rootEnd = 1
+    }
+  }
+  if (rootPc < 0) return null
+
+  /* Quality parse: walk a few prefix patterns. Order matters — check the
+   * longest matches first so "min7" doesn't get caught by "m". */
+  const suffix = trimmed.slice(rootEnd).toLowerCase().replace(/\s+/g, '')
+  let quality: ChordQuality
+  if (
+    suffix.startsWith('m7b5') ||
+    suffix.startsWith('m7♭5') ||
+    suffix.startsWith('dim7') ||
+    suffix.startsWith('°7') ||
+    suffix.startsWith('dim') ||
+    suffix.startsWith('°')
+  ) {
+    quality = 'dim'
+  } else if (suffix.startsWith('aug') || suffix.startsWith('+')) {
+    quality = 'aug'
+  } else if (suffix.startsWith('sus4') || suffix.startsWith('sus2') || suffix === 'sus') {
+    /* Engine has no sus2; collapse to sus4 (closest available triad). */
+    quality = 'sus4'
+  } else if (
+    /* Minor families: m, min, m7, m9, m11, m13, mmaj7 (rare), m6 — all map to
+     * the minor triad for engine purposes. The leading "m" must NOT be followed
+     * by "aj" (that would be major). */
+    /^m(?!aj)/.test(suffix) ||
+    suffix.startsWith('min') ||
+    suffix.startsWith('-') /* jazz shorthand: C- = Cm */
+  ) {
+    quality = 'minor'
+  } else {
+    /* Default: major. Catches "", "maj7", "M7", "7", "9", "add9", "6", etc.
+     * The chord MIDI export will use a major triad; the rich label is kept on
+     * the segment so the user still sees "Cmaj7" in the progression text. */
+    quality = 'major'
+  }
+
+  return { rootPc, quality, displayLabel: trimmed }
+}
+
+/**
+ * Apply a batch of LLM-suggested label changes to a segments array. Returns a
+ * new array; the input is never mutated. Corrections that reference an
+ * out-of-range `segmentIndex` or carry an unparseable `suggestedLabel` are
+ * silently dropped so a single bad row can't kill the rest of the batch.
+ *
+ * Used by AI POLISH's APPLY button — see `ToolsChordDetectorPage.tsx`.
+ */
+export function applyChordCorrections(
+  segments: readonly ChordSegment[],
+  corrections: ReadonlyArray<{ segmentIndex: number; suggestedLabel: string }>,
+): ChordSegment[] {
+  const next = segments.map(s => ({ ...s }))
+  for (const c of corrections) {
+    if (c.segmentIndex < 0 || c.segmentIndex >= next.length) continue
+    const parsed = parseChordLabel(c.suggestedLabel)
+    if (!parsed) continue
+    const seg = next[c.segmentIndex]!
+    seg.label = parsed.displayLabel
+    seg.rootPc = parsed.rootPc
+    seg.quality = parsed.quality
+  }
+  return next
+}
+
+/**
+ * Parse a key label like "F# major", "C minor", "Bb minor" into an
+ * `EstimatedKey` suitable for `result.estimatedKey`. Returns `null` if the
+ * label can't be tokenised. Confidence is set to 1 (LLM is asserting, not
+ * estimating) — callers that want a softer signal can override after.
+ */
+export function parseKeyLabel(label: string): EstimatedKey | null {
+  const trimmed = label.trim()
+  if (!trimmed) return null
+  const lower = trimmed.toLowerCase()
+  const mode: 'major' | 'minor' = /\bminor\b|\bmin\b|\bm\b/.test(lower) ? 'minor' : 'major'
+  /* Strip the mode word(s) and any trailing punctuation, then parse what's
+   * left as a root note. */
+  const rootPart = trimmed
+    .replace(/(major|minor|maj|min|m)\b/gi, '')
+    .trim()
+    .split(/\s+/)[0]
+  if (!rootPart) return null
+  const rootPc = ROOT_PC_LOOKUP[rootPart] ?? ROOT_PC_LOOKUP[rootPart.slice(0, 2)] ?? ROOT_PC_LOOKUP[rootPart.slice(0, 1)] ?? -1
+  if (rootPc < 0) return null
+  return {
+    rootPc,
+    mode,
+    confidence: 1,
+    label: `${TONIC_SHARP[rootPc]} ${mode}`,
+  }
+}
+
 function frameCenterSec(frameIndex: number, sampleRate: number): number {
   return (frameIndex * CHROMA_HOP + CHROMA_FFT / 2) / sampleRate
 }
