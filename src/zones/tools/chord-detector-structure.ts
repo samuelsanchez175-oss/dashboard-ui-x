@@ -9,9 +9,10 @@
  *   1. Re-snap each start to the nearest 1/16 or 1/16-triplet grid line (0-anchored — the
  *      grid Part-2's quantize established). Removes the few-ms drift `alignChordOnsetsInLeadNotes`
  *      leaves on triplet-positioned notes.
- *   2. Quantize each duration to a 1/16 multiple, then per rounded-MIDI lane clamp a note's
- *      end so it never overlaps the next same-pitch note. This is the core "more structured"
- *      fix — note lengths stop wandering.
+ *   2. Quantize each duration to a 1/64 multiple (see `durationGridSixteenths`), then per
+ *      rounded-MIDI lane clamp a note's end so it never overlaps the next same-pitch note.
+ *      The 1/64 grid is fine enough (~31 ms @ 120 BPM) that the snap stays imperceptible
+ *      while still removing BP's frame-edge jitter on note ends.
  *   3. Seam trim (only when a loop is found): a note that rings more than one 1/16 past its
  *      loop-unit boundary is clamped to the boundary, so each loop unit stays self-contained.
  *
@@ -22,12 +23,25 @@ import { mergeAdjacentSamePitchNotes, type LeadNote } from './chord-detector-mel
 import type { LoopInfo } from './chord-detector-loops'
 
 export const STRUCTURE_PASS = {
-  /** Note durations snap to this many 1/16 grid steps (1 = straight sixteenths). */
-  durationGridSixteenths: 1,
+  /**
+   * Note durations snap to this many 1/16 grid steps. 1.0 = straight sixteenths
+   * (~125 ms @ 120 BPM); that's far too coarse — BP measures durations to ~8 ms
+   * accuracy and a 125 ms snap distorts every note's length by up to 60 ms.
+   * 0.25 means a 1/64 grid step (~31 ms @ 120 BPM), fine enough that the snap
+   * is imperceptible while still removing BP's frame-edge jitter on note ends.
+   * Drop to 0.125 (1/128 — ~16 ms) if you want even less interference, or 0
+   * to disable duration quantization entirely.
+   */
+  durationGridSixteenths: 0.25,
   /** A note may ring this far (in 1/16s) past a loop-unit boundary before it gets trimmed. */
   seamTrimToleranceSixteenths: 1,
-  /** Floor on a structured note's length, in 1/16s. */
-  minDurationSixteenths: 1,
+  /**
+   * Floor on a structured note's length, in 1/16s. Matches the duration grid
+   * above — a 1/64 floor (~31 ms @ 120 BPM) is the shortest a real human-played
+   * note typically lasts; anything shorter is BP noise. Keep ≥ durationGridSixteenths
+   * so the floor and the grid agree.
+   */
+  minDurationSixteenths: 0.25,
   /**
    * After re-snap + duration quantize, same-pitch pairs within this gap (seconds) are
    * collapsed into one note. Two articulations a pianist plays distinctly sit much further
