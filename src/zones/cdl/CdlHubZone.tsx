@@ -1,4 +1,4 @@
-import { Biohazard, Bus, ChevronRight, CircleDot, ClipboardList, Container, Disc, Droplets, Fuel, GraduationCap, Link2, School, Truck, Workflow, Wrench } from 'lucide-react'
+import { Biohazard, Bus, ChevronRight, CircleDot, ClipboardList, Container, Disc, Droplets, Fuel, GraduationCap, Link2, MapPin, School, Truck, Workflow, Wrench } from 'lucide-react'
 
 interface CdlHubZoneProps {
   onNavigate: (routeId: string) => void
@@ -119,6 +119,16 @@ const TILES: CdlTile[] = [
  * its air brake test questions `autoFail`. The eyebrow shows the step number.
  */
 const PRETRIP_TILES: CdlTile[] = [
+  {
+    routeId:    'cdl-pretrip-parts-map',
+    label:      'Parts Map (Interactive)',
+    desc:       'Photo-based study tool. Click numbered hotspots on the inspection-area photos to see what each part is, what to say out loud, and how to act. Six sections, 31 parts. Switch to Quiz mode to test yourself.',
+    count:      31,
+    endorse:    'STUDY',
+    accent:     '#f5c429',
+    accentSoft: 'color-mix(in oklab, #f5c429 12%, var(--bg-card))',
+    icon:       MapPin,
+  },
   {
     routeId:    'cdl-pretrip-cabin',
     label:      'In-Cabin Inspection',

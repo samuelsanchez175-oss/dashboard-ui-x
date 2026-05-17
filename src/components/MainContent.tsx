@@ -43,6 +43,7 @@ const CdlPreTripEngineBayPage = lazy(() => import('../zones/cdl/CdlPreTripEngine
 const CdlPreTripSteeringAxlePage = lazy(() => import('../zones/cdl/CdlPreTripSteeringAxlePage'))
 const CdlPreTripCouplingPage = lazy(() => import('../zones/cdl/CdlPreTripCouplingPage'))
 const CdlPreTripTrailerPage = lazy(() => import('../zones/cdl/CdlPreTripTrailerPage'))
+const CdlPreTripPartsMap = lazy(() => import('../zones/cdl/CdlPreTripPartsMap'))
 const DevSettings = lazy(() => import('../zones/dev/DevSettings'))
 const DiagnosticsZone = lazy(() => import('../zones/dev/DiagnosticsZone'))
 const NewZonePage = lazy(() => import('../zones/builder/NewZonePage'))
@@ -177,6 +178,9 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
       break
     case 'cdl-pretrip-trailer':
       body = <CdlPreTripTrailerPage />
+      break
+    case 'cdl-pretrip-parts-map':
+      body = <CdlPreTripPartsMap />
       break
     case 'web-designer':
       body = <WebDesignerZone key="web-designer-main" onNavigate={onNavigate} />
