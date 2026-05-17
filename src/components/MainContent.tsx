@@ -181,10 +181,10 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
       body = <CdlPreTripTrailerPage />
       break
     case 'cdl-pretrip-parts-map':
-      body = <CdlPreTripPartsMap />
+      body = <CdlPreTripPartsMap onNavigate={onNavigate} />
       break
     case 'cdl-pretrip-deep-dive':
-      body = <CdlPreTripDeepDive />
+      body = <CdlPreTripDeepDive onNavigate={onNavigate} />
       break
     case 'web-designer':
       body = <WebDesignerZone key="web-designer-main" onNavigate={onNavigate} />

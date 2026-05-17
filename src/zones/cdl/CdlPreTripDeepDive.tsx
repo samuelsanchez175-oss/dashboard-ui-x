@@ -66,7 +66,7 @@ function cancelSpeech() {
 
 /* ──────────────────────────────────────────────────────────────────────────── */
 
-export default function CdlPreTripDeepDive() {
+export default function CdlPreTripDeepDive({ onNavigate }: { onNavigate?: (routeId: string) => void } = {}) {
   const [sectionId, setSectionId] = useState<DeepDiveSectionId>('engine')
   const [itemIdx, setItemIdx] = useState(0)
   const [mode, setMode] = useState<Mode>('study')
@@ -215,6 +215,25 @@ export default function CdlPreTripDeepDive() {
       />
 
       <SectionTabs activeId={sectionId} onChange={setSectionId} visited={visited} />
+
+      {onNavigate && (
+        <div
+          className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-2.5"
+          style={{ background: T.accentSoft, borderColor: T.border }}
+        >
+          <span className="text-[11px]" style={{ color: T.text }}>
+            Want the section-overview walk-around with multiple hotspots per photo?
+          </span>
+          <button
+            type="button"
+            onClick={() => onNavigate('cdl-pretrip-parts-map')}
+            className="rounded-md px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider transition-colors hover:opacity-90"
+            style={{ background: T.accent, color: '#000' }}
+          >
+            OPEN PARTS MAP → 6 SECTIONS
+          </button>
+        </div>
+      )}
 
       <main className="mx-auto grid w-full max-w-6xl gap-4 px-4 py-6 lg:grid-cols-[260px_1fr]">
         <ItemSidebar

@@ -76,7 +76,7 @@ function cancelSpeech() {
 
 /* ──────────────────────────────────────────────────────────────────────────── */
 
-export default function CdlPreTripPartsMap() {
+export default function CdlPreTripPartsMap({ onNavigate }: { onNavigate?: (routeId: string) => void } = {}) {
   const [sectionIdx, setSectionIdx] = useState(0)
   const [mode, setMode] = useState<Mode>('study')
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null)
@@ -281,6 +281,14 @@ export default function CdlPreTripPartsMap() {
         onChange={setSectionIdx}
         visited={visited}
       />
+
+      {onNavigate && (
+        <SiblingLinkBanner
+          message="Want close-up photos with the verbal sentence overlaid on each part?"
+          buttonLabel="OPEN DEEP DIVE → 38 PART PHOTOS"
+          onClick={() => onNavigate('cdl-pretrip-deep-dive')}
+        />
+      )}
 
       {mode === 'edit' && (
         <EditModeToolbar
@@ -999,6 +1007,47 @@ function ToolbarButton({
     >
       {children}
     </button>
+  )
+}
+
+/* ──────────────────────────────────────────────────────────────────────────── */
+
+/* ──────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * Cross-link banner between the Parts Map and the Deep Dive (Photo Drills)
+ * page. Both pages teach the same inspection but use different photo styles —
+ * Parts Map = section-overview shots from the user's study sheet, Deep Dive
+ * = ChatGPT-rendered close-ups with the verbal sentence printed on each photo.
+ * Rendering this banner inside both pages lets users hop between them without
+ * round-tripping through the CDL hub.
+ */
+function SiblingLinkBanner({
+  message,
+  buttonLabel,
+  onClick,
+}: {
+  message: string
+  buttonLabel: string
+  onClick: () => void
+}) {
+  return (
+    <div
+      className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-2.5"
+      style={{ background: T.accentSoft, borderColor: T.border }}
+    >
+      <span className="text-[11px]" style={{ color: T.text }}>
+        {message}
+      </span>
+      <button
+        type="button"
+        onClick={onClick}
+        className="rounded-md px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider transition-colors hover:opacity-90"
+        style={{ background: T.accent, color: '#000' }}
+      >
+        {buttonLabel}
+      </button>
+    </div>
   )
 }
 
