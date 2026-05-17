@@ -295,15 +295,48 @@ export default function DevSettings({ onNavigate }: DevSettingsProps) {
             </div>
           </div>
 
-          {/* Cards laid out one per API key, grouped by provider section. Each
-              card is self-contained (title, env-var name, Powers chips,
-              paste-once input, technical detail toggle) so adding a key is a
-              one-stop action and the "one key, many zones" relationship is
-              visible at a glance via the Powers chips. */}
+          {/* Cards laid out by API-key UNIT, grouped by provider section. An
+              entry's `group` field collapses N related entries into ONE card
+              with stacked input rows (OAuth pairs, key+base-URL duos, local
+              LLM trio, audio tooling pair) so the user only sees as many
+              cards as there are independent credentials. The "one key, many
+              zones" relationship is communicated via the Powers chips at
+              the top of each card. */}
           <div className="space-y-6">
             {DEV_SETTINGS_SECTION_META.map(section => {
               const rows = DEV_SETTINGS_ENV_MODEL.filter(r => r.sectionId === section.id)
               if (!rows.length) return null
+
+              /* Group entries by `group` field. Entries without a group get
+               * their own "group of one" — same render path either way. The
+               * first occurrence of each group keeps its position in `rows`
+               * so card ordering stays stable. */
+              const groups: { key: string; entries: DevSettingsEnvModelEntry[] }[] = []
+              const groupIndex = new Map<string, number>()
+              for (const entry of rows) {
+                const key = entry.group ?? entry.id
+                const existing = groupIndex.get(key)
+                if (existing != null) {
+                  groups[existing]!.entries.push(entry)
+                } else {
+                  groupIndex.set(key, groups.length)
+                  groups.push({ key, entries: [entry] })
+                }
+              }
+
+              const storedValues: Record<string, string> = {}
+              const envSets: Record<string, boolean> = {}
+              const reveals: Record<string, boolean> = {}
+              const probes: Record<string, ProbeOutcome | null> = {}
+              const probings: Record<string, boolean> = {}
+              for (const entry of rows) {
+                storedValues[entry.storageKey] = stored[entry.storageKey] ?? ''
+                envSets[entry.storageKey] = Boolean(envStatus?.[entry.storageKey])
+                reveals[entry.storageKey] = Boolean(reveal[entry.storageKey])
+                probes[entry.storageKey] = probeResult[entry.storageKey] ?? null
+                probings[entry.storageKey] = Boolean(probing[entry.storageKey])
+              }
+
               return (
                 <section key={section.id} className="flex flex-col gap-2.5">
                   <h2
@@ -313,23 +346,34 @@ export default function DevSettings({ onNavigate }: DevSettingsProps) {
                     {section.title}
                   </h2>
                   <div className="grid gap-3 lg:grid-cols-2">
-                    {rows.map(entry => (
-                      <ModelEnvCard
-                        key={entry.id}
-                        entry={entry}
-                        storedValue={stored[entry.storageKey] ?? ''}
-                        envSet={Boolean(envStatus?.[entry.storageKey])}
-                        harmonyHint={entry.storageKey === 'HARMONY_CLIENT_PROJECTS_AI_KEY' ? harmonyOverrideHint(stored.HARMONY_CLIENT_PROJECTS_AI_KEY ?? '') : undefined}
-                        reveal={Boolean(reveal[entry.storageKey])}
-                        onReveal={() => toggleReveal(entry.storageKey)}
-                        onChange={v => setRowValue(entry.storageKey, v, entry.supportsLocalScratch)}
-                        expanded={Boolean(expandUsedIn[entry.id])}
-                        onToggleExpand={() => toggleUsedIn(entry.id)}
-                        probe={probeResult[entry.storageKey] ?? null}
-                        probing={Boolean(probing[entry.storageKey])}
-                        onProbe={() => void runProbe(entry.storageKey)}
-                      />
-                    ))}
+                    {groups.map(group => {
+                      const includesHarmony = group.entries.some(
+                        e => e.storageKey === 'HARMONY_CLIENT_PROJECTS_AI_KEY',
+                      )
+                      return (
+                        <ModelEnvCard
+                          key={group.key}
+                          entries={group.entries}
+                          storedValues={storedValues}
+                          envSets={envSets}
+                          harmonyHint={
+                            includesHarmony
+                              ? harmonyOverrideHint(stored.HARMONY_CLIENT_PROJECTS_AI_KEY ?? '')
+                              : undefined
+                          }
+                          reveals={reveals}
+                          onReveal={k => toggleReveal(k)}
+                          onChange={(k, v, supportsLocalScratch) =>
+                            setRowValue(k, v, supportsLocalScratch)
+                          }
+                          expanded={Boolean(expandUsedIn[group.key])}
+                          onToggleExpand={() => toggleUsedIn(group.key)}
+                          probes={probes}
+                          probing={probings}
+                          onProbe={k => void runProbe(k)}
+                        />
+                      )
+                    })}
                   </div>
                   {section.id === 'client-vite' && viteMetaRow && (
                     <ViteMetaCard row={viteMetaRow} />
@@ -565,98 +609,125 @@ function ProbeFixHint({ message, storageKey }: { message: string; storageKey: st
 }
 
 /**
- * Card-style render of a single API-key entry. One card = one API key.
- * Replaces the table-row layout so each key gets a self-contained block
- * (title, input, "Powers" chips, where-used details) instead of being
- * smeared across seven thin table columns. Easier to scan, no horizontal
- * scroll on narrow viewports, and visually obvious that adding ONE key
- * lights up MANY zones (the chips are right under the title).
+ * Card-style render of a logical API-key UNIT — either one entry (single
+ * field) or a group of related entries (e.g. OAuth pair, OpenAI key + base
+ * URL, local LLM trio) rendered as one card with stacked input rows.
+ *
+ * The card uses the FIRST entry's metadata for chrome (logo, header title,
+ * Powers chips, one-line purpose, retrieval links, "Where used"). Each
+ * entry then gets its own input row with a `groupFieldLabel` above it,
+ * its own paste/reveal/test, its own source pill — so per-field state
+ * stays clearly attributed even when several keys share a card.
  */
 function ModelEnvCard({
-  entry,
-  storedValue,
-  envSet,
+  entries,
+  storedValues,
+  envSets,
   harmonyHint,
-  reveal,
+  reveals,
   onReveal,
   onChange,
   expanded,
   onToggleExpand,
-  probe,
+  probes,
   probing,
   onProbe,
 }: {
-  entry: DevSettingsEnvModelEntry
-  storedValue: string
-  envSet: boolean
+  entries: readonly DevSettingsEnvModelEntry[]
+  storedValues: Record<string, string>
+  envSets: Record<string, boolean>
   harmonyHint?: string
-  reveal: boolean
-  onReveal: () => void
-  onChange: (v: string) => void
+  reveals: Record<string, boolean>
+  onReveal: (storageKey: string) => void
+  onChange: (storageKey: string, value: string, supportsLocalScratch: boolean) => void
   expanded: boolean
   onToggleExpand: () => void
-  probe: ProbeOutcome | null
-  probing: boolean
-  onProbe: () => void
+  probes: Record<string, ProbeOutcome | null>
+  probing: Record<string, boolean>
+  onProbe: (storageKey: string) => void
 }) {
-  const logoSrc = DOCUMENTED_ENV_LOGOS[entry.storageKey]
-  const hasLocal = entry.supportsLocalScratch && storedValue.trim().length > 0
-  const source: 'BOTH' | 'LOCAL' | 'ENV' | 'NONE' =
-    !entry.supportsLocalScratch
-      ? (envSet ? 'ENV' : 'NONE')
-      : hasLocal && envSet ? 'BOTH'
-        : hasLocal ? 'LOCAL'
-          : envSet ? 'ENV'
-            : 'NONE'
-  const canProbe = probeRouteForStorageKey(entry.storageKey) !== null
+  const primary = entries[0]!
+  const isGrouped = entries.length > 1
+  const logoSrc = DOCUMENTED_ENV_LOGOS[primary.storageKey]
+  const cardTitle = primary.groupTitle ?? primary.label
+  // For grouped cards, "optional" should be true only when EVERY field is
+  // optional — if any is required, the card carries the required-feeling
+  // and we hide the OPT badge.
+  const allOptional = entries.every(e => e.optional)
+  // Aggregate unique Powers chips across the group. Order preserved by
+  // walking entries; chips dedup'd by string.
+  const allPowers: string[] = []
+  const seenPowers = new Set<string>()
+  for (const e of entries) {
+    for (const p of e.powers ?? []) {
+      if (!seenPowers.has(p)) {
+        seenPowers.add(p)
+        allPowers.push(p)
+      }
+    }
+  }
+  // Aggregate "Where used" lines across the group, prefixed with the
+  // storageKey when there's more than one entry so users can attribute
+  // each route to the right field.
+  const allUsedIn: string[] = []
+  for (const e of entries) {
+    for (const line of e.usedIn) {
+      allUsedIn.push(isGrouped ? `[${e.storageKey}] ${line}` : line)
+    }
+  }
+  // Combined retrieval links (dedup by href so two entries from the same
+  // provider don't double up).
+  const allRetrievalLinks: { label: string; href: string }[] = []
+  const seenHrefs = new Set<string>()
+  for (const e of entries) {
+    for (const link of e.retrievalLinks ?? []) {
+      if (!seenHrefs.has(link.href)) {
+        seenHrefs.add(link.href)
+        allRetrievalLinks.push(link)
+      }
+    }
+  }
 
   return (
     <article
       className="overflow-hidden rounded-lg border"
       style={{ borderColor: 'var(--border)', background: 'var(--bg-card)' }}
     >
-      {/* Header strip: logo, product label, env-var name, source pill */}
+      {/* Header strip: logo, card title, env-var summary */}
       <header
         className="flex items-start justify-between gap-3 border-b px-3 py-2.5 md:px-4"
         style={{ borderColor: 'var(--border-soft)', background: 'var(--bg-card-soft)' }}
       >
         <div className="flex min-w-0 items-start gap-2.5">
-          <LogoCell logoSrc={logoSrc} label={entry.label} />
+          <LogoCell logoSrc={logoSrc} label={cardTitle} />
           <div className="min-w-0">
             <h3 className="flex items-center gap-1.5 text-[13px] font-semibold leading-tight text-[var(--text-1)] md:text-[14px]">
-              {entry.label}
-              {entry.optional && (
+              {cardTitle}
+              {allOptional && (
                 <span
                   className="rounded bg-[var(--bg-muted)] px-1 py-0 text-[9px] font-semibold uppercase text-[var(--text-3)]"
-                  title="Optional — the dashboard works without this key."
+                  title="Optional — the dashboard works without this card."
                 >
                   opt
                 </span>
               )}
             </h3>
-            {/* Show only the PRIMARY storageKey in the subheader. Some
-             *  entries list a fallback in `envKeys[1+]` (e.g. the Harmony
-             *  override falls back to `GEMINI_API_KEY`); rendering that
-             *  whole array here read as "you need to paste two keys",
-             *  which is wrong — the fallback is resolved at the BFF level
-             *  from the OTHER card's value. The fallback story still lives
-             *  in `sourceResolutionNote` below. */}
             <p
               className="mono mt-0.5 font-mono text-[10px] leading-tight md:text-[11px]"
               style={{ color: 'var(--text-3)' }}
             >
-              {entry.storageKey} · {entry.role}
+              {isGrouped
+                ? `${entries.length} fields · ${entries.map(e => e.storageKey).join(' · ')}`
+                : `${primary.storageKey} · ${primary.role}`}
             </p>
           </div>
-        </div>
-        <div className="shrink-0">
-          <SourceBadge source={source} />
         </div>
       </header>
 
       <div className="flex flex-col gap-3 px-3 py-3 md:px-4">
-        {/* Powers chips — visible answer to "what features does this key turn on?" */}
-        {entry.powers && entry.powers.length > 0 && (
+        {/* Powers chips — aggregated across every entry in the group so
+            users see ALL features the card lights up, not just one. */}
+        {allPowers.length > 0 && (
           <div>
             <p
               className="mb-1 text-[9px] font-semibold uppercase tracking-wider"
@@ -665,7 +736,7 @@ function ModelEnvCard({
               Powers
             </p>
             <div className="flex flex-wrap gap-1">
-              {entry.powers.map(p => (
+              {allPowers.map(p => (
                 <span
                   key={p}
                   className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium leading-tight md:text-[11px]"
@@ -674,7 +745,6 @@ function ModelEnvCard({
                     color: 'var(--accent-fg)',
                     border: '1px solid color-mix(in oklab, var(--accent) 28%, var(--border))',
                   }}
-                  title={`Powered by ${entry.envKeys[0]}`}
                 >
                   {p}
                 </span>
@@ -683,12 +753,15 @@ function ModelEnvCard({
           </div>
         )}
 
-        {/* One-line purpose */}
+        {/* One-line purpose — pulled from the PRIMARY (first) entry. For
+            grouped cards this should be a meta description of the whole
+            card ("one Google Cloud key covers everything", etc). */}
         <p className="text-[11px] leading-relaxed md:text-[12px]" style={{ color: 'var(--text-2)' }}>
-          {entry.oneLinePurpose}
+          {primary.oneLinePurpose}
         </p>
 
-        {/* Harmony-override live hint (when this key has a special fallback story) */}
+        {/* Harmony-override live hint (only when this card includes the
+            Harmony override entry) */}
         {harmonyHint && (
           <p
             className="text-[10px] leading-snug md:text-[11px]"
@@ -698,89 +771,31 @@ function ModelEnvCard({
           </p>
         )}
 
-        {/* Input row: paste field + Test button + Get-key link */}
-        {entry.inputKind === 'none' ? (
-          <p className="text-[11px]" style={{ color: 'var(--text-3)' }}>
-            Informational row — no value to set here.
-          </p>
-        ) : !entry.supportsLocalScratch ? (
-          <p className="text-[11px] leading-snug" style={{ color: 'var(--text-3)' }}>
-            Server <code style={chipStyle()}>.env.local</code> only — not sent as{' '}
-            <code style={chipStyle()}>x-user-key-*</code>.
-          </p>
-        ) : (
-          <div className="flex flex-wrap items-stretch gap-2">
-            <label className="relative block min-w-0 flex-1" style={{ minWidth: '12rem' }}>
-              <span className="sr-only">{entry.storageKey}</span>
-              <input
-                type={entry.inputKind === 'secret' && !reveal ? 'password' : 'text'}
-                value={storedValue}
-                onChange={e => onChange(e.target.value)}
-                autoComplete="off"
-                spellCheck={false}
-                placeholder={
-                  entry.inputKind === 'secret'
-                    ? `Paste ${entry.label}…`
-                    : `Enter ${entry.label.toLowerCase()}…`
-                }
-                className="w-full rounded-md px-2.5 py-2 pr-9 font-mono text-[11px] outline-none md:text-[12px]"
-                style={inputStyle()}
-              />
-              {entry.inputKind === 'secret' && (
-                <button
-                  type="button"
-                  onClick={onReveal}
-                  className="absolute inset-y-0 right-0 grid w-9 place-items-center"
-                  style={{ color: 'var(--text-3)' }}
-                  aria-label={reveal ? 'Hide' : 'Show'}
-                >
-                  {reveal ? <EyeOff className="size-3.5" aria-hidden /> : <Eye className="size-3.5" aria-hidden />}
-                </button>
-              )}
-            </label>
-            {canProbe && (
-              <button
-                type="button"
-                onClick={onProbe}
-                disabled={probing}
-                className="inline-flex shrink-0 items-center gap-1 rounded-md border px-3 py-2 text-[11px] font-semibold disabled:opacity-50 md:text-[12px]"
-                style={{ background: 'var(--bg-card-soft)', borderColor: 'var(--border)', color: 'var(--text-1)' }}
-              >
-                {probing ? <Loader2 className="size-3.5 animate-spin" aria-hidden /> : <Zap className="size-3.5" aria-hidden />}
-                Test
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Probe result + fix hint */}
-        {probe && entry.supportsLocalScratch && entry.inputKind !== 'none' && (
-          <div>
-            <p
-              className="text-[10px] md:text-[11px]"
-              role="status"
-              style={{ color: probe.ok ? 'var(--good)' : 'var(--bad)' }}
-            >
-              {probe.ok ? (
-                <>
-                  <CheckCircle2 className="mr-0.5 inline size-3" aria-hidden />
-                  Test passed — {probe.ms} ms{probe.note ? ` · ${probe.note}` : ''}
-                </>
-              ) : (
-                <>
-                  <XCircle className="mr-0.5 inline size-3" aria-hidden />
-                  {probe.message}
-                </>
-              )}
-            </p>
-            {!probe.ok ? <ProbeFixHint message={probe.message} storageKey={entry.storageKey} /> : null}
-          </div>
-        )}
+        {/* One input row per entry. Each row has its own field label
+            (`groupFieldLabel` or fall back to `entry.label`), source pill,
+            paste field, optional Test button, and probe result. */}
+        <div className="flex flex-col gap-3">
+          {entries.map(entry => (
+            <ModelEnvFieldRow
+              key={entry.id}
+              entry={entry}
+              showLabel={isGrouped}
+              storedValue={storedValues[entry.storageKey] ?? ''}
+              envSet={Boolean(envSets[entry.storageKey])}
+              reveal={Boolean(reveals[entry.storageKey])}
+              onReveal={() => onReveal(entry.storageKey)}
+              onChange={v => onChange(entry.storageKey, v, entry.supportsLocalScratch)}
+              probe={probes[entry.storageKey] ?? null}
+              probing={Boolean(probing[entry.storageKey])}
+              onProbe={() => onProbe(entry.storageKey)}
+            />
+          ))}
+        </div>
 
         {/* Source resolution note (shared key / fallback chain explanation) */}
-        {entry.sourceResolutionNote && (
+        {primary.sourceResolutionNote && (
           <p className="text-[10px] leading-snug" style={{ color: 'var(--text-3)' }}>
-            {entry.sourceResolutionNote}
+            {primary.sourceResolutionNote}
           </p>
         )}
 
@@ -789,7 +804,7 @@ function ModelEnvCard({
           className="flex flex-wrap items-center justify-between gap-2 border-t pt-2.5"
           style={{ borderColor: 'var(--border-soft)' }}
         >
-          {entry.usedIn.length > 0 ? (
+          {allUsedIn.length > 0 ? (
             <button
               type="button"
               onClick={onToggleExpand}
@@ -803,22 +818,178 @@ function ModelEnvCard({
           ) : (
             <span />
           )}
-          <RetrievalLinksList links={entry.retrievalLinks} />
+          <RetrievalLinksList links={allRetrievalLinks} />
         </div>
 
-        {/* Expanded technical "where used" list */}
-        {expanded && entry.usedIn.length > 0 && (
+        {/* Expanded technical "where used" list (aggregated across the group) */}
+        {expanded && allUsedIn.length > 0 && (
           <ul
             className="list-disc space-y-0.5 pl-4 text-[10px] leading-snug md:text-[11px]"
             style={{ color: 'var(--text-3)' }}
           >
-            {entry.usedIn.map(line => (
+            {allUsedIn.map(line => (
               <li key={line}>{line}</li>
             ))}
           </ul>
         )}
       </div>
     </article>
+  )
+}
+
+/**
+ * Per-entry row rendered inside `ModelEnvCard`. Renders the field label (when
+ * the card is a group), source pill, paste input, optional Test button, and
+ * any probe result / fix hint. One row per entry; encapsulating it keeps the
+ * card itself readable when groups contain 2-3 stacked fields.
+ */
+function ModelEnvFieldRow({
+  entry,
+  showLabel,
+  storedValue,
+  envSet,
+  reveal,
+  onReveal,
+  onChange,
+  probe,
+  probing,
+  onProbe,
+}: {
+  entry: DevSettingsEnvModelEntry
+  /** When true (grouped card), render the field label above the input. */
+  showLabel: boolean
+  storedValue: string
+  envSet: boolean
+  reveal: boolean
+  onReveal: () => void
+  onChange: (v: string) => void
+  probe: ProbeOutcome | null
+  probing: boolean
+  onProbe: () => void
+}) {
+  const hasLocal = entry.supportsLocalScratch && storedValue.trim().length > 0
+  const source: 'BOTH' | 'LOCAL' | 'ENV' | 'NONE' =
+    !entry.supportsLocalScratch
+      ? (envSet ? 'ENV' : 'NONE')
+      : hasLocal && envSet ? 'BOTH'
+        : hasLocal ? 'LOCAL'
+          : envSet ? 'ENV'
+            : 'NONE'
+  const canProbe = probeRouteForStorageKey(entry.storageKey) !== null
+  const fieldLabel = entry.groupFieldLabel ?? entry.label
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      {/* Field label + source pill row */}
+      {showLabel && (
+        <div className="flex items-center justify-between gap-2">
+          <label
+            htmlFor={`env-input-${entry.id}`}
+            className="text-[11px] font-medium md:text-[12px]"
+            style={{ color: 'var(--text-2)' }}
+          >
+            {fieldLabel}
+            {entry.optional && (
+              <span
+                className="ml-1.5 rounded bg-[var(--bg-muted)] px-1 py-0 text-[9px] font-semibold uppercase text-[var(--text-3)]"
+                title="Optional field"
+              >
+                opt
+              </span>
+            )}
+          </label>
+          <SourceBadge source={source} />
+        </div>
+      )}
+
+      {/* Input + Test button (or the appropriate fallback rendering) */}
+      {entry.inputKind === 'none' ? (
+        <p className="text-[11px]" style={{ color: 'var(--text-3)' }}>
+          Informational — no value to set here.
+        </p>
+      ) : !entry.supportsLocalScratch ? (
+        <p className="text-[11px] leading-snug" style={{ color: 'var(--text-3)' }}>
+          Server <code style={chipStyle()}>.env.local</code> only — not sent as{' '}
+          <code style={chipStyle()}>x-user-key-*</code>.
+        </p>
+      ) : (
+        <div className="flex flex-wrap items-stretch gap-2">
+          <label className="relative block min-w-0 flex-1" style={{ minWidth: '12rem' }}>
+            <span className="sr-only">{entry.storageKey}</span>
+            <input
+              id={`env-input-${entry.id}`}
+              type={entry.inputKind === 'secret' && !reveal ? 'password' : 'text'}
+              value={storedValue}
+              onChange={e => onChange(e.target.value)}
+              autoComplete="off"
+              spellCheck={false}
+              placeholder={
+                entry.inputKind === 'secret'
+                  ? `Paste ${fieldLabel}…`
+                  : `Enter ${fieldLabel.toLowerCase()}…`
+              }
+              className="w-full rounded-md px-2.5 py-2 pr-9 font-mono text-[11px] outline-none md:text-[12px]"
+              style={inputStyle()}
+            />
+            {entry.inputKind === 'secret' && (
+              <button
+                type="button"
+                onClick={onReveal}
+                className="absolute inset-y-0 right-0 grid w-9 place-items-center"
+                style={{ color: 'var(--text-3)' }}
+                aria-label={reveal ? 'Hide' : 'Show'}
+              >
+                {reveal ? <EyeOff className="size-3.5" aria-hidden /> : <Eye className="size-3.5" aria-hidden />}
+              </button>
+            )}
+          </label>
+          {canProbe && (
+            <button
+              type="button"
+              onClick={onProbe}
+              disabled={probing}
+              className="inline-flex shrink-0 items-center gap-1 rounded-md border px-3 py-2 text-[11px] font-semibold disabled:opacity-50 md:text-[12px]"
+              style={{ background: 'var(--bg-card-soft)', borderColor: 'var(--border)', color: 'var(--text-1)' }}
+            >
+              {probing ? <Loader2 className="size-3.5 animate-spin" aria-hidden /> : <Zap className="size-3.5" aria-hidden />}
+              Test
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* For single-entry cards (no group label row), show the source pill
+          inline below the input so it still appears somewhere visible. */}
+      {!showLabel && entry.inputKind !== 'none' && (
+        <div className="flex justify-end">
+          <SourceBadge source={source} />
+        </div>
+      )}
+
+      {/* Probe result + fix hint */}
+      {probe && entry.supportsLocalScratch && entry.inputKind !== 'none' && (
+        <div>
+          <p
+            className="text-[10px] md:text-[11px]"
+            role="status"
+            style={{ color: probe.ok ? 'var(--good)' : 'var(--bad)' }}
+          >
+            {probe.ok ? (
+              <>
+                <CheckCircle2 className="mr-0.5 inline size-3" aria-hidden />
+                Test passed — {probe.ms} ms{probe.note ? ` · ${probe.note}` : ''}
+              </>
+            ) : (
+              <>
+                <XCircle className="mr-0.5 inline size-3" aria-hidden />
+                {probe.message}
+              </>
+            )}
+          </p>
+          {!probe.ok ? <ProbeFixHint message={probe.message} storageKey={entry.storageKey} /> : null}
+        </div>
+      )}
+    </div>
   )
 }
 

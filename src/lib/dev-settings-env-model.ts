@@ -60,6 +60,30 @@ export type DevSettingsEnvModelEntry = {
   sourceResolutionNote?: string
   /** Official “get / create key” (or equivalent) links; opens in new tab from UI */
   retrievalLinks?: readonly DevSettingsRetrievalLink[]
+  /**
+   * Optional grouping key. Entries with the same `group` render as ONE card
+   * with multiple stacked input rows (instead of N separate cards). Each
+   * entry keeps its own `storageKey`, `probe`, `powers`, etc. — grouping is
+   * purely a presentation layer. The first grouped entry's `groupTitle` is
+   * used for the card header; each entry's `groupFieldLabel` labels its
+   * row inside the card. Use for keys that are always set together (OAuth
+   * client_id / client_secret pairs), config-and-key duos (OPENAI_API_KEY +
+   * OPENAI_BASE_URL), or families of related Vite vars (local LLM trio).
+   */
+  group?: string
+  /**
+   * Card header title — only honoured on the FIRST entry of a group. When
+   * set, replaces the per-entry `label` as the card header so the card can
+   * communicate the shared concept (e.g. "Tesla Fleet (OAuth)") instead of
+   * a single field's name. Entries without `group` ignore this field.
+   */
+  groupTitle?: string
+  /**
+   * Per-field label inside a grouped card (e.g. "Client ID", "Base URL").
+   * When set, rendered above the input as a small bold label so each row
+   * is clearly identified. Fall back to `entry.label` when unset.
+   */
+  groupFieldLabel?: string
 }
 
 /**
@@ -86,13 +110,19 @@ export const DEV_SETTINGS_SECTION_META: readonly { id: DevSettingsSectionId; tit
  * `GEMINI_API_KEY` is one row with aggregated consumers; Harmony override is separate.
  */
 export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
+  /* Google Cloud bundle — YouTube + generic + channel-id fields share one
+   * card. In practice one Google Cloud project with both APIs enabled
+   * covers every route in this bundle; the BFF's `youtubeDataKeyForReq`
+   * already resolves `YOUTUBE_API_KEY || GOOGLE_API_KEY` so setting either
+   * is enough. The card stacks both fields so users who DO want separate
+   * keys (e.g. a YouTube-only quota key + a separate Maps key) still can. */
   {
     id: 'youtube-dedicated',
     storageKey: 'YOUTUBE_API_KEY',
     envKeys: ['YOUTUBE_API_KEY'],
     label: 'YouTube Data API key',
     role: 'YouTube Data v3 (primary)',
-    oneLinePurpose: 'Preferred key for YouTube search and channel calls.',
+    oneLinePurpose: 'One Google Cloud key covers every route here — paste it in EITHER field below. YouTube prefers the dedicated key when both are set.',
     usedIn: [
       '`GET /api/youtube/search` — Agent Farm search + Diagnostics smoke',
       '`GET /api/youtube/channel` — default channel lookup (with API key)',
@@ -104,20 +134,23 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     inputKind: 'secret',
     sectionId: 'google-cloud',
     supportsLocalScratch: true,
-    sourceResolutionNote: 'BFF uses this first; if empty, falls back to GOOGLE_API_KEY for the same routes.',
+    sourceResolutionNote: 'BFF uses this first; if empty, falls back to GOOGLE_API_KEY below.',
     retrievalLinks: [
       { label: 'Cloud credentials', href: 'https://console.cloud.google.com/apis/credentials' },
       { label: 'Enable YouTube Data API v3', href: 'https://console.cloud.google.com/apis/library/youtube.googleapis.com' },
       { label: 'YouTube Data API docs', href: 'https://developers.google.com/youtube/v3/getting-started' },
     ],
+    group: 'google-cloud-server',
+    groupTitle: 'Google Cloud API keys',
+    groupFieldLabel: 'YouTube Data API key',
   },
   {
     id: 'google-generic',
     storageKey: 'GOOGLE_API_KEY',
     envKeys: ['GOOGLE_API_KEY'],
-    label: 'Google Cloud / generic API key',
-    role: 'Google APIs + YouTube fallback',
-    oneLinePurpose: 'Generic Google key; also backs YouTube when the dedicated key is unset.',
+    label: 'Generic Google key',
+    role: 'YouTube fallback / Google APIs',
+    oneLinePurpose: 'Use if you have a single Google Cloud key with multiple APIs enabled; backs YouTube when the dedicated key is empty.',
     usedIn: [
       '`GET /api/google/health`',
       '`GET /api/youtube/search` and `GET /api/youtube/channel` — when `YOUTUBE_API_KEY` is empty (`youtubeDataKeyForReq` in BFF)',
@@ -134,6 +167,8 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
       { label: 'Cloud credentials', href: 'https://console.cloud.google.com/apis/credentials' },
       { label: 'API Library', href: 'https://console.cloud.google.com/apis/library' },
     ],
+    group: 'google-cloud-server',
+    groupFieldLabel: 'Generic Google key (fallback for YouTube)',
   },
   {
     id: 'agent-farm-channel',
@@ -141,7 +176,7 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     envKeys: ['AGENT_FARM_YOUTUBE_CHANNEL_ID'],
     label: 'Default YouTube channel id',
     role: 'Channel id (UC…)',
-    oneLinePurpose: 'Default channel when `/api/youtube/channel` is called without `?handle=`.',
+    oneLinePurpose: 'Default channel when `/api/youtube/channel` is called without `?handle=`. Not a key — just the channel ID to look up.',
     usedIn: [
       '`GET /api/youtube/channel` — resolve by id instead of handle',
       'Agent Farm — channel card / probes when no handle query',
@@ -153,6 +188,8 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     sectionId: 'google-cloud',
     supportsLocalScratch: true,
     retrievalLinks: [{ label: 'Find YouTube channel ID', href: 'https://support.google.com/youtube/answer/3250431' }],
+    group: 'google-cloud-server',
+    groupFieldLabel: 'Default YouTube channel ID (optional)',
   },
   /* GEMINI_API_KEY is the single biggest "shared key" example — one Google AI
    * Studio key powers every Gemini-driven feature in the dashboard. There
@@ -168,7 +205,7 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     label: 'Gemini API key',
     role: 'Google AI Studio',
     oneLinePurpose:
-      'Single Google AI Studio key powering every Gemini-driven feature in the dashboard. Add it once here and every feature listed below lights up.',
+      'Single Google AI Studio key powering every Gemini-driven feature in the dashboard. Add it once below and every feature in the chips lights up.',
     powers: [
       'Chord Detector AI POLISH',
       'Harmony Stack',
@@ -193,8 +230,11 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     inputKind: 'secret',
     sectionId: 'google-ai-studio',
     supportsLocalScratch: true,
-    sourceResolutionNote: 'One key powers every feature in the chips above; Harmony Client Projects can optionally use a separate key below.',
+    sourceResolutionNote: 'One key powers every feature in the chips above; Harmony Client Projects can optionally use a separate key below for an isolated quota.',
     retrievalLinks: [{ label: 'Google AI Studio', href: 'https://aistudio.google.com/apikey' }],
+    group: 'gemini',
+    groupTitle: 'Google AI Studio (Gemini)',
+    groupFieldLabel: 'Primary Gemini API key',
   },
   {
     id: 'harmony-gemini-override',
@@ -202,7 +242,7 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     envKeys: ['HARMONY_CLIENT_PROJECTS_AI_KEY', 'GEMINI_API_KEY'],
     label: 'Harmony Client Projects override',
     role: 'Optional separate Gemini quota',
-    oneLinePurpose: 'Optional dedicated Gemini key for Harmony Stack → Client Projects only — leave blank to share the primary Gemini key above.',
+    oneLinePurpose: 'Optional — leave blank to share the primary Gemini key above. Set a different key only if you want an isolated quota for Harmony.',
     powers: ['Harmony Stack (only when set)'],
     usedIn: [
       '`POST /api/harmony/client-projects/build-prompt` — preferred over `GEMINI_API_KEY` when set',
@@ -214,8 +254,10 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     inputKind: 'secret',
     sectionId: 'google-ai-studio',
     supportsLocalScratch: true,
-    sourceResolutionNote: 'Same API family as Gemini; only Client Projects routes prefer this key. Leave blank to share quota with the primary key.',
+    sourceResolutionNote: 'Same API family as Gemini; only Client Projects routes prefer this key.',
     retrievalLinks: [{ label: 'Google AI Studio', href: 'https://aistudio.google.com/apikey' }],
+    group: 'gemini',
+    groupFieldLabel: 'Harmony override key (optional, leave blank to share)',
   },
   {
     id: 'rss-feeds',
@@ -243,7 +285,7 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     envKeys: ['OPENAI_API_KEY'],
     label: 'OpenAI (or compatible) API key',
     role: 'Chat Completions / models list',
-    oneLinePurpose: 'Key for OpenAI-compatible providers.',
+    oneLinePurpose: 'API key for OpenAI or any compatible provider. Pair with the base URL below to point at Azure, OpenRouter, a local gateway, etc.',
     powers: ['OpenAI ping (Diagnostics)'],
     usedIn: ['`GET /api/openai/ping` — lists models at the configured base URL'],
     optional: true,
@@ -252,6 +294,9 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     sectionId: 'openai',
     supportsLocalScratch: true,
     retrievalLinks: [{ label: 'OpenAI API keys', href: 'https://platform.openai.com/api-keys' }],
+    group: 'openai',
+    groupTitle: 'OpenAI (or compatible)',
+    groupFieldLabel: 'API key',
   },
   {
     id: 'openai-base',
@@ -259,7 +304,7 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     envKeys: ['OPENAI_BASE_URL'],
     label: 'OpenAI-compatible base URL',
     role: 'API root (optional)',
-    oneLinePurpose: 'Non-default API host (Azure, OpenRouter, local gateway, etc.).',
+    oneLinePurpose: 'Non-default API host (Azure, OpenRouter, local gateway, etc.). Leave blank for the public OpenAI API.',
     powers: ['OpenAI ping (host override)'],
     usedIn: ['`GET /api/openai/ping` — paired with `OPENAI_API_KEY`'],
     optional: true,
@@ -272,14 +317,16 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
       { label: 'OpenAI API reference', href: 'https://platform.openai.com/docs/api-reference' },
       { label: 'Azure OpenAI', href: 'https://learn.microsoft.com/azure/ai-services/openai/' },
     ],
+    group: 'openai',
+    groupFieldLabel: 'Base URL (optional, defaults to api.openai.com)',
   },
   {
     id: 'tesla-fleet-client-id',
     storageKey: 'TESLA_CLIENT_ID',
     envKeys: ['TESLA_CLIENT_ID'],
-    label: 'Tesla Fleet OAuth client ID',
-    role: 'Third-party / Fleet app client id',
-    oneLinePurpose: 'Registered application client identifier for Tesla Fleet API (OAuth).',
+    label: 'Tesla Fleet OAuth credentials',
+    role: 'Fleet app OAuth pair',
+    oneLinePurpose: 'OAuth client_id + client_secret from your registered Tesla Fleet app. Always set both — the pair is needed to exchange tokens.',
     powers: ['Tesla Fleet (OAuth handshake)'],
     usedIn: [
       '`TeslaMock.tsx` — Fleet credentials card (Save to scratch)',
@@ -290,19 +337,22 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     inputKind: 'secret',
     sectionId: 'tesla-fleet',
     supportsLocalScratch: true,
-    sourceResolutionNote: 'Same scratch slot as the Tesla Fleet page — sent as `x-user-key-tesla-client-id` on `/api/*` when set.',
+    sourceResolutionNote: 'Both fields sent as `x-user-key-tesla-*` headers on `/api/*` when set.',
     retrievalLinks: [
       { label: 'Tesla Fleet API', href: 'https://developer.tesla.com/docs/fleet-api' },
       { label: 'Fleet API getting started', href: 'https://developer.tesla.com/docs/fleet-api/getting-started/overview' },
     ],
+    group: 'tesla',
+    groupTitle: 'Tesla Fleet (OAuth)',
+    groupFieldLabel: 'Client ID',
   },
   {
     id: 'tesla-fleet-client-secret',
     storageKey: 'TESLA_CLIENT_SECRET',
     envKeys: ['TESLA_CLIENT_SECRET'],
     label: 'Tesla Fleet OAuth client secret',
-    role: 'Third-party / Fleet app secret',
-    oneLinePurpose: 'Client secret paired with `TESLA_CLIENT_ID` for Fleet API token exchange.',
+    role: 'Paired with Client ID',
+    oneLinePurpose: 'Secret half of the Tesla OAuth pair. Never commit to git.',
     powers: ['Tesla Fleet (OAuth handshake)'],
     usedIn: [
       '`TeslaMock.tsx` — Fleet credentials card (Save to scratch)',
@@ -313,8 +363,9 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     inputKind: 'secret',
     sectionId: 'tesla-fleet',
     supportsLocalScratch: true,
-    sourceResolutionNote: 'Paired with Client ID above; same localStorage prefix as Settings & API keys.',
     retrievalLinks: [{ label: 'Tesla Fleet API', href: 'https://developer.tesla.com/docs/fleet-api' }],
+    group: 'tesla',
+    groupFieldLabel: 'Client Secret',
   },
   {
     id: 'vite-maps-embed',
@@ -356,9 +407,9 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     id: 'vite-local-llm-base',
     storageKey: 'VITE_LOCAL_LLM_BASE_URL',
     envKeys: ['VITE_LOCAL_LLM_BASE_URL'],
-    label: 'Local LLM base URL',
-    role: 'Ollama / local gateway',
-    oneLinePurpose: 'Base URL for browser-side local LLM calls (e.g. Ollama).',
+    label: 'Local LLM (Ollama / Gemma)',
+    role: 'Browser-side local model config',
+    oneLinePurpose: 'Set the base URL + model id once to enable browser-side calls to Ollama (or any compatible local gateway). RAG manifest is optional context.',
     powers: ['Rhyme Studio (local Gemma)'],
     usedIn: ['`src/lib/local-llm/gemma-local.ts`', '`RhymeStudio.tsx` — local Gemma flows'],
     optional: true,
@@ -366,8 +417,11 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     inputKind: 'text',
     sectionId: 'client-vite',
     supportsLocalScratch: true,
-    sourceResolutionNote: 'Vite-inlined; restart dev after `.env.local` edits.',
+    sourceResolutionNote: 'All three fields are Vite-inlined; restart `npm run dev` after `.env.local` edits.',
     retrievalLinks: [{ label: 'Ollama', href: 'https://ollama.com/' }],
+    group: 'local-llm',
+    groupTitle: 'Local LLM (Ollama / Gemma)',
+    groupFieldLabel: 'Base URL (e.g. http://localhost:11434)',
   },
   {
     id: 'vite-local-llm-model',
@@ -383,8 +437,9 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     inputKind: 'text',
     sectionId: 'client-vite',
     supportsLocalScratch: true,
-    sourceResolutionNote: 'Vite-inlined; restart dev after `.env.local` edits.',
     retrievalLinks: [{ label: 'Ollama model library', href: 'https://ollama.com/library' }],
+    group: 'local-llm',
+    groupFieldLabel: 'Model id (e.g. gemma2:2b)',
   },
   {
     id: 'vite-rag-manifest',
@@ -400,15 +455,16 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     inputKind: 'text',
     sectionId: 'client-vite',
     supportsLocalScratch: true,
-    sourceResolutionNote: 'Vite-inlined; restart dev after `.env.local` edits.',
+    group: 'local-llm',
+    groupFieldLabel: 'RAG manifest URL (optional)',
   },
   {
     id: 'ffmpeg-path',
     storageKey: 'FFMPEG_PATH',
     envKeys: ['FFMPEG_PATH'],
-    label: 'FFmpeg binary path',
-    role: 'Server-side ffmpeg',
-    oneLinePurpose: 'Path to ffmpeg for mixing / YouTube-audio pipeline.',
+    label: 'Audio tooling (server paths)',
+    role: 'FFmpeg + yt-dlp binary paths',
+    oneLinePurpose: 'Server-only paths to the FFmpeg + yt-dlp binaries used by the mixing / YouTube-audio pipeline. Edit `.env.local` and restart the dev server — these are not sent from the browser.',
     powers: ['Mixing Board', 'YouTube audio download'],
     usedIn: ['`server/mixing-youtube-audio.ts` — consumed via `process.env` (not `x-user-key-*`)'],
     optional: true,
@@ -416,8 +472,11 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     inputKind: 'text',
     sectionId: 'audio-mixing',
     supportsLocalScratch: false,
-    sourceResolutionNote: 'Server `.env.local` only — mixing handler does not read `x-user-key-ffmpeg-path`.',
+    sourceResolutionNote: 'Server `.env.local` only — mixing handler does not read browser headers for these.',
     retrievalLinks: [{ label: 'FFmpeg downloads', href: 'https://ffmpeg.org/download.html' }],
+    group: 'audio-tools',
+    groupTitle: 'Audio tooling (server paths)',
+    groupFieldLabel: 'FFmpeg binary path',
   },
   {
     id: 'ytdlp-path',
@@ -433,8 +492,9 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     inputKind: 'text',
     sectionId: 'audio-mixing',
     supportsLocalScratch: false,
-    sourceResolutionNote: 'Server `.env.local` only — not overridden from browser headers.',
     retrievalLinks: [{ label: 'yt-dlp installation', href: 'https://github.com/yt-dlp/yt-dlp/wiki/Installation' }],
+    group: 'audio-tools',
+    groupFieldLabel: 'yt-dlp binary path',
   },
 ] as const
 
