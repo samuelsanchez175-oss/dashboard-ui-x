@@ -634,11 +634,18 @@ function ModelEnvCard({
                 </span>
               )}
             </h3>
+            {/* Show only the PRIMARY storageKey in the subheader. Some
+             *  entries list a fallback in `envKeys[1+]` (e.g. the Harmony
+             *  override falls back to `GEMINI_API_KEY`); rendering that
+             *  whole array here read as "you need to paste two keys",
+             *  which is wrong — the fallback is resolved at the BFF level
+             *  from the OTHER card's value. The fallback story still lives
+             *  in `sourceResolutionNote` below. */}
             <p
               className="mono mt-0.5 font-mono text-[10px] leading-tight md:text-[11px]"
               style={{ color: 'var(--text-3)' }}
             >
-              {entry.envKeys.join(' · ')} · {entry.role}
+              {entry.storageKey} · {entry.role}
             </p>
           </div>
         </div>
