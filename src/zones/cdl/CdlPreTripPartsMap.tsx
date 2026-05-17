@@ -17,7 +17,7 @@
  * are dropped in.
  */
 
-import { useEffect, useMemo, useState } from 'react'
+import { type PointerEvent as ReactPointerEvent, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   PRETRIP_INSPECTION_SECTIONS,
   PRETRIP_TOTALS,
@@ -39,7 +39,15 @@ const T = {
   borderHot: '#22d3ee',
 } as const
 
-type Mode = 'study' | 'quiz'
+type Mode = 'study' | 'quiz' | 'edit'
+
+/**
+ * Position override map keyed `sectionId -> hotspotNumber -> {x,y}`. Stored only
+ * in component state — edits never mutate the source data file. Use the
+ * "COPY JSON" button in EDIT mode to round-trip the new positions back into
+ * `cdl-pretrip-parts-map-data.ts`.
+ */
+type EditMap = Record<string, Record<number, { x: number; y: number }>>
 
 /* ──────────────────────────────────────────────────────────────────────────── */
 
@@ -50,11 +58,38 @@ export default function CdlPreTripPartsMap() {
   const [quizPromptIdx, setQuizPromptIdx] = useState(0)
   const [quizScore, setQuizScore] = useState({ correct: 0, total: 0 })
   const [feedback, setFeedback] = useState<null | 'good' | 'bad'>(null)
+  /* Position overrides live here so edits accumulate across section switches
+   * (you can edit sections 1, 4, and 6 in one sitting and copy ONE patch out). */
+  const [editMap, setEditMap] = useState<EditMap>({})
 
   const section = PRETRIP_INSPECTION_SECTIONS[sectionIdx]!
 
+  /** Apply any edit-mode overrides on top of the source data. */
+  const sectionWithOverrides = useMemo<InspectionSection>(() => {
+    const overrides = editMap[section.id]
+    if (!overrides) return section
+    return {
+      ...section,
+      hotspots: section.hotspots.map(h => {
+        const o = overrides[h.number]
+        return o ? { ...h, position: o } : h
+      }),
+    }
+  }, [section, editMap])
+
+  const updateHotspotPosition = useCallback(
+    (sectionId: string, hotspotNumber: number, position: { x: number; y: number }) => {
+      setEditMap(prev => ({
+        ...prev,
+        [sectionId]: { ...(prev[sectionId] ?? {}), [hotspotNumber]: position },
+      }))
+    },
+    [],
+  )
+
   /* When switching section or mode, reset interaction state so the user starts
-   * fresh — no leftover selected hotspot from the previous section. */
+   * fresh — no leftover selected hotspot from the previous section. The editMap
+   * is intentionally NOT reset; edits persist until the page reloads. */
   useEffect(() => {
     setSelectedNumber(null)
     setQuizPromptIdx(0)
@@ -63,14 +98,14 @@ export default function CdlPreTripPartsMap() {
   }, [sectionIdx, mode])
 
   const selectedHotspot = useMemo<PartHotspot | null>(() => {
-    if (mode === 'study') {
-      return section.hotspots.find(h => h.number === selectedNumber) ?? null
+    if (mode === 'study' || mode === 'edit') {
+      return sectionWithOverrides.hotspots.find(h => h.number === selectedNumber) ?? null
     }
-    return section.hotspots[quizPromptIdx] ?? null
-  }, [mode, section, selectedNumber, quizPromptIdx])
+    return sectionWithOverrides.hotspots[quizPromptIdx] ?? null
+  }, [mode, sectionWithOverrides, selectedNumber, quizPromptIdx])
 
   const onHotspotClick = (h: PartHotspot) => {
-    if (mode === 'study') {
+    if (mode === 'study' || mode === 'edit') {
       setSelectedNumber(prev => (prev === h.number ? null : h.number))
       return
     }
@@ -104,18 +139,28 @@ export default function CdlPreTripPartsMap() {
         onChange={setSectionIdx}
       />
 
+      {mode === 'edit' && (
+        <EditModeToolbar
+          section={sectionWithOverrides}
+          editMap={editMap}
+          onReset={() => setEditMap(prev => ({ ...prev, [section.id]: {} }))}
+          onResetAll={() => setEditMap({})}
+        />
+      )}
+
       <main
         className="mx-auto grid w-full max-w-6xl gap-4 px-4 py-6 lg:grid-cols-[2fr_1fr]"
       >
         <PhotoWithHotspots
-          section={section}
+          section={sectionWithOverrides}
           mode={mode}
           selectedNumber={selectedHotspot?.number ?? null}
           feedback={feedback}
           onHotspotClick={onHotspotClick}
+          onHotspotDrag={(num, pos) => updateHotspotPosition(section.id, num, pos)}
         />
         <InfoCard
-          section={section}
+          section={sectionWithOverrides}
           mode={mode}
           hotspot={selectedHotspot}
           showLabelInQuiz={mode === 'quiz'}
@@ -179,7 +224,7 @@ function Header({
           className="flex overflow-hidden rounded-md"
           style={{ border: `1px solid ${T.border}` }}
         >
-          {(['study', 'quiz'] as const).map(m => {
+          {(['study', 'quiz', 'edit'] as const).map(m => {
             const active = m === mode
             return (
               <button
@@ -255,18 +300,57 @@ function PhotoWithHotspots({
   selectedNumber,
   feedback,
   onHotspotClick,
+  onHotspotDrag,
 }: {
   section: InspectionSection
   mode: Mode
   selectedNumber: number | null
   feedback: null | 'good' | 'bad'
   onHotspotClick: (h: PartHotspot) => void
+  onHotspotDrag: (hotspotNumber: number, position: { x: number; y: number }) => void
 }) {
   /* Track whether the photo file actually loaded — if it errors (e.g. file missing
    * before the user has dropped it in `public/cdl-pretrip/`), fall back to the
    * stylized placeholder. State is keyed on imagePath so it resets per section. */
   const [imgFailed, setImgFailed] = useState(false)
   useEffect(() => setImgFailed(false), [section.imagePath])
+
+  const svgRef = useRef<SVGSVGElement | null>(null)
+  const draggingRef = useRef<number | null>(null)
+
+  /** Convert a pointer's client-pixel position to a 0..100 % inside the SVG box. */
+  const pctFromPointer = (e: { clientX: number; clientY: number }) => {
+    const svg = svgRef.current
+    if (!svg) return null
+    const rect = svg.getBoundingClientRect()
+    if (rect.width <= 0 || rect.height <= 0) return null
+    return {
+      x: Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100)),
+      y: Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100)),
+    }
+  }
+
+  /* Drag wiring — only used in EDIT mode. PointerDown starts a drag for a specific
+   * hotspot; PointerMove updates its position; PointerUp ends the drag. We attach
+   * the move/up listeners to window so the drag survives even if the pointer
+   * leaves the SVG bounds briefly. */
+  useEffect(() => {
+    if (mode !== 'edit') return
+    const onMove = (e: PointerEvent) => {
+      if (draggingRef.current == null) return
+      const pos = pctFromPointer(e)
+      if (pos) onHotspotDrag(draggingRef.current, pos)
+    }
+    const onUp = () => {
+      draggingRef.current = null
+    }
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+    return () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+    }
+  }, [mode, onHotspotDrag])
 
   return (
     <section
@@ -288,10 +372,12 @@ function PhotoWithHotspots({
 
         {/* SVG hotspot overlay — viewBox is 0..100 so hotspot positions are %s. */}
         <svg
+          ref={svgRef}
           className="absolute inset-0 size-full"
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
           aria-label={`${section.title} hotspots`}
+          style={mode === 'edit' ? { cursor: 'crosshair' } : undefined}
         >
           {section.hotspots.map(h => (
             <Hotspot
@@ -299,19 +385,30 @@ function PhotoWithHotspots({
               hotspot={h}
               selected={selectedNumber === h.number}
               feedback={selectedNumber === h.number ? feedback : null}
+              draggable={mode === 'edit'}
               onClick={() => onHotspotClick(h)}
+              onPointerDown={e => {
+                if (mode !== 'edit') return
+                draggingRef.current = h.number
+                onHotspotClick(h)
+                ;(e.currentTarget as Element).setPointerCapture?.(e.pointerId)
+              }}
             />
           ))}
         </svg>
       </div>
 
-      {/* Caption strip — section blurb + "say opener". */}
+      {/* Caption strip — section blurb + "say opener" (study/quiz) or instructions (edit). */}
       <div
         className="border-t px-4 py-3 text-[11px] leading-relaxed"
         style={{ borderColor: T.border, color: T.textDim }}
       >
         <p style={{ color: T.text }} className="mb-1 font-semibold uppercase tracking-wide">
-          {mode === 'quiz' ? 'CLICK THE HOTSPOT THAT MATCHES THE PROMPT' : section.blurb}
+          {mode === 'edit'
+            ? 'DRAG ANY HOTSPOT TO REPOSITION · COPY JSON ABOVE WHEN DONE'
+            : mode === 'quiz'
+              ? 'CLICK THE HOTSPOT THAT MATCHES THE PROMPT'
+              : section.blurb}
         </p>
         <p>"{section.sayOpener}"</p>
       </div>
@@ -323,17 +420,25 @@ function Hotspot({
   hotspot,
   selected,
   feedback,
+  draggable,
   onClick,
+  onPointerDown,
 }: {
   hotspot: PartHotspot
   selected: boolean
   feedback: null | 'good' | 'bad'
+  draggable: boolean
   onClick: () => void
+  onPointerDown: (e: ReactPointerEvent<SVGGElement>) => void
 }) {
   const fill = feedback === 'good' ? T.good : feedback === 'bad' ? T.bad : selected ? T.accent : '#f5c429'
   const radius = selected ? 3.6 : 3
   return (
-    <g style={{ cursor: 'pointer' }} onClick={onClick}>
+    <g
+      style={{ cursor: draggable ? 'grab' : 'pointer' }}
+      onClick={onClick}
+      onPointerDown={onPointerDown}
+    >
       {/* Soft glow ring on selected. */}
       {selected && (
         <circle
@@ -453,6 +558,20 @@ function InfoCard({
         </h2>
       </div>
 
+      {mode === 'edit' && (
+        <div className="flex flex-col gap-1">
+          <span
+            className="text-[10px] font-semibold uppercase tracking-wider"
+            style={{ color: T.accent }}
+          >
+            POSITION (X% / Y%)
+          </span>
+          <p className="font-mono text-[13px] leading-relaxed" style={{ color: T.text }}>
+            x: {hotspot.position.x.toFixed(1)} · y: {hotspot.position.y.toFixed(1)}
+          </p>
+        </div>
+      )}
+
       <div className="flex flex-col gap-1">
         <span
           className="text-[10px] font-semibold uppercase tracking-wider"
@@ -499,6 +618,126 @@ function SectionActSteps({ section }: { section: InspectionSection }) {
         ))}
       </ol>
     </details>
+  )
+}
+
+/* ──────────────────────────────────────────────────────────────────────────── */
+
+/* ──────────────────────────────────────────────────────────────────────────── */
+
+function EditModeToolbar({
+  section,
+  editMap,
+  onReset,
+  onResetAll,
+}: {
+  section: InspectionSection
+  editMap: EditMap
+  onReset: () => void
+  onResetAll: () => void
+}) {
+  const [copied, setCopied] = useState<'section' | 'all' | null>(null)
+  useEffect(() => {
+    if (!copied) return
+    const t = window.setTimeout(() => setCopied(null), 1500)
+    return () => window.clearTimeout(t)
+  }, [copied])
+
+  /** Build the JSON snippet for THIS section's hotspots in their current positions. */
+  const sectionJson = useMemo(() => {
+    const lines = section.hotspots.map(h => {
+      const x = h.position.x.toFixed(1)
+      const y = h.position.y.toFixed(1)
+      return `  { number: ${h.number}, label: ${JSON.stringify(h.label)}, position: { x: ${x}, y: ${y} } },`
+    })
+    return `// section: ${section.id}\n[\n${lines.join('\n')}\n]`
+  }, [section])
+
+  /** Build a JSON snippet covering EVERY section that has overrides. */
+  const allJson = useMemo(() => {
+    const sectionsWithEdits = Object.keys(editMap).filter(id => Object.keys(editMap[id] ?? {}).length > 0)
+    if (sectionsWithEdits.length === 0) return ''
+    const blocks = sectionsWithEdits.map(id => {
+      const overrides = editMap[id]!
+      const entries = Object.entries(overrides)
+        .map(
+          ([num, pos]) =>
+            `    ${num}: { x: ${pos.x.toFixed(1)}, y: ${pos.y.toFixed(1)} },`,
+        )
+        .join('\n')
+      return `  ${JSON.stringify(id)}: {\n${entries}\n  },`
+    })
+    return `// Per-section position overrides — drop into cdl-pretrip-parts-map-data.ts\n{\n${blocks.join('\n')}\n}`
+  }, [editMap])
+
+  const sectionEditedCount = Object.keys(editMap[section.id] ?? {}).length
+  const totalEditedCount = Object.values(editMap).reduce((n, m) => n + Object.keys(m).length, 0)
+
+  const copy = async (text: string, scope: 'section' | 'all') => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(scope)
+    } catch {
+      /* Clipboard API can fail in non-secure contexts — fall through to no-op. */
+    }
+  }
+
+  return (
+    <div
+      className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-2 px-4 py-3"
+      style={{ background: T.accentSoft, borderBottom: `1px solid ${T.border}` }}
+    >
+      <span
+        className="text-[10px] font-semibold uppercase tracking-wider"
+        style={{ color: T.accent }}
+      >
+        EDIT MODE
+      </span>
+      <span className="text-[11px]" style={{ color: T.text }}>
+        {sectionEditedCount} edits in this section · {totalEditedCount} total · drag any hotspot to reposition
+      </span>
+
+      <div className="ml-auto flex flex-wrap items-center gap-2">
+        <ToolbarButton onClick={() => copy(sectionJson, 'section')}>
+          {copied === 'section' ? 'COPIED' : 'COPY THIS SECTION'}
+        </ToolbarButton>
+        <ToolbarButton onClick={() => copy(allJson || sectionJson, 'all')} disabled={totalEditedCount === 0}>
+          {copied === 'all' ? 'COPIED' : `COPY ALL EDITS (${totalEditedCount})`}
+        </ToolbarButton>
+        <ToolbarButton onClick={onReset} disabled={sectionEditedCount === 0}>
+          RESET SECTION
+        </ToolbarButton>
+        <ToolbarButton onClick={onResetAll} disabled={totalEditedCount === 0}>
+          RESET ALL
+        </ToolbarButton>
+      </div>
+    </div>
+  )
+}
+
+function ToolbarButton({
+  children,
+  onClick,
+  disabled,
+}: {
+  children: ReactNode
+  onClick: () => void
+  disabled?: boolean
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="rounded px-2 py-1 text-[10px] font-semibold uppercase tracking-wider transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+      style={{
+        background: T.cardBg,
+        color: T.accent,
+        border: `1px solid ${T.border}`,
+      }}
+    >
+      {children}
+    </button>
   )
 }
 
