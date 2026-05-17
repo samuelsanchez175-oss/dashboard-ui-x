@@ -24,6 +24,13 @@ export interface CdlQuestion {
    * omitted on every endorsement bank; only the pre-trip banks use it.
    */
   autoFail?: boolean
+  /**
+   * Optional path under `/public` to a photo shown ABOVE the question text.
+   * Used by the pre-trip Deep Dive bank where each question is "what does
+   * the inspector say about THIS highlighted part?" with the part photo
+   * pinned to the top of the card.
+   */
+  image?: string
 }
 
 export const HAZMAT_QUESTIONS: CdlQuestion[] = [

@@ -131,10 +131,10 @@ const PRETRIP_TILES: CdlTile[] = [
   },
   {
     routeId:    'cdl-pretrip-deep-dive',
-    label:      'Deep Dive (Photo Drills)',
-    desc:       'Flashcard study tool — one photo per part with the verbal inspection sentence overlaid. 38 photos across Engine Bay (11), In-Cabin (11), and Trailer (16). Speak each phrase aloud, walk through sections, switch to Quiz mode to self-grade.',
+    label:      'Pre-Trip Deep Dive (Photo Quiz)',
+    desc:       'Image-first multiple-choice quiz. 38 close-up photos across Engine Bay (11), In-Cabin (11), and Trailer (16) — pick the correct inspection statement for each highlighted part. Sequential walk-through from engine to trailer. 80% to pass.',
     count:      38,
-    endorse:    'DRILL',
+    endorse:    'STEP 0',
     accent:     '#22d3ee',
     accentSoft: 'color-mix(in oklab, #22d3ee 12%, var(--bg-card))',
     icon:       ClipboardList,

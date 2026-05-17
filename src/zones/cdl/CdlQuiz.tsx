@@ -291,6 +291,23 @@ export default function CdlQuiz({
             <span style={topBadge(theme)}>REVIEW</span>
             <span style={counter(theme)}>{reviewIdx + 1} / {wrong.length}</span>
           </div>
+          {rq.image && (
+            <div
+              style={{
+                borderRadius: 8,
+                overflow: 'hidden',
+                border: `1px solid ${theme.border}`,
+                marginBottom: 16,
+                background: theme.cardBg,
+              }}
+            >
+              <img
+                src={rq.image}
+                alt=""
+                style={{ display: 'block', width: '100%', maxHeight: 360, objectFit: 'contain', background: '#0a1518' }}
+              />
+            </div>
+          )}
           <div style={qNum(theme)}>Q{rq.id}</div>
           <p style={qText(theme)}>{rq.q}</p>
           <div style={optsList()}>
@@ -343,6 +360,27 @@ export default function CdlQuiz({
         <div style={progressBar(theme)}>
           <div style={{ ...progressFill(theme), width: `${progress}%` }} />
         </div>
+        {q.image && (
+          /* Image-first layout for the pre-trip Deep Dive bank — photo sits
+           * directly above the question text so the user sees the part before
+           * reading the prompt. Bordered, rounded, capped at 360 px tall so
+           * the question + options stay visible without scrolling. */
+          <div
+            style={{
+              borderRadius: 8,
+              overflow: 'hidden',
+              border: `1px solid ${theme.border}`,
+              marginBottom: 16,
+              background: theme.cardBg,
+            }}
+          >
+            <img
+              src={q.image}
+              alt=""
+              style={{ display: 'block', width: '100%', maxHeight: 360, objectFit: 'contain', background: '#0a1518' }}
+            />
+          </div>
+        )}
         <div style={qNum(theme)}>Q{q.id}</div>
         <p style={qText(theme)}>{q.q}</p>
         <div style={optsList()}>
