@@ -708,11 +708,6 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
     [result],
   )
 
-  /** Loop stat readout — e.g. "4 bars ×7" or "—". */
-  const loopDisplay = result?.loop.found
-    ? `${result.loop.barCount} bar${result.loop.barCount > 1 ? 's' : ''} ×${result.loop.repeats}`
-    : '—'
-
   const runFile = useCallback(async (file: File) => {
     lastFileRef.current = file
     setBusy(true)
@@ -1105,17 +1100,13 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
 
   /* ── Derived display values ── */
   const bpmDisplay = result ? String(result.bpm).padStart(3, '0') : '---'
-  const chordCount = result?.segments.length ?? 0
-  const status = busy ? 'ANALYZING' : result ? 'DECODED' : 'IDLE'
-  const statusColor = busy ? PALETTE.amber : result ? PALETTE.textMain : PALETTE.textMuted
-
   return (
     <div
       className="flex min-h-0 flex-1 flex-col overflow-hidden"
       style={{ background: 'var(--bg-canvas)', color: 'var(--text-1)' }}
     >
       <div className="flex-1 overflow-auto" style={{ background: PALETTE.bg }}>
-        <div className="mx-auto flex w-full flex-col" style={{ minHeight: 'calc(100dvh - 56px)' }}>
+        <div className="mx-auto flex w-full flex-col">
           <div
             className="flex w-full flex-1 flex-col"
             style={{
@@ -1857,119 +1848,6 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                  in state). Shows the summary + suggested key + style hint +
                  per-chord corrections + LLM-inferred missing PCs. ── */}
             {aiResult ? <AiPolishPanel result={aiResult} /> : null}
-
-            {/* ── Statistics — moved to the bottom (marginTop: auto pushes it to the floor) ── */}
-            <section
-              className="flex flex-col"
-              style={{ background: PALETTE.surface, marginTop: 'auto' }}
-            >
-              <div
-                className="flex items-center justify-between border-b px-6 py-3 text-[11px] uppercase tracking-[0.15em]"
-                style={{ borderColor: PALETTE.line, color: PALETTE.textMain }}
-              >
-                <span>STATISTICS</span>
-                <span
-                  className="flex items-center gap-1.5"
-                  style={{ fontFamily: "'DM Mono', monospace", color: PALETTE.textMuted }}
-                >
-                  <span
-                    className="block size-1.5 rounded-full"
-                    style={{
-                      background: busy ? PALETTE.amber : result ? PALETTE.amber : PALETTE.textMuted,
-                      boxShadow: busy || result ? `0 0 6px ${PALETTE.amber}` : 'none',
-                    }}
-                    aria-hidden
-                  />
-                  {busy ? 'WORKING' : result ? 'LIVE' : 'IDLE'}
-                </span>
-              </div>
-              <div
-                className="grid"
-                style={{ gridTemplateColumns: '1fr 1fr 1fr', gap: '1px', background: PALETTE.line }}
-              >
-                <StatCell
-                  label="DURATION"
-                  value={result ? `${result.durationSec.toFixed(1)}s` : '—'}
-                />
-                <StatCell
-                  label="CHORDS"
-                  value={result ? String(chordCount).padStart(2, '0') : '—'}
-                />
-                <StatCell
-                  label="LOOP"
-                  value={result ? loopDisplay : '—'}
-                  valueColor={result?.loop.found ? PALETTE.amber : PALETTE.textMain}
-                  title={
-                    result?.loop.found
-                      ? `The piece repeats a ${result.loop.barCount}-bar pattern ${result.loop.repeats} times.`
-                      : 'No clear repeating loop was found (through-composed, or the clip is too short).'
-                  }
-                />
-              </div>
-              <div
-                className="grid"
-                style={{ gridTemplateColumns: '1fr 1fr', gap: '1px', background: PALETTE.line, borderTop: `1px solid ${PALETTE.line}` }}
-              >
-                <StatCell
-                  label="TRIM START"
-                  value={result ? formatMmSs(trimStart) : '—'}
-                />
-                <StatCell
-                  label="EXPORT WINDOW"
-                  value={result ? `${exportDurationSec.toFixed(1)}s` : '—'}
-                  valueColor={isSelectionTrimmed ? PALETTE.amber : PALETTE.textMain}
-                />
-              </div>
-              <div
-                className="grid"
-                style={{
-                  gridTemplateColumns: '1fr 1fr 1fr 1fr',
-                  gap: '1px',
-                  background: PALETTE.line,
-                  borderTop: `1px solid ${PALETTE.line}`,
-                }}
-              >
-                <StatCell
-                  label="KEY (KK)"
-                  value={
-                    result
-                      ? `${result.estimatedKey.label} · ${(result.estimatedKey.confidence * 100).toFixed(0)}%`
-                      : '—'
-                  }
-                  valueColor={
-                    result
-                      ? result.estimatedKey.confidence > 0.65
-                        ? PALETTE.amber
-                        : PALETTE.textMain
-                      : PALETTE.textMuted
-                  }
-                />
-                <StatCell
-                  label="UNIQUE CHORDS"
-                  value={result ? String(result.uniqueChordCount).padStart(2, '0') : '—'}
-                />
-                <StatCell
-                  label="LEAD NOTES"
-                  value={
-                    result
-                      ? `${String(clippedLeadNotes.length).padStart(3, '0')}${
-                          isSelectionTrimmed && result.leadNotes.length !== clippedLeadNotes.length
-                            ? ` / ${result.leadNotes.length}`
-                            : ''
-                        }`
-                      : '—'
-                  }
-                  valueColor={
-                    result && clippedLeadNotes.length > 0 ? PALETTE.amber : PALETTE.textMain
-                  }
-                />
-                <StatCell
-                  label="INPUT TYPE"
-                  value={result ? result.inputType.toUpperCase() : '—'}
-                  valueColor={result?.inputType === 'midi' ? PALETTE.amber : PALETTE.textMain}
-                />
-              </div>
-            </section>
           </div>
         </div>
       </div>
@@ -2095,40 +1973,6 @@ function CircleNum({ n }: { n: number }) {
     >
       {n}
     </span>
-  )
-}
-
-function StatCell({
-  label,
-  value,
-  valueColor,
-  title,
-}: {
-  label: string
-  value: string
-  valueColor?: string
-  /** Optional hover hint explaining the stat in plain words. */
-  title?: string
-}) {
-  return (
-    <div
-      className="flex items-center justify-between px-6 py-4"
-      style={{ background: PALETTE.surface }}
-      title={title}
-    >
-      <span className="text-[10px] uppercase tracking-[0.1em]" style={{ color: PALETTE.textMuted }}>
-        {label}
-      </span>
-      <span
-        className="text-[13px]"
-        style={{
-          fontFamily: "'DM Mono', monospace",
-          color: valueColor ?? PALETTE.textMain,
-        }}
-      >
-        {value}
-      </span>
-    </div>
   )
 }
 
