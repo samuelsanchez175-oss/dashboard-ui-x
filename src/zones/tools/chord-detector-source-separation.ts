@@ -54,15 +54,34 @@ export function isolateHarmonicMono(
   const harmonicFilter = oddPositive(options?.harmonicFilterSize ?? DEFAULT_HARMONIC_FILTER)
   const percussiveFilter = oddPositive(options?.percussiveFilterSize ?? DEFAULT_PERCUSSIVE_FILTER)
 
-  const inputLength = mono.length
-  if (inputLength === 0) return new Float32Array(0)
+  const rawInputLength = mono.length
+  if (rawInputLength === 0) return new Float32Array(0)
+
+  /* Warmup: prepend (harmonicFilter / 2) frames of silence so the
+   * time-axis median filter sees real pre-music context at the very
+   * start of the clip. Without this, the median reflect-pads the first
+   * ~8 frames with mirrored future content (see `medianFilterAlongTime`
+   * edge handling below), which biases the harmonic / percussive
+   * classification of the first notes and lets any drum transient at
+   * t=0 leak into the harmonic stem. Stripped before return so the
+   * output length matches the input exactly. */
+  const warmupFrames = harmonicFilter >> 1
+  const warmupSamples = warmupFrames * hopSize
+  const inputMono = warmupSamples > 0
+    ? (() => {
+        const w = new Float32Array(warmupSamples + rawInputLength)
+        w.set(mono, warmupSamples)
+        return w
+      })()
+    : mono
+  const inputLength = inputMono.length
 
   const window = hannWindow(fftSize)
 
   // Pad so the first frame is centred at sample 0 (librosa-style centring).
   const pad = fftSize >> 1
   const padded = new Float32Array(inputLength + fftSize)
-  padded.set(mono, pad)
+  padded.set(inputMono, pad)
 
   const numFrames = 1 + Math.floor((padded.length - fftSize) / hopSize)
   const numBins = (fftSize >> 1) + 1
@@ -156,9 +175,11 @@ export function isolateHarmonicMono(
     if (ws > EPS) output[i] /= ws
   }
 
-  // Strip the centring pad and trim to the original length.
-  const result = new Float32Array(inputLength)
-  for (let i = 0; i < inputLength; i++) result[i] = output[i + pad]
+  // Strip the centring pad AND the warmup silence, then trim back to the
+  // original input length.
+  const result = new Float32Array(rawInputLength)
+  const trimOffset = pad + warmupSamples
+  for (let i = 0; i < rawInputLength; i++) result[i] = output[i + trimOffset]
   return result
 }
 
