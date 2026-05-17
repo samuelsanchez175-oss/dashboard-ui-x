@@ -1012,6 +1012,36 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
     URL.revokeObjectURL(url)
   }, [clippedSegments, clippedLeadNotes, fileName, isSelectionTrimmed, result])
 
+  /**
+   * Per-track MIDI export — Lead / Harmony / Bass. The v2 register-stratified
+   * BP path splits final notes into three midi-range buckets (≥60 / 48-59 / <48);
+   * each track exports as a standalone .mid so the user can drop just the bass
+   * line, just the melody, etc. into their DAW. When the legacy single-pass
+   * path runs (e.g. MIDI input), only the lead track will have notes.
+   */
+  const downloadTrack = useCallback(
+    (track: 'lead' | 'harmony' | 'bass') => {
+      if (!result) return
+      const source =
+        track === 'lead' ? result.leadTrack : track === 'harmony' ? result.harmonyTrack : result.bassTrack
+      if (source.length === 0) return
+      const clipped = clipLeadNotesForExport(source, trimStart, trimEnd, effectiveDurationSec)
+      if (clipped.length === 0) return
+      /* No chord-segment track on per-register exports — those are pure note
+       * streams for the user to layer in whatever DAW pattern they want. */
+      const blob = buildChordMidiBlob([], result.bpm, clipped)
+      const base = (fileName ?? 'clip').replace(/\.[^/.]+$/, '')
+      const tag = isSelectionTrimmed ? '-trim' : ''
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${base}-${track}${tag}.mid`
+      a.click()
+      URL.revokeObjectURL(url)
+    },
+    [result, trimStart, trimEnd, effectiveDurationSec, fileName, isSelectionTrimmed],
+  )
+
   const copyProgression = useCallback(async () => {
     const text = progressionTextExport || progressionTextFull
     if (!text) return
@@ -1197,11 +1227,11 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
             <section
               className="grid"
               style={{
-                /* 3 cols × 3 rows = 9 cells, one per button — every cell now
-                 * carries a real control instead of spacer fillers. With the
-                 * upcoming 3 export buttons (Lead/Harmony/Bass replacing the
-                 * single EXPORT MIDI), the grid expands to 4 × 3 = 12 cells. */
-                gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                /* 4 cols × 3 rows = 12 cells. Layout:
+                 *   Row 1 (playback + trim):  PREVIEW · LOOP · APPLY TRIM · RESET TRIM
+                 *   Row 2 (per-track export): EXPORT LEAD · EXPORT HARMONY · EXPORT BASS · EXPORT ALL
+                 *   Row 3 (extras):           EXTRACT LOOP · COPY PROG. · PIANO/LEAD · RE-RUN CLIP */
+                gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
                 gap: '1px',
                 background: PALETTE.line,
               }}
@@ -1326,13 +1356,39 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 }
                 label="RESET TRIM"
               />
-              {/* ── Row 2: output group ── */}
+              {/* ── Row 2: per-track + combined MIDI exports ──
+                   The v2 multi-pass BP splits final notes into 3 tracks (Lead /
+                   Harmony / Bass) by midi register; each gets its own export
+                   button so the user can drop just the melody or just the bass
+                   line into their DAW. EXPORT ALL is the legacy single-file
+                   export (lead + harmony + bass + chord segments merged). */}
+              <ControlButton
+                active={false}
+                disabled={!result || (result.leadTrack?.length ?? 0) === 0}
+                onClick={() => downloadTrack('lead')}
+                icon={<DownloadGlyph color={!result || (result.leadTrack?.length ?? 0) === 0 ? PALETTE.textMuted : PALETTE.textMain} />}
+                label={`EXPORT LEAD${result?.leadTrack?.length ? ` · ${result.leadTrack.length}` : ''}`}
+              />
+              <ControlButton
+                active={false}
+                disabled={!result || (result.harmonyTrack?.length ?? 0) === 0}
+                onClick={() => downloadTrack('harmony')}
+                icon={<DownloadGlyph color={!result || (result.harmonyTrack?.length ?? 0) === 0 ? PALETTE.textMuted : PALETTE.textMain} />}
+                label={`EXPORT HARMONY${result?.harmonyTrack?.length ? ` · ${result.harmonyTrack.length}` : ''}`}
+              />
+              <ControlButton
+                active={false}
+                disabled={!result || (result.bassTrack?.length ?? 0) === 0}
+                onClick={() => downloadTrack('bass')}
+                icon={<DownloadGlyph color={!result || (result.bassTrack?.length ?? 0) === 0 ? PALETTE.textMuted : PALETTE.textMain} />}
+                label={`EXPORT BASS${result?.bassTrack?.length ? ` · ${result.bassTrack.length}` : ''}`}
+              />
               <ControlButton
                 active={false}
                 disabled={!result || (clippedLeadNotes.length === 0 && clippedSegments.length === 0)}
                 onClick={downloadMidi}
                 icon={<DownloadGlyph color={!result || (clippedLeadNotes.length === 0 && clippedSegments.length === 0) ? PALETTE.textMuted : PALETTE.textMain} />}
-                label="EXPORT MIDI"
+                label="EXPORT ALL"
               />
               {/* EXTRACT LOOP — applies stage-15 consolidation on demand. Disabled when
                   no loop was detected. Active state shows amber to mirror LOOP playback's

@@ -37,6 +37,13 @@ import { auditChordAnalysis } from './chord-detector-audit'
 import type { AuditReport } from './chord-detector-audit'
 import { consolidateToLoop } from './chord-detector-loop-consensus'
 import { inferChordImpliedNotes } from './chord-detector-chord-imply'
+/* v2 pipeline modules (parallel-built by subagents). All are pure functions —
+ * Float32Array / note list in, transformed data out. Each one targets a
+ * specific accuracy lever; see their module docs for the algorithm + rationale. */
+import { transcribeWithRegisterPasses } from './chord-detector-register-pass'
+import { isolateHarmonicMono } from './chord-detector-source-separation'
+import { validateNotesAgainstCQT } from './chord-detector-cqt-validate'
+import { detectLoopFromAudio } from './chord-detector-loop-audio'
 
 /** Re-export: RMS/flux snap + post-BP merge + chord onset align tunables (see `chord-detector-melody.ts`). */
 export { CHORD_ONSET_ALIGN, MIDI_EXPORT_NOTE_MERGE, MIDI_EXPORT_TIMING, PIANO_TWO_HAND_EXPORT, PIANO_TWO_HAND_RELAXED }
@@ -1317,24 +1324,49 @@ export async function analyzeChordProgressionFromBlob(
       return l2Normalize12(agg)
     }
 
+    // ── v2 Stage 0 — source separation. HPSS isolates the harmonic stem from
+    // the input mono so Basic Pitch sees cleaner pitched content (drums and
+    // transient percussion get masked out). Soft-mask Wiener-style separation;
+    // see `chord-detector-source-separation.ts` for the algorithm.
+    const harmonicMono = isolateHarmonicMono(mono, sr)
+
     // ── Basic Pitch lead notes (TensorFlow.js) → chord evidence + key histogram ─
-    // Polyphonic note events feed per-beat pitch-class weights blended with chroma;
-    // there is no legacy in-browser spectral peak extractor fallback.
-    const mono22050 = await resampleMonoTo22050(mono, sr)
+    // Now uses the register-stratified multi-pass: BP is invoked three times
+    // with thresholds tuned per register (high/mid/bass), then deduped. Replaces
+    // the single-pass call. See `chord-detector-register-pass.ts`.
+    const mono22050 = await resampleMonoTo22050(harmonicMono, sr)
     const maxBpSamples = Math.floor(maxSec * 22050)
     const monoBp = mono22050.length > maxBpSamples ? mono22050.slice(0, maxBpSamples) : mono22050
     const basicPitchInput: Partial<NeuralNoteBasicPitchDecode> | undefined =
       !isPianoLeadFocusMode(options)
         ? { ...PIANO_LEAD_RELAXED_BASIC_PITCH, ...options?.basicPitchDecode }
         : options?.basicPitchDecode
-    const bpOut = await transcribeMono22050ToLeadNotes(monoBp, basicPitchInput)
-    if (!bpOut.ok) {
+    const registerOutputs = await transcribeWithRegisterPasses(monoBp, 22050, {
+      noteSensitivity: basicPitchInput?.noteSensitivity,
+      splitSensitivity: basicPitchInput?.splitSensitivity,
+      minNoteDurationMs: basicPitchInput?.minNoteDurationMs,
+    })
+    if (registerOutputs.merged.length === 0) {
       throw new Error(
-        `Transcription failed (Basic Pitch / TensorFlow.js): ${bpOut.message}. This tool does not fall back to a spectral model — try another browser, check WebGL/WASM is allowed, or use a shorter clip.`,
+        'Transcription returned no notes. All three register passes (high/mid/bass) of Basic Pitch came back empty. Try a longer clip, check WebGL/WASM is allowed, or another browser.',
       )
     }
-    const leadNotesRaw = bpOut.leadNotes
-    const pitchClassHistogramFromBasicPitch = bpOut.pitchClassHistogram
+    /* Legacy code below still expects `bpOut.leadNotes` + a per-pass histogram.
+     * Build a back-compat wrapper from the merged multi-pass output so the
+     * 14-stage cleanup pipeline downstream works unchanged. The histogram is
+     * computed here directly from the merged notes (duration × velocity sum
+     * per pitch class, then L2-normalised). */
+    const histAccum = new Float64Array(12)
+    let histSum = 0
+    for (const n of registerOutputs.merged) {
+      const pc = ((Math.round(n.midi) % 12) + 12) % 12
+      const w = Math.max(0.001, n.durationSec) * Math.max(0.01, n.velocity)
+      histAccum[pc] += w
+      histSum += w
+    }
+    const pitchClassHistogramFromBasicPitch =
+      histSum > 0 ? Array.from(histAccum, x => x / histSum) : new Array<number>(12).fill(0)
+    const leadNotesRaw = registerOutputs.merged
     const hasBpNotes = leadNotesRaw.length > 0
     const chromaBlendW = hasBpNotes ? BASIC_PITCH_CHORD_BLEND.chromaWeight : CHORD_PIPELINE.chromaWeight
     const leadBlendScale = hasBpNotes ? BASIC_PITCH_CHORD_BLEND.leadWeightScale : CHORD_PIPELINE.leadWeightScale
@@ -1450,12 +1482,14 @@ export async function analyzeChordProgressionFromBlob(
       : leadForMidi
     dbgStage('8-rmsRefine', leadNotes)
 
-    /* Register-stratified split — populated by the multi-pass BP module once
-     * integrated (see `chord-detector-register-pass.ts`). Until that lands,
-     * leave null so the return block falls back to a single-track export. */
+    /* Register-stratified split — populated lazily AFTER the full cleanup
+     * pipeline finishes. Each final note is bucketed by its midi range:
+     *   midi ≥ 60   → leadTrack    (C4 and above — melody)
+     *   midi 48..59 → harmonyTrack (mid voicings)
+     *   midi < 48   → bassTrack    (sustained low end)
+     * This way the 3 separate MIDI exports use the post-cleanup data (matches
+     * the unified leadNotes export exactly when you concat them). */
     let registerSplit: { lead: LeadNote[]; harmony: LeadNote[]; bass: LeadNote[] } | null = null
-    /* This is the integration anchor — the multi-pass module will populate
-     * registerSplit here based on the same audio + bpm. */
 
     // NeuralNote-inspired post (quant / min length / velocity) — optional; does not replace BP polyphony.
     leadNotes = applyNeuralNoteStyleLeadNotes(leadNotes, bpm, durationSec, options?.melodyPost)
@@ -1484,9 +1518,25 @@ export async function analyzeChordProgressionFromBlob(
      * note exports as ONE note, not two fragments (chord-detector-midi-export-debug, Bug 4). */
     leadNotes = mergeAdjacentSamePitchNotes(leadNotes, MIDI_EXPORT_NOTE_MERGE.samePitchMaxGapSec)
     dbgStage('13-finalMerge', leadNotes)
+    /* v2 Stage CQT — drop notes that don't have actual energy in the audio at
+     * their reported (pitch, time) coordinates. Catches BP's false positives
+     * that the heuristic cleanup stages cannot tell apart from real notes.
+     * Runs on the harmonic-stem audio at the source rate (not 22050) — the
+     * higher rate gives the CQT better pitch resolution for low notes. */
+    const cqtResult = validateNotesAgainstCQT(leadNotes, harmonicMono, sr)
+    leadNotes = cqtResult.kept
+    dbgStage('13.5-cqtValidate', leadNotes)
+
     /* Part 3 — stage 14: bar-loop detection + 2nd-pass structuring (re-snap starts,
-     * quantize note lengths, trim loop-seam straddlers). */
-    const loop = detectBarLoop(leadNotes, bpm, durationSec)
+     * quantize note lengths, trim loop-seam straddlers). The loop info is found
+     * via TWO methods now: the new audio-onset cross-correlation (subagent E)
+     * and the legacy bar-fingerprint Jaccard. We pick whichever has the higher
+     * confidence — they're often complementary (audio catches grooves where BP
+     * notes are too noisy; notes catch melodic loops where the audio onset
+     * envelope is too uniform). */
+    const audioLoop = detectLoopFromAudio(harmonicMono, sr, bpm)
+    const noteLoop = detectBarLoop(leadNotes, bpm, durationSec)
+    const loop = audioLoop.found && audioLoop.confidence > noteLoop.confidence ? audioLoop : noteLoop
     leadNotes = structureLeadNotes(leadNotes, loop, bpm)
     dbgStage('14-structure', leadNotes)
     if (import.meta.env.DEV) {
@@ -1546,15 +1596,21 @@ export async function analyzeChordProgressionFromBlob(
      * computed and carried in the result for the panels. */
     if (loop.found) dbgStage('15-loopConsensus', consolidateToLoop(leadNotes, loop, bpm))
 
-    /* Three-track split. Populated by the register-stratified multi-pass BP
-     * helper (see `chord-detector-register-pass.ts`). For now, until the
-     * multi-pass module wires in, fall back to placing ALL notes in the lead
-     * track and leaving harmony/bass empty — that way the 3-button UI still
-     * works (just with two empty exports). The integration step replaces
-     * these defaults with the real splits. */
-    const leadTrack = registerSplit?.lead ?? leadNotes
-    const harmonyTrack = registerSplit?.harmony ?? []
-    const bassTrack = registerSplit?.bass ?? []
+    /* Three-track split — bucket each final note by midi range. The thresholds
+     * intentionally match the register-pass BP boundaries so a note that came
+     * from the BASS pass (midi < 48) lands in the bass track, etc. Each note
+     * appears in exactly one track; concatenating the three reconstructs the
+     * full leadNotes exactly. */
+    registerSplit = { lead: [], harmony: [], bass: [] }
+    for (const n of leadNotes) {
+      const m = Math.round(n.midi)
+      if (m < 48) registerSplit.bass.push(n)
+      else if (m < 60) registerSplit.harmony.push(n)
+      else registerSplit.lead.push(n)
+    }
+    const leadTrack = registerSplit.lead
+    const harmonyTrack = registerSplit.harmony
+    const bassTrack = registerSplit.bass
 
     return {
       bpm,
