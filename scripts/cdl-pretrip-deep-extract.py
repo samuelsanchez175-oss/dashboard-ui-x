@@ -229,12 +229,23 @@ def main() -> int:
                 sys.stderr.write(f"  ! row {row_idx} out of range for {slug} ({len(row_bounds)} rows)\n")
                 continue
             y0, y1 = row_bounds[row_idx]
+            # Normal phase: just the yellow numbered circle on the part
             x0, x1 = col * cw, (col + 1) * cw
             cell = img.crop((x0, y0, x1, y1))
             out_path = out_dir / f"{slug}.jpg"
             cell.save(out_path, "JPEG", quality=90)
             print(f"  ({col},{row_idx}) → {out_path.name}  {cell.size[0]}x{cell.size[1]}")
             total += 1
+            # Highlight phase: same cell but COL+1 (the "double" with yellow
+            # oval outlining the part). Each pair is laid out left-right in the
+            # composite, so the highlight version is always the next column.
+            hx0, hx1 = (col + 1) * cw, (col + 2) * cw
+            if hx1 <= iw:
+                hcell = img.crop((hx0, y0, hx1, y1))
+                hout = out_dir / f"{slug}-highlight.jpg"
+                hcell.save(hout, "JPEG", quality=90)
+                print(f"  ({col+1},{row_idx}) → {hout.name}  {hcell.size[0]}x{hcell.size[1]}  (highlight)")
+                total += 1
 
     print(f"\n{total} cell extractions complete.")
     for sec in ("engine", "cabin", "trailer"):

@@ -27,8 +27,14 @@ export interface DeepDiveItem {
   number: number
   /** Short part name (no section prefix). */
   label: string
-  /** Path under `/public` — falls back to a placeholder when missing. */
+  /** Normal phase — yellow numbered circle on the part. */
   imagePath: string
+  /**
+   * Highlight phase — yellow numbered circle PLUS a yellow oval outlining
+   * the part. Toggleable in the UI so the user can see the part with and
+   * without the explicit outline.
+   */
+  imageHighlightPath?: string
   /**
    * Verbal inspection sentence — what the applicant says out loud during the
    * test. Verbatim from the photo's "SAY:" overlay. The Speak button reads
