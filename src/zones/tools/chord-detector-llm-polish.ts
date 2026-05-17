@@ -152,14 +152,14 @@ export async function polishChordResult(
           ? json.message
           : null
       /* The dev BFF returns "Set GEMINI_API_KEY." when neither the
-       * `x-user-key-gemini-api-key` header (from Settings → Chord Detector
-       * or Gemini & Harmony) nor `process.env.GEMINI_API_KEY` is set.
-       * Surface a friendlier message that points the user at the fix. */
+       * `x-user-key-gemini-api-key` header (from Settings → Google AI Studio)
+       * nor `process.env.GEMINI_API_KEY` is set. Surface a friendlier message
+       * that points the user at the single shared key field. */
       if (bffMessage && /GEMINI_API_KEY/i.test(bffMessage)) {
         return {
           ok: false,
           message:
-            'No Gemini API key found. Open Settings → "Chord Detector" (or "Gemini & Harmony") and paste your Google AI Studio key — same field, shared with every other Gemini feature.',
+            'No Gemini API key found. Open Settings → "Google AI Studio (Gemini)" and paste your Google AI Studio key — one key powers AI POLISH plus every other Gemini feature in the dashboard.',
         }
       }
       return {
@@ -217,7 +217,7 @@ export async function polishChordResult(
   } catch (err) {
     return {
       ok: false,
-      message: `Could not reach /api/gemini/generate. Is the dev server running? Settings → "Chord Detector" is where the API key lives. (${
+      message: `Could not reach /api/gemini/generate. Is the dev server running? Settings → "Google AI Studio (Gemini)" is where the API key lives. (${
         err instanceof Error ? err.message : String(err)
       })`,
     }

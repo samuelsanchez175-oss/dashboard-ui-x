@@ -340,7 +340,7 @@ export default function DevSettings({ onNavigate }: DevSettingsProps) {
                           <th className="px-2 py-2 font-medium md:px-3">Key(s)</th>
                           <th className="px-2 py-2 font-medium md:px-3">Role</th>
                           <th className="px-2 py-2 font-medium md:px-3">Get key</th>
-                          <th className="px-2 py-2 font-medium md:px-3">Used in</th>
+                          <th className="px-2 py-2 font-medium md:px-3">Powers</th>
                           <th className="px-2 py-2 font-medium md:px-3">Source</th>
                           <th className="px-2 py-2 font-medium md:px-3">Local value</th>
                           <th className="px-2 py-2 text-right font-medium md:px-3">Test</th>
@@ -659,6 +659,28 @@ function ModelEnvRow({
         <RetrievalLinksList links={entry.retrievalLinks} />
       </td>
       <td className="px-2 py-2 md:px-3">
+        {/* Powers chips — at-a-glance "what features does this key turn on?".
+            Rendered above the technical detail so the answer is visible without
+            a click. The `usedIn` list (routes / file paths) stays behind the
+            "Where used" toggle for engineers who want to audit. */}
+        {entry.powers && entry.powers.length > 0 && (
+          <div className="mb-1.5 flex flex-wrap gap-1">
+            {entry.powers.map(p => (
+              <span
+                key={p}
+                className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium leading-none md:text-[10px]"
+                style={{
+                  background: 'var(--accent-soft)',
+                  color: 'var(--accent-fg)',
+                  border: '1px solid color-mix(in oklab, var(--accent) 28%, var(--border))',
+                }}
+                title={`Powered by ${entry.envKeys[0]}`}
+              >
+                {p}
+              </span>
+            ))}
+          </div>
+        )}
         <p className="text-[10px] leading-snug md:text-[11px]" style={{ color: 'var(--text-2)' }}>{entry.oneLinePurpose}</p>
         {harmonyHint && (
           <p className="mt-1 text-[10px] leading-snug md:text-[11px]" style={{ color: 'var(--accent-fg)' }}>{harmonyHint}</p>
@@ -673,7 +695,7 @@ function ModelEnvRow({
               aria-expanded={expanded}
             >
               {expanded ? <ChevronDown className="size-3" aria-hidden /> : <ChevronRight className="size-3" aria-hidden />}
-              Where used
+              Where used (technical)
             </button>
             {expanded && (
               <ul className="mt-1 list-disc space-y-0.5 pl-3.5 text-[10px] leading-snug md:text-[11px]" style={{ color: 'var(--text-3)' }}>

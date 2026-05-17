@@ -13,14 +13,13 @@ export type DevSettingsRetrievalLink = {
 }
 
 export type DevSettingsSectionId =
-  | 'google-youtube'
-  | 'gemini-harmony'
-  | 'chord-detector'
-  | 'feeds'
+  | 'google-cloud'
+  | 'google-ai-studio'
   | 'openai'
   | 'tesla-fleet'
-  | 'client-vite'
+  | 'feeds'
   | 'audio-mixing'
+  | 'client-vite'
 
 export type DevSettingsEnvModelEntry = {
   /** Stable id for React keys / anchors */
@@ -33,7 +32,21 @@ export type DevSettingsEnvModelEntry = {
   /** Short column text for “Role” */
   role: string
   oneLinePurpose: string
+  /**
+   * Detailed technical list of routes / files / hooks that consume this key
+   * — rendered behind the "Where used" expander so curious users can audit
+   * exactly which `/api/*` route or module reads the value.
+   */
   usedIn: readonly string[]
+  /**
+   * Short, chip-friendly labels for the dashboard ZONES this key powers.
+   * Rendered as inline badges at the top of the Used-in cell so a glance
+   * answers "what features stop working if this key is missing?" Examples:
+   * "Chord Detector AI POLISH", "Harmony Stack", "Phonetics Inspector".
+   * Distinct from `usedIn` — those are route / file paths for engineers;
+   * `powers` is product-language for the user.
+   */
+  powers?: readonly string[]
   optional: boolean
   scope: 'server' | 'client'
   inputKind: DevSettingsInputKind
@@ -49,15 +62,23 @@ export type DevSettingsEnvModelEntry = {
   retrievalLinks?: readonly DevSettingsRetrievalLink[]
 }
 
+/**
+ * Section order = display order on the Settings page. Names are PROVIDER-
+ * centric (the console / vendor that issues the key), NOT app-zone centric,
+ * so a user with one Google AI Studio account adds one key and sees every
+ * zone it powers via the `powers` chips on each row. Adding a tab per app
+ * zone (Chord Detector, Phonetics, Harmony, etc) would duplicate the same
+ * GEMINI_API_KEY input across multiple sections — the opposite of what
+ * "one key, many zones" needs.
+ */
 export const DEV_SETTINGS_SECTION_META: readonly { id: DevSettingsSectionId; title: string }[] = [
-  { id: 'google-youtube', title: 'Google & YouTube' },
-  { id: 'gemini-harmony', title: 'Gemini & Harmony' },
-  { id: 'chord-detector', title: 'Chord Detector' },
-  { id: 'feeds', title: 'Feeds & syndication' },
-  { id: 'openai', title: 'OpenAI-compatible' },
+  { id: 'google-ai-studio', title: 'Google AI Studio (Gemini)' },
+  { id: 'google-cloud', title: 'Google Cloud (YouTube + Maps)' },
+  { id: 'openai', title: 'OpenAI (or compatible)' },
   { id: 'tesla-fleet', title: 'Tesla Fleet' },
-  { id: 'client-vite', title: 'Client (Vite-inlined)' },
+  { id: 'feeds', title: 'Feeds & syndication' },
   { id: 'audio-mixing', title: 'Audio / mixing (server paths)' },
+  { id: 'client-vite', title: 'Client (Vite-inlined)' },
 ] as const
 
 /**
@@ -77,10 +98,11 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
       '`GET /api/youtube/channel` — default channel lookup (with API key)',
       '`AgentFarm.tsx` / `agent-farm-live.ts` — integration status & probes',
     ],
+    powers: ['Agent Farm — YouTube', 'Diagnostics smoke'],
     optional: true,
     scope: 'server',
     inputKind: 'secret',
-    sectionId: 'google-youtube',
+    sectionId: 'google-cloud',
     supportsLocalScratch: true,
     sourceResolutionNote: 'BFF uses this first; if empty, falls back to GOOGLE_API_KEY for the same routes.',
     retrievalLinks: [
@@ -101,10 +123,11 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
       '`GET /api/youtube/search` and `GET /api/youtube/channel` — when `YOUTUBE_API_KEY` is empty (`youtubeDataKeyForReq` in BFF)',
       '`GET /api/integrations/status` — `googleApi` / combined YouTube availability',
     ],
+    powers: ['Google APIs probe', 'YouTube (fallback)', 'Integration status'],
     optional: true,
     scope: 'server',
     inputKind: 'secret',
-    sectionId: 'google-youtube',
+    sectionId: 'google-cloud',
     supportsLocalScratch: true,
     sourceResolutionNote: 'Same effective slot as YouTube fallback — use a key with YouTube Data API v3 enabled if you rely on this path.',
     retrievalLinks: [
@@ -123,23 +146,40 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
       '`GET /api/youtube/channel` — resolve by id instead of handle',
       'Agent Farm — channel card / probes when no handle query',
     ],
+    powers: ['Agent Farm channel card'],
     optional: true,
     scope: 'server',
     inputKind: 'text',
-    sectionId: 'google-youtube',
+    sectionId: 'google-cloud',
     supportsLocalScratch: true,
     retrievalLinks: [{ label: 'Find YouTube channel ID', href: 'https://support.google.com/youtube/answer/3250431' }],
   },
+  /* GEMINI_API_KEY is the single biggest "shared key" example — one Google AI
+   * Studio key powers every Gemini-driven feature in the dashboard. There
+   * deliberately is NOT a per-zone duplicate row (e.g. "Chord Detector AI
+   * POLISH") here; that would split one input across multiple sections and
+   * confuse the "one key, many zones" relationship. The full consumer list
+   * lives in `powers` (rendered as chips at the top of the row) and `usedIn`
+   * (expandable technical detail). */
   {
     id: 'gemini-primary',
     storageKey: 'GEMINI_API_KEY',
     envKeys: ['GEMINI_API_KEY'],
-    label: 'Gemini (Google AI Studio)',
-    role: 'Generative Language API',
-    oneLinePurpose: 'Primary Google AI Studio key for Gemini routes and most Gemini-powered features.',
+    label: 'Gemini API key',
+    role: 'Google AI Studio',
+    oneLinePurpose:
+      'Single Google AI Studio key powering every Gemini-driven feature in the dashboard. Add it once here and every feature listed below lights up.',
+    powers: [
+      'Chord Detector AI POLISH',
+      'Harmony Stack',
+      'Phonetics Inspector',
+      'Mixing Board AI',
+      'Agent Farm Usage',
+      'Diagnostics ping',
+    ],
     usedIn: [
       '`GET /api/gemini/health` — list models',
-      '`POST /api/gemini/generate` — BFF text generation (e.g. Tools → Phonetics inspector, Mixing board AI, Chord Detector AI POLISH)',
+      '`POST /api/gemini/generate` — BFF text generation (Phonetics inspector, Mixing board AI, Chord Detector AI POLISH)',
       '`POST /api/gemini/ping` — Agent Farm + Diagnostics upstream smoke',
       '`POST /api/harmony/client-projects/build-prompt` — when `HARMONY_CLIENT_PROJECTS_AI_KEY` is unset',
       '`GET /api/harmony/client-projects/ai-health` — fallback `source: gemini` when Harmony override empty',
@@ -151,18 +191,19 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     optional: false,
     scope: 'server',
     inputKind: 'secret',
-    sectionId: 'gemini-harmony',
+    sectionId: 'google-ai-studio',
     supportsLocalScratch: true,
-    sourceResolutionNote: 'One key powers every row above; Harmony can optionally use a separate key below.',
+    sourceResolutionNote: 'One key powers every feature in the chips above; Harmony Client Projects can optionally use a separate key below.',
     retrievalLinks: [{ label: 'Google AI Studio', href: 'https://aistudio.google.com/apikey' }],
   },
   {
     id: 'harmony-gemini-override',
     storageKey: 'HARMONY_CLIENT_PROJECTS_AI_KEY',
     envKeys: ['HARMONY_CLIENT_PROJECTS_AI_KEY', 'GEMINI_API_KEY'],
-    label: 'Harmony Client Projects AI key',
-    role: 'Optional Gemini override',
-    oneLinePurpose: 'Dedicated Gemini quota for Harmony Stack → Client Projects only.',
+    label: 'Harmony Client Projects override',
+    role: 'Optional separate Gemini quota',
+    oneLinePurpose: 'Optional dedicated Gemini key for Harmony Stack → Client Projects only — leave blank to share the primary Gemini key above.',
+    powers: ['Harmony Stack (only when set)'],
     usedIn: [
       '`POST /api/harmony/client-projects/build-prompt` — preferred over `GEMINI_API_KEY` when set',
       '`GET /api/harmony/client-projects/ai-health` — reports `source: harmony` when set',
@@ -171,40 +212,9 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     optional: true,
     scope: 'server',
     inputKind: 'secret',
-    sectionId: 'gemini-harmony',
+    sectionId: 'google-ai-studio',
     supportsLocalScratch: true,
-    sourceResolutionNote: 'Same API family as Gemini; only Client Projects routes prefer this key.',
-    retrievalLinks: [{ label: 'Google AI Studio', href: 'https://aistudio.google.com/apikey' }],
-  },
-  /* ── Chord Detector ────────────────────────────────────────────────────────
-   * The chord detector's AI POLISH button (`runAiPolish` in
-   * `ToolsChordDetectorPage.tsx`) posts the symbolic progression to Gemini
-   * via the shared `/api/gemini/generate` route. It deliberately re-uses the
-   * SAME `GEMINI_API_KEY` storage as the primary Gemini entry above —
-   * editing the field here writes to the same localStorage scratch slot, so
-   * the value stays in sync with the Gemini & Harmony section. This row
-   * exists so users browsing Settings can find the chord detector by name
-   * instead of having to know it's "a Gemini thing". */
-  {
-    id: 'chord-detector-gemini',
-    storageKey: 'GEMINI_API_KEY',
-    envKeys: ['GEMINI_API_KEY'],
-    label: 'Chord Detector AI POLISH',
-    role: 'Gemini (shared key)',
-    oneLinePurpose:
-      'AI POLISH sends the detected progression + key + audit findings to Gemini 2.0 Flash for a session-musician review (suggested key, style hint, per-chord corrections, missing pitch classes).',
-    usedIn: [
-      '`Tools → Chord Detector → 🤖 AI POLISH` button',
-      '`src/zones/tools/chord-detector-llm-polish.ts` — strict-JSON polish prompt',
-      '`POST /api/gemini/generate` — same BFF route as every other Gemini consumer',
-    ],
-    optional: true,
-    scope: 'server',
-    inputKind: 'secret',
-    sectionId: 'chord-detector',
-    supportsLocalScratch: true,
-    sourceResolutionNote:
-      'Shared with the primary Gemini key above — editing here updates the same value used by Gemini & Harmony.',
+    sourceResolutionNote: 'Same API family as Gemini; only Client Projects routes prefer this key. Leave blank to share quota with the primary key.',
     retrievalLinks: [{ label: 'Google AI Studio', href: 'https://aistudio.google.com/apikey' }],
   },
   {
@@ -214,6 +224,7 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     label: 'RSS feed URLs',
     role: 'Comma-separated feed list',
     oneLinePurpose: 'Allow-listed feed URLs for the RSS aggregation endpoint.',
+    powers: ['Agent Farm Pulse', 'RSS aggregation', 'Diagnostics RSS probe'],
     usedIn: [
       '`GET /api/rss` — merged headlines (`aggregateRss` in BFF)',
       '`AgentFarm.tsx` — Pulse / RSS integration strip',
@@ -233,6 +244,7 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     label: 'OpenAI (or compatible) API key',
     role: 'Chat Completions / models list',
     oneLinePurpose: 'Key for OpenAI-compatible providers.',
+    powers: ['OpenAI ping (Diagnostics)'],
     usedIn: ['`GET /api/openai/ping` — lists models at the configured base URL'],
     optional: true,
     scope: 'server',
@@ -248,6 +260,7 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     label: 'OpenAI-compatible base URL',
     role: 'API root (optional)',
     oneLinePurpose: 'Non-default API host (Azure, OpenRouter, local gateway, etc.).',
+    powers: ['OpenAI ping (host override)'],
     usedIn: ['`GET /api/openai/ping` — paired with `OPENAI_API_KEY`'],
     optional: true,
     scope: 'server',
@@ -267,6 +280,7 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     label: 'Tesla Fleet OAuth client ID',
     role: 'Third-party / Fleet app client id',
     oneLinePurpose: 'Registered application client identifier for Tesla Fleet API (OAuth).',
+    powers: ['Tesla Fleet (OAuth handshake)'],
     usedIn: [
       '`TeslaMock.tsx` — Fleet credentials card (Save to scratch)',
       '`fetchWithKeys` / `x-user-key-tesla-client-id` — dev BFF `pickKey` when Fleet routes are wired',
@@ -289,6 +303,7 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     label: 'Tesla Fleet OAuth client secret',
     role: 'Third-party / Fleet app secret',
     oneLinePurpose: 'Client secret paired with `TESLA_CLIENT_ID` for Fleet API token exchange.',
+    powers: ['Tesla Fleet (OAuth handshake)'],
     usedIn: [
       '`TeslaMock.tsx` — Fleet credentials card (Save to scratch)',
       '`fetchWithKeys` / `x-user-key-tesla-client-secret` — paired with `TESLA_CLIENT_ID`',
@@ -308,6 +323,7 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     label: 'Google Maps Embed API key',
     role: 'Browser-only map embeds',
     oneLinePurpose: 'Referrer-restricted key for embedded maps in the Tesla trip UI.',
+    powers: ['Tesla Fleet trip map'],
     usedIn: ['`src/lib/google-maps-trips.ts`', '`TeslaMockVisuals.tsx` (Tesla Fleet zone trip map)'],
     optional: true,
     scope: 'client',
@@ -327,6 +343,7 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     label: 'Stem splitter service URL',
     role: 'Multipart stem HTTP stub',
     oneLinePurpose: 'Optional remote stem splitter endpoint for Tools → Stem splitter.',
+    powers: ['Stem Splitter tool'],
     usedIn: ['`ToolsStemSplitterPage.tsx` — optional upload stub'],
     optional: true,
     scope: 'client',
@@ -342,6 +359,7 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     label: 'Local LLM base URL',
     role: 'Ollama / local gateway',
     oneLinePurpose: 'Base URL for browser-side local LLM calls (e.g. Ollama).',
+    powers: ['Rhyme Studio (local Gemma)'],
     usedIn: ['`src/lib/local-llm/gemma-local.ts`', '`RhymeStudio.tsx` — local Gemma flows'],
     optional: true,
     scope: 'client',
@@ -358,6 +376,7 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     label: 'Local LLM model id',
     role: 'Model name',
     oneLinePurpose: 'Model id passed to the local LLM endpoint.',
+    powers: ['Rhyme Studio (local Gemma)'],
     usedIn: ['`src/lib/local-llm/gemma-local.ts`', '`RhymeStudio.tsx`'],
     optional: true,
     scope: 'client',
@@ -374,6 +393,7 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     label: 'RAG manifest URL',
     role: 'Optional JSON snippets index',
     oneLinePurpose: 'Optional URL returning `{ "snippets": [...] }` for local LLM context.',
+    powers: ['Rhyme Studio (RAG context)'],
     usedIn: ['`src/lib/local-llm/gemma-local.ts`', '`RhymeStudio.tsx`'],
     optional: true,
     scope: 'client',
@@ -389,6 +409,7 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     label: 'FFmpeg binary path',
     role: 'Server-side ffmpeg',
     oneLinePurpose: 'Path to ffmpeg for mixing / YouTube-audio pipeline.',
+    powers: ['Mixing Board', 'YouTube audio download'],
     usedIn: ['`server/mixing-youtube-audio.ts` — consumed via `process.env` (not `x-user-key-*`)'],
     optional: true,
     scope: 'server',
@@ -405,6 +426,7 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     label: 'yt-dlp binary path',
     role: 'Server-side yt-dlp',
     oneLinePurpose: 'Path to yt-dlp for `/api/mixing/youtube-audio`.',
+    powers: ['YouTube audio download'],
     usedIn: ['`server/mixing-youtube-audio.ts` — `process.env` resolution'],
     optional: true,
     scope: 'server',
