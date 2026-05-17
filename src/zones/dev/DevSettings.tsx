@@ -295,82 +295,46 @@ export default function DevSettings({ onNavigate }: DevSettingsProps) {
             </div>
           </div>
 
-          <div className="space-y-5">
+          {/* Cards laid out one per API key, grouped by provider section. Each
+              card is self-contained (title, env-var name, Powers chips,
+              paste-once input, technical detail toggle) so adding a key is a
+              one-stop action and the "one key, many zones" relationship is
+              visible at a glance via the Powers chips. */}
+          <div className="space-y-6">
             {DEV_SETTINGS_SECTION_META.map(section => {
               const rows = DEV_SETTINGS_ENV_MODEL.filter(r => r.sectionId === section.id)
               if (!rows.length) return null
               return (
-                <div
-                  key={section.id}
-                  className="overflow-hidden rounded-lg border"
-                  style={{ borderColor: 'var(--border)', background: 'var(--bg-card)' }}
-                >
-                  <div
-                    className="border-b px-3 py-2 text-[11px] font-semibold uppercase tracking-wide md:px-4 md:text-xs"
-                    style={{ background: 'var(--bg-muted)', borderColor: 'var(--border)', color: 'var(--text-2)' }}
+                <section key={section.id} className="flex flex-col gap-2.5">
+                  <h2
+                    className="text-[10px] font-semibold uppercase tracking-[0.15em]"
+                    style={{ color: 'var(--text-3)' }}
                   >
                     {section.title}
+                  </h2>
+                  <div className="grid gap-3 lg:grid-cols-2">
+                    {rows.map(entry => (
+                      <ModelEnvCard
+                        key={entry.id}
+                        entry={entry}
+                        storedValue={stored[entry.storageKey] ?? ''}
+                        envSet={Boolean(envStatus?.[entry.storageKey])}
+                        harmonyHint={entry.storageKey === 'HARMONY_CLIENT_PROJECTS_AI_KEY' ? harmonyOverrideHint(stored.HARMONY_CLIENT_PROJECTS_AI_KEY ?? '') : undefined}
+                        reveal={Boolean(reveal[entry.storageKey])}
+                        onReveal={() => toggleReveal(entry.storageKey)}
+                        onChange={v => setRowValue(entry.storageKey, v, entry.supportsLocalScratch)}
+                        expanded={Boolean(expandUsedIn[entry.id])}
+                        onToggleExpand={() => toggleUsedIn(entry.id)}
+                        probe={probeResult[entry.storageKey] ?? null}
+                        probing={Boolean(probing[entry.storageKey])}
+                        onProbe={() => void runProbe(entry.storageKey)}
+                      />
+                    ))}
                   </div>
-                  <div className="overflow-x-auto">
-                    <table
-                      className="w-full text-left text-[11px] md:text-xs"
-                      style={{
-                        minWidth: '1100px',
-                        // Constrain columns to declared widths so content wraps inside
-                        // the cell instead of squeezing one column to nothing.
-                        tableLayout: 'fixed',
-                      }}
-                    >
-                      {/* Explicit colgroup so column widths stay proportional to the
-                          typical length of text in each cell, regardless of how much
-                          a particular row decides to write. Wide-text columns (Used in,
-                          Source) get more breathing room; single-control columns
-                          (Get key, Test) stay tight. */}
-                      <colgroup>
-                        <col style={{ width: '15rem' }} /> {/* Key(s) */}
-                        <col style={{ width: '10rem' }} /> {/* Role */}
-                        <col style={{ width: '9rem' }} />  {/* Get key */}
-                        <col style={{ width: '17rem' }} /> {/* Used in */}
-                        <col style={{ width: '11rem' }} /> {/* Source */}
-                        <col style={{ width: '13rem' }} /> {/* Local value */}
-                        <col style={{ width: '5rem' }} />  {/* Test */}
-                      </colgroup>
-                      <thead style={{ color: 'var(--text-3)' }}>
-                        <tr className="border-b" style={{ borderColor: 'var(--border-soft)' }}>
-                          <th className="px-2 py-2 font-medium md:px-3">Key(s)</th>
-                          <th className="px-2 py-2 font-medium md:px-3">Role</th>
-                          <th className="px-2 py-2 font-medium md:px-3">Get key</th>
-                          <th className="px-2 py-2 font-medium md:px-3">Powers</th>
-                          <th className="px-2 py-2 font-medium md:px-3">Source</th>
-                          <th className="px-2 py-2 font-medium md:px-3">Local value</th>
-                          <th className="px-2 py-2 text-right font-medium md:px-3">Test</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {rows.map(entry => (
-                          <ModelEnvRow
-                            key={entry.id}
-                            entry={entry}
-                            storedValue={stored[entry.storageKey] ?? ''}
-                            envSet={Boolean(envStatus?.[entry.storageKey])}
-                            harmonyHint={entry.storageKey === 'HARMONY_CLIENT_PROJECTS_AI_KEY' ? harmonyOverrideHint(stored.HARMONY_CLIENT_PROJECTS_AI_KEY ?? '') : undefined}
-                            reveal={Boolean(reveal[entry.storageKey])}
-                            onReveal={() => toggleReveal(entry.storageKey)}
-                            onChange={v => setRowValue(entry.storageKey, v, entry.supportsLocalScratch)}
-                            expanded={Boolean(expandUsedIn[entry.id])}
-                            onToggleExpand={() => toggleUsedIn(entry.id)}
-                            probe={probeResult[entry.storageKey] ?? null}
-                            probing={Boolean(probing[entry.storageKey])}
-                            onProbe={() => void runProbe(entry.storageKey)}
-                          />
-                        ))}
-                        {section.id === 'client-vite' && viteMetaRow && (
-                          <ViteMetaTableRow row={viteMetaRow} />
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+                  {section.id === 'client-vite' && viteMetaRow && (
+                    <ViteMetaCard row={viteMetaRow} />
+                  )}
+                </section>
               )
             })}
           </div>
@@ -600,7 +564,15 @@ function ProbeFixHint({ message, storageKey }: { message: string; storageKey: st
   )
 }
 
-function ModelEnvRow({
+/**
+ * Card-style render of a single API-key entry. One card = one API key.
+ * Replaces the table-row layout so each key gets a self-contained block
+ * (title, input, "Powers" chips, where-used details) instead of being
+ * smeared across seven thin table columns. Easier to scan, no horizontal
+ * scroll on narrow viewports, and visually obvious that adding ONE key
+ * lights up MANY zones (the chips are right under the title).
+ */
+function ModelEnvCard({
   entry,
   storedValue,
   envSet,
@@ -639,92 +611,99 @@ function ModelEnvRow({
   const canProbe = probeRouteForStorageKey(entry.storageKey) !== null
 
   return (
-    <tr className="border-b align-top" style={{ borderColor: 'var(--border-soft)' }}>
-      <td className="px-2 py-2 md:px-3">
-        <div className="flex min-w-0 gap-2">
+    <article
+      className="overflow-hidden rounded-lg border"
+      style={{ borderColor: 'var(--border)', background: 'var(--bg-card)' }}
+    >
+      {/* Header strip: logo, product label, env-var name, source pill */}
+      <header
+        className="flex items-start justify-between gap-3 border-b px-3 py-2.5 md:px-4"
+        style={{ borderColor: 'var(--border-soft)', background: 'var(--bg-card-soft)' }}
+      >
+        <div className="flex min-w-0 items-start gap-2.5">
           <LogoCell logoSrc={logoSrc} label={entry.label} />
           <div className="min-w-0">
-            <p className="mono font-mono text-[10px] leading-tight text-[var(--text-1)] md:text-[11px]">{entry.envKeys.join(' · ')}</p>
-            <p className="mt-0.5 text-[10px] leading-snug md:text-[11px]" style={{ color: 'var(--text-3)' }}>{entry.label}</p>
-          </div>
-        </div>
-      </td>
-      <td className="px-2 py-2 md:px-3">
-        <span style={{ color: 'var(--text-2)' }}>{entry.role}</span>
-        {entry.optional && (
-          <span className="ml-1 rounded bg-[var(--bg-muted)] px-1 py-0 text-[9px] font-semibold uppercase text-[var(--text-3)]">opt</span>
-        )}
-      </td>
-      <td className="px-2 py-2 align-top md:px-3">
-        <RetrievalLinksList links={entry.retrievalLinks} />
-      </td>
-      <td className="px-2 py-2 md:px-3">
-        {/* Powers chips — at-a-glance "what features does this key turn on?".
-            Rendered above the technical detail so the answer is visible without
-            a click. The `usedIn` list (routes / file paths) stays behind the
-            "Where used" toggle for engineers who want to audit. */}
-        {entry.powers && entry.powers.length > 0 && (
-          <div className="mb-1.5 flex flex-wrap gap-1">
-            {entry.powers.map(p => (
-              <span
-                key={p}
-                className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium leading-none md:text-[10px]"
-                style={{
-                  background: 'var(--accent-soft)',
-                  color: 'var(--accent-fg)',
-                  border: '1px solid color-mix(in oklab, var(--accent) 28%, var(--border))',
-                }}
-                title={`Powered by ${entry.envKeys[0]}`}
-              >
-                {p}
-              </span>
-            ))}
-          </div>
-        )}
-        <p className="text-[10px] leading-snug md:text-[11px]" style={{ color: 'var(--text-2)' }}>{entry.oneLinePurpose}</p>
-        {harmonyHint && (
-          <p className="mt-1 text-[10px] leading-snug md:text-[11px]" style={{ color: 'var(--accent-fg)' }}>{harmonyHint}</p>
-        )}
-        {entry.usedIn.length > 0 && (
-          <>
-            <button
-              type="button"
-              onClick={onToggleExpand}
-              className="mt-1 inline-flex items-center gap-0.5 text-[10px] font-medium md:text-[11px]"
-              style={{ color: 'var(--accent)' }}
-              aria-expanded={expanded}
+            <h3 className="flex items-center gap-1.5 text-[13px] font-semibold leading-tight text-[var(--text-1)] md:text-[14px]">
+              {entry.label}
+              {entry.optional && (
+                <span
+                  className="rounded bg-[var(--bg-muted)] px-1 py-0 text-[9px] font-semibold uppercase text-[var(--text-3)]"
+                  title="Optional — the dashboard works without this key."
+                >
+                  opt
+                </span>
+              )}
+            </h3>
+            <p
+              className="mono mt-0.5 font-mono text-[10px] leading-tight md:text-[11px]"
+              style={{ color: 'var(--text-3)' }}
             >
-              {expanded ? <ChevronDown className="size-3" aria-hidden /> : <ChevronRight className="size-3" aria-hidden />}
-              Where used (technical)
-            </button>
-            {expanded && (
-              <ul className="mt-1 list-disc space-y-0.5 pl-3.5 text-[10px] leading-snug md:text-[11px]" style={{ color: 'var(--text-3)' }}>
-                {entry.usedIn.map(line => (
-                  <li key={line}>{line}</li>
-                ))}
-              </ul>
-            )}
-          </>
-        )}
-      </td>
-      <td className="px-2 py-2 md:px-3">
-        <div className="flex flex-col gap-1">
-          <SourceBadge source={source} />
-          {entry.sourceResolutionNote && (
-            <p className="text-[9px] leading-snug md:text-[10px]" style={{ color: 'var(--text-3)' }}>{entry.sourceResolutionNote}</p>
-          )}
+              {entry.envKeys.join(' · ')} · {entry.role}
+            </p>
+          </div>
         </div>
-      </td>
-      <td className="px-2 py-2 md:px-3">
+        <div className="shrink-0">
+          <SourceBadge source={source} />
+        </div>
+      </header>
+
+      <div className="flex flex-col gap-3 px-3 py-3 md:px-4">
+        {/* Powers chips — visible answer to "what features does this key turn on?" */}
+        {entry.powers && entry.powers.length > 0 && (
+          <div>
+            <p
+              className="mb-1 text-[9px] font-semibold uppercase tracking-wider"
+              style={{ color: 'var(--text-3)' }}
+            >
+              Powers
+            </p>
+            <div className="flex flex-wrap gap-1">
+              {entry.powers.map(p => (
+                <span
+                  key={p}
+                  className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium leading-tight md:text-[11px]"
+                  style={{
+                    background: 'var(--accent-soft)',
+                    color: 'var(--accent-fg)',
+                    border: '1px solid color-mix(in oklab, var(--accent) 28%, var(--border))',
+                  }}
+                  title={`Powered by ${entry.envKeys[0]}`}
+                >
+                  {p}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* One-line purpose */}
+        <p className="text-[11px] leading-relaxed md:text-[12px]" style={{ color: 'var(--text-2)' }}>
+          {entry.oneLinePurpose}
+        </p>
+
+        {/* Harmony-override live hint (when this key has a special fallback story) */}
+        {harmonyHint && (
+          <p
+            className="text-[10px] leading-snug md:text-[11px]"
+            style={{ color: 'var(--accent-fg)' }}
+          >
+            {harmonyHint}
+          </p>
+        )}
+
+        {/* Input row: paste field + Test button + Get-key link */}
         {entry.inputKind === 'none' ? (
-          <span className="text-[10px] text-[var(--text-3)]">—</span>
+          <p className="text-[11px]" style={{ color: 'var(--text-3)' }}>
+            Informational row — no value to set here.
+          </p>
         ) : !entry.supportsLocalScratch ? (
-          <p className="text-[10px] leading-snug md:text-[11px]" style={{ color: 'var(--text-3)' }}>
-            Server <code style={chipStyle()}>.env.local</code> only — not sent as <code style={chipStyle()}>x-user-key-*</code>.
+          <p className="text-[11px] leading-snug" style={{ color: 'var(--text-3)' }}>
+            Server <code style={chipStyle()}>.env.local</code> only — not sent as{' '}
+            <code style={chipStyle()}>x-user-key-*</code>.
           </p>
         ) : (
-          <>
-            <label className="relative block">
+          <div className="flex flex-wrap items-stretch gap-2">
+            <label className="relative block min-w-0 flex-1" style={{ minWidth: '12rem' }}>
               <span className="sr-only">{entry.storageKey}</span>
               <input
                 type={entry.inputKind === 'secret' && !reveal ? 'password' : 'text'}
@@ -732,82 +711,137 @@ function ModelEnvRow({
                 onChange={e => onChange(e.target.value)}
                 autoComplete="off"
                 spellCheck={false}
-                placeholder={entry.inputKind === 'secret' ? 'Paste…' : 'Value…'}
-                className="w-full rounded-md px-2 py-1.5 pr-8 font-mono text-[10px] outline-none md:text-[11px]"
+                placeholder={
+                  entry.inputKind === 'secret'
+                    ? `Paste ${entry.label}…`
+                    : `Enter ${entry.label.toLowerCase()}…`
+                }
+                className="w-full rounded-md px-2.5 py-2 pr-9 font-mono text-[11px] outline-none md:text-[12px]"
                 style={inputStyle()}
               />
               {entry.inputKind === 'secret' && (
                 <button
                   type="button"
                   onClick={onReveal}
-                  className="absolute inset-y-0 right-0 grid w-8 place-items-center"
+                  className="absolute inset-y-0 right-0 grid w-9 place-items-center"
                   style={{ color: 'var(--text-3)' }}
                   aria-label={reveal ? 'Hide' : 'Show'}
                 >
-                  {reveal ? <EyeOff className="size-3" aria-hidden /> : <Eye className="size-3" aria-hidden />}
+                  {reveal ? <EyeOff className="size-3.5" aria-hidden /> : <Eye className="size-3.5" aria-hidden />}
                 </button>
               )}
             </label>
-            {probe && (
-              <>
-                <p
-                  className="mt-1 text-[9px] md:text-[10px]"
-                  role="status"
-                  style={{ color: probe.ok ? 'var(--good)' : 'var(--bad)' }}
-                >
-                  {probe.ok ? (
-                    <>
-                      <CheckCircle2 className="mr-0.5 inline size-3" aria-hidden />
-                      {probe.ms} ms{probe.note ? ` · ${probe.note}` : ''}
-                    </>
-                  ) : (
-                    <>
-                      <XCircle className="mr-0.5 inline size-3" aria-hidden />
-                      {probe.message}
-                    </>
-                  )}
-                </p>
-                {!probe.ok ? <ProbeFixHint message={probe.message} storageKey={entry.storageKey} /> : null}
-              </>
+            {canProbe && (
+              <button
+                type="button"
+                onClick={onProbe}
+                disabled={probing}
+                className="inline-flex shrink-0 items-center gap-1 rounded-md border px-3 py-2 text-[11px] font-semibold disabled:opacity-50 md:text-[12px]"
+                style={{ background: 'var(--bg-card-soft)', borderColor: 'var(--border)', color: 'var(--text-1)' }}
+              >
+                {probing ? <Loader2 className="size-3.5 animate-spin" aria-hidden /> : <Zap className="size-3.5" aria-hidden />}
+                Test
+              </button>
             )}
-          </>
+          </div>
         )}
-      </td>
-      <td className="px-2 py-2 text-right md:px-3">
-        {canProbe && entry.supportsLocalScratch && (
-          <button
-            type="button"
-            onClick={onProbe}
-            disabled={probing}
-            className="inline-flex items-center gap-0.5 rounded-md border px-2 py-1 text-[10px] font-semibold disabled:opacity-50 md:text-[11px]"
-            style={{ background: 'var(--bg-card-soft)', borderColor: 'var(--border)', color: 'var(--text-1)' }}
+
+        {/* Probe result + fix hint */}
+        {probe && entry.supportsLocalScratch && entry.inputKind !== 'none' && (
+          <div>
+            <p
+              className="text-[10px] md:text-[11px]"
+              role="status"
+              style={{ color: probe.ok ? 'var(--good)' : 'var(--bad)' }}
+            >
+              {probe.ok ? (
+                <>
+                  <CheckCircle2 className="mr-0.5 inline size-3" aria-hidden />
+                  Test passed — {probe.ms} ms{probe.note ? ` · ${probe.note}` : ''}
+                </>
+              ) : (
+                <>
+                  <XCircle className="mr-0.5 inline size-3" aria-hidden />
+                  {probe.message}
+                </>
+              )}
+            </p>
+            {!probe.ok ? <ProbeFixHint message={probe.message} storageKey={entry.storageKey} /> : null}
+          </div>
+        )}
+
+        {/* Source resolution note (shared key / fallback chain explanation) */}
+        {entry.sourceResolutionNote && (
+          <p className="text-[10px] leading-snug" style={{ color: 'var(--text-3)' }}>
+            {entry.sourceResolutionNote}
+          </p>
+        )}
+
+        {/* Footer row: Where-used toggle (technical detail) + Get-key links */}
+        <div
+          className="flex flex-wrap items-center justify-between gap-2 border-t pt-2.5"
+          style={{ borderColor: 'var(--border-soft)' }}
+        >
+          {entry.usedIn.length > 0 ? (
+            <button
+              type="button"
+              onClick={onToggleExpand}
+              className="inline-flex items-center gap-0.5 text-[10px] font-medium md:text-[11px]"
+              style={{ color: 'var(--accent)' }}
+              aria-expanded={expanded}
+            >
+              {expanded ? <ChevronDown className="size-3" aria-hidden /> : <ChevronRight className="size-3" aria-hidden />}
+              Where used (technical)
+            </button>
+          ) : (
+            <span />
+          )}
+          <RetrievalLinksList links={entry.retrievalLinks} />
+        </div>
+
+        {/* Expanded technical "where used" list */}
+        {expanded && entry.usedIn.length > 0 && (
+          <ul
+            className="list-disc space-y-0.5 pl-4 text-[10px] leading-snug md:text-[11px]"
+            style={{ color: 'var(--text-3)' }}
           >
-            {probing ? <Loader2 className="size-3 animate-spin" aria-hidden /> : <Zap className="size-3" aria-hidden />}
-            Test
-          </button>
+            {entry.usedIn.map(line => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
         )}
-      </td>
-    </tr>
+      </div>
+    </article>
   )
 }
 
-function ViteMetaTableRow({ row }: { row: MergedDocRow }) {
+/**
+ * Informational card for the Vite client wildcard — no input, just spells out
+ * how `VITE_*` env vars get exposed to the browser bundle. Sits at the bottom
+ * of the "Client (Vite-inlined)" section.
+ */
+function ViteMetaCard({ row }: { row: MergedDocRow }) {
   return (
-    <tr className="border-t align-top" style={{ borderColor: 'var(--border-soft)', background: 'var(--bg-muted)' }}>
-      <td className="px-2 py-2 md:px-3" colSpan={2}>
-        <div className="flex gap-2">
-          <LogoCell logoSrc={DOCUMENTED_ENV_LOGOS['VITE_*']} label="Vite" />
-          <div>
-            <p className="mono font-mono text-[10px] md:text-[11px]">{row.envKey}</p>
-            <p className="text-[10px] md:text-[11px]" style={{ color: 'var(--text-3)' }}>{row.description}</p>
-          </div>
+    <article
+      className="rounded-lg border px-3 py-2.5 md:px-4"
+      style={{ borderColor: 'var(--border-soft)', background: 'var(--bg-muted)' }}
+    >
+      <div className="flex items-start gap-2.5">
+        <LogoCell logoSrc={DOCUMENTED_ENV_LOGOS['VITE_*']} label="Vite" />
+        <div className="min-w-0">
+          <p className="mono font-mono text-[11px] font-semibold md:text-[12px]" style={{ color: 'var(--text-1)' }}>
+            {row.envKey}
+          </p>
+          <p className="mt-0.5 text-[10px] leading-snug md:text-[11px]" style={{ color: 'var(--text-3)' }}>
+            {row.description}
+          </p>
+          <p className="mt-1 text-[10px] leading-snug md:text-[11px]" style={{ color: 'var(--text-3)' }}>
+            Informational — client bundle only exposes <code style={chipStyle()}>VITE_*</code>{' '}
+            names present at dev-server start.
+          </p>
         </div>
-      </td>
-      <td className="px-2 py-2 md:px-3" />
-      <td className="px-2 py-2 text-[10px] md:text-[11px]" style={{ color: 'var(--text-3)' }} colSpan={4}>
-        Informational — client bundle only exposes <code style={chipStyle()}>VITE_*</code> names present at dev-server start.
-      </td>
-    </tr>
+      </div>
+    </article>
   )
 }
 
