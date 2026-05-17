@@ -24,6 +24,18 @@ import type { LoopInfo } from './chord-detector-loops'
 
 export const STRUCTURE_PASS = {
   /**
+   * 0 = no re-snap of note starts (recommended), 1 = full hard snap to the
+   * nearer of the 1/16 or 1/16-triplet grid. Was effectively 1 (the function
+   * always re-snapped). The `applyNeuralNoteStyleLeadNotes` stage upstream
+   * already snaps onsets at `quantizeForce` 0.3 — re-snapping here was a
+   * second, full-force pass on top of that, double-quantizing the same notes
+   * onto the same grid and destroying the organic timing the upstream stage
+   * worked to preserve. Defaulted to 0 so this pass only runs (2) duration
+   * quantize, (3) same-pitch end-clamp, (4) seam trim. Set to 1 if you want
+   * the legacy hard-snap behaviour back.
+   */
+  startSnapBlend: 0,
+  /**
    * Note durations snap to this many 1/16 grid steps. 1.0 = straight sixteenths
    * (~125 ms @ 120 BPM); that's far too coarse — BP measures durations to ~8 ms
    * accuracy and a 125 ms snap distorts every note's length by up to 60 ms.
@@ -69,11 +81,19 @@ export function structureLeadNotes(
   const durStep = STRUCTURE_PASS.durationGridSixteenths * g16
   const minDur = STRUCTURE_PASS.minDurationSixteenths * g16
 
-  /* 1. Re-snap starts to the nearer of the two 0-anchored grids. */
+  /* 1. Re-snap starts to the nearer of the two 0-anchored grids — but ONLY
+   *    when `startSnapBlend > 0`. Default 0 means no re-snap (the upstream
+   *    `applyNeuralNoteStyleLeadNotes` already snaps onsets at its own
+   *    `quantizeForce`; doing it twice destroys the organic timing the
+   *    upstream pass preserves). 0 < blend < 1 = partial pull toward the
+   *    nearer grid line, 1 = hard round. */
+  const blend = STRUCTURE_PASS.startSnapBlend
   const snapStart = (t: number): number => {
+    if (blend <= 0) return t
     const a = Math.round(t / g16) * g16
     const b = Math.round(t / g16t) * g16t
-    return Math.abs(t - a) <= Math.abs(t - b) ? a : b
+    const target = Math.abs(t - a) <= Math.abs(t - b) ? a : b
+    return t + (target - t) * blend
   }
 
   /* 1b. Re-snapping can land two same-pitch notes on the same grid line — collapse those

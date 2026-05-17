@@ -112,10 +112,26 @@ export const NEURALNOTE_STYLE: {
      * export read as "off-grid" in a DAW (docs/chord-detector-midi-export-debug.md, Bug 1).
      */
     timeDivisionIndex: NEURALNOTE_TIME_DIVISION_FRACS.indexOf(1 / 16),
-    /** 1 = full snap toward grid (“QUANT FORCE 100%” in UI). */
-    quantizeForce: 1,
-    /** POST-stage minimum length (ms); UI slider “MIN NOTE (POST)”. */
-    minNoteDurationMs: 120,
+    /**
+     * 0 = no snap, 1 = full hard snap onto the grid. Was 1 (full force), which
+     * killed the organic syncopation real performances have — every onset got
+     * dragged onto the 1/16/triplet grid, then `structureLeadNotes` re-snapped
+     * them again. Dropped to 0.3: notes shift ~30 % toward the nearest grid
+     * line, enough to remove BP decode jitter (~5–15 ms) without flattening
+     * intentional off-grid placement. Compare the reference Logic Pro export
+     * of "frank ocean acura girl" (bars 3-4) — its notes sit clearly off the
+     * grid even with Logic's quantize set to 1/16 + triplet @ strength 100.
+     */
+    quantizeForce: 0.3,
+    /**
+     * POST-stage minimum length (ms); UI slider "MIN NOTE (POST)".
+     * Was 120 ms — at 65 BPM that's a 1/16 (231 ms) floor for the lower bound,
+     * but 1/32 fragments (~115 ms at 65 BPM) get padded up to 120, distorting
+     * rapid melody passages. Dropped to 50 ms so 1/32 and even 1/64 articulations
+     * survive intact; BP rarely emits durations under ~30 ms so this stays above
+     * the noise floor.
+     */
+    minNoteDurationMs: 50,
     velocityGain: 1.05,
     velocityCompression: 0.1,
   },

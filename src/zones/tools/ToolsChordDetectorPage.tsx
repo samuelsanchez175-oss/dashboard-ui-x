@@ -61,8 +61,13 @@ function formatMmSs(seconds: number): string {
 
 /** Single-key persistence for MELODY POST sliders (`chord-detector:melodyPost:` prefix). */
 const MELODY_POST_LOCAL_STORAGE_KEY = 'chord-detector:melodyPost:ui'
-/** Bump when persisted shape or baseline defaults change; v1 loads are re-saved as v2 on read. */
-const MELODY_POST_UI_SCHEMA_V = 2 as const
+/**
+ * Bump when persisted shape or baseline defaults change; older versions get
+ * dropped on read and re-initialised from the current `NEURALNOTE_STYLE`
+ * defaults. v3: relaxed quantizeForce 1.0 → 0.3 and minNoteDurationMs 120 → 50
+ * to fix over-quantization that was preventing organic timing in exports.
+ */
+const MELODY_POST_UI_SCHEMA_V = 3 as const
 
 type MelodyPostUiState = {
   enabled: boolean
@@ -560,7 +565,10 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
    * same clip with updated settings without the user re-dropping it. */
   const lastFileRef = useRef<File | null>(null)
 
-  /** One localStorage read per mount — hydrates when `_v` is 1 (migrated to 2) or 2. */
+  /** One localStorage read per mount. Returns null for any schema version
+   *  other than 1 (migrated forward) or the current `MELODY_POST_UI_SCHEMA_V`,
+   *  so persisted state from prior "full quantize" defaults gets re-initialised
+   *  from the relaxed defaults. */
   const melodyPostInitRef = useRef<MelodyPostUiState | null>(null)
   if (melodyPostInitRef.current === null) {
     melodyPostInitRef.current = loadMelodyPostUiStateFromStorage() ?? defaultMelodyPostUiState()

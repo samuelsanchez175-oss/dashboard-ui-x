@@ -56,10 +56,17 @@ export const MIDI_EXPORT_NOTE_MERGE = {
   samePitchMaxGapSec: 0.042,
   /**
    * After merge, drop notes shorter than this (seconds). Applied **before** RMS refine so refine
-   * sees fewer spurious boundaries; NeuralNote plugin default 125 ms is decode-side — here we use
-   * a slightly lower post-merge gate so real short articulations can survive after merge.
+   * sees fewer spurious boundaries.
+   *
+   * Was 0.118 (118 ms) — that's longer than a 1/32 note at 65 BPM (~115 ms)
+   * and a 1/16 note at 250+ BPM, so rapid 1/32 fragments in slower tunes got
+   * killed wholesale. Dropped to 0.05 (50 ms): keeps everything down to roughly
+   * a 1/64 at 60 BPM. The lower bound is the BP frame size (~5.8 ms), well
+   * under this floor — so noise still gets filtered while real articulations
+   * survive. See reference Logic Pro export of "frank ocean acura girl" bars
+   * 3-4, which contains many sub-118 ms fragments in the upper register.
    */
-  minNoteSecAfterMerge: 0.118,
+  minNoteSecAfterMerge: 0.05,
 } as const
 
 /**
@@ -97,10 +104,17 @@ export const CHORD_ONSET_ALIGN = {
    */
   arpeggioMedianGapMs: 27,
   /**
-   * 1 = each note lerps fully to the shared target onset; &lt;1 blends from the note’s own
-   * start toward that target (rarely needed).
+   * 1 = each note lerps fully to the shared target onset; <1 blends from the
+   * note's own start toward that target. Was 1 (full collapse): every note in
+   * a 60 ms cluster snapped to the cluster's chosen anchor, destroying
+   * intentional micro-timing (rolled chords, "drag-feel" arpeggios, melodic
+   * grace notes). Dropped to 0.4: notes still gravitate toward the cluster
+   * anchor (helps DAWs not stagger block chords) but each preserves ~60 % of
+   * its original timing offset. The reference Logic Pro export of bars 3-4 of
+   * "frank ocean acura girl" shows clear micro-timing variance between notes
+   * in the same beat — `unifyBlend: 1` would have crushed all of it.
    */
-  unifyBlend: 1,
+  unifyBlend: 0.4,
   /** 0 = velocity-weighted mean onset only; 1 = full pull toward earliest onset among “loud” notes. */
   earlyLoudPull: 0.34,
   /** Notes with velocity ≥ this × cluster max velocity count as loud for the early-loud anchor. */

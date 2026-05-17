@@ -174,16 +174,26 @@ export const ARPEGGIO_CHORD_WINDOW = {
 const BASIC_PITCH_CHORD_BLEND = { chromaWeight: 0.34, leadWeightScale: 0.44 } as const
 
 /** Stricter vs looser phantom / poly thinning for export preview (`pianoLeadFocus`). */
+/* Polyphony thinning + outlier filters.
+ *
+ * `thinMaxVoices` was 4 in both strict and relaxed modes — too aggressive for
+ * dense full-mix arrangements where the bass, harmony, and lead can easily
+ * stack 6-8 simultaneous voices (see reference Logic Pro export of "frank
+ * ocean acura girl" bars 3-4 — visible 6+ voice density during dense passages).
+ * Strict mode now caps at 6; relaxed at 8. The PIANO_TWO_HAND_EXPORT cap
+ * downstream still keeps things playable on a real piano (8 keys max with
+ * middle-C split) — this just stops the export pipeline from culling
+ * legitimate harmony voices before that point. */
 const EXPORT_LEAD_PHANTOM = {
   strict: {
     thinWinSec: 0.024,
-    thinMaxVoices: 4,
+    thinMaxVoices: 6,
     outlier1: { clusterSec: 0.046, minCluster: 3, minSemi: 12, maxVelRatio: 0.44 },
     outlier2: { clusterSec: 0.053, minCluster: 3, minSemi: 14, maxVelRatio: 0.35 },
   },
   relaxed: {
     thinWinSec: 0.026,
-    thinMaxVoices: 4,
+    thinMaxVoices: 8,
     outlier1: { clusterSec: 0.048, minCluster: 3, minSemi: 13, maxVelRatio: 0.48 },
     outlier2: { clusterSec: 0.055, minCluster: 3, minSemi: 15, maxVelRatio: 0.38 },
   },
@@ -1617,9 +1627,17 @@ export async function analyzeChordProgressionFromBlob(
     dbgStage('3-outlier1', leadForMidi)
     leadForMidi = thinPolyphonicLeadNotesByTimeWindow(leadForMidi, ph.thinWinSec, ph.thinMaxVoices)
     dbgStage('4-thinPoly', leadForMidi)
-    leadForMidi = debounceIsolatedBassBlips(leadForMidi, 40, 41, 72, 0.18, 0.11)
+    /* Bass blip debounce: previously 180 ms / 110 ms — kills short bass
+     * articulations on grooves where the bass plays 1/16 patterns. Loosened
+     * to 100 ms / 80 ms so legitimate fast bass passages survive while
+     * isolated frame-edge phantoms still get culled. */
+    leadForMidi = debounceIsolatedBassBlips(leadForMidi, 40, 41, 72, 0.10, 0.08)
     dbgStage('5-debounceBass', leadForMidi)
-    leadForMidi = dropLowRegisterNotesShorterThan(leadForMidi, 48, 0.135)
+    /* Low-register minimum duration: was 135 ms (kills 1/32 bass at 65 BPM
+     * where 1/32 ≈ 115 ms). Dropped to 80 ms so fast bass patterns survive;
+     * the cross-pass bass-blip filter above still catches truly isolated
+     * frame-edge phantoms. */
+    leadForMidi = dropLowRegisterNotesShorterThan(leadForMidi, 48, 0.08)
     dbgStage('6-dropLowShort', leadForMidi)
     leadForMidi = dropLeadNotesShorterThan(leadForMidi, MIDI_EXPORT_NOTE_MERGE.minNoteSecAfterMerge)
     dbgStage('7-dropShort', leadForMidi)

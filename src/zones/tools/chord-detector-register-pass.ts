@@ -123,13 +123,23 @@ export async function transcribeWithRegisterPasses(
   // every time a transient on top of the mix bleeds through. Killing onset splits keeps
   // a held E1 as one event instead of 6 staccato E1s.
   //
-  // minNoteDurationMs 300 ms — bass notes shorter than ~300 ms in real recordings are
-  // almost always artefacts (slap noise, finger squeak misidentified as a pitched event).
+  // minNoteDurationMs was 300 ms — too aggressive for grooves with 1/16 bass
+  // runs (at 65 BPM a 1/16 ≈ 231 ms, at 90 BPM ≈ 167 ms — both under 300 ms).
+  // Dropped to 120 ms so fast bass passages survive the register pass; the
+  // downstream `debounceIsolatedBassBlips` + `dropLowRegisterNotesShorterThan`
+  // filters still catch the artefacts this used to catch alone, but they're
+  // cross-pass-aware so they don't kill bass notes that have harmony / lead
+  // overlap (which fast bass runs always do).
+  //
+  // splitSensitivity bumped 0.05 → 0.12 so onset splits CAN happen when the
+  // bass actually re-articulates. The 0.05 setting collapsed every bass
+  // re-attack into the same held note, so a 4-bar pattern of "thump thump
+  // thump thump" became "thuuuuuuuuuump" — wrong even on slow songs.
   // -------------------------------------------------------------------------
   const bassRes = await transcribeMono22050ToLeadNotes(mono22050, {
     noteSensitivity: 0.55,
-    splitSensitivity: 0.05,
-    minNoteDurationMs: 300,
+    splitSensitivity: 0.12,
+    minNoteDurationMs: 120,
   })
   const bassRaw = bassRes.ok ? bassRes.leadNotes : []
   const bassBandRaw = bassRaw.filter(n => n.midi < 48)
