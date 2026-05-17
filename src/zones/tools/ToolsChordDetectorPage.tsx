@@ -536,9 +536,9 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
 
   /** Default on: stricter BP + export path for piano / single-line lead (toggle off for denser poly). */
   const [pianoLeadFocus, setPianoLeadFocus] = useState(true)
-  const skipPianoLeadReanalyzeRef = useRef(true)
 
-  /** Last dropped file — re-run analysis when melody post knobs change (same clip). */
+  /** Last dropped file — kept so the RE-RUN CLIP button can re-process the
+   * same clip with updated settings without the user re-dropping it. */
   const lastFileRef = useRef<File | null>(null)
 
   /** One localStorage read per mount — hydrates when `_v` is 1 (migrated to 2) or 2. */
@@ -722,38 +722,16 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
     }
   }, [melodyPostInput, pianoLeadFocus])
 
-  useEffect(() => {
-    if (skipPianoLeadReanalyzeRef.current) {
-      skipPianoLeadReanalyzeRef.current = false
-      return
-    }
-    const f = lastFileRef.current
-    if (!f) return
-    void runFile(f)
-  }, [pianoLeadFocus, runFile])
-
-  /** Skip the very first melodyPost effect so we don't trigger an analysis on
-   * mount before the user has even dropped a file. */
-  const skipMelodyPostReanalyzeRef = useRef(true)
-
-  /**
-   * Live re-run on slider changes. 400ms debounce keeps the analyzer from
-   * thrashing while the user is mid-drag; the trailing edge fires once they
-   * settle. No-op until a file has been loaded — the user's first analysis
-   * still happens on drop, not on mount.
-   */
-  useEffect(() => {
-    if (skipMelodyPostReanalyzeRef.current) {
-      skipMelodyPostReanalyzeRef.current = false
-      return
-    }
-    const f = lastFileRef.current
-    if (!f) return
-    const handle = window.setTimeout(() => {
-      void runFile(f)
-    }, 400)
-    return () => window.clearTimeout(handle)
-  }, [melodyPostInput, runFile])
+  /* Auto-rerun on setting changes removed by user request — pianoLeadFocus
+   * toggle and the (now-hidden) MELODY POST sliders no longer trigger a new
+   * analysis on change. The RE-RUN CLIP button in the controls row is the
+   * only path to re-analyze with updated settings. The first analysis still
+   * happens on file drop / dock import, as before.
+   *
+   * Skip refs that gated the old auto-rerun (`skipPianoLeadReanalyzeRef`,
+   * `skipMelodyPostReanalyzeRef`) are no longer referenced — they can be
+   * deleted alongside this comment if a cleanup pass wants them gone, but
+   * leaving them in keeps the diff minimal. */
 
   /**
    * DEV-only test hook — mirrors the latest analysis onto `window.__chordDetectorTest`
