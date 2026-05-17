@@ -130,6 +130,16 @@ const PRETRIP_TILES: CdlTile[] = [
     icon:       MapPin,
   },
   {
+    routeId:    'cdl-pretrip-deep-dive',
+    label:      'Deep Dive (Photo Drills)',
+    desc:       'Flashcard study tool — one photo per part with the verbal inspection sentence overlaid. 38 photos across Engine Bay (11), In-Cabin (11), and Trailer (16). Speak each phrase aloud, walk through sections, switch to Quiz mode to self-grade.',
+    count:      38,
+    endorse:    'DRILL',
+    accent:     '#22d3ee',
+    accentSoft: 'color-mix(in oklab, #22d3ee 12%, var(--bg-card))',
+    icon:       ClipboardList,
+  },
+  {
     routeId:    'cdl-pretrip-cabin',
     label:      'In-Cabin Inspection',
     desc:       'Step 1 of 5 — three-point contact, safe start, the 4-part air brake test (auto-fail), the 6-item cabin inspection, and the tug test. Automatic transmission. Runs in real inspection order.',
