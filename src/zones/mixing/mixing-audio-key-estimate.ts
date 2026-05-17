@@ -6,6 +6,11 @@
 const FFT_SIZE = 4096
 const HOP = 2048
 
+/** Boost chroma from bins below this frequency (solo piano fundamentals in the left hand). */
+const CHROMA_BASS_MAX_HZ = 220
+/** Mild gain — keeps export / key logic unchanged (pitch classes only). */
+const CHROMA_BASS_GAIN = 1.24
+
 /** Krumhansl–Kessler probe-tone profiles (strength per pitch class, tonic = index 0). */
 const MAJOR_PROFILE = new Float32Array([6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88])
 const MINOR_PROFILE = new Float32Array([6.33, 2.68, 3.52, 5.38, 2.6, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17])
@@ -108,8 +113,20 @@ function fillChromagramFrame(
     const mag2 = re[k]! * re[k]! + im[k]! * im[k]!
     const midi = 69 + 12 * Math.log2(freq / 440)
     if (!Number.isFinite(midi)) continue
-    const pc = (((Math.round(midi) % 12) + 12) % 12) as number
-    out[pc] += Math.sqrt(mag2)
+    /** Piano-friendly: emphasize fundamentals in the bass band without changing export pitch. */
+    const bassBoost = freq <= CHROMA_BASS_MAX_HZ ? CHROMA_BASS_GAIN : 1
+    const w = Math.sqrt(mag2) * bassBoost
+    /**
+     * Triangular split across adjacent pitch classes (continuous MIDI → two PCs).
+     * Rounding each bin to a single PC caused semitone “snapping” and harmonic leakage
+     * when partials sat between discrete chroma buckets.
+     */
+    const n = Math.floor(midi)
+    const frac = midi - n
+    const lowPc = ((n % 12) + 12) % 12
+    const highPc = (lowPc + 1) % 12
+    out[lowPc] += w * (1 - frac)
+    out[highPc] += w * frac
   }
 }
 

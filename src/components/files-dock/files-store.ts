@@ -317,6 +317,12 @@ const dockShellListeners = new Set<DockShellListener>()
 
 /** When true, `FilesDock` shows its chrome even with zero files (tool `openOnLaunch`). */
 let dockForcedOpen = false
+/**
+ * When true, the user explicitly dismissed the dock (X button) — overrides
+ * the auto-show-when-files-exist behavior. Cleared by an explicit open
+ * (toggle button / `openFilesDock`) or when a tool calls `openOnLaunch`.
+ */
+let dockUserClosed = false
 /** Canonical lane/tab id for a future tabbed dock; stored per active tool route. */
 let dockPinTab: string | undefined
 
@@ -349,13 +355,23 @@ export function getDockForcedOpen(): boolean {
   return dockForcedOpen
 }
 
+export function getDockUserClosed(): boolean {
+  return dockUserClosed
+}
+
 export function getDockPinTab(): string | undefined {
   return dockPinTab
 }
 
 /** Show the dock chrome (empty drop zone) until `closeFilesDock` or a route change clears it. */
 export function openFilesDock(): void {
-  if (dockForcedOpen) return
+  // Always clear the user-closed flag — opening overrides a manual dismiss.
+  const wasClosedByUser = dockUserClosed
+  dockUserClosed = false
+  if (dockForcedOpen) {
+    if (wasClosedByUser) emitDockShell()
+    return
+  }
   dockForcedOpen = true
   if (dockPinTab && isDockLaneTabId(dockPinTab) && activeLane !== dockPinTab) {
     activeLane = dockPinTab
@@ -367,6 +383,27 @@ export function closeFilesDock(): void {
   if (!dockForcedOpen) return
   dockForcedOpen = false
   emitDockShell()
+}
+
+/**
+ * User clicked the X on the dock. Hides the dock even if files exist —
+ * stays hidden until `openFilesDock` is called (e.g. the Dock toggle button)
+ * or a tool with `openOnLaunch` activates.
+ */
+export function userCloseFilesDock(): void {
+  const changed = dockForcedOpen || !dockUserClosed
+  dockForcedOpen = false
+  dockUserClosed = true
+  if (changed) emitDockShell()
+}
+
+/** Toggle between open and user-closed states. */
+export function toggleFilesDock(): void {
+  if (dockUserClosed || (!dockForcedOpen && lastSnapshot.length === 0)) {
+    openFilesDock()
+  } else {
+    userCloseFilesDock()
+  }
 }
 
 export function setDockPinTab(tab: string | undefined): void {

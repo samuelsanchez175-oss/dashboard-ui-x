@@ -527,6 +527,16 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
   const [result, setResult] = useState<ChordAnalysisResult | null>(null)
   /** Inbound clip relayed from another tool (Audio grabber, Recent clips tray). */
   const [inboundNotice, setInboundNotice] = useState<string | null>(null)
+  /* Phase 2 — AI Polish (Gemini). State for the on-demand LLM assessment.
+   * `aiBusy` blocks repeat clicks while a request is in flight. `aiResult`
+   * is either the parsed Gemini response or an error message. Both reset
+   * on every fresh analysis (file drop / RE-RUN CLIP). */
+  const [aiBusy, setAiBusy] = useState(false)
+  const [aiResult, setAiResult] = useState<
+    | { ok: true; summary: string; suggestedKey: string | null; inferredStyle: string | null; chordCorrections: Array<{ segmentIndex: number; currentLabel: string; suggestedLabel: string; rationale: string }>; missingPCs: string[] }
+    | { ok: false; message: string }
+    | null
+  >(null)
 
   const [trimStart, setTrimStart] = useState(0)
   const [trimEnd, setTrimEnd] = useState(0)
@@ -1042,6 +1052,36 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
     [result, trimStart, trimEnd, effectiveDurationSec, fileName, isSelectionTrimmed],
   )
 
+  /**
+   * Phase 2 — AI POLISH. Send the analysis to Gemini for a session-musician
+   * style assessment + chord corrections. One call per click; result lands in
+   * a new panel below AUDIT. Async-imported so the LLM module's network code
+   * isn't pulled into the initial bundle.
+   */
+  const runAiPolish = useCallback(async () => {
+    if (!result || aiBusy) return
+    setAiBusy(true)
+    setAiResult(null)
+    try {
+      const { polishChordResult } = await import('./chord-detector-llm-polish')
+      const out = await polishChordResult(result)
+      setAiResult(out)
+    } catch (err) {
+      setAiResult({
+        ok: false,
+        message: err instanceof Error ? err.message : String(err),
+      })
+    } finally {
+      setAiBusy(false)
+    }
+  }, [result, aiBusy])
+
+  /* Reset aiResult whenever a fresh analysis lands — stale LLM corrections
+   * shouldn't linger after the user re-runs the clip with new settings. */
+  useEffect(() => {
+    setAiResult(null)
+  }, [result])
+
   const copyProgression = useCallback(async () => {
     const text = progressionTextExport || progressionTextFull
     if (!text) return
@@ -1227,10 +1267,11 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
             <section
               className="grid"
               style={{
-                /* 4 cols × 3 rows = 12 cells. Layout:
+                /* 4 cols × 4 rows = 16 cells. Layout:
                  *   Row 1 (playback + trim):  PREVIEW · LOOP · APPLY TRIM · RESET TRIM
                  *   Row 2 (per-track export): EXPORT LEAD · EXPORT HARMONY · EXPORT BASS · EXPORT ALL
-                 *   Row 3 (extras):           EXTRACT LOOP · COPY PROG. · PIANO/LEAD · RE-RUN CLIP */
+                 *   Row 3 (extras):           EXTRACT LOOP · COPY PROG. · PIANO/LEAD · RE-RUN CLIP
+                 *   Row 4 (experimental):     AI POLISH + 3 spacers (LLM post-pass via Gemini) */
                 gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
                 gap: '1px',
                 background: PALETTE.line,
@@ -1489,6 +1530,33 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 />
                 RE-RUN CLIP
               </button>
+              {/* ── Row 4 (experimental): AI POLISH alone + 3 spacers ── */}
+              <button
+                type="button"
+                disabled={!result || aiBusy}
+                onClick={() => void runAiPolish()}
+                title="Send the detected progression to Gemini for a session-musician-style assessment + chord corrections."
+                className="flex items-center justify-center gap-2 py-5 text-[11px] uppercase tracking-[0.2em] transition-colors disabled:cursor-not-allowed"
+                style={{
+                  background: PALETTE.surface,
+                  color: !result || aiBusy ? PALETTE.textMuted : PALETTE.amber,
+                  border: `1px solid ${!result || aiBusy ? PALETTE.line : PALETTE.amber}`,
+                  opacity: !result ? 0.5 : 1,
+                }}
+              >
+                <span
+                  className="block size-2"
+                  style={{
+                    background: !result || aiBusy ? PALETTE.textMuted : PALETTE.amber,
+                    borderRadius: '50%',
+                  }}
+                  aria-hidden
+                />
+                {aiBusy ? 'AI POLISHING…' : '🤖 AI POLISH'}
+              </button>
+              <div aria-hidden style={{ background: PALETTE.surface }} />
+              <div aria-hidden style={{ background: PALETTE.surface }} />
+              <div aria-hidden style={{ background: PALETTE.surface }} />
             </section>
 
             {/* ── Drop zone (interaction slot). Accepts OS files AND dock items. ── */}
@@ -1784,6 +1852,12 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
             {/* ── Audit — checks the output against the source: missing notes, loop quality, key/BPM/scale ── */}
             {result ? <AuditPanel report={result.audit} /> : null}
 
+            {/* ── AI POLISH — Gemini's structured assessment of the progression.
+                 Only rendered after the user clicks AI POLISH (aiResult lands
+                 in state). Shows the summary + suggested key + style hint +
+                 per-chord corrections + LLM-inferred missing PCs. ── */}
+            {aiResult ? <AiPolishPanel result={aiResult} /> : null}
+
             {/* ── Statistics — moved to the bottom (marginTop: auto pushes it to the floor) ── */}
             <section
               className="flex flex-col"
@@ -2063,6 +2137,147 @@ function StatCell({
  * after every analysis. Plain-words labels and a readable detail line (no 9px all-caps),
  * per the `clear-ui-labels` skill. A single coloured dot per row carries the status.
  */
+/**
+ * AI POLISH panel — renders the structured Gemini response. Three sub-sections:
+ * the model's narrative summary at the top, the inferred style + suggested key
+ * pills next, then a sparse list of per-chord corrections + missing PCs. Hidden
+ * until the user clicks AI POLISH; replaced on every fresh analysis.
+ *
+ * Read-only for now — the corrections don't auto-apply to `result.segments`.
+ * Apply-buttons land in a follow-up once we trust the LLM's calibration.
+ */
+function AiPolishPanel({
+  result,
+}: {
+  result:
+    | { ok: true; summary: string; suggestedKey: string | null; inferredStyle: string | null; chordCorrections: Array<{ segmentIndex: number; currentLabel: string; suggestedLabel: string; rationale: string }>; missingPCs: string[] }
+    | { ok: false; message: string }
+}) {
+  return (
+    <section className="flex flex-col" style={{ background: PALETTE.surface }}>
+      <div
+        className="flex items-center justify-between border-b px-6 py-3 text-[11px] uppercase tracking-[0.15em]"
+        style={{ borderColor: PALETTE.line, color: PALETTE.amber }}
+      >
+        <span>🤖 AI POLISH (GEMINI)</span>
+        <span
+          className="rounded-full px-2 py-0.5 text-[9px] normal-case tracking-normal"
+          style={{
+            background: result.ok ? 'color-mix(in oklab, #54C98E 14%, transparent)' : 'color-mix(in oklab, #ef4444 18%, transparent)',
+            color: result.ok ? PALETTE.green : '#ef4444',
+            border: `1px solid ${result.ok ? PALETTE.green : '#ef4444'}`,
+          }}
+        >
+          {result.ok ? 'response received' : 'request failed'}
+        </span>
+      </div>
+
+      {!result.ok ? (
+        <div
+          className="px-6 py-4 text-[12px] leading-relaxed"
+          style={{ color: '#ef4444', fontFamily: "'DM Mono', monospace" }}
+        >
+          {result.message}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3 px-6 py-4">
+          {/* Narrative summary */}
+          <p
+            className="text-[12px] leading-relaxed"
+            style={{ color: PALETTE.textMain, fontFamily: "'DM Mono', monospace" }}
+          >
+            {result.summary}
+          </p>
+
+          {/* Pills row: inferred style + suggested key */}
+          {(result.inferredStyle || result.suggestedKey) && (
+            <div className="flex flex-wrap items-center gap-2">
+              {result.inferredStyle && (
+                <span
+                  className="rounded-full px-2.5 py-1 text-[10px] uppercase tracking-[0.12em]"
+                  style={{ background: PALETTE.bg, color: PALETTE.textMain, border: `1px solid ${PALETTE.line}` }}
+                >
+                  STYLE · {result.inferredStyle}
+                </span>
+              )}
+              {result.suggestedKey && (
+                <span
+                  className="rounded-full px-2.5 py-1 text-[10px] uppercase tracking-[0.12em]"
+                  style={{ background: PALETTE.bg, color: PALETTE.amber, border: `1px solid ${PALETTE.amber}` }}
+                >
+                  SUGGESTED KEY · {result.suggestedKey}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Chord corrections — only when the LLM flagged at least one */}
+          {result.chordCorrections.length > 0 && (
+            <div className="flex flex-col gap-1">
+              <span
+                className="text-[10px] uppercase tracking-[0.15em]"
+                style={{ color: PALETTE.textMuted, fontFamily: "'DM Mono', monospace" }}
+              >
+                CHORD CORRECTIONS · {result.chordCorrections.length}
+              </span>
+              <ul className="flex flex-col gap-1.5">
+                {result.chordCorrections.map((c, i) => (
+                  <li
+                    key={i}
+                    className="px-3 py-2 text-[11px] leading-relaxed"
+                    style={{
+                      background: PALETTE.bg,
+                      color: PALETTE.textMain,
+                      border: `1px solid ${PALETTE.line}`,
+                      fontFamily: "'DM Mono', monospace",
+                    }}
+                  >
+                    <span style={{ color: PALETTE.textMuted }}>seg {c.segmentIndex}:</span>{' '}
+                    <span style={{ color: '#ef4444', textDecoration: 'line-through' }}>{c.currentLabel}</span>
+                    {' → '}
+                    <span style={{ color: PALETTE.green }}>{c.suggestedLabel}</span>
+                    <span className="normal-case" style={{ color: PALETTE.textMuted }}>
+                      {' '}— {c.rationale}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Missing PCs */}
+          {result.missingPCs.length > 0 && (
+            <div className="flex flex-col gap-1">
+              <span
+                className="text-[10px] uppercase tracking-[0.15em]"
+                style={{ color: PALETTE.textMuted, fontFamily: "'DM Mono', monospace" }}
+              >
+                LIKELY MISSING PITCH CLASSES
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {result.missingPCs.map(pc => (
+                  <span
+                    key={pc}
+                    className="rounded px-2 py-0.5 text-[10px] uppercase"
+                    style={{
+                      background: PALETTE.bg,
+                      color: PALETTE.amber,
+                      border: `1px solid ${PALETTE.amber}`,
+                      fontFamily: "'DM Mono', monospace",
+                    }}
+                  >
+                    {pc}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </section>
+  )
+}
+
 function OutputCheckPanel({ report }: { report: ValidationReport }) {
   const allOk = report.warnCount === 0
   return (

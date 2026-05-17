@@ -40,7 +40,8 @@ export function estimateBpmFromMono(mono: Float32Array, sampleRate: number): num
   const env = energyEnvelope(monoSlice, hop)
   if (env.length < 64) return null
 
-  const minBpm = 72
+  /** Include slow solo piano / ballads (~60–71); a 72 BPM floor dropped valid ~70 BPM peaks. */
+  const minBpm = 60
   const maxBpm = 176
   const minLag = Math.max(2, Math.floor((60 / maxBpm) * (sampleRate / hop)))
   const maxLag = Math.min(Math.floor(env.length / 2) - 1, Math.ceil((60 / minBpm) * (sampleRate / hop)))
