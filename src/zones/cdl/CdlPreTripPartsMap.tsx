@@ -49,6 +49,31 @@ type Mode = 'study' | 'quiz' | 'edit'
  */
 type EditMap = Record<string, Record<number, { x: number; y: number }>>
 
+/** Per-section visited-hotspot tracking. Persists in localStorage across reloads. */
+type VisitedMap = Record<string, number[]>
+
+const VISITED_STORAGE_KEY = 'cdl-pretrip-parts-map-visited'
+const AUTOSPEAK_STORAGE_KEY = 'cdl-pretrip-parts-map-autospeak'
+
+/**
+ * Speak a sentence via the browser's SpeechSynthesis API. Cancels any in-flight
+ * utterance first so rapid hotspot changes don't queue a backlog. No-op when the
+ * API isn't available (some non-secure contexts, old browsers).
+ */
+function speak(text: string) {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
+  window.speechSynthesis.cancel()
+  const u = new SpeechSynthesisUtterance(text)
+  u.rate = 0.95
+  u.pitch = 1.0
+  window.speechSynthesis.speak(u)
+}
+
+function cancelSpeech() {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
+  window.speechSynthesis.cancel()
+}
+
 /* ──────────────────────────────────────────────────────────────────────────── */
 
 export default function CdlPreTripPartsMap() {
@@ -61,6 +86,27 @@ export default function CdlPreTripPartsMap() {
   /* Position overrides live here so edits accumulate across section switches
    * (you can edit sections 1, 4, and 6 in one sitting and copy ONE patch out). */
   const [editMap, setEditMap] = useState<EditMap>({})
+  /* Which hotspots the user has already visited (per section). Persisted in
+   * localStorage so progress survives page reloads. */
+  const [visited, setVisited] = useState<VisitedMap>(() => {
+    if (typeof window === 'undefined') return {}
+    try {
+      const raw = window.localStorage.getItem(VISITED_STORAGE_KEY)
+      return raw ? (JSON.parse(raw) as VisitedMap) : {}
+    } catch {
+      return {}
+    }
+  })
+  /* Speak the "How to say it" sentence aloud whenever a hotspot is selected.
+   * Toggle in the header. Persisted so the preference survives reloads. */
+  const [autoSpeak, setAutoSpeak] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    return window.localStorage.getItem(AUTOSPEAK_STORAGE_KEY) === '1'
+  })
+  /* Sequential walk-through — auto-step through every hotspot in the section,
+   * pausing on each one. When `walking` is true, advancing happens on a timer
+   * (long enough for TTS to land). Cancel with the same button or any click. */
+  const [walking, setWalking] = useState(false)
 
   const section = PRETRIP_INSPECTION_SECTIONS[sectionIdx]!
 
@@ -89,13 +135,78 @@ export default function CdlPreTripPartsMap() {
 
   /* When switching section or mode, reset interaction state so the user starts
    * fresh — no leftover selected hotspot from the previous section. The editMap
-   * is intentionally NOT reset; edits persist until the page reloads. */
+   * + visited map are intentionally NOT reset; both persist across switches
+   * (visited also persists across page reloads via localStorage). */
   useEffect(() => {
     setSelectedNumber(null)
     setQuizPromptIdx(0)
     setQuizScore({ correct: 0, total: 0 })
     setFeedback(null)
+    setWalking(false)
+    cancelSpeech()
   }, [sectionIdx, mode])
+
+  /* Persist the visited map + auto-speak preference to localStorage. */
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(VISITED_STORAGE_KEY, JSON.stringify(visited))
+    } catch {
+      /* QuotaExceeded or storage disabled — silently no-op. */
+    }
+  }, [visited])
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(AUTOSPEAK_STORAGE_KEY, autoSpeak ? '1' : '0')
+    } catch {
+      /* QuotaExceeded or storage disabled — silently no-op. */
+    }
+  }, [autoSpeak])
+
+  /* Auto-speak the selected hotspot's "How to say it" line when the preference
+   * is on. Triggers in study + edit + quiz modes — hearing the sentence each
+   * time is exactly the point of the test. */
+  useEffect(() => {
+    if (!autoSpeak) return
+    const hotspot =
+      mode === 'quiz'
+        ? sectionWithOverrides.hotspots[quizPromptIdx]
+        : sectionWithOverrides.hotspots.find(h => h.number === selectedNumber)
+    if (hotspot) speak(hotspot.sayIt)
+  }, [autoSpeak, mode, sectionWithOverrides, selectedNumber, quizPromptIdx])
+
+  /* Walk-through: when `walking` is true, advance the selection every ~6 s.
+   * Long enough for the TTS sentence to play; auto-cancels at the end of the
+   * section. Cancelling sets `walking = false` and stops any in-flight speech. */
+  useEffect(() => {
+    if (!walking) return
+    if (mode !== 'study') {
+      setWalking(false)
+      return
+    }
+    /* If nothing is selected, start at hotspot 1. */
+    if (selectedNumber == null) {
+      const first = sectionWithOverrides.hotspots[0]
+      if (first) setSelectedNumber(first.number)
+      return
+    }
+    const t = window.setTimeout(() => {
+      const order = sectionWithOverrides.hotspots
+      const idx = order.findIndex(h => h.number === selectedNumber)
+      if (idx < 0 || idx >= order.length - 1) {
+        setWalking(false)
+        cancelSpeech()
+        return
+      }
+      setSelectedNumber(order[idx + 1]!.number)
+    }, 6000)
+    return () => window.clearTimeout(t)
+  }, [walking, selectedNumber, sectionWithOverrides, mode])
+
+  /* Cancel any speech on unmount so leaving the page doesn't leave a TTS
+   * voice going in the background. */
+  useEffect(() => {
+    return () => cancelSpeech()
+  }, [])
 
   const selectedHotspot = useMemo<PartHotspot | null>(() => {
     if (mode === 'study' || mode === 'edit') {
@@ -104,9 +215,18 @@ export default function CdlPreTripPartsMap() {
     return sectionWithOverrides.hotspots[quizPromptIdx] ?? null
   }, [mode, sectionWithOverrides, selectedNumber, quizPromptIdx])
 
+  const markVisited = useCallback((sectionId: string, hotspotNumber: number) => {
+    setVisited(prev => {
+      const cur = prev[sectionId] ?? []
+      if (cur.includes(hotspotNumber)) return prev
+      return { ...prev, [sectionId]: [...cur, hotspotNumber] }
+    })
+  }, [])
+
   const onHotspotClick = (h: PartHotspot) => {
     if (mode === 'study' || mode === 'edit') {
       setSelectedNumber(prev => (prev === h.number ? null : h.number))
+      if (mode === 'study') markVisited(section.id, h.number)
       return
     }
     /* Quiz mode: compare the click against the current prompt. */
@@ -129,14 +249,37 @@ export default function CdlPreTripPartsMap() {
     }
   }
 
+  const visitedInSection = visited[section.id] ?? []
+  const allVisitedInSection =
+    sectionWithOverrides.hotspots.length > 0 &&
+    sectionWithOverrides.hotspots.every(h => visitedInSection.includes(h.number))
+
   return (
     <div className="min-h-dvh w-full" style={{ background: T.pageBg, color: T.text }}>
-      <Header section={section} mode={mode} onModeChange={setMode} quizScore={quizScore} />
+      <Header
+        section={section}
+        mode={mode}
+        onModeChange={setMode}
+        quizScore={quizScore}
+        autoSpeak={autoSpeak}
+        onAutoSpeakToggle={() => setAutoSpeak(v => !v)}
+        walking={walking}
+        onWalkToggle={() => {
+          setWalking(v => !v)
+          if (walking) cancelSpeech()
+        }}
+        canWalk={mode === 'study' && sectionWithOverrides.hotspots.length > 0}
+        visitedCount={visitedInSection.length}
+        totalCount={sectionWithOverrides.hotspots.length}
+        allVisited={allVisitedInSection}
+        onResetVisited={() => setVisited(prev => ({ ...prev, [section.id]: [] }))}
+      />
 
       <SectionTabs
         sections={PRETRIP_INSPECTION_SECTIONS}
         activeIdx={sectionIdx}
         onChange={setSectionIdx}
+        visited={visited}
       />
 
       {mode === 'edit' && (
@@ -156,6 +299,7 @@ export default function CdlPreTripPartsMap() {
           mode={mode}
           selectedNumber={selectedHotspot?.number ?? null}
           feedback={feedback}
+          visitedNumbers={visitedInSection}
           onHotspotClick={onHotspotClick}
           onHotspotDrag={(num, pos) => updateHotspotPosition(section.id, num, pos)}
         />
@@ -164,6 +308,7 @@ export default function CdlPreTripPartsMap() {
           mode={mode}
           hotspot={selectedHotspot}
           showLabelInQuiz={mode === 'quiz'}
+          onSpeak={() => selectedHotspot && speak(selectedHotspot.sayIt)}
         />
       </main>
 
@@ -179,11 +324,29 @@ function Header({
   mode,
   onModeChange,
   quizScore,
+  autoSpeak,
+  onAutoSpeakToggle,
+  walking,
+  onWalkToggle,
+  canWalk,
+  visitedCount,
+  totalCount,
+  allVisited,
+  onResetVisited,
 }: {
   section: InspectionSection
   mode: Mode
   onModeChange: (m: Mode) => void
   quizScore: { correct: number; total: number }
+  autoSpeak: boolean
+  onAutoSpeakToggle: () => void
+  walking: boolean
+  onWalkToggle: () => void
+  canWalk: boolean
+  visitedCount: number
+  totalCount: number
+  allVisited: boolean
+  onResetVisited: () => void
 }) {
   return (
     <header
@@ -211,7 +374,54 @@ function Header({
         </h1>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2">
+        {/* Visited progress for the current section. Click to reset just this section. */}
+        <button
+          type="button"
+          onClick={onResetVisited}
+          title={visitedCount > 0 ? 'Click to reset visited for this section' : 'Click hotspots to mark them visited'}
+          className="rounded-md px-2 py-1 text-[10px] font-semibold uppercase tracking-wider transition-colors disabled:cursor-not-allowed"
+          style={{
+            background: allVisited ? T.good : T.accentSoft,
+            color: allVisited ? '#000' : T.text,
+            border: `1px solid ${T.border}`,
+          }}
+          disabled={visitedCount === 0}
+        >
+          {allVisited ? '✓ ALL VISITED' : `${visitedCount} / ${totalCount} VISITED`}
+        </button>
+
+        {/* Auto-speak toggle. */}
+        <button
+          type="button"
+          onClick={onAutoSpeakToggle}
+          title="Speak the 'How to say it' sentence aloud when a hotspot is selected"
+          className="rounded-md px-2 py-1 text-[10px] font-semibold uppercase tracking-wider transition-colors"
+          style={{
+            background: autoSpeak ? T.accent : 'transparent',
+            color: autoSpeak ? '#000' : T.textDim,
+            border: `1px solid ${autoSpeak ? T.accent : T.border}`,
+          }}
+        >
+          {autoSpeak ? '🔊 AUTO-SPEAK ON' : '🔈 AUTO-SPEAK'}
+        </button>
+
+        {/* Walk-through — sequentially advance through hotspots in study mode. */}
+        <button
+          type="button"
+          onClick={onWalkToggle}
+          disabled={!canWalk}
+          title={canWalk ? 'Auto-step through every hotspot in this section' : 'Switch to STUDY mode to use Walk'}
+          className="rounded-md px-2 py-1 text-[10px] font-semibold uppercase tracking-wider transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+          style={{
+            background: walking ? T.bad : 'transparent',
+            color: walking ? '#000' : T.textDim,
+            border: `1px solid ${walking ? T.bad : T.border}`,
+          }}
+        >
+          {walking ? '■ STOP WALK' : '▶ WALK SECTION'}
+        </button>
+
         {mode === 'quiz' && (
           <span
             className="rounded-md px-2 py-1 text-[10px] font-semibold uppercase tracking-wider"
@@ -253,10 +463,12 @@ function SectionTabs({
   sections,
   activeIdx,
   onChange,
+  visited,
 }: {
   sections: readonly InspectionSection[]
   activeIdx: number
   onChange: (i: number) => void
+  visited: VisitedMap
 }) {
   return (
     <nav
@@ -265,6 +477,9 @@ function SectionTabs({
     >
       {sections.map((s, i) => {
         const active = i === activeIdx
+        const visitedCount = visited[s.id]?.length ?? 0
+        const total = s.hotspots.length
+        const complete = visitedCount === total && total > 0
         return (
           <button
             key={s.id}
@@ -278,12 +493,24 @@ function SectionTabs({
               minWidth: 168,
             }}
           >
-            <span
-              className="text-[10px] font-semibold uppercase tracking-wider"
-              style={{ color: active ? T.accent : T.textDim }}
-            >
-              {s.step}. {s.id}
-            </span>
+            <div className="flex w-full items-center justify-between gap-2">
+              <span
+                className="text-[10px] font-semibold uppercase tracking-wider"
+                style={{ color: active ? T.accent : T.textDim }}
+              >
+                {s.step}. {s.id}
+              </span>
+              <span
+                className="rounded-sm px-1.5 py-0.5 text-[9px] font-bold tabular-nums"
+                style={{
+                  background: complete ? T.good : T.accentSoft,
+                  color: complete ? '#000' : T.textDim,
+                }}
+                title={`${visitedCount} of ${total} hotspots visited`}
+              >
+                {complete ? '✓' : `${visitedCount}/${total}`}
+              </span>
+            </div>
             <span className="text-xs font-semibold uppercase tracking-wide">{s.title}</span>
           </button>
         )
@@ -299,6 +526,7 @@ function PhotoWithHotspots({
   mode,
   selectedNumber,
   feedback,
+  visitedNumbers,
   onHotspotClick,
   onHotspotDrag,
 }: {
@@ -306,6 +534,7 @@ function PhotoWithHotspots({
   mode: Mode
   selectedNumber: number | null
   feedback: null | 'good' | 'bad'
+  visitedNumbers: readonly number[]
   onHotspotClick: (h: PartHotspot) => void
   onHotspotDrag: (hotspotNumber: number, position: { x: number; y: number }) => void
 }) {
@@ -385,6 +614,7 @@ function PhotoWithHotspots({
               hotspot={h}
               selected={selectedNumber === h.number}
               feedback={selectedNumber === h.number ? feedback : null}
+              visited={visitedNumbers.includes(h.number)}
               draggable={mode === 'edit'}
               onClick={() => onHotspotClick(h)}
               onPointerDown={e => {
@@ -420,6 +650,7 @@ function Hotspot({
   hotspot,
   selected,
   feedback,
+  visited,
   draggable,
   onClick,
   onPointerDown,
@@ -427,6 +658,7 @@ function Hotspot({
   hotspot: PartHotspot
   selected: boolean
   feedback: null | 'good' | 'bad'
+  visited: boolean
   draggable: boolean
   onClick: () => void
   onPointerDown: (e: ReactPointerEvent<SVGGElement>) => void
@@ -449,6 +681,18 @@ function Hotspot({
           stroke={fill}
           strokeWidth={0.4}
           opacity={0.4}
+        />
+      )}
+      {/* Visited indicator — green outer ring when this hotspot has been studied. */}
+      {visited && !selected && (
+        <circle
+          cx={hotspot.position.x}
+          cy={hotspot.position.y}
+          r={radius + 1}
+          fill="none"
+          stroke={T.good}
+          strokeWidth={0.5}
+          opacity={0.85}
         />
       )}
       <circle
@@ -510,11 +754,13 @@ function InfoCard({
   mode,
   hotspot,
   showLabelInQuiz,
+  onSpeak,
 }: {
   section: InspectionSection
   mode: Mode
   hotspot: PartHotspot | null
   showLabelInQuiz: boolean
+  onSpeak: () => void
 }) {
   if (!hotspot) {
     return (
@@ -573,12 +819,27 @@ function InfoCard({
       )}
 
       <div className="flex flex-col gap-1">
-        <span
-          className="text-[10px] font-semibold uppercase tracking-wider"
-          style={{ color: T.accent }}
-        >
-          HOW TO SAY IT
-        </span>
+        <div className="flex items-center justify-between gap-2">
+          <span
+            className="text-[10px] font-semibold uppercase tracking-wider"
+            style={{ color: T.accent }}
+          >
+            HOW TO SAY IT
+          </span>
+          <button
+            type="button"
+            onClick={onSpeak}
+            title="Speak this sentence aloud"
+            className="rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-colors"
+            style={{
+              background: T.accentSoft,
+              color: T.accent,
+              border: `1px solid ${T.border}`,
+            }}
+          >
+            🔊 SPEAK
+          </button>
+        </div>
         <p className="text-[13px] leading-relaxed" style={{ color: T.text }}>
           "{hotspot.sayIt}"
         </p>
