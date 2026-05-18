@@ -19,6 +19,16 @@ import { useSwipeGesture } from './hooks/useSwipeGesture'
 import { RECENT_EDITS } from './lib/recentEdits'
 import { seedUpdates, useUpdatesStore } from './lib/updatesStore'
 
+/**
+ * Feature flag — keeps the floating files dock hidden until we've defined a
+ * real use case for it. The component + downloads-lane store under
+ * `src/components/files-dock/` is intentionally kept around (and still
+ * imported above so unused-import lints stay quiet) so this can flip back
+ * to `true` and re-enable the whole thing in one line. See render site in
+ * `App()` below.
+ */
+const SHOW_FILES_DOCK = false
+
 const SESSION_TOUCHED_ZONE_SEED = [
   'tools-hub',
   'tools-chord-detector',
@@ -137,7 +147,14 @@ function App() {
                   </div>
 
                   <TweaksPanel />
-                  <FilesDock />
+                  {/* FilesDock disabled per user request (2026-05-18). The
+                   * dock + downloads / analysis lanes felt like noise without
+                   * a real use case driving them yet. Flip
+                   * `SHOW_FILES_DOCK` back to `true` to re-enable; the whole
+                   * component + its store under `src/components/files-dock/`
+                   * is intentionally NOT deleted so a future feature can
+                   * pick it back up without rebuilding from scratch. */}
+                  {SHOW_FILES_DOCK && <FilesDock />}
                   <ShortcutOverlay open={overlayOpen} onClose={closeOverlay} />
                 </div>
               </UiChromeProvider>
