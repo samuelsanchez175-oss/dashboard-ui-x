@@ -95,13 +95,37 @@ export type ChordDetectorAnalyzeOptions = {
    */
   bpmPrior?: number
   /**
-   * Stage 14.5 — chord-implied note inference. When enabled (default on the audio
-   * path, OFF on the MIDI path), reads the chord progression and inserts missing
-   * chord-tones at each half-bar slot's first existing onset. See
-   * `chord-detector-chord-imply.ts` for the algorithm + guardrails. Pass `false`
-   * to disable and ship the raw transcription.
+   * Stage 14.5 — chord-implied note inference. Default is OFF on BOTH the audio
+   * and MIDI paths (changed 2026-05 — previously defaulted ON for audio). Adding
+   * synthesised chord-tones to the transcription was hallucinating notes that
+   * weren't in the source; pass `true` explicitly to opt back in. See
+   * `chord-detector-chord-imply.ts` for the algorithm + guardrails.
    */
   inferChordTones?: boolean
+  /**
+   * Pipeline mode for benchmarking. `'full'` (default) runs every stage as
+   * before; `'raw'` bypasses HPSS, register passes, CQT validation,
+   * structure quantization, and chord-implied notes — leaving a near-vanilla
+   * Basic Pitch output with only the lightest tidy-up. Used by the phase-test
+   * harness (see `docs/chord-detector-test-ledger.md`) to measure each
+   * layer's contribution against ground truth.
+   */
+  analysisMode?: 'raw' | 'full'
+  /** Skip HPSS — feed BP the original mono instead of the harmonic stem. */
+  skipHpss?: boolean
+  /** Skip register-stratified multi-pass; run BP once with default thresholds. */
+  skipRegisterPasses?: boolean
+  /** Skip CQT validation — keep every BP note regardless of audio-energy match. */
+  skipCqt?: boolean
+  /** Skip structure pass — keep BP's native timing, no 1/16 / 1/64 snapping. */
+  skipStructure?: boolean
+  /**
+   * Bypass the export-cleanup stages (merge / outlier-drop / poly thin /
+   * bass-blip debounce / short-note drop / RMS refine / NeuralNote post /
+   * onset align / two-hand cap). When true the engine routes leadNotesRaw
+   * directly into the result, with only the minimal final merge.
+   */
+  skipExportCleanup?: boolean
 }
 
 /** Must stay aligned with `mixing-audio-key-estimate` FFT hop / size. */
@@ -198,6 +222,41 @@ const EXPORT_LEAD_PHANTOM = {
     outlier2: { clusterSec: 0.055, minCluster: 3, minSemi: 15, maxVelRatio: 0.38 },
   },
 } as const
+
+/**
+ * Resolve the effective bypass flags from `analysisMode` + individual skip
+ * options. `analysisMode: 'raw'` is shorthand for "every layer off" — each
+ * individual skip option can still be explicitly set to `false` to opt INTO
+ * a specific layer while keeping the rest raw. The benchmark harness uses
+ * this to A/B individual stages against a baseline.
+ */
+function resolveBypassFlags(options?: ChordDetectorAnalyzeOptions): {
+  hpss: boolean
+  registerPasses: boolean
+  exportCleanup: boolean
+  cqt: boolean
+  structure: boolean
+  chordImply: boolean
+} {
+  const raw = options?.analysisMode === 'raw'
+  /* For each flag, an explicit `options.skipX` value wins; otherwise raw mode
+   * implies "skip all". When neither is set, the stage runs (preserves the
+   * pre-toggle default behavior). */
+  const pick = (skip: boolean | undefined, defaultSkip: boolean): boolean =>
+    typeof skip === 'boolean' ? skip : defaultSkip
+  return {
+    hpss:           pick(options?.skipHpss,           raw),
+    registerPasses: pick(options?.skipRegisterPasses, raw),
+    exportCleanup:  pick(options?.skipExportCleanup,  raw),
+    cqt:            pick(options?.skipCqt,            raw),
+    structure:      pick(options?.skipStructure,      raw),
+    /* Chord-implied notes: hardcoded OFF by default (Phase 4 of the test
+     * findings — adding synthesised chord-tones was hallucinating notes).
+     * The user can opt in via `inferChordTones: true`. Raw mode forces OFF
+     * regardless. */
+    chordImply:     raw ? true : options?.inferChordTones !== true,
+  }
+}
 
 function isPianoLeadFocusMode(options?: ChordDetectorAnalyzeOptions): boolean {
   return options?.pianoLeadFocus !== false
@@ -1480,11 +1539,16 @@ export async function analyzeChordProgressionFromBlob(
       return l2Normalize12(agg)
     }
 
+    /* Phase-test bypass flags — see `resolveBypassFlags` above. Used by the
+     * benchmark harness to A/B individual stages; the UI exposes a single
+     * "RAW MODE" toggle that sets `analysisMode: 'raw'` to bypass everything. */
+    const bypass = resolveBypassFlags(options)
+
     // ── v2 Stage 0 — source separation. HPSS isolates the harmonic stem from
     // the input mono so Basic Pitch sees cleaner pitched content (drums and
     // transient percussion get masked out). Soft-mask Wiener-style separation;
     // see `chord-detector-source-separation.ts` for the algorithm.
-    const harmonicMono = isolateHarmonicMono(mono, sr)
+    const harmonicMono = bypass.hpss ? mono : isolateHarmonicMono(mono, sr)
 
     // ── Basic Pitch lead notes (TensorFlow.js) → chord evidence + key histogram ─
     // Now uses the register-stratified multi-pass: BP is invoked three times
@@ -1497,14 +1561,30 @@ export async function analyzeChordProgressionFromBlob(
       !isPianoLeadFocusMode(options)
         ? { ...PIANO_LEAD_RELAXED_BASIC_PITCH, ...options?.basicPitchDecode }
         : options?.basicPitchDecode
-    const registerOutputs = await transcribeWithRegisterPasses(monoBp, 22050, {
-      noteSensitivity: basicPitchInput?.noteSensitivity,
-      splitSensitivity: basicPitchInput?.splitSensitivity,
-      minNoteDurationMs: basicPitchInput?.minNoteDurationMs,
-    })
+    /* Either run the register-stratified multi-pass (default) OR a single
+     * BP pass with the user's chosen (or default) thresholds. The single-pass
+     * fallback adapts to the same `{merged, lead, harmony, bass}` shape the
+     * downstream code expects — `lead`/`harmony`/`bass` start empty; the
+     * post-cleanup register split (around line 1820 below) populates them
+     * from the final note list anyway. */
+    const registerOutputs = bypass.registerPasses
+      ? await (async () => {
+          const single = await transcribeMono22050ToLeadNotes(monoBp, basicPitchInput)
+          if (!single.ok) {
+            throw new Error(`Basic Pitch single-pass failed: ${single.message}`)
+          }
+          return { merged: single.leadNotes, lead: [], harmony: [], bass: [] }
+        })()
+      : await transcribeWithRegisterPasses(monoBp, 22050, {
+          noteSensitivity: basicPitchInput?.noteSensitivity,
+          splitSensitivity: basicPitchInput?.splitSensitivity,
+          minNoteDurationMs: basicPitchInput?.minNoteDurationMs,
+        })
     if (registerOutputs.merged.length === 0) {
       throw new Error(
-        'Transcription returned no notes. All three register passes (high/mid/bass) of Basic Pitch came back empty. Try a longer clip, check WebGL/WASM is allowed, or another browser.',
+        bypass.registerPasses
+          ? 'Transcription returned no notes. Single-pass Basic Pitch came back empty. Try a longer clip or check WebGL/WASM is allowed.'
+          : 'Transcription returned no notes. All three register passes (high/mid/bass) of Basic Pitch came back empty. Try a longer clip, check WebGL/WASM is allowed, or another browser.',
       )
     }
     /* Legacy code below still expects `bpOut.leadNotes` + a per-pass histogram.
@@ -1612,39 +1692,54 @@ export async function analyzeChordProgressionFromBlob(
     }
     dbgStage('0-raw', leadNotesRaw)
 
-    /* Merge/drop for export only — `leadNotesRaw` stays unmerged for beat-level chord blend. */
-    let leadForMidi = mergeAdjacentSamePitchNotes(leadNotesRaw, MIDI_EXPORT_NOTE_MERGE.samePitchMaxGapSec)
-    dbgStage('1-merge', leadForMidi)
-    leadForMidi = collapseOctaveDuplicatesNearOnsets(leadForMidi, 0.042)
-    dbgStage('2-octaveCollapse', leadForMidi)
-    leadForMidi = dropSimultaneousPitchOutliers(
-      leadForMidi,
-      ph.outlier1.clusterSec,
-      ph.outlier1.minCluster,
-      ph.outlier1.minSemi,
-      ph.outlier1.maxVelRatio,
-    )
-    dbgStage('3-outlier1', leadForMidi)
-    leadForMidi = thinPolyphonicLeadNotesByTimeWindow(leadForMidi, ph.thinWinSec, ph.thinMaxVoices)
-    dbgStage('4-thinPoly', leadForMidi)
-    /* Bass blip debounce: previously 180 ms / 110 ms — kills short bass
-     * articulations on grooves where the bass plays 1/16 patterns. Loosened
-     * to 100 ms / 80 ms so legitimate fast bass passages survive while
-     * isolated frame-edge phantoms still get culled. */
-    leadForMidi = debounceIsolatedBassBlips(leadForMidi, 40, 41, 72, 0.10, 0.08)
-    dbgStage('5-debounceBass', leadForMidi)
-    /* Low-register minimum duration: was 135 ms (kills 1/32 bass at 65 BPM
-     * where 1/32 ≈ 115 ms). Dropped to 80 ms so fast bass patterns survive;
-     * the cross-pass bass-blip filter above still catches truly isolated
-     * frame-edge phantoms. */
-    leadForMidi = dropLowRegisterNotesShorterThan(leadForMidi, 48, 0.08)
-    dbgStage('6-dropLowShort', leadForMidi)
-    leadForMidi = dropLeadNotesShorterThan(leadForMidi, MIDI_EXPORT_NOTE_MERGE.minNoteSecAfterMerge)
-    dbgStage('7-dropShort', leadForMidi)
-    let leadNotes = rmsFluxCurve
-      ? refineLeadNotesForMidiExport(rmsFluxCurve, leadForMidi, durationSec)
-      : leadForMidi
-    dbgStage('8-rmsRefine', leadNotes)
+    /* Export cleanup chain — 9 stages of merging / outlier rejection / poly
+     * thinning / bass-blip debouncing / short-note dropping / RMS refining.
+     * Each was added to fix a specific symptom in the past; the bypass flag
+     * (set by RAW MODE or the benchmark harness) skips them all so the user
+     * sees BP's native output. Skipping the chain also implies skipping the
+     * NeuralNote post + onset align + 2nd outlier pass + two-hand cap below
+     * — they're part of the same export-shaping bundle. */
+    let leadNotes: LeadNote[]
+    if (bypass.exportCleanup) {
+      /* Minimal-tidy mode: only the final same-pitch merge runs so a held
+       * note doesn't export as two fragments. Everything else passes through
+       * as BP produced it. */
+      leadNotes = mergeAdjacentSamePitchNotes(leadNotesRaw, MIDI_EXPORT_NOTE_MERGE.samePitchMaxGapSec)
+      dbgStage('1-merge', leadNotes)
+    } else {
+      let leadForMidi = mergeAdjacentSamePitchNotes(leadNotesRaw, MIDI_EXPORT_NOTE_MERGE.samePitchMaxGapSec)
+      dbgStage('1-merge', leadForMidi)
+      leadForMidi = collapseOctaveDuplicatesNearOnsets(leadForMidi, 0.042)
+      dbgStage('2-octaveCollapse', leadForMidi)
+      leadForMidi = dropSimultaneousPitchOutliers(
+        leadForMidi,
+        ph.outlier1.clusterSec,
+        ph.outlier1.minCluster,
+        ph.outlier1.minSemi,
+        ph.outlier1.maxVelRatio,
+      )
+      dbgStage('3-outlier1', leadForMidi)
+      leadForMidi = thinPolyphonicLeadNotesByTimeWindow(leadForMidi, ph.thinWinSec, ph.thinMaxVoices)
+      dbgStage('4-thinPoly', leadForMidi)
+      /* Bass blip debounce: previously 180 ms / 110 ms — kills short bass
+       * articulations on grooves where the bass plays 1/16 patterns. Loosened
+       * to 100 ms / 80 ms so legitimate fast bass passages survive while
+       * isolated frame-edge phantoms still get culled. */
+      leadForMidi = debounceIsolatedBassBlips(leadForMidi, 40, 41, 72, 0.10, 0.08)
+      dbgStage('5-debounceBass', leadForMidi)
+      /* Low-register minimum duration: was 135 ms (kills 1/32 bass at 65 BPM
+       * where 1/32 ≈ 115 ms). Dropped to 80 ms so fast bass patterns survive;
+       * the cross-pass bass-blip filter above still catches truly isolated
+       * frame-edge phantoms. */
+      leadForMidi = dropLowRegisterNotesShorterThan(leadForMidi, 48, 0.08)
+      dbgStage('6-dropLowShort', leadForMidi)
+      leadForMidi = dropLeadNotesShorterThan(leadForMidi, MIDI_EXPORT_NOTE_MERGE.minNoteSecAfterMerge)
+      dbgStage('7-dropShort', leadForMidi)
+      leadNotes = rmsFluxCurve
+        ? refineLeadNotesForMidiExport(rmsFluxCurve, leadForMidi, durationSec)
+        : leadForMidi
+      dbgStage('8-rmsRefine', leadNotes)
+    }
 
     /* Register-stratified split — populated lazily AFTER the full cleanup
      * pipeline finishes. Each final note is bucketed by its midi range:
@@ -1655,41 +1750,45 @@ export async function analyzeChordProgressionFromBlob(
      * the unified leadNotes export exactly when you concat them). */
     let registerSplit: { lead: LeadNote[]; harmony: LeadNote[]; bass: LeadNote[] } | null = null
 
-    // NeuralNote-inspired post (quant / min length / velocity) — optional; does not replace BP polyphony.
-    leadNotes = applyNeuralNoteStyleLeadNotes(leadNotes, bpm, durationSec, options?.melodyPost)
-    dbgStage('9-neuralNotePost', leadNotes)
-    // Co-align straggling chord onsets for export/preview (after merge + per-pitch RMS refine).
-    leadNotes = alignChordOnsetsInLeadNotes(leadNotes, { ...CHORD_ONSET_ALIGN, bpm })
-    dbgStage('10-onsetAlign', leadNotes)
-    // RMS refine can nudge simultaneous windows — light second outlier pass (export only).
-    leadNotes = dropSimultaneousPitchOutliers(
-      leadNotes,
-      ph.outlier2.clusterSec,
-      ph.outlier2.minCluster,
-      ph.outlier2.minSemi,
-      ph.outlier2.maxVelRatio,
-    )
-    dbgStage('11-outlier2', leadNotes)
-    // Solo-piano polyphony cap last on export so onset align + outlier passes cannot re-stack >K voices.
-    leadNotes = enforceTwoHandPianoPolyphony(leadNotes, {
-      ...PIANO_TWO_HAND_EXPORT,
-      ...(!isPianoLeadFocusMode(options) ? PIANO_TWO_HAND_RELAXED : {}),
-    })
-    dbgStage('12-twoHandCap', leadNotes)
-    /* Final same-pitch merge. The stage-1 merge runs on raw BP notes, but RMS refine,
-     * quantize, and onset-align all move note timing afterwards — creating fresh sub-
-     * perceptual gaps and same-pitch overlaps. One last merge collapses those so a held
-     * note exports as ONE note, not two fragments (chord-detector-midi-export-debug, Bug 4). */
-    leadNotes = mergeAdjacentSamePitchNotes(leadNotes, MIDI_EXPORT_NOTE_MERGE.samePitchMaxGapSec)
-    dbgStage('13-finalMerge', leadNotes)
+    if (!bypass.exportCleanup) {
+      // NeuralNote-inspired post (quant / min length / velocity) — optional; does not replace BP polyphony.
+      leadNotes = applyNeuralNoteStyleLeadNotes(leadNotes, bpm, durationSec, options?.melodyPost)
+      dbgStage('9-neuralNotePost', leadNotes)
+      // Co-align straggling chord onsets for export/preview (after merge + per-pitch RMS refine).
+      leadNotes = alignChordOnsetsInLeadNotes(leadNotes, { ...CHORD_ONSET_ALIGN, bpm })
+      dbgStage('10-onsetAlign', leadNotes)
+      // RMS refine can nudge simultaneous windows — light second outlier pass (export only).
+      leadNotes = dropSimultaneousPitchOutliers(
+        leadNotes,
+        ph.outlier2.clusterSec,
+        ph.outlier2.minCluster,
+        ph.outlier2.minSemi,
+        ph.outlier2.maxVelRatio,
+      )
+      dbgStage('11-outlier2', leadNotes)
+      // Solo-piano polyphony cap last on export so onset align + outlier passes cannot re-stack >K voices.
+      leadNotes = enforceTwoHandPianoPolyphony(leadNotes, {
+        ...PIANO_TWO_HAND_EXPORT,
+        ...(!isPianoLeadFocusMode(options) ? PIANO_TWO_HAND_RELAXED : {}),
+      })
+      dbgStage('12-twoHandCap', leadNotes)
+      /* Final same-pitch merge. The stage-1 merge runs on raw BP notes, but RMS refine,
+       * quantize, and onset-align all move note timing afterwards — creating fresh sub-
+       * perceptual gaps and same-pitch overlaps. One last merge collapses those so a held
+       * note exports as ONE note, not two fragments (chord-detector-midi-export-debug, Bug 4). */
+      leadNotes = mergeAdjacentSamePitchNotes(leadNotes, MIDI_EXPORT_NOTE_MERGE.samePitchMaxGapSec)
+      dbgStage('13-finalMerge', leadNotes)
+    }
     /* v2 Stage CQT — drop notes that don't have actual energy in the audio at
      * their reported (pitch, time) coordinates. Catches BP's false positives
      * that the heuristic cleanup stages cannot tell apart from real notes.
      * Runs on the harmonic-stem audio at the source rate (not 22050) — the
      * higher rate gives the CQT better pitch resolution for low notes. */
-    const cqtResult = validateNotesAgainstCQT(leadNotes, harmonicMono, sr)
-    leadNotes = cqtResult.kept
-    dbgStage('13.5-cqtValidate', leadNotes)
+    if (!bypass.cqt) {
+      const cqtResult = validateNotesAgainstCQT(leadNotes, harmonicMono, sr)
+      leadNotes = cqtResult.kept
+      dbgStage('13.5-cqtValidate', leadNotes)
+    }
 
     /* Part 3 — stage 14: bar-loop detection + 2nd-pass structuring (re-snap starts,
      * quantize note lengths, trim loop-seam straddlers). The loop info is found
@@ -1697,12 +1796,18 @@ export async function analyzeChordProgressionFromBlob(
      * and the legacy bar-fingerprint Jaccard. We pick whichever has the higher
      * confidence — they're often complementary (audio catches grooves where BP
      * notes are too noisy; notes catch melodic loops where the audio onset
-     * envelope is too uniform). */
+     * envelope is too uniform).
+     *
+     * Loop detection still runs even when structure is skipped — the result
+     * is used by the AUDIT panel + the EXTRACT LOOP button independent of
+     * structuring. Only the `structureLeadNotes` rewrite is gated. */
     const audioLoop = detectLoopFromAudio(harmonicMono, sr, bpm)
     const noteLoop = detectBarLoop(leadNotes, bpm, durationSec)
     const loop = audioLoop.found && audioLoop.confidence > noteLoop.confidence ? audioLoop : noteLoop
-    leadNotes = structureLeadNotes(leadNotes, loop, bpm)
-    dbgStage('14-structure', leadNotes)
+    if (!bypass.structure) {
+      leadNotes = structureLeadNotes(leadNotes, loop, bpm)
+      dbgStage('14-structure', leadNotes)
+    }
     if (import.meta.env.DEV) {
       ;(globalThis as unknown as { __chordPipelineStages?: unknown }).__chordPipelineStages = __leadStages
     }
@@ -1719,14 +1824,14 @@ export async function analyzeChordProgressionFromBlob(
     const beatTimesSec = getBeatTimes(bpm, durationSec)
     const downbeatTimesSec = getDownbeatTimes(beatTimesSec, 4)
 
-    /* Stage 14.5 — chord-implied note inference. Audit's "missing notes" flag
-     * identifies chord-tones that BP didn't see; this stage acts on that gap by
-     * synthesizing the missing chord-tones at the first existing onset of each
-     * half-bar slot. Defaults ON for the audio path (BP commonly misses inner
-     * chord voices); opt out with `options.inferChordTones === false`. The audit
-     * below then sees the enriched output, so its missing-note flag reflects
-     * what's actually exported. */
-    if (options?.inferChordTones !== false) {
+    /* Stage 14.5 — chord-implied note inference. CHANGED 2026-05: default
+     * flipped from ON to OFF on the audio path. The synthesised chord-tones
+     * were adding notes that didn't exist in the source — hallucinations
+     * that polluted the MIDI export. Opt in explicitly with
+     * `options.inferChordTones === true` if you want chord-fill from
+     * detected chord labels. Bypass flag from RAW MODE / benchmark harness
+     * also forces OFF. */
+    if (!bypass.chordImply) {
       leadNotes = inferChordImpliedNotes({ leadNotes, segments, estimatedKey, bpm })
       dbgStage('14.5-chordImply', leadNotes)
     }

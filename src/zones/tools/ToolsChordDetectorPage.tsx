@@ -561,6 +561,16 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
   /** Default on: stricter BP + export path for piano / single-line lead (toggle off for denser poly). */
   const [pianoLeadFocus, setPianoLeadFocus] = useState(true)
 
+  /**
+   * RAW MODE — bypass every post-processing stage (HPSS, register-stratified
+   * BP, export cleanup chain, CQT validation, structure quantization,
+   * chord-implied notes). When ON the export is whatever Basic Pitch
+   * produced with only the bare same-pitch merge. Used to A/B the
+   * full pipeline against the unfiltered baseline; see
+   * `docs/chord-detector-test-ledger.md` for the methodology.
+   */
+  const [rawMode, setRawMode] = useState(false)
+
   /** Last dropped file — kept so the RE-RUN CLIP button can re-process the
    * same clip with updated settings without the user re-dropping it. */
   const lastFileRef = useRef<File | null>(null)
@@ -739,6 +749,10 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
       const r = await analyzeChordProgressionFromBlob(file, {
         melodyPost: melodyPostInput,
         pianoLeadFocus,
+        /* RAW MODE pipes through to the engine's analysisMode flag — when on,
+         * every post-processing stage is skipped and BP's native output is
+         * returned with only the bare same-pitch merge. */
+        analysisMode: rawMode ? 'raw' : 'full',
       })
       setResult(r)
     } catch (e) {
@@ -746,7 +760,64 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
     } finally {
       setBusy(false)
     }
-  }, [melodyPostInput, pianoLeadFocus])
+  }, [melodyPostInput, pianoLeadFocus, rawMode])
+
+  /* DEV-only benchmark hook — exposes a direct call into the engine that
+   * bypasses the React UI so the phase-test harness in
+   * `scripts/chord-detector-bench.mjs` can A/B configurations without having
+   * to drive toggles + file drops through the browser. Accepts a `Blob`
+   * (audio or MIDI) + the same `ChordDetectorAnalyzeOptions` shape the page
+   * uses, returns the full `ChordAnalysisResult` (plus a serialized MIDI
+   * buffer so the harness can save the export to disk). No-op in production
+   * builds; the function is removed from `window` on unmount. */
+  useEffect(() => {
+    if (!import.meta.env.DEV) return
+    const benchKey = '__chordDetectorBench' as const
+    type BenchInput = Blob & { size: number }
+    type BenchResponse =
+      | {
+          ok: true
+          /** Full pipeline result for inspection. */
+          result: ChordAnalysisResult
+          /**
+           * Notes-only single-track MIDI rendered from `result.leadNotes`.
+           * Serialized as a base64 string so the harness can write to disk
+           * without needing transferable types over playwright's CDP bridge.
+           */
+          midiBase64: string
+          /** Wall-clock duration of the analyze call in ms. */
+          elapsedMs: number
+        }
+      | { ok: false; message: string }
+    const fn = async (
+      blob: BenchInput,
+      options?: ChordDetectorAnalyzeOptions,
+    ): Promise<BenchResponse> => {
+      try {
+        const t0 = performance.now()
+        const r = await analyzeChordProgressionFromBlob(blob, options)
+        const elapsedMs = performance.now() - t0
+        const midiBlob = buildChordMidiBlob(r.segments, r.bpm, r.leadNotes)
+        const midiBuf = new Uint8Array(await midiBlob.arrayBuffer())
+        let midiBase64 = ''
+        const chunkSize = 0x8000
+        for (let i = 0; i < midiBuf.length; i += chunkSize) {
+          midiBase64 += String.fromCharCode(...midiBuf.subarray(i, i + chunkSize))
+        }
+        midiBase64 = btoa(midiBase64)
+        return { ok: true, result: r, midiBase64, elapsedMs }
+      } catch (err) {
+        return {
+          ok: false,
+          message: err instanceof Error ? err.message : String(err),
+        }
+      }
+    }
+    ;(globalThis as unknown as Record<string, unknown>)[benchKey] = fn
+    return () => {
+      delete (globalThis as unknown as Record<string, unknown>)[benchKey]
+    }
+  }, [])
 
   /* Auto-rerun on setting changes removed by user request — pianoLeadFocus
    * toggle and the (now-hidden) MELODY POST sliders no longer trigger a new
@@ -1577,7 +1648,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 />
                 RE-RUN CLIP
               </button>
-              {/* ── Row 4 (experimental): AI POLISH alone + 3 spacers ── */}
+              {/* ── Row 4 (experimental): AI POLISH · RAW MODE · 2 spacers ── */}
               <button
                 type="button"
                 disabled={!result || aiBusy}
@@ -1601,7 +1672,37 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 />
                 {aiBusy ? 'AI POLISHING…' : '🤖 AI POLISH'}
               </button>
-              <div aria-hidden style={{ background: PALETTE.surface }} />
+              {/* RAW MODE — bypass every post-processing stage. When on, the
+                  next analysis returns BP's native output (only same-pitch
+                  merge applied). Toggle, then RE-RUN CLIP (or drop a fresh
+                  file) to see the effect. */}
+              <button
+                type="button"
+                onClick={() => setRawMode(v => !v)}
+                title={
+                  rawMode
+                    ? 'RAW MODE is ON — next analysis bypasses HPSS, register passes, CQT, structure, chord-imply. Click to disable.'
+                    : 'RAW MODE is OFF — full pipeline is running. Click to enable raw (BP-only) output for the next analysis.'
+                }
+                aria-pressed={rawMode}
+                className="flex items-center justify-center gap-2 py-5 text-[11px] uppercase tracking-[0.2em] transition-colors"
+                style={{
+                  background: rawMode ? PALETTE.amberGlow : PALETTE.surface,
+                  color: rawMode ? PALETTE.amber : PALETTE.textMain,
+                  border: `1px solid ${rawMode ? PALETTE.amber : PALETTE.line}`,
+                }}
+              >
+                <span
+                  className="block size-2"
+                  style={{
+                    background: rawMode ? PALETTE.amber : 'transparent',
+                    borderRadius: '50%',
+                    border: rawMode ? 'none' : `1px solid ${PALETTE.textMain}`,
+                  }}
+                  aria-hidden
+                />
+                RAW MODE · {rawMode ? 'ON' : 'OFF'}
+              </button>
               <div aria-hidden style={{ background: PALETTE.surface }} />
               <div aria-hidden style={{ background: PALETTE.surface }} />
             </section>
