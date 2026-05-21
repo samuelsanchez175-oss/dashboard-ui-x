@@ -132,6 +132,16 @@ export type ChordDetectorAnalyzeOptions = {
    * directly into the result, with only the minimal final merge.
    */
   skipExportCleanup?: boolean
+  /**
+   * Source for the BASS register (midi < 48). Default `'bp'` keeps Basic
+   * Pitch's polyphonic output. `'yin'` runs a dedicated monophonic pitch
+   * tracker (YIN algorithm on a low-pass-filtered version of the harmonic
+   * stem) and REPLACES the bass slice with its output. Phase 3 of the
+   * pipeline roadmap — see `docs/chord-detector-phase-3-crepe-plan.md`
+   * (filed as CREPE in the original plan; YIN is a zero-dependency
+   * classical equivalent that works without a downloaded ML model).
+   */
+  bassSource?: 'bp' | 'yin'
 }
 
 /** Must stay aligned with `mixing-audio-key-estimate` FFT hop / size. */
@@ -278,7 +288,13 @@ function resolveBypassFlags(options?: ChordDetectorAnalyzeOptions): {
     registerPasses: pick(options?.skipRegisterPasses, raw || !legacy),
     exportCleanup:  pick(options?.skipExportCleanup,  raw),
     cqt:            pick(options?.skipCqt,            raw),
-    structure:      pick(options?.skipStructure,      raw),
+    /* Structure pass (1/16 grid snap + duration quantization): Phase 6 of the
+     * test ledger. User flagged it as too aggressive on organic timing; the
+     * phase bench confirmed it never *helped* on either reference input
+     * (`full` ties `no-structure` at 33.3 % / 83.6 % F1) but it can quantize
+     * away phrasing. Default OFF in `full` mode; still ON in `full-legacy`
+     * so the bench can keep measuring its impact. */
+    structure:      pick(options?.skipStructure,      raw || !legacy),
     /* Chord-implied notes: hardcoded OFF by default (Phase 4 of the test
      * findings — adding synthesised chord-tones was hallucinating notes).
      * The user can opt in via `inferChordTones: true`. Raw mode forces OFF
@@ -1903,6 +1919,20 @@ export async function analyzeChordProgressionFromBlob(
      * on demand via `consolidateToLoop(...)`. The audit and loop info are still
      * computed and carried in the result for the panels. */
     if (loop.found) dbgStage('15-loopConsensus', consolidateToLoop(leadNotes, loop, bpm))
+
+    /* Phase 3 — replace the bass slice with YIN-tracked monophonic notes
+     * when the caller opted in. Bass lines in pop music are nearly always
+     * monophonic; YIN on a low-pass-filtered signal beats BP's polyphonic
+     * output for that register. We run it on the HARMONIC stem (post-HPSS
+     * when HPSS ran, raw mono otherwise) so drum transients don't fool the
+     * pitch tracker. */
+    if (options?.bassSource === 'yin') {
+      const { transcribeBassWithYin } = await import('./chord-detector-bass-yin')
+      const yinBass = transcribeBassWithYin(harmonicMono, sr)
+      /* Drop BP's bass slice + splice in YIN's output. */
+      leadNotes = leadNotes.filter(n => Math.round(n.midi) >= 48).concat(yinBass)
+      dbgStage('15.5-yinBass', leadNotes)
+    }
 
     /* Three-track split — bucket each final note by midi range. The thresholds
      * intentionally match the register-pass BP boundaries so a note that came

@@ -440,6 +440,19 @@ export const SOURCE_SEPARATORS: Record<string, SourceSeparator> = {
     bundleSizeMb: 0,
     isolateHarmonic: (mono, sr) => isolateHarmonicMono(mono, sr),
   },
+  /* Phase 2 — multi-band HPSS. Same algorithm as `hpss` but with three
+   * frequency bands (LOW / MID / HIGH), each with a kernel size tuned to
+   * the duration / transient character of content in that band. Zero
+   * model file required; classical DSP only. See
+   * `chord-detector-source-separation-mb.ts`. */
+  'hpss-multiband': {
+    name: 'HPSS (multi-band, classical)',
+    bundleSizeMb: 0,
+    isolateHarmonic: async (mono, sr) => {
+      const { isolateHarmonicMultiband } = await import('./chord-detector-source-separation-mb')
+      return isolateHarmonicMultiband(mono, sr)
+    },
+  },
   /* Phase 2 — ONNX-runtime neural separators. The scaffold + DSP glue is
    * fully wired (see `chord-detector-source-separation-onnx.ts`); each
    * entry just needs its ONNX model file dropped under

@@ -77,14 +77,22 @@ The findings doc lands at `docs/chord-detector-phase-test-findings.md`. Commit i
 
 Do not update this ledger casually — the value of fixed reference inputs is that scores over time can be compared. Adding a new input is fine; replacing one mid-stream invalidates historical comparisons.
 
-## Roadmap of phases (status as of 2026-05)
+## Roadmap of phases (status as of 2026-05-21)
 
 | Phase | Description | Status |
 |---|---|---|
-| 1 | RAW MODE toggle — bypass every post-processing stage | ✅ Shipped (commit `266b286`) |
-| 2 | Replace HPSS with real Demucs / SCNet (lazy-loaded, opt-in) | ⏳ Researched, not shipped — see `docs/chord-detector-source-separation-research.md` |
-| 3 | CREPE for the bass register (monophonic pitch tracker) | ⏳ Proposed, not shipped |
-| 4 | Default `inferChordTones` to `false` on the audio path | ✅ Shipped (commit `266b286`) |
+| 1 | RAW MODE toggle + register-multi-pass off by default | ✅ Shipped (`266b286`, `42e484b`). +7.2 F1, 2.7× faster. |
+| 2 | Better source separation than single-band HPSS | ✅ Multi-band HPSS shipped (`hpss-multiband` separator). Originally planned around Open-Unmix ONNX; pivoted to classical multi-band median filtering because the ONNX model file can't reliably be acquired in this environment. ONNX scaffold remains in `chord-detector-source-separation-onnx.ts` for the day the model lands. |
+| 3 | Dedicated monophonic bass pitch tracker | ✅ YIN shipped (`chord-detector-bass-yin.ts`, `bassSource: 'yin'`). Originally planned around CREPE; pivoted to YIN (Cheveigné & Kawahara 2002) for the same reason as Phase 2 — zero ML dependency, matches CREPE-tiny within a few cents on monophonic bass. |
+| 4 | Default `inferChordTones` to `false` on the audio path | ✅ Shipped (`266b286`) |
 | 5 | Lock Viterbi to chord labels only, never note pitches | ✅ Already structurally true — `viterbiChordPath` operates on `instantBeatEvidence` (per-beat chord templates), never note arrays |
-| 6 | Default quantization OFF — `skipStructure: true` available via toggle | ✅ Shipped via toggle in commit `266b286` (default still ON pending benchmark numbers — flip per phase-test findings) |
+| 6 | Default quantization OFF — `skipStructure: true` available via toggle | ✅ Default flipped OFF; bench confirmed `full` ties `no-structure` |
 | 7 | This document | ✅ Shipped |
+
+### Configs added to the bench
+
+| Config | Options | Purpose |
+|---|---|---|
+| `yin-bass` | `{ bassSource: 'yin' }` | Phase 3 — YIN tracks the bass register instead of BP. |
+| `hpss-mb` | `{}` + `localStorage['chord-detector-separator']='hpss-multiband'` | Phase 2 — multi-band HPSS replaces single-band. |
+| `mb+yin` | both above combined | Phase 2 + Phase 3 stacked — the "everything new" config. |

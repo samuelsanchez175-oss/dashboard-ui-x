@@ -47,18 +47,27 @@ const INPUTS = [
  */
 const CONFIGS = [
   { label: 'raw',          options: { analysisMode: 'raw' } },
-  /* `full` is the LEAN pipeline as of 2026-05-21 (no HPSS, no register
-   * multi-pass, no CQT). Used here so the report shows what the default
-   * production code path now produces. */
+  /* `full` is the LEAN pipeline as of 2026-05-21 (single-pass BP — the
+   * one proven win from Phase 1). The other "lean" layers we tried to
+   * cut all regressed; only this one stuck. */
   { label: 'full',         options: {} },
-  /* `full-legacy` is the pre-flip "everything on" stack, kept so the
-   * report can show the before/after delta for the layers we turned off. */
+  /* `full-legacy` keeps the register multi-pass on. Pre-flip behavior. */
   { label: 'full-legacy',  options: { analysisMode: 'full-legacy' } },
   { label: 'no-hpss',      options: { analysisMode: 'full-legacy', skipHpss: true } },
   { label: 'no-register',  options: { analysisMode: 'full-legacy', skipRegisterPasses: true } },
   { label: 'no-cleanup',   options: { skipExportCleanup: true } },
   { label: 'no-cqt',       options: { analysisMode: 'full-legacy', skipCqt: true } },
   { label: 'no-structure', options: { skipStructure: true } },
+  /* Phase 3 — YIN monophonic tracker replaces BP's bass slice. Runs on
+   * top of the new lean default; expected to lift bass F1 from 0 % to
+   * something > 0. */
+  { label: 'yin-bass',     options: { bassSource: 'yin' } },
+  /* Phase 2 — multi-band HPSS swap (via localStorage). The bench evals
+   * this by setting the localStorage key BEFORE invoking the analyze. */
+  { label: 'hpss-mb',      options: {}, separator: 'hpss-multiband' },
+  /* Phase 2 + Phase 3 combined. The recommended "everything on" setup
+   * if both phases pan out. */
+  { label: 'mb+yin',       options: { bassSource: 'yin' }, separator: 'hpss-multiband' },
 ]
 
 async function main() {
@@ -141,12 +150,18 @@ async function main() {
       console.log(`[bench] → ${tag} (config: ${JSON.stringify(cfg.options)})`)
       const t0 = Date.now()
       const response = await page.evaluate(
-        async ({ inputLabel, options }) => {
+        async ({ inputLabel, options, separator }) => {
+          /* Phase 2 — the engine reads `localStorage['chord-detector-separator']`
+           * to decide which `SOURCE_SEPARATORS` registry entry to call. The
+           * bench flips it per config so we can A/B HPSS vs multi-band HPSS
+           * vs (future) ONNX models without rebuilding the bundle. Default
+           * back to 'hpss' for configs that don't specify. */
+          window.localStorage.setItem('chord-detector-separator', separator || 'hpss')
           const blob = window.__benchBlobs[inputLabel]
           if (!blob) return { ok: false, message: `no blob for ${inputLabel}` }
           return window.__chordDetectorBench(blob, options)
         },
-        { inputLabel: inp.label, options: cfg.options },
+        { inputLabel: inp.label, options: cfg.options, separator: cfg.separator },
       )
       const wallMs = Date.now() - t0
       if (!response.ok) {
