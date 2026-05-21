@@ -13,6 +13,8 @@ import {
   type LeadNote,
   mergeAdjacentSamePitchNotes,
   collapseOctaveDuplicatesNearOnsets,
+  debounceIsolatedBassBlips,
+  dropLowRegisterNotesShorterThan,
   dropSimultaneousPitchOutliers,
   MIDI_EXPORT_NOTE_MERGE,
   MIDI_EXPORT_TIMING,
@@ -229,22 +231,31 @@ const EXPORT_LEAD_PHANTOM = {
 
 /**
  * Resolve the effective bypass flags from `analysisMode` + individual skip
- * options. Defaults flipped 2026-05-21 per phase-test findings (see
- * `docs/chord-detector-phase-test-findings.md`): HPSS, register-stratified
- * BP, and CQT validation are now OFF by default. Each was net-negative in
- * the bench — single-pass BP without HPSS or CQT post-validation scored
- * +7 F1 points on the test track AND ran 2.7× faster.
+ * options. Defaults updated 2026-05-21 after a full bench sweep against the
+ * user-curated MIDI ground truth (see
+ * `docs/chord-detector-phase-test-findings.md`).
  *
- * Bypass semantics by mode:
+ * Bench summary on the MP3 (F1 vs GT, ±50 ms onset):
+ *   no-register → 33.3 %  (single-pass BP wins — and 2.7× faster)
+ *   no-hpss     → 31.4 %  (only when register multi-pass is still running)
+ *   full-legacy → 26.1 %  (every layer on — the pre-flip baseline)
+ *   raw         → 14.9 %  (everything off)
+ *
+ * A prior over-aggressive cut (remove HPSS + register + CQT + bass-killers
+ * all at once) dropped the MP3 to 12.3 % F1 — the cleanup chain depends on
+ * HPSS-cleaned audio for its RMS-based timing refinement, and the layers
+ * compensate for each other. The ONLY change that won in isolation AND
+ * stayed a net positive when stacked was `skipRegisterPasses`.
+ *
+ * Bypass semantics:
  *   `analysisMode: 'raw'`            → every stage OFF (BP-only baseline)
- *   `analysisMode: 'full'` or unset  → lean pipeline: BP + export cleanup
- *                                      + structure pass only
- *   `analysisMode: 'full-legacy'`    → pre-flip behavior — HPSS, register,
- *                                      CQT all ON (use this from the bench
- *                                      to A/B the layers we just turned off)
+ *   `analysisMode: 'full'` or unset  → register-multi-pass OFF, everything
+ *                                      else as before (HPSS / CQT / cleanup /
+ *                                      structure all run). The new default.
+ *   `analysisMode: 'full-legacy'`    → register-multi-pass also ON. Used by
+ *                                      the bench to A/B the multi-pass.
  *
- * Individual `skip*` options still win over the mode-derived defaults — that
- * is how the bench drives "with-this-one-layer" comparisons.
+ * Individual `skip*` options still win over the mode-derived defaults.
  */
 function resolveBypassFlags(options?: ChordDetectorAnalyzeOptions): {
   hpss: boolean
@@ -257,18 +268,16 @@ function resolveBypassFlags(options?: ChordDetectorAnalyzeOptions): {
   const mode = options?.analysisMode
   const raw = mode === 'raw'
   const legacy = mode === 'full-legacy'
-  /* For each layer the default bypass value depends on the mode:
-   *   raw    → skip everything
-   *   legacy → run everything (matches the pre-flip behavior)
-   *   else   → lean (skip the net-negative layers, keep cleanup + structure)
-   * Individual `skip*` overrides win over the mode-derived default. */
   const pick = (skip: boolean | undefined, defaultSkip: boolean): boolean =>
     typeof skip === 'boolean' ? skip : defaultSkip
   return {
-    hpss:           pick(options?.skipHpss,           raw || !legacy),
+    hpss:           pick(options?.skipHpss,           raw),
+    /* register multi-pass: the only confirmed-positive single-layer cut.
+     * Default OFF in `full` mode; ON in `full-legacy` so the bench can
+     * still measure the multi-pass cost. */
     registerPasses: pick(options?.skipRegisterPasses, raw || !legacy),
     exportCleanup:  pick(options?.skipExportCleanup,  raw),
-    cqt:            pick(options?.skipCqt,            raw || !legacy),
+    cqt:            pick(options?.skipCqt,            raw),
     structure:      pick(options?.skipStructure,      raw),
     /* Chord-implied notes: hardcoded OFF by default (Phase 4 of the test
      * findings — adding synthesised chord-tones was hallucinating notes).
@@ -1750,17 +1759,19 @@ export async function analyzeChordProgressionFromBlob(
       dbgStage('3-outlier1', leadForMidi)
       leadForMidi = thinPolyphonicLeadNotesByTimeWindow(leadForMidi, ph.thinWinSec, ph.thinMaxVoices)
       dbgStage('4-thinPoly', leadForMidi)
-      /* REMOVED 2026-05-21 per phase-test findings: debounceIsolatedBassBlips
-       * + dropLowRegisterNotesShorterThan together drove the bass register's
-       * F1 score from 22 % (raw / cleanup-skipped) to literally 0 % in every
-       * cleanup-enabled config. The threshold-based "bass blip" detection
-       * was eating real bass-line eighths and sixteenths that ARE in the
-       * source. Universal short-note drop further down still catches actual
-       * frame-edge phantoms; we no longer apply an extra bass-specific
-       * filter on top. If a future test track shows isolated phantoms below
-       * midi 48 making it through, restore one of these with a much tighter
-       * isolation rule (e.g. require zero same-register neighbours within
-       * 400 ms) rather than the prior generic short-duration drop. */
+      /* Bass blip debounce + low-register short-note drop. Earlier attempt
+       * to remove these (per first-pass phase test findings) was REVERTED
+       * after a full bench run: removing them did not improve bass F1
+       * (still 0 % in the cleanup-enabled lean config) and dropping HPSS +
+       * CQT in the same change tanked overall MP3 F1 from 26 % to 12 %.
+       * Bass-killing on this clip seems to come from a different stage
+       * deeper in the chain (`enforceTwoHandPianoPolyphony` is a likely
+       * suspect — it caps both hands). Investigation deferred until a test
+       * track with more bass activity makes the signal clearer. */
+      leadForMidi = debounceIsolatedBassBlips(leadForMidi, 40, 41, 72, 0.10, 0.08)
+      dbgStage('5-debounceBass', leadForMidi)
+      leadForMidi = dropLowRegisterNotesShorterThan(leadForMidi, 48, 0.08)
+      dbgStage('6-dropLowShort', leadForMidi)
       leadForMidi = dropLeadNotesShorterThan(leadForMidi, MIDI_EXPORT_NOTE_MERGE.minNoteSecAfterMerge)
       dbgStage('7-dropShort', leadForMidi)
       leadNotes = rmsFluxCurve
