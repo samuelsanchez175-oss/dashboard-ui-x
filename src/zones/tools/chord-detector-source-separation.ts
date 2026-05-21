@@ -440,15 +440,31 @@ export const SOURCE_SEPARATORS: Record<string, SourceSeparator> = {
     bundleSizeMb: 0,
     isolateHarmonic: (mono, sr) => isolateHarmonicMono(mono, sr),
   },
-  /* When SCNet / Open-Unmix lands:
-   *   scnet: {
-   *     name: 'SCNet small (neural)',
-   *     bundleSizeMb: 40,
-   *     isolateHarmonic: async (mono, sr) => {
-   *       const { isolateHarmonicScnet } = await import('./chord-detector-source-separation-scnet')
-   *       return isolateHarmonicScnet(mono, sr)
-   *     },
-   *   }, */
+  /* Phase 2 — ONNX-runtime neural separators. The scaffold + DSP glue is
+   * fully wired (see `chord-detector-source-separation-onnx.ts`); each
+   * entry just needs its ONNX model file dropped under
+   * `public/source-separation/<key>.onnx` to go live.
+   *
+   * First-load cost when activated: model download (40-90 MB depending on
+   * choice) + onnxruntime-web bundle (~3-5 MB). Subsequent loads hit the
+   * browser HTTP cache. WebGPU is tried first for execution; falls back to
+   * WASM with SIMD + threads. */
+  'onnx-umxl': {
+    name: 'Open-Unmix UMX-L (neural)',
+    bundleSizeMb: 90,
+    isolateHarmonic: async (mono, sr) => {
+      const { isolateHarmonicOnnx } = await import('./chord-detector-source-separation-onnx')
+      return isolateHarmonicOnnx(mono, sr, 'umxl')
+    },
+  },
+  'onnx-scnet-small': {
+    name: 'SCNet small (neural)',
+    bundleSizeMb: 40,
+    isolateHarmonic: async (mono, sr) => {
+      const { isolateHarmonicOnnx } = await import('./chord-detector-source-separation-onnx')
+      return isolateHarmonicOnnx(mono, sr, 'scnet-small')
+    },
+  },
 }
 
 /**

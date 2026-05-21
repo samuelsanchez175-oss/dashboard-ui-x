@@ -39,7 +39,7 @@ import { inferChordImpliedNotes } from './chord-detector-chord-imply'
  * Float32Array / note list in, transformed data out. Each one targets a
  * specific accuracy lever; see their module docs for the algorithm + rationale. */
 import { transcribeWithRegisterPasses } from './chord-detector-register-pass'
-import { isolateHarmonicMono } from './chord-detector-source-separation'
+import { getActiveSeparator } from './chord-detector-source-separation'
 import { validateNotesAgainstCQT } from './chord-detector-cqt-validate'
 import { detectLoopFromAudio } from './chord-detector-loop-audio'
 
@@ -1564,11 +1564,20 @@ export async function analyzeChordProgressionFromBlob(
      * "RAW MODE" toggle that sets `analysisMode: 'raw'` to bypass everything. */
     const bypass = resolveBypassFlags(options)
 
-    // ── v2 Stage 0 — source separation. HPSS isolates the harmonic stem from
-    // the input mono so Basic Pitch sees cleaner pitched content (drums and
-    // transient percussion get masked out). Soft-mask Wiener-style separation;
-    // see `chord-detector-source-separation.ts` for the algorithm.
-    const harmonicMono = bypass.hpss ? mono : isolateHarmonicMono(mono, sr)
+    // ── v2 Stage 0 — source separation. The active separator is resolved
+    // through the registry (`getActiveSeparator`) so the user can swap
+    // between HPSS, Open-Unmix UMX-L, or SCNet small via a localStorage
+    // key (`chord-detector-separator`) without an engine change. When the
+    // bypass flag is set (raw mode or `skipHpss: true`) we feed the mono
+    // through untouched.
+    let harmonicMono: Float32Array
+    if (bypass.hpss) {
+      harmonicMono = mono
+    } else {
+      const separator = getActiveSeparator()
+      const out = await separator.isolateHarmonic(mono, sr)
+      harmonicMono = out
+    }
 
     // ── Basic Pitch lead notes (TensorFlow.js) → chord evidence + key histogram ─
     // Now uses the register-stratified multi-pass: BP is invoked three times
