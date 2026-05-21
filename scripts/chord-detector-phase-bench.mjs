@@ -149,20 +149,64 @@ async function main() {
       const tag = `${inp.label}__${cfg.label}`
       console.log(`[bench] → ${tag} (config: ${JSON.stringify(cfg.options)})`)
       const t0 = Date.now()
-      const response = await page.evaluate(
-        async ({ inputLabel, options, separator }) => {
-          /* Phase 2 — the engine reads `localStorage['chord-detector-separator']`
-           * to decide which `SOURCE_SEPARATORS` registry entry to call. The
-           * bench flips it per config so we can A/B HPSS vs multi-band HPSS
-           * vs (future) ONNX models without rebuilding the bundle. Default
-           * back to 'hpss' for configs that don't specify. */
-          window.localStorage.setItem('chord-detector-separator', separator || 'hpss')
-          const blob = window.__benchBlobs[inputLabel]
-          if (!blob) return { ok: false, message: `no blob for ${inputLabel}` }
-          return window.__chordDetectorBench(blob, options)
-        },
-        { inputLabel: inp.label, options: cfg.options, separator: cfg.separator },
-      )
+      /* Per-config retry. HMR-triggered reloads in dev mode occasionally
+       * destroy the page's execution context mid-eval; retrying after a
+       * short settle lets the bench continue rather than aborting the
+       * whole sweep. Up to 3 attempts; if all fail, log and move on. */
+      let response = null
+      let lastErr = null
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          /* If we crashed previously, re-establish the page state. */
+          if (attempt > 0) {
+            console.log(`[bench]     retry ${attempt} for ${tag} after: ${lastErr}`)
+            await page.waitForTimeout(2000)
+            await page.waitForFunction(
+              () => typeof window.__chordDetectorBench === 'function',
+              { timeout: 20_000 },
+            )
+            /* Re-inject the input blob if the page lost it on reload. */
+            const stillHas = await page.evaluate(
+              (label) => !!(window.__benchBlobs && window.__benchBlobs[label]),
+              inp.label,
+            )
+            if (!stillHas) {
+              const bytes = readFileSync(inp.path)
+              const b64 = bytes.toString('base64')
+              await page.evaluate(
+                ({ label, b64, name }) => {
+                  const bin = atob(b64)
+                  const u8 = new Uint8Array(bin.length)
+                  for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i)
+                  window.__benchBlobs = window.__benchBlobs || {}
+                  window.__benchBlobs[label] = new File([u8], name, {
+                    type: name.endsWith('.wav') ? 'audio/wav' : 'audio/mpeg',
+                  })
+                },
+                { label: inp.label, b64, name: path.basename(inp.path) },
+              )
+            }
+          }
+          response = await page.evaluate(
+            async ({ inputLabel, options, separator }) => {
+              window.localStorage.setItem('chord-detector-separator', separator || 'hpss')
+              const blob = window.__benchBlobs[inputLabel]
+              if (!blob) return { ok: false, message: `no blob for ${inputLabel}` }
+              return window.__chordDetectorBench(blob, options)
+            },
+            { inputLabel: inp.label, options: cfg.options, separator: cfg.separator },
+          )
+          break // success
+        } catch (e) {
+          lastErr = (e && e.message) || String(e)
+          response = null
+        }
+      }
+      if (!response) {
+        console.error(`[bench]   FAIL ${tag} after 3 attempts: ${lastErr}`)
+        summary.push({ tag, ok: false, message: lastErr, wallMs: Date.now() - t0 })
+        continue
+      }
       const wallMs = Date.now() - t0
       if (!response.ok) {
         console.error(`[bench]   FAIL ${tag}: ${response.message}`)
