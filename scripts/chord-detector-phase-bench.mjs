@@ -143,9 +143,15 @@ async function main() {
   // Run every (input × config) pair sequentially. Each analyze call can take
   // ~30-90 s depending on whether WebGL or WASM is in use, so total wall time
   // is ~10-25 minutes for the full sweep.
+  // CONFIG_FILTER env var: comma-separated config labels to include. Empty = all.
+  const configFilter = (process.env.CONFIG_FILTER || '').split(',').map(s => s.trim()).filter(Boolean)
+  const runConfigs = configFilter.length === 0 ? CONFIGS : CONFIGS.filter(c => configFilter.includes(c.label))
+  if (configFilter.length > 0) {
+    console.log(`[bench] CONFIG_FILTER = ${configFilter.join(',')} → ${runConfigs.length}/${CONFIGS.length} configs`)
+  }
   const summary = []
   for (const inp of INPUTS) {
-    for (const cfg of CONFIGS) {
+    for (const cfg of runConfigs) {
       const tag = `${inp.label}__${cfg.label}`
       console.log(`[bench] → ${tag} (config: ${JSON.stringify(cfg.options)})`)
       const t0 = Date.now()
