@@ -66,6 +66,24 @@ function loadConfigOutput(jsonPath) {
 }
 
 /**
+ * Filter a note list to only those starting within `[windowStart, windowEnd]`.
+ * Used when the ground truth covers only a short slice of the song (e.g. the
+ * user's cleaned MIDI is bars 3-4 only) but the transcription run covers the
+ * full clip — without windowing, all the notes outside the GT slice would
+ * count as false positives and tank the F1 score even when the in-window
+ * transcription is reasonable.
+ *
+ * Tolerance: notes whose start is within `tolSec` of the window boundaries
+ * are included (covers cases where the user's MIDI start is slightly inside
+ * the actual bar boundary).
+ */
+function filterToWindow(notes, windowStart, windowEnd, tolSec = 0.1) {
+  return notes.filter(
+    n => n.startSec >= windowStart - tolSec && n.startSec <= windowEnd + tolSec,
+  )
+}
+
+/**
  * Compute note-F1 between predicted notes and ground truth.
  * Greedy match by onset distance, per-pitch lane.
  */
@@ -178,8 +196,16 @@ function main() {
   console.log(`[score] ground truth: ${gtPath}`)
   const gt = loadGroundTruth(gtPath)
   const gtBuckets = bucketByRegister(gt)
+  /* Compute the time window covered by the ground truth so we can filter
+   * each prediction to the same slice. The user's MIDI is bars 3-4 only
+   * (~7 seconds out of a 60 s clip); without this, every config gets ~200
+   * false positives from notes outside the GT window. */
+  const windowStart = Math.min(...gt.map(n => n.startSec))
+  const windowEnd = Math.max(...gt.map(n => n.startSec + n.durationSec))
   console.log(
-    `[score] ground truth: ${gt.length} notes (lead ${gtBuckets.lead.length}, harmony ${gtBuckets.harmony.length}, bass ${gtBuckets.bass.length})`,
+    `[score] ground truth: ${gt.length} notes ` +
+      `(lead ${gtBuckets.lead.length}, harmony ${gtBuckets.harmony.length}, bass ${gtBuckets.bass.length}), ` +
+      `time window ${windowStart.toFixed(2)}s → ${windowEnd.toFixed(2)}s`,
   )
 
   const files = readdirSync(BENCH_DIR).filter(f => f.endsWith('.json') && !f.startsWith('_'))
@@ -191,7 +217,24 @@ function main() {
 
   const rows = []
   for (const fname of files) {
-    const { blob, notes } = loadConfigOutput(path.join(BENCH_DIR, fname))
+    const { blob, notes: notesAll } = loadConfigOutput(path.join(BENCH_DIR, fname))
+    /* Time-origin alignment. The MP3 covers the full song; the GT bars 3-4
+     * are at their absolute song position (~7.38-14.77 s) and the MP3
+     * transcription uses the same clock. The WAV, however, is just a render
+     * of the same MIDI bars 3-4 but starts at t=0 of the audio file (no
+     * leading silence). When comparing WAV outputs against the GT we have
+     * to shift one of the two streams so they share an origin. We choose
+     * to shift the WAV transcription UP by `windowStart`, treating its
+     * t=0 as if it were the GT's first-note time. (This is the convention
+     * the user gave us: "the wav is a perfect output of the MIDI" — i.e.
+     * the WAV starts where the GT's first note starts.) */
+    const isWav = blob.input === 'notes2-wav'
+    const aligned = isWav
+      ? notesAll.map(n => ({ ...n, startSec: n.startSec + windowStart }))
+      : notesAll
+    /* Filter to the GT time window so the F1 measures in-window quality
+     * rather than penalizing every out-of-window note as a false positive. */
+    const notes = filterToWindow(aligned, windowStart, windowEnd)
     const overall = noteF1(notes, gt)
     const onset = onsetF1(notes, gt)
     const predBuckets = bucketByRegister(notes)
@@ -203,6 +246,7 @@ function main() {
       input: blob.input,
       config: blob.config,
       noteCount: notes.length,
+      noteCountFull: notesAll.length,
       gtCount: gt.length,
       engineMs: blob.engineElapsedMs,
       overall,
