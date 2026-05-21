@@ -13,8 +13,6 @@ import {
   type LeadNote,
   mergeAdjacentSamePitchNotes,
   collapseOctaveDuplicatesNearOnsets,
-  debounceIsolatedBassBlips,
-  dropLowRegisterNotesShorterThan,
   dropSimultaneousPitchOutliers,
   MIDI_EXPORT_NOTE_MERGE,
   MIDI_EXPORT_TIMING,
@@ -103,14 +101,20 @@ export type ChordDetectorAnalyzeOptions = {
    */
   inferChordTones?: boolean
   /**
-   * Pipeline mode for benchmarking. `'full'` (default) runs every stage as
-   * before; `'raw'` bypasses HPSS, register passes, CQT validation,
-   * structure quantization, and chord-implied notes — leaving a near-vanilla
-   * Basic Pitch output with only the lightest tidy-up. Used by the phase-test
-   * harness (see `docs/chord-detector-test-ledger.md`) to measure each
-   * layer's contribution against ground truth.
+   * Pipeline mode for benchmarking + back-compat.
+   *  - `'full'` (default): the LEAN pipeline — single-pass Basic Pitch +
+   *    export cleanup + structure pass. HPSS, register-stratified passes
+   *    and CQT validation are OFF (they were net-negative in the phase
+   *    test; see `docs/chord-detector-phase-test-findings.md`).
+   *  - `'raw'`: bypass every stage. BP's native output with only the
+   *    final same-pitch merge. The benchmark baseline.
+   *  - `'full-legacy'`: the PRE-FLIP behavior with HPSS + register passes
+   *    + CQT all enabled. Kept so the bench can A/B the layers we turned
+   *    off; not a recommended user-facing mode.
+   *
+   * Individual `skip*` options still override the mode-derived defaults.
    */
-  analysisMode?: 'raw' | 'full'
+  analysisMode?: 'raw' | 'full' | 'full-legacy'
   /** Skip HPSS — feed BP the original mono instead of the harmonic stem. */
   skipHpss?: boolean
   /** Skip register-stratified multi-pass; run BP once with default thresholds. */
@@ -225,10 +229,22 @@ const EXPORT_LEAD_PHANTOM = {
 
 /**
  * Resolve the effective bypass flags from `analysisMode` + individual skip
- * options. `analysisMode: 'raw'` is shorthand for "every layer off" — each
- * individual skip option can still be explicitly set to `false` to opt INTO
- * a specific layer while keeping the rest raw. The benchmark harness uses
- * this to A/B individual stages against a baseline.
+ * options. Defaults flipped 2026-05-21 per phase-test findings (see
+ * `docs/chord-detector-phase-test-findings.md`): HPSS, register-stratified
+ * BP, and CQT validation are now OFF by default. Each was net-negative in
+ * the bench — single-pass BP without HPSS or CQT post-validation scored
+ * +7 F1 points on the test track AND ran 2.7× faster.
+ *
+ * Bypass semantics by mode:
+ *   `analysisMode: 'raw'`            → every stage OFF (BP-only baseline)
+ *   `analysisMode: 'full'` or unset  → lean pipeline: BP + export cleanup
+ *                                      + structure pass only
+ *   `analysisMode: 'full-legacy'`    → pre-flip behavior — HPSS, register,
+ *                                      CQT all ON (use this from the bench
+ *                                      to A/B the layers we just turned off)
+ *
+ * Individual `skip*` options still win over the mode-derived defaults — that
+ * is how the bench drives "with-this-one-layer" comparisons.
  */
 function resolveBypassFlags(options?: ChordDetectorAnalyzeOptions): {
   hpss: boolean
@@ -238,17 +254,21 @@ function resolveBypassFlags(options?: ChordDetectorAnalyzeOptions): {
   structure: boolean
   chordImply: boolean
 } {
-  const raw = options?.analysisMode === 'raw'
-  /* For each flag, an explicit `options.skipX` value wins; otherwise raw mode
-   * implies "skip all". When neither is set, the stage runs (preserves the
-   * pre-toggle default behavior). */
+  const mode = options?.analysisMode
+  const raw = mode === 'raw'
+  const legacy = mode === 'full-legacy'
+  /* For each layer the default bypass value depends on the mode:
+   *   raw    → skip everything
+   *   legacy → run everything (matches the pre-flip behavior)
+   *   else   → lean (skip the net-negative layers, keep cleanup + structure)
+   * Individual `skip*` overrides win over the mode-derived default. */
   const pick = (skip: boolean | undefined, defaultSkip: boolean): boolean =>
     typeof skip === 'boolean' ? skip : defaultSkip
   return {
-    hpss:           pick(options?.skipHpss,           raw),
-    registerPasses: pick(options?.skipRegisterPasses, raw),
+    hpss:           pick(options?.skipHpss,           raw || !legacy),
+    registerPasses: pick(options?.skipRegisterPasses, raw || !legacy),
     exportCleanup:  pick(options?.skipExportCleanup,  raw),
-    cqt:            pick(options?.skipCqt,            raw),
+    cqt:            pick(options?.skipCqt,            raw || !legacy),
     structure:      pick(options?.skipStructure,      raw),
     /* Chord-implied notes: hardcoded OFF by default (Phase 4 of the test
      * findings — adding synthesised chord-tones was hallucinating notes).
@@ -1721,18 +1741,17 @@ export async function analyzeChordProgressionFromBlob(
       dbgStage('3-outlier1', leadForMidi)
       leadForMidi = thinPolyphonicLeadNotesByTimeWindow(leadForMidi, ph.thinWinSec, ph.thinMaxVoices)
       dbgStage('4-thinPoly', leadForMidi)
-      /* Bass blip debounce: previously 180 ms / 110 ms — kills short bass
-       * articulations on grooves where the bass plays 1/16 patterns. Loosened
-       * to 100 ms / 80 ms so legitimate fast bass passages survive while
-       * isolated frame-edge phantoms still get culled. */
-      leadForMidi = debounceIsolatedBassBlips(leadForMidi, 40, 41, 72, 0.10, 0.08)
-      dbgStage('5-debounceBass', leadForMidi)
-      /* Low-register minimum duration: was 135 ms (kills 1/32 bass at 65 BPM
-       * where 1/32 ≈ 115 ms). Dropped to 80 ms so fast bass patterns survive;
-       * the cross-pass bass-blip filter above still catches truly isolated
-       * frame-edge phantoms. */
-      leadForMidi = dropLowRegisterNotesShorterThan(leadForMidi, 48, 0.08)
-      dbgStage('6-dropLowShort', leadForMidi)
+      /* REMOVED 2026-05-21 per phase-test findings: debounceIsolatedBassBlips
+       * + dropLowRegisterNotesShorterThan together drove the bass register's
+       * F1 score from 22 % (raw / cleanup-skipped) to literally 0 % in every
+       * cleanup-enabled config. The threshold-based "bass blip" detection
+       * was eating real bass-line eighths and sixteenths that ARE in the
+       * source. Universal short-note drop further down still catches actual
+       * frame-edge phantoms; we no longer apply an extra bass-specific
+       * filter on top. If a future test track shows isolated phantoms below
+       * midi 48 making it through, restore one of these with a much tighter
+       * isolation rule (e.g. require zero same-register neighbours within
+       * 400 ms) rather than the prior generic short-duration drop. */
       leadForMidi = dropLeadNotesShorterThan(leadForMidi, MIDI_EXPORT_NOTE_MERGE.minNoteSecAfterMerge)
       dbgStage('7-dropShort', leadForMidi)
       leadNotes = rmsFluxCurve

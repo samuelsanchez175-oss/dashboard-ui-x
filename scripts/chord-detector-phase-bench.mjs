@@ -47,11 +47,17 @@ const INPUTS = [
  */
 const CONFIGS = [
   { label: 'raw',          options: { analysisMode: 'raw' } },
+  /* `full` is the LEAN pipeline as of 2026-05-21 (no HPSS, no register
+   * multi-pass, no CQT). Used here so the report shows what the default
+   * production code path now produces. */
   { label: 'full',         options: {} },
-  { label: 'no-hpss',      options: { skipHpss: true } },
-  { label: 'no-register',  options: { skipRegisterPasses: true } },
+  /* `full-legacy` is the pre-flip "everything on" stack, kept so the
+   * report can show the before/after delta for the layers we turned off. */
+  { label: 'full-legacy',  options: { analysisMode: 'full-legacy' } },
+  { label: 'no-hpss',      options: { analysisMode: 'full-legacy', skipHpss: true } },
+  { label: 'no-register',  options: { analysisMode: 'full-legacy', skipRegisterPasses: true } },
   { label: 'no-cleanup',   options: { skipExportCleanup: true } },
-  { label: 'no-cqt',       options: { skipCqt: true } },
+  { label: 'no-cqt',       options: { analysisMode: 'full-legacy', skipCqt: true } },
   { label: 'no-structure', options: { skipStructure: true } },
 ]
 
