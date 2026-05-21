@@ -571,6 +571,16 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
    */
   const [rawMode, setRawMode] = useState(false)
 
+  /**
+   * BASS SOURCE — which transcriber owns the bass register (midi < 48).
+   *   'bp'  → Basic Pitch's polyphonic output (the default; what every prior
+   *           commit shipped). Known weak on dense bass material.
+   *   'yin' → YIN monophonic pitch tracker on a low-pass-filtered harmonic
+   *           stem. Phase 3 of the test-ledger roadmap — see
+   *           `docs/chord-detector-phase-3-crepe-plan.md`.
+   */
+  const [bassSource, setBassSource] = useState<'bp' | 'yin'>('bp')
+
   /** Last dropped file — kept so the RE-RUN CLIP button can re-process the
    * same clip with updated settings without the user re-dropping it. */
   const lastFileRef = useRef<File | null>(null)
@@ -753,6 +763,9 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
          * every post-processing stage is skipped and BP's native output is
          * returned with only the bare same-pitch merge. */
         analysisMode: rawMode ? 'raw' : 'full',
+        /* BASS SOURCE — when 'yin', the engine swaps BP's bass output for
+         * a YIN monophonic pitch tracker (Phase 3). RAW mode forces BP. */
+        bassSource: rawMode ? 'bp' : bassSource,
       })
       setResult(r)
     } catch (e) {
@@ -760,7 +773,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
     } finally {
       setBusy(false)
     }
-  }, [melodyPostInput, pianoLeadFocus, rawMode])
+  }, [melodyPostInput, pianoLeadFocus, rawMode, bassSource])
 
   /* DEV-only benchmark hook — exposes a direct call into the engine that
    * bypasses the React UI so the phase-test harness in
@@ -1703,7 +1716,44 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 />
                 RAW MODE · {rawMode ? 'ON' : 'OFF'}
               </button>
-              <div aria-hidden style={{ background: PALETTE.surface }} />
+              {/* BASS SOURCE — toggle the bass register transcriber.
+                  BP (default) keeps Basic Pitch's polyphonic output on
+                  midi < 48. YIN runs a dedicated monophonic pitch tracker
+                  on a low-pass-filtered version of the harmonic stem and
+                  replaces the bass slice with its output. Phase 3 of the
+                  pipeline roadmap. Disabled when RAW MODE is on (raw
+                  forces BP-only). */}
+              <button
+                type="button"
+                disabled={rawMode}
+                onClick={() => setBassSource(v => v === 'bp' ? 'yin' : 'bp')}
+                title={
+                  rawMode
+                    ? 'BASS SOURCE is locked to BP while RAW MODE is on.'
+                    : bassSource === 'yin'
+                      ? 'BASS is using YIN (monophonic tracker on low-passed harmonic stem). Click to switch back to BP.'
+                      : 'BASS is using Basic Pitch (polyphonic). Click to switch to YIN — a monophonic tracker that often beats BP on bass lines.'
+                }
+                aria-pressed={bassSource === 'yin'}
+                className="flex items-center justify-center gap-2 py-5 text-[11px] uppercase tracking-[0.2em] transition-colors disabled:cursor-not-allowed"
+                style={{
+                  background: bassSource === 'yin' && !rawMode ? PALETTE.amberGlow : PALETTE.surface,
+                  color: rawMode ? PALETTE.textMuted : (bassSource === 'yin' ? PALETTE.amber : PALETTE.textMain),
+                  border: `1px solid ${rawMode ? PALETTE.line : (bassSource === 'yin' ? PALETTE.amber : PALETTE.line)}`,
+                  opacity: rawMode ? 0.5 : 1,
+                }}
+              >
+                <span
+                  className="block size-2"
+                  style={{
+                    background: bassSource === 'yin' && !rawMode ? PALETTE.amber : 'transparent',
+                    borderRadius: '50%',
+                    border: bassSource === 'yin' && !rawMode ? 'none' : `1px solid ${rawMode ? PALETTE.textMuted : PALETTE.textMain}`,
+                  }}
+                  aria-hidden
+                />
+                BASS · {bassSource === 'yin' ? 'YIN' : 'BP'}
+              </button>
               <div aria-hidden style={{ background: PALETTE.surface }} />
             </section>
 
