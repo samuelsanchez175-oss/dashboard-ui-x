@@ -24,7 +24,7 @@ import { chromium } from '@playwright/test'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 
-const DEV_ORIGIN = 'http://localhost:5179'
+const DEV_ORIGIN = process.env.DEV_ORIGIN || 'http://localhost:5179'
 const ROUTE_ID = 'tools-chord-detector'
 const OUT_DIR = path.resolve('tmp/chord-detector-bench')
 
@@ -36,6 +36,14 @@ const INPUTS = [
   {
     label: 'notes2-wav',
     path: '/Users/samuel/Desktop/Notes 2.wav',
+  },
+  {
+    /* User-curated ground-truth MIDI as a direct input. The engine has a
+     * separate MIDI path that bypasses BP entirely (most pipeline stages
+     * skip for MIDI input). Useful as a sanity check — the score against
+     * GT should be near 100 % for any config since the input IS the GT. */
+    label: 'frank-mid',
+    path: '/Users/samuel/Downloads/frank  Perfect acura girll .mid',
   },
 ]
 
@@ -68,6 +76,16 @@ const CONFIGS = [
   /* Phase 2 + Phase 3 combined. The recommended "everything on" setup
    * if both phases pan out. */
   { label: 'mb+yin',       options: { bassSource: 'yin' }, separator: 'hpss-multiband' },
+  /* Phase 4 — measures what the chord-implied-notes default flip removed.
+   * `full` defaults `inferChordTones: false`; passing `true` re-enables
+   * the pre-Phase-4 behavior (synthesise chord tones into the output).
+   * The delta `full` → `chord-imply-on` quantifies Phase 4. */
+  { label: 'chord-imply-on', options: { inferChordTones: true } },
+  /* Phase 6 — measures what the skipStructure default flip removed. `full`
+   * now defaults `skipStructure: true` (this session); passing `false`
+   * re-enables the 1/16 grid snap + duration quantization. The delta
+   * `full` → `structure-on` quantifies Phase 6. */
+  { label: 'structure-on', options: { skipStructure: false } },
 ]
 
 async function main() {
