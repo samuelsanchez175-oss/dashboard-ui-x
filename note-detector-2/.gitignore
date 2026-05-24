@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Local env
+.env
+
+# Job artefacts — these are runtime data, not source.
+storage/uploads/*
+storage/outputs/*
+!storage/uploads/.gitkeep
+!storage/outputs/.gitkeep
+
+# Downloaded ML checkpoints (~2 GB).
+models/
+
+# OS / editor noise
+.DS_Store
+.idea/
+.vscode/

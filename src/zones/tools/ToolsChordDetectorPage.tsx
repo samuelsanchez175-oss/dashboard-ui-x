@@ -29,6 +29,7 @@ import {
   type NeuralNoteStyleMelodyPostInput,
   type ValidationReport,
 } from './chord-detector-engine'
+import { gradeAnalysis, GRADE_COLOR, type QualityGrade } from './chord-detector-self-grade'
 /* StudioToolsHeader removed — its back button / Local-Connected pill / bell
  * are now baked into the page's primary header below so we don't have two
  * stacked nav strips doing the same job. */
@@ -524,6 +525,30 @@ function PianoRoll({
   )
 }
 
+/* ── Self-graded quality chip (inline, next to section labels) ───────────────── */
+
+/**
+ * Letter-grade pill the chord-detector uses to grade its own output.
+ * Hover for the underlying signals — see chord-detector-self-grade.ts.
+ */
+function GradeBadge({ grade, reasoning }: { grade: QualityGrade; reasoning: string }) {
+  return (
+    <span
+      title={reasoning}
+      className="inline-flex items-center justify-center px-1.5 py-[1px] text-[10px] font-bold leading-none rounded-sm align-middle"
+      style={{
+        background: GRADE_COLOR[grade],
+        color: '#fff',
+        fontFamily: "'DM Mono', monospace",
+        letterSpacing: '0.05em',
+        minWidth: '1.5rem',
+      }}
+    >
+      {grade}
+    </span>
+  )
+}
+
 /* ── Page ────────────────────────────────────────────────────────────────────── */
 
 export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetectorPageProps) {
@@ -715,6 +740,19 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
     }
     return result.durationSec
   }, [result, extractLoopActive])
+
+  /**
+   * Self-graded quality of what the user is about to look at on the piano roll.
+   * Driven by EFFECTIVE notes/duration so the grade matches what's rendered
+   * (full track or extracted loop, not raw analysis). See chord-detector-self-grade.ts.
+   */
+  const selfGrade = useMemo(() => {
+    if (!result) return null
+    return gradeAnalysis({
+      leadNotes: effectiveLeadNotes,
+      durationSec: effectiveDurationSec,
+    })
+  }, [result, effectiveLeadNotes, effectiveDurationSec])
 
   const exportDurationSec = result ? Math.max(0, trimEnd - trimStart) : 0
   const isSelectionTrimmed = result ? exportDurationSec < effectiveDurationSec - 0.08 : false
@@ -1983,6 +2021,29 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 className="flex flex-col gap-5 px-6 py-5"
                 style={{ background: PALETTE.surface }}
               >
+                {/* Self-graded quality chips. PIANO ROLL grade = coverage + diversity;
+                 * NOTES grade = density + velocity + ghost-ratio. Hover for the signals. */}
+                {selfGrade && (
+                  <header
+                    className="flex items-center justify-between"
+                    style={{ fontFamily: "'DM Mono', monospace" }}
+                  >
+                    <span
+                      className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.15em]"
+                      style={{ color: PALETTE.textMuted }}
+                    >
+                      PIANO ROLL
+                      <GradeBadge grade={selfGrade.piano.grade} reasoning={selfGrade.piano.reasoning} />
+                    </span>
+                    <span
+                      className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.15em]"
+                      style={{ color: PALETTE.textMuted }}
+                    >
+                      NOTES ({effectiveLeadNotes.length})
+                      <GradeBadge grade={selfGrade.notes.grade} reasoning={selfGrade.notes.reasoning} />
+                    </span>
+                  </header>
+                )}
                 <PianoRoll
                   /* When EXTRACT LOOP is active, hand the piano roll an "as-if loop"
                    * view of the analysis: same chord segments + key + bpm, but the

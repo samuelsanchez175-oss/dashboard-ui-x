@@ -1,0 +1,34 @@
+# --- Numerical core -----------------------------------------------------------
+# numpy<2 is REQUIRED: tflite_runtime (which basic-pitch uses to load the
+# ICASSP-2022 model) ships C extensions compiled against the numpy 1.x ABI.
+# numpy 2 triggers `AttributeError: _ARRAY_API not found` at model load time.
+numpy<2
+
+# --- Web / API ----------------------------------------------------------------
+fastapi==0.111.0
+uvicorn[standard]==0.30.0
+python-multipart==0.0.9
+pydantic==2.7.1
+pydantic-settings==2.2.1
+
+# --- Task queue ---------------------------------------------------------------
+celery==5.3.6
+redis==5.0.4
+
+# --- Audio I/O + MIDI utilities ----------------------------------------------
+soundfile==0.12.1
+pretty_midi==0.2.10
+mido==1.3.2
+
+# --- Stem separation ----------------------------------------------------------
+# Demucs brings torch + torchaudio. The Dockerfile pre-installs them in a
+# dedicated layer to control image size; pinning Demucs here just locks the API.
+demucs==4.0.1
+
+# --- Transcription ------------------------------------------------------------
+# Spotify's basic-pitch — the same ICASSP-2022 model the chord-detector uses on
+# the front-end (`@spotify/basic-pitch`). Using it server-side here means the
+# head-to-head measures *preprocessing* (Demucs vs the chord-detector's HPSS /
+# multi-band HPSS) rather than confounding model choice with pipeline choice.
+# basic-pitch pulls in TensorFlow for the SavedModel checkpoint.
+basic-pitch==0.4.0

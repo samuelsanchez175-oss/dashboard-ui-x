@@ -26,6 +26,7 @@ const VocalsZone = lazy(() => import('../zones/vocals/VocalsZone'))
 const AgentFarm = lazy(() => import('./agent-farm'))
 const RhymeStudio = lazy(() => import('./rhyme-studio/RhymeStudio'))
 const ToolsChordDetectorPage = lazy(() => import('../zones/tools/ToolsChordDetectorPage'))
+const ToolsNoteDetector2Page = lazy(() => import('../zones/tools/ToolsNoteDetector2Page'))
 const WebDesignerZone = lazy(() => import('../zones/web-designer/WebDesignerZone'))
 const TeslaFleet = lazy(() => import('../zones/tesla/TeslaMock'))
 const PulseDigest = lazy(() => import('../zones/pulse/PulseDigest'))
@@ -45,6 +46,7 @@ const CdlPreTripCouplingPage = lazy(() => import('../zones/cdl/CdlPreTripCouplin
 const CdlPreTripTrailerPage = lazy(() => import('../zones/cdl/CdlPreTripTrailerPage'))
 const CdlPreTripPartsMap = lazy(() => import('../zones/cdl/CdlPreTripPartsMap'))
 const CdlPreTripDeepDive = lazy(() => import('../zones/cdl/CdlPreTripDeepDive'))
+const CdlStandaloneApp = lazy(() => import('../zones/cdl/CdlStandaloneApp'))
 const DevSettings = lazy(() => import('../zones/dev/DevSettings'))
 const DiagnosticsZone = lazy(() => import('../zones/dev/DiagnosticsZone'))
 const NewZonePage = lazy(() => import('../zones/builder/NewZonePage'))
@@ -81,6 +83,9 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
       break
     case 'tools-chord-detector':
       body = <ToolsChordDetectorPage onNavigate={onNavigate} />
+      break
+    case 'tools-note-detector-2':
+      body = <ToolsNoteDetector2Page onNavigate={onNavigate} />
       break
     case 'tools-tempo-tap':
       body = <ToolsTempoTapPage onNavigate={onNavigate} />
@@ -140,6 +145,9 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
       break
     case 'cdl-hub':
       body = <CdlHubZone onNavigate={onNavigate} />
+      break
+    case 'cdl-practice-app':
+      body = <CdlStandaloneApp />
       break
     case 'cdl-hazmat':
       body = <CdlHazmatPage />

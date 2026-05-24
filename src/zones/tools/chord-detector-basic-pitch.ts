@@ -17,6 +17,26 @@ import modelJsonUrl from '@spotify/basic-pitch/model/model.json?url'
 
 const TARGET_SR = 22050
 
+/**
+ * Return a Float32Array that owns a fresh, byte-zero-offset ArrayBuffer.
+ *
+ * Some browsers (e.g. recent Chrome on certain platforms) return the channel
+ * data from `OfflineAudioContext` as a *view* into a larger backing buffer —
+ * non-zero `byteOffset`, or `byteLength < buffer.byteLength`. TFJS then runs
+ * `new Int32Array(buffer)` on that underlying buffer during inference, and
+ * if its total length isn't divisible by 4 it throws
+ *   "byte length of Int32Array should be a multiple of 4".
+ *
+ * Copying into a freshly-allocated Float32Array guarantees byteOffset === 0
+ * and byteLength === length * 4 (always a multiple of 4). Cheap insurance.
+ */
+function ensureAlignedFloat32(arr: Float32Array): Float32Array {
+  if (arr.byteOffset === 0 && arr.byteLength === arr.buffer.byteLength) return arr
+  const out = new Float32Array(arr.length)
+  out.set(arr)
+  return out
+}
+
 export type BasicPitchTranscription = {
   ok: true
   leadNotes: LeadNote[]
@@ -67,7 +87,7 @@ export async function resampleMonoTo22050(
   mono: Float32Array,
   sourceSampleRate: number,
 ): Promise<Float32Array> {
-  if (sourceSampleRate === TARGET_SR) return mono
+  if (sourceSampleRate === TARGET_SR) return ensureAlignedFloat32(mono)
   const durationSec = mono.length / sourceSampleRate
   const outFrames = Math.max(1, Math.ceil(durationSec * TARGET_SR))
   const offline = new OfflineAudioContext(1, outFrames, TARGET_SR)
@@ -78,7 +98,8 @@ export async function resampleMonoTo22050(
   src.connect(offline.destination)
   src.start(0)
   const rendered = await offline.startRendering()
-  return rendered.getChannelData(0)
+  /* Always own the buffer we hand to TFJS — see ensureAlignedFloat32 docstring. */
+  return ensureAlignedFloat32(rendered.getChannelData(0))
 }
 
 function histogramFromLeadNotes(notes: readonly LeadNote[]): number[] {
@@ -145,6 +166,72 @@ function dropSemitoneFlatOnsetShadows(notes: readonly LeadNote[]): LeadNote[] {
 }
 
 /**
+ * Clip note durations so MIDI playback sounds clean.
+ *
+ * Basic Pitch is good at detecting onsets but its note-OFF detection is weaker —
+ * sustained or repeated tones often come out as a single long note instead of a
+ * sequence of articulated notes. On playback, consecutive same-pitch notes then
+ * blend into one held tone ("bleed"), which is technically inaccurate to the
+ * source audio.
+ *
+ * Two safeguards, in order:
+ *   1. Same-pitch release gap — if the next note of the same pitch starts before
+ *      this one would naturally release, clip this note to end with a small gap
+ *      before that re-attack. Distinct articulations stay distinct on playback.
+ *   2. Absolute duration cap — clamp any note longer than `maxDurationSec`. Catches
+ *      held-forever tones the model failed to release at all.
+ *
+ * Defaults favor clean playback over absolute sustain fidelity; raise
+ * `maxDurationSec` if you want longer musical sustains preserved.
+ */
+function clipDurationsForCleanPlayback(
+  notes: readonly LeadNote[],
+  {
+    releaseGapSec = 0.04, // 40 ms — short enough to be musically invisible, long enough to register as a release
+    maxDurationSec = 0.4, // ~quarter-note at 150 BPM; aggressive enough to break up bleed
+  }: { releaseGapSec?: number; maxDurationSec?: number } = {},
+): LeadNote[] {
+  if (notes.length === 0) return []
+
+  /* Group by rounded pitch and pre-sort so each note can find its same-pitch
+   * successor in O(log n) via the sorted lane (linear scan is plenty fast at
+   * typical clip sizes — we keep it simple). */
+  const byPitch = new Map<number, LeadNote[]>()
+  for (const n of notes) {
+    const m = Math.round(n.midi)
+    let arr = byPitch.get(m)
+    if (!arr) {
+      arr = []
+      byPitch.set(m, arr)
+    }
+    arr.push(n)
+  }
+  for (const arr of byPitch.values()) arr.sort((a, b) => a.startSec - b.startSec)
+
+  return notes.map(n => {
+    const lane = byPitch.get(Math.round(n.midi))!
+    /* Next note in the same pitch lane that starts strictly after this one. */
+    let nextStart: number | null = null
+    for (const x of lane) {
+      if (x.startSec > n.startSec) {
+        nextStart = x.startSec
+        break
+      }
+    }
+    let dur = n.durationSec
+    if (nextStart != null) {
+      const allowedEnd = nextStart - releaseGapSec
+      if (n.startSec + dur > allowedEnd) {
+        /* Clip; never below 1/128 sec so the note is still audible on playback. */
+        dur = Math.max(1 / 128, allowedEnd - n.startSec)
+      }
+    }
+    if (dur > maxDurationSec) dur = maxDurationSec
+    return { ...n, durationSec: dur }
+  })
+}
+
+/**
  * Run Basic Pitch on mono audio already at 22050 Hz. Caller trims duration caps.
  * @param basicPitchDecode — partial overrides of `NEURALNOTE_STYLE.basicPitch`.
  *
@@ -169,8 +256,14 @@ export async function transcribeMono22050ToLeadNotes(
     const onsetsAgg: number[][] = []
     const contoursAgg: number[][] = []
 
+    /* Defensive: a misaligned mono22050 (non-zero byteOffset or buffer-trailing bytes)
+     * is what causes TFJS to throw "byte length of Int32Array should be a multiple of 4".
+     * resampleMonoTo22050() already aligns its output, but callers may construct
+     * mono22050 elsewhere — copy if needed, cheap. */
+    const audio = ensureAlignedFloat32(mono22050)
+
     await pitchModel.evaluateModel(
-      mono22050,
+      audio,
       (frames, onsets, contours) => {
         for (const row of frames) framesAgg.push(row)
         for (const row of onsets) onsetsAgg.push(row)
@@ -206,8 +299,11 @@ export async function transcribeMono22050ToLeadNotes(
       velocity: Math.max(0.08, Math.min(1, n.amplitude)),
     }))
     /* Clean semitone-flat onset-shadow ghosts before they reach the key histogram and
-     * the beat-level chord blend (engine's `leadNotesRaw`). */
-    const leadNotes = dropSemitoneFlatOnsetShadows(leadNotesRaw)
+     * the beat-level chord blend (engine's `leadNotesRaw`). Then clip durations so
+     * consecutive same-pitch notes don't bleed into one held tone on playback. */
+    const leadNotes = clipDurationsForCleanPlayback(
+      dropSemitoneFlatOnsetShadows(leadNotesRaw),
+    )
 
     /* DEV-only: expose the true pre-filter BP output so the MIDI-debug harness can
      * tell whether the ghost filter (vs Basic Pitch itself) thins the high register. */

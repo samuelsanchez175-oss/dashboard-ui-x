@@ -158,6 +158,12 @@ export const CLIENT_VITE_DIAG_ENTRIES: readonly ClientViteDiagEntry[] = [
     placeholderSeverity: 'warn',
   },
   {
+    envKey: 'VITE_ND2_API',
+    label: 'Note Detector 2 backend URL (default http://localhost:8000)',
+    missingSeverity: 'ok',
+    placeholderSeverity: 'warn',
+  },
+  {
     envKey: 'VITE_LOCAL_LLM_BASE_URL',
     label: 'Local LLM base URL (Ollama, etc.)',
     missingSeverity: 'ok',

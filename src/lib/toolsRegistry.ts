@@ -7,6 +7,7 @@ import {
   Drum,
   LayoutList,
   MonitorPlay,
+  Music4,
   Radio,
   Timer,
   WholeWord,
@@ -93,6 +94,21 @@ export const TOOLS_REGISTRY: ToolDef[] = [
     icon:        AudioWaveform,
     category:    'audio',
     description: 'Transcribe chord progression from audio.',
+    badge:       'Beta',
+    family:      'detection',
+  },
+  {
+    /* Docker-backed sibling of Chord Detector — Demucs stem separation +
+     * basic-pitch per stem, served by the FastAPI app under `note-detector-2/`.
+     * Needs `docker compose up` running locally; the page shows a clear
+     * "service down" banner otherwise. */
+    id:          'tools-note-detector-2',
+    routeId:     'tools-note-detector-2',
+    label:       'Note Detector 2',
+    longLabel:   'Note Detector 2',
+    icon:        Music4,
+    category:    'audio',
+    description: 'Demucs-split audio → per-stem MIDI (local Docker service).',
     badge:       'Beta',
     family:      'detection',
   },

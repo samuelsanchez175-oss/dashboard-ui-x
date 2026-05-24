@@ -23,6 +23,7 @@ import {
   Rss,
   School,
   SlidersHorizontal,
+  Smartphone,
   Stethoscope,
   Truck,
   Wand2,
@@ -111,6 +112,7 @@ export const NAV_SECTIONS: NavSection[] = [
     id:    'cdl',
     title: 'CDL PRAC',
     items: [
+      { id: 'cdl-practice-app', label: '📱 CDL Mobile App', icon: Smartphone, badge: 'NEW', badgeClass: 'bg-cyan-500/10 text-[#22d3ee] border-[#22d3ee]/30' },
       { id: 'cdl-hub', label: 'All quizzes', icon: GraduationCap, badge: 13 },
       { id: 'cdl-hazmat', label: 'Hazmat (H)', icon: Biohazard },
       { id: 'cdl-air-brakes', label: 'Air Brakes', icon: Disc },

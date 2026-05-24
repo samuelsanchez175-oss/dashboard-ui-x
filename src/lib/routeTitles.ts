@@ -10,6 +10,7 @@ const NON_TOOL_TITLES: Record<string, string> = {
   'cdl-doubles-triples': 'Doubles & triples',
   'cdl-hazmat': 'Hazmat',
   'cdl-hub': 'Study hub',
+  'cdl-practice-app': 'CDL Practice Mobile App',
   'cdl-passenger': 'Passenger',
   'cdl-pretrip-cabin': 'Pre-trip: in-cabin',
   'cdl-pretrip-coupling': 'Pre-trip: coupling',

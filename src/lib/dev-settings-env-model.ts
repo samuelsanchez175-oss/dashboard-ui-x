@@ -404,6 +404,33 @@ export const DEV_SETTINGS_ENV_MODEL: readonly DevSettingsEnvModelEntry[] = [
     sourceResolutionNote: 'Vite-inlined; restart dev after `.env.local` edits.',
   },
   {
+    /* Local Docker service URL for Note Detector 2 (Demucs + basic-pitch).
+     * Empty falls back to `http://localhost:8000`. Browser-side only —
+     * the BFF doesn't read this, the tool page fetches it directly. */
+    id: 'vite-nd2-api',
+    storageKey: 'VITE_ND2_API',
+    envKeys: ['VITE_ND2_API'],
+    label: 'Note Detector 2 backend URL',
+    role: 'Local Docker / FastAPI service',
+    oneLinePurpose:
+      'Base URL of the note-detector-2 FastAPI service (Demucs + basic-pitch). Default `http://localhost:8000`; set this if you serve it on a different host or port.',
+    powers: ['Note Detector 2 tool'],
+    usedIn: [
+      '`ToolsNoteDetector2Page.tsx` — POST /transcribe, GET /status, GET /download',
+      '`note-detector-2/scripts/bench.mjs` (uses ND2_API env var, same default)',
+    ],
+    optional: true,
+    scope: 'client',
+    inputKind: 'text',
+    sectionId: 'client-vite',
+    supportsLocalScratch: true,
+    sourceResolutionNote:
+      'Vite-inlined; restart dev after `.env.local` edits. Default `http://localhost:8000` is correct when you run `cd note-detector-2 && docker compose up`.',
+    retrievalLinks: [
+      { label: 'Tool source', href: 'https://github.com/' },
+    ],
+  },
+  {
     id: 'vite-local-llm-base',
     storageKey: 'VITE_LOCAL_LLM_BASE_URL',
     envKeys: ['VITE_LOCAL_LLM_BASE_URL'],
@@ -525,6 +552,16 @@ export function probeRouteForStorageKey(envKey: string): { label: string; url: s
       return { label: 'YT Channel', url: '/api/youtube/channel' }
     case 'HARMONY_CLIENT_PROJECTS_AI_KEY':
       return { label: 'Harmony CP AI', url: '/api/harmony/client-projects/ai-health' }
+    case 'VITE_ND2_API': {
+      /* Probe the actual configured backend URL (browser-direct, not via BFF).
+       * Reads the live value from localStorage or env at call time so the probe
+       * reflects whatever the user just typed into the field. */
+      const live =
+        (typeof localStorage !== 'undefined' && localStorage.getItem('VITE_ND2_API')) ||
+        (import.meta.env?.VITE_ND2_API as string | undefined) ||
+        'http://localhost:8000'
+      return { label: 'ND2 backend', url: `${live.replace(/\/+$/, '')}/` }
+    }
     default:
       return null
   }

@@ -38,12 +38,16 @@ const INPUTS = [
     path: '/Users/samuel/Desktop/Notes 2.wav',
   },
   {
+    label: 'notes-wav',
+    path: '/Users/samuel/Desktop/Notes.wav',
+  },
+  {
     /* User-curated ground-truth MIDI as a direct input. The engine has a
      * separate MIDI path that bypasses BP entirely (most pipeline stages
      * skip for MIDI input). Useful as a sanity check — the score against
      * GT should be near 100 % for any config since the input IS the GT. */
     label: 'frank-mid',
-    path: '/Users/samuel/Downloads/frank  Perfect acura girll .mid',
+    path: '/Users/samuel/Desktop/frank  Perfect acura girll .mid',
   },
 ]
 
