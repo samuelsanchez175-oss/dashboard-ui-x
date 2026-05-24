@@ -1665,37 +1665,39 @@ function QuizTile({
   return (
     <button
       onClick={onClick}
-      className="w-full text-left p-4 border border-[#13212c] rounded-xl bg-[#0a0f14] flex flex-col gap-3 transition-all hover:border-[#22d3ee] group relative overflow-hidden"
+      className="w-full text-left p-3.5 border border-[#13212c] rounded-xl bg-[#0a0f14] flex items-center gap-3.5 transition-all hover:border-[#22d3ee] group shrink-0 cursor-pointer"
     >
-      {/* Side Color bar */}
-      <div className="absolute left-0 inset-y-0 w-[4px]" style={{ background: quiz.accent }}></div>
-
-      <div className="flex items-start justify-between gap-3 pl-1">
-        <div>
-          <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: quiz.accent }}>
-            {quiz.endorse}
-          </span>
-          <h3 className="text-sm font-extrabold text-zinc-100 uppercase mt-0.5">
-            {quiz.label}
-          </h3>
-        </div>
-        <ChevronRight className="size-4 text-[#4e7385] group-hover:text-[#22d3ee] transition-colors mt-1" />
+      {/* 🟦 COLORED SQUARE LEFT EMBLEM 🟦 */}
+      <div 
+        className="size-11 rounded-lg shrink-0 flex flex-col items-center justify-center font-black text-black text-[10px] font-mono leading-none tracking-tighter shadow-md"
+        style={{ background: quiz.accent }}
+      >
+        {quiz.endorse}
       </div>
 
-      <p className="text-[11px] text-[#4e7385] leading-relaxed pl-1">
-        {quiz.desc}
-      </p>
+      {/* Content Column */}
+      <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-black text-zinc-100 uppercase truncate">
+            {quiz.label}
+          </h3>
+          <ChevronRight className="size-4 text-[#4e7385] group-hover:text-[#22d3ee] transition-colors shrink-0" />
+        </div>
+        <p className="text-[10px] text-[#4e7385] leading-snug truncate">
+          {quiz.desc}
+        </p>
 
-      {/* Record info or questions size indicator */}
-      <div className="flex items-center justify-between border-t border-[#13212c]/40 pt-2.5 pl-1 text-[10px] text-[#4e7385] font-bold">
-        <span>{quiz.officialCount} QUESTIONS</span>
-        {record ? (
-          <span className="font-extrabold uppercase tracking-wider" style={{ color: statusColor }}>
-            {record.passed ? '✓ PASSED' : '✗ FAILED'} ({record.score}/{record.total})
-          </span>
-        ) : (
-          <span className="text-[#4e7385] uppercase tracking-wider">NOT DRILL YET</span>
-        )}
+        {/* Record info or questions size indicator */}
+        <div className="flex items-center justify-between border-t border-[#13212c]/40 pt-1 text-[9px] text-[#4e7385] font-bold">
+          <span>{quiz.officialCount} QUESTIONS</span>
+          {record ? (
+            <span className="font-extrabold uppercase tracking-wider" style={{ color: statusColor }}>
+              {record.passed ? '✓ PASSED' : '✗ FAILED'} ({record.score}/{record.total})
+            </span>
+          ) : (
+            <span className="text-[#4e7385] uppercase tracking-wider">NOT DRILL YET</span>
+          )}
+        </div>
       </div>
     </button>
   )
