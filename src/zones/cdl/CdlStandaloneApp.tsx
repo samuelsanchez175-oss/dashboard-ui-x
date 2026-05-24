@@ -29,6 +29,7 @@ import {
   Fuel,
   Bus,
   School,
+  SlidersHorizontal,
   Workflow,
   Wrench,
   CircleDot,
