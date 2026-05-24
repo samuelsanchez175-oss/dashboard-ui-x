@@ -186,6 +186,7 @@ export default function CdlStandaloneApp() {
   const [deviceMode, setDeviceMode] = useState<'ios' | 'android' | 'fullscreen'>('ios')
   const [appState, setAppState] = useState<'welcome' | 'dashboard'>('welcome')
   const [activeTab, setActiveTab] = useState<'home' | 'endorsements' | 'pretrip' | 'partsmap' | 'deepdive' | 'stats'>('home')
+  const [sidebarExpanded, setSidebarExpanded] = useState(true)
 
   // Screen level states (if not in tabs, we are in a quiz or study sheet)
   const [activeQuiz, setActiveQuiz] = useState<QuizMeta | null>(null)
@@ -249,8 +250,13 @@ export default function CdlStandaloneApp() {
     if (
       target.tagName === 'BUTTON' || 
       target.tagName === 'INPUT' || 
+      target.tagName === 'circle' || 
+      target.tagName === 'path' || 
+      target.tagName === 'svg' || 
+      target.tagName === 'text' || 
       target.closest('button') || 
       target.closest('input') ||
+      target.closest('g') ||
       target.closest('.parts-hotspot')
     ) {
       return
@@ -463,7 +469,7 @@ export default function CdlStandaloneApp() {
       <div 
         className={`relative transition-all duration-300 ${
           deviceMode === 'fullscreen' 
-            ? 'w-full max-w-full h-[85vh] rounded-none' 
+            ? 'w-full max-w-full h-[90vh] md:h-[92vh] rounded-none' 
             : deviceMode === 'ios'
               ? 'w-[400px] h-[820px] rounded-[50px] border-[12px] border-[#222] shadow-[0_0_80px_rgba(34,211,238,0.15)] ring-4 ring-[#333]'
               : 'w-[420px] h-[800px] rounded-[36px] border-[16px] border-[#1c1c1c] shadow-[0_0_80px_rgba(34,211,238,0.15)] ring-4 ring-[#222]'
@@ -600,10 +606,20 @@ export default function CdlStandaloneApp() {
             <div className="flex-1 flex flex-col overflow-hidden bg-[#04070a]">
               
               {/* ── DYNAMIC HEADER BAR ── */}
-              <header className="px-4 py-3 border-b border-[#13212c] bg-[#0a0f14] flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-2">
-                  <Truck className="size-5 text-[#22d3ee]" />
-                  <span className="font-extrabold text-[12px] tracking-[0.2em] text-[#d1ebf7]">CDL MOBILE</span>
+              <header className="px-3.5 py-2.5 border-b border-[#13212c] bg-[#0a0f14] flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-2.5">
+                  {/* Sidebar Toggle Button tucked into top left corner */}
+                  <button
+                    onClick={() => { playSynthSound('click'); setSidebarExpanded(!sidebarExpanded) }}
+                    className="p-1.5 rounded border border-[#13212c] bg-[#070b0f] text-[#4e7385] hover:text-[#22d3ee] transition-all flex items-center justify-center cursor-pointer shrink-0"
+                    title={sidebarExpanded ? "Hide Navigation Panel" : "Show Navigation Panel"}
+                  >
+                    <SlidersHorizontal className={`size-3.5 transition-transform ${sidebarExpanded ? 'rotate-180' : ''}`} />
+                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <Truck className="size-4.5 text-[#22d3ee] shrink-0" />
+                    <span className="font-extrabold text-[11px] tracking-[0.15em] text-[#d1ebf7] truncate">CDL MOBILE</span>
+                  </div>
                 </div>
                 
                 {/* Audio speaker toggle */}
@@ -620,7 +636,11 @@ export default function CdlStandaloneApp() {
               <div className="flex-1 flex overflow-hidden">
                 
                 {/* LEFT TABS SIDEBAR (SIMPLE NAV SYSTEM) */}
-                <nav className="w-[72px] shrink-0 border-r border-[#13212c] bg-[#070b0f] flex flex-col py-3 gap-5 items-center shrink-0">
+                <nav 
+                  className={`transition-all duration-300 ${
+                    sidebarExpanded ? 'w-[56px] px-1 border-r border-[#13212c]' : 'w-0 overflow-hidden border-r-0'
+                  } shrink-0 bg-[#070b0f] flex flex-col py-3 gap-4 items-center`}
+                >
                   
                   {/* Home tab */}
                   <TabButton
@@ -1580,17 +1600,18 @@ function TabButton({
   return (
     <button
       onClick={onClick}
-      className="w-full flex flex-col items-center justify-center gap-1 transition-all py-2 border-l-[3px]"
+      className="size-11 flex flex-col items-center justify-center transition-all rounded-lg border shrink-0 cursor-pointer"
       style={{
         borderColor: active ? '#22d3ee' : 'transparent',
         color: active ? '#22d3ee' : '#4e7385',
-        background: active ? 'rgba(34, 211, 238, 0.03)' : 'transparent'
+        background: active ? 'rgba(34, 211, 238, 0.08)' : 'transparent',
+        boxShadow: active ? '0 0 10px rgba(34, 211, 238, 0.15)' : 'none'
       }}
       title={label}
     >
-      <Icon className={`size-5 transition-transform ${active ? 'scale-110' : ''}`} />
-      <span className="text-[8px] font-black tracking-wider text-center uppercase shrink-0 mt-0.5">
-        {label}
+      <Icon className={`size-4.5 transition-transform ${active ? 'scale-110' : ''}`} />
+      <span className="text-[7px] font-black tracking-tighter text-center uppercase shrink-0 mt-0.5" style={{ fontSize: '7px', transform: 'scale(0.95)', lineHeight: '1.1' }}>
+        {label.split(' ')[0]}
       </span>
     </button>
   )
