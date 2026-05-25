@@ -1110,7 +1110,7 @@ export default function CdlStandaloneApp() {
                         </div>
 
                         {/* Catalog list container */}
-                        <div className="flex flex-col gap-2.5 max-h-[380px] overflow-y-auto pr-1">
+                        <div className="flex flex-col gap-2.5">
                           {catalogTab === 'endorsements' ? (
                             QUIZZES.map(quiz => {
                               const record = completedTests.find(p => p.id === quiz.id)
