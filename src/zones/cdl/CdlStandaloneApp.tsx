@@ -263,7 +263,7 @@ export default function CdlStandaloneApp() {
       return
     }
     isDragging.current = true
-    startY.current = e.pageY - (scrollRef.current?.offsetTop || 0)
+    startY.current = e.clientY
     scrollTop.current = scrollRef.current?.scrollTop || 0
     if (scrollRef.current) {
       scrollRef.current.style.cursor = 'grabbing'
@@ -273,9 +273,8 @@ export default function CdlStandaloneApp() {
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging.current || !scrollRef.current) return
     e.preventDefault()
-    const y = e.pageY - (scrollRef.current.offsetTop || 0)
-    const walk = (y - startY.current) * 1.5 // Scroll speed factor
-    scrollRef.current.scrollTop = scrollTop.current - walk
+    const deltaY = e.clientY - startY.current
+    scrollRef.current.scrollTop = scrollTop.current - deltaY * 1.5
   }
 
   const handleMouseUpOrLeave = () => {
