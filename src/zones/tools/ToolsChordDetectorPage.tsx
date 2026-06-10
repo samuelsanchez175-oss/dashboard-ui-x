@@ -26,6 +26,7 @@ import {
   validateChordOutput,
   type AuditReport,
   type ChordAnalysisResult,
+  type ChordDetectorAnalyzeOptions,
   type NeuralNoteStyleMelodyPostInput,
   type ValidationReport,
 } from './chord-detector-engine'
@@ -1276,8 +1277,6 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
     setAiAppliedSnapshot(null)
   }, [])
 
-  /* ── Derived display values ── */
-  const bpmDisplay = result ? String(result.bpm).padStart(3, '0') : '---'
   return (
     <div
       className="flex min-h-0 flex-1 flex-col overflow-hidden"
@@ -2234,7 +2233,7 @@ function PillButton({
   )
 }
 
-function CircleNum({ n }: { n: number }) {
+export function CircleNum({ n }: { n: number }) {
   return (
     <span
       className="grid place-items-center rounded-full"

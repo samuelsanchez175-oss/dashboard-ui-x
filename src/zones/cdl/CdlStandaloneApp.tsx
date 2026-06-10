@@ -3,7 +3,6 @@ import {
   Smartphone,
   Tablet,
   Award,
-  BookOpen,
   RotateCcw,
   Sparkles,
   MapPin,
@@ -14,14 +13,10 @@ import {
   HelpCircle,
   Volume2,
   VolumeX,
-  Play,
   ArrowRight,
-  TrendingUp,
   Activity,
-  Layers,
   ChevronLeft,
   ChevronRight,
-  GraduationCap,
   Truck,
   Disc,
   Droplets,
@@ -55,15 +50,9 @@ import {
   type CdlQuestion
 } from './cdl-questions'
 
-import {
-  DEEP_DIVE_SECTIONS,
-  type DeepDiveItem
-} from './cdl-pretrip-deep-data'
+import { DEEP_DIVE_SECTIONS } from './cdl-pretrip-deep-data'
 
-import {
-  PRETRIP_INSPECTION_SECTIONS,
-  type PartHotspot
-} from './cdl-pretrip-parts-map-data'
+import { PRETRIP_INSPECTION_SECTIONS } from './cdl-pretrip-parts-map-data'
 
 /* ── REAL-TIME SOUND EFFECT SYNTHESIZER ── */
 function playSynthSound(type: 'correct' | 'wrong' | 'click') {
@@ -149,6 +138,7 @@ interface QuizMeta {
   officialCount: number
   endorse: string
   accent: string
+  accentSoft?: string
   icon: any
   questions: CdlQuestion[]
 }
@@ -1618,7 +1608,7 @@ function TabButton({
 }
 
 /* ── SMALL SHORTCUT ROW BUTTON HELPER ── */
-function ShortcutRow({
+export function ShortcutRow({
   label,
   desc,
   icon: Icon,

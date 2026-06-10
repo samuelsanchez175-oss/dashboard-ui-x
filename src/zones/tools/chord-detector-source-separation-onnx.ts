@@ -33,7 +33,7 @@
  * if the source separation is doing its job).
  */
 
-import type { InferenceSession } from 'onnxruntime-web'
+import type { InferenceSession, Tensor } from 'onnxruntime-web'
 
 /** Config for a single ONNX separator model registered in the registry. */
 export interface OnnxSeparatorConfig {
@@ -236,7 +236,7 @@ export async function isolateHarmonicOnnx(
     throw new Error(`ONNX session for ${configKey} reports no input names.`)
   }
   const inputTensor = new ort.Tensor('float32', magnitude, [1, 1, numFrames, numBins])
-  const feeds: Record<string, ort.Tensor> = { [inputName]: inputTensor }
+  const feeds: Record<string, Tensor> = { [inputName]: inputTensor }
   const outputs = await session.run(feeds)
   const outputNames = config.outputNames ?? session.outputNames
 

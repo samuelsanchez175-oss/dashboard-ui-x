@@ -6,6 +6,11 @@
     "module": "esnext",
     "types": ["vite/client"],
     "skipLibCheck": true,
+    /* onnxruntime-web ships types.d.ts but its package "exports" hides it from
+       bundler-mode resolution — map the module name straight to the typings. */
+    "paths": {
+      "onnxruntime-web": ["./node_modules/onnxruntime-web/types.d.ts"]
+    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",

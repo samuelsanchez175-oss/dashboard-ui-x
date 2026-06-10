@@ -69,10 +69,10 @@ function buildPolishPrompt(result: ChordAnalysisResult): string {
   const progression = result.segments
     .map(s => `${s.label} (${s.startSec.toFixed(2)}s, ${s.durationSec.toFixed(2)}s)`)
     .join(' → ')
-  const auditMissing = result.audit?.missingNotes
-    ?.map(m => `${m.pc} (source ${(m.sourceShare * 100).toFixed(1)}%, output 0%, @${m.peakSec.toFixed(1)}s)`)
+  const auditMissing = result.audit?.missingNoteCandidates
+    ?.map(m => `${m.pc} (source ${(m.chromaShare * 100).toFixed(1)}%, output ${(m.noteShare * 100).toFixed(1)}%, @${m.atSec?.toFixed(1) ?? '?'}s)`)
     .join('; ') ?? 'none flagged'
-  const auditLoop = result.audit?.loopOverall ?? 'unknown'
+  const auditLoop = result.audit?.loopAudit.overall ?? 'unknown'
   const keyConfPct = Math.round((result.estimatedKey.confidence ?? 0) * 100)
 
   return `You are a session musician + music-theory tutor reviewing the output of an
