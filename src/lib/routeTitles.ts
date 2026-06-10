@@ -22,6 +22,7 @@ const NON_TOOL_TITLES: Record<string, string> = {
   'cdl-tanker-doubles': 'Tanker + doubles',
   'cdl-tanker-hazmat': 'Tanker + hazmat',
   'cpw-projects': 'C.Please projects',
+  'daily-brief': 'Daily brief',
   'dev': 'Dev settings',
   'dev-diagnostics': 'Diagnostics',
   'harmony-portfolio': 'Harmony portfolio',

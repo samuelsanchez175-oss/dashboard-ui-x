@@ -30,6 +30,7 @@ const ToolsNoteDetector2Page = lazy(() => import('../zones/tools/ToolsNoteDetect
 const WebDesignerZone = lazy(() => import('../zones/web-designer/WebDesignerZone'))
 const TeslaFleet = lazy(() => import('../zones/tesla/TeslaMock'))
 const PulseDigest = lazy(() => import('../zones/pulse/PulseDigest'))
+const DailyBriefZone = lazy(() => import('../zones/brief/DailyBriefZone'))
 const CdlHubZone = lazy(() => import('../zones/cdl/CdlHubZone'))
 const CdlHazmatPage = lazy(() => import('../zones/cdl/CdlHazmatPage'))
 const CdlAirBrakesPage = lazy(() => import('../zones/cdl/CdlAirBrakesPage'))
@@ -142,6 +143,9 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
       break
     case 'pulse':
       body = <PulseDigest />
+      break
+    case 'daily-brief':
+      body = <DailyBriefZone />
       break
     case 'cdl-hub':
       body = <CdlHubZone onNavigate={onNavigate} />

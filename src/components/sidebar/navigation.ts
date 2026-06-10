@@ -25,6 +25,7 @@ import {
   SlidersHorizontal,
   Smartphone,
   Stethoscope,
+  Sunrise,
   Truck,
   Wand2,
   Workflow,
@@ -63,6 +64,11 @@ const TOOLS_SECTION_ITEMS: NavItem[] = [
 ]
 
 export const NAV_SECTIONS: NavSection[] = [
+  {
+    id:    'brief',
+    title: 'DAILY BRIEF',
+    items: [{ id: 'daily-brief', label: 'Daily Brief', icon: Sunrise }],
+  },
   {
     id:    'tools',
     title: 'TOOLS',
