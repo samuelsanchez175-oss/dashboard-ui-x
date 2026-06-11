@@ -24,6 +24,7 @@ export function BffConfigProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch config on mount; the loading flag set before the await is intentional
     void refresh()
   }, [refresh])
 
@@ -52,6 +53,7 @@ export function BffConfigProvider({ children }: { children: ReactNode }) {
   return <BffConfigContext.Provider value={value}>{children}</BffConfigContext.Provider>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- provider + hook colocated (context pattern); fast-refresh granularity only, no runtime impact
 export function useBffConfig(): BffConfigContextValue {
   const ctx = useContext(BffConfigContext)
   if (!ctx) throw new Error('useBffConfig must be used within BffConfigProvider')

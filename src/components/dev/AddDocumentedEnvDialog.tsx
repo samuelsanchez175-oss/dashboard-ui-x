@@ -74,6 +74,7 @@ export default function AddDocumentedEnvDialog({
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset form fields when the dialog opens (`open` is a prop; reset-on-open is intended)
     if (open) resetFields()
   }, [open, resetFields])
 

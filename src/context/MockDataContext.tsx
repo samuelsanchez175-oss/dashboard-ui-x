@@ -53,6 +53,7 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
   return <MockDataContext.Provider value={value}>{children}</MockDataContext.Provider>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- provider + hook colocated (context pattern); fast-refresh granularity only, no runtime impact
 export function useMockData(): MockDataContextValue {
   const ctx = useContext(MockDataContext)
   if (!ctx) throw new Error('useMockData must be used within MockDataProvider')

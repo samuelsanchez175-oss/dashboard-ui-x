@@ -203,7 +203,7 @@ export function findBarsByPhonetic(
   for (const bar of bars) {
     const e = bar.phoneticEnding.toUpperCase()
     if (!e) continue
-    let score = 0
+    let score: number
     if (e.endsWith(userTail2) && userTail2.length > 2) score = 3
     else if (e.endsWith(userTail1)) score = 2
     else continue

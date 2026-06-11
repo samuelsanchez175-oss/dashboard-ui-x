@@ -157,7 +157,7 @@ export default function ToolsKeyFinderPage({ onNavigate }: ToolsKeyFinderPagePro
   useEffect(() => {
     let cancelled = false
     void (async () => {
-      let id: string | null = null
+      let id: string | null
       try {
         id = sessionStorage.getItem('inbound-clip-tools-key-finder')
         if (id) sessionStorage.removeItem('inbound-clip-tools-key-finder')

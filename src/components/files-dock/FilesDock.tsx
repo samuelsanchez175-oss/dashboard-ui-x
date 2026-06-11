@@ -140,11 +140,13 @@ export default function FilesDock() {
   )
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- clear stale selection when the active file leaves the filtered list
     if (active && !visibleFiles.some(f => f.id === active)) setActive(null)
   }, [active, visibleFiles])
 
   useEffect(() => {
     if (hoverId && !visibleFiles.some(f => f.id === hoverId)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- clear stale hover state when the hovered file leaves the filtered list
       setHoverId(null)
       setHoverCenterX(null)
       setHoverTopY(null)
@@ -253,6 +255,7 @@ export default function FilesDock() {
   /* Resolve the preview file from the current list — if it was deleted while open, close. */
   const previewFile = previewId ? files.find(f => f.id === previewId) ?? null : null
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- close the preview when its file is deleted from the list
     if (previewId && !previewFile) setPreviewId(null)
   }, [previewId, previewFile])
 

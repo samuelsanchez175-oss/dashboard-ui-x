@@ -33,23 +33,6 @@ const PolymarketWallet = lazy(() => import('../zones/polymarket/PolymarketWallet
 const PolymarketCopy = lazy(() => import('../zones/polymarket/CopyTraderZone'))
 const PulseDigest = lazy(() => import('../zones/pulse/PulseDigest'))
 const DailyBriefZone = lazy(() => import('../zones/brief/DailyBriefZone'))
-const CdlHubZone = lazy(() => import('../zones/cdl/CdlHubZone'))
-const CdlHazmatPage = lazy(() => import('../zones/cdl/CdlHazmatPage'))
-const CdlAirBrakesPage = lazy(() => import('../zones/cdl/CdlAirBrakesPage'))
-const CdlTankerPage = lazy(() => import('../zones/cdl/CdlTankerPage'))
-const CdlDoublesTriplesPage = lazy(() => import('../zones/cdl/CdlDoublesTriplesPage'))
-const CdlTankerDoublesPage = lazy(() => import('../zones/cdl/CdlTankerDoublesPage'))
-const CdlTankerHazmatPage = lazy(() => import('../zones/cdl/CdlTankerHazmatPage'))
-const CdlPassengerPage = lazy(() => import('../zones/cdl/CdlPassengerPage'))
-const CdlSchoolBusPage = lazy(() => import('../zones/cdl/CdlSchoolBusPage'))
-const CdlPreTripCabinPage = lazy(() => import('../zones/cdl/CdlPreTripCabinPage'))
-const CdlPreTripEngineBayPage = lazy(() => import('../zones/cdl/CdlPreTripEngineBayPage'))
-const CdlPreTripSteeringAxlePage = lazy(() => import('../zones/cdl/CdlPreTripSteeringAxlePage'))
-const CdlPreTripCouplingPage = lazy(() => import('../zones/cdl/CdlPreTripCouplingPage'))
-const CdlPreTripTrailerPage = lazy(() => import('../zones/cdl/CdlPreTripTrailerPage'))
-const CdlPreTripPartsMap = lazy(() => import('../zones/cdl/CdlPreTripPartsMap'))
-const CdlPreTripDeepDive = lazy(() => import('../zones/cdl/CdlPreTripDeepDive'))
-const CdlStandaloneApp = lazy(() => import('../zones/cdl/CdlStandaloneApp'))
 const DevSettings = lazy(() => import('../zones/dev/DevSettings'))
 const DiagnosticsZone = lazy(() => import('../zones/dev/DiagnosticsZone'))
 const NewZonePage = lazy(() => import('../zones/builder/NewZonePage'))
@@ -148,57 +131,6 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
       break
     case 'daily-brief':
       body = <DailyBriefZone />
-      break
-    case 'cdl-hub':
-      body = <CdlHubZone onNavigate={onNavigate} />
-      break
-    case 'cdl-practice-app':
-      body = <CdlStandaloneApp />
-      break
-    case 'cdl-hazmat':
-      body = <CdlHazmatPage />
-      break
-    case 'cdl-air-brakes':
-      body = <CdlAirBrakesPage />
-      break
-    case 'cdl-tanker':
-      body = <CdlTankerPage />
-      break
-    case 'cdl-doubles-triples':
-      body = <CdlDoublesTriplesPage />
-      break
-    case 'cdl-tanker-doubles':
-      body = <CdlTankerDoublesPage />
-      break
-    case 'cdl-tanker-hazmat':
-      body = <CdlTankerHazmatPage />
-      break
-    case 'cdl-passenger':
-      body = <CdlPassengerPage />
-      break
-    case 'cdl-school-bus':
-      body = <CdlSchoolBusPage />
-      break
-    case 'cdl-pretrip-cabin':
-      body = <CdlPreTripCabinPage />
-      break
-    case 'cdl-pretrip-engine-bay':
-      body = <CdlPreTripEngineBayPage />
-      break
-    case 'cdl-pretrip-steering-axle':
-      body = <CdlPreTripSteeringAxlePage />
-      break
-    case 'cdl-pretrip-coupling':
-      body = <CdlPreTripCouplingPage />
-      break
-    case 'cdl-pretrip-trailer':
-      body = <CdlPreTripTrailerPage />
-      break
-    case 'cdl-pretrip-parts-map':
-      body = <CdlPreTripPartsMap onNavigate={onNavigate} />
-      break
-    case 'cdl-pretrip-deep-dive':
-      body = <CdlPreTripDeepDive onNavigate={onNavigate} />
       break
     case 'web-designer':
       body = <WebDesignerZone key="web-designer-main" onNavigate={onNavigate} />

@@ -61,49 +61,32 @@ function aiGatewayUrl(): string {
 }
 
 /**
- * Structured 501 used when a provider has no route configured (no gateway URL,
- * and no built-in BFF route exists yet). The BFF agent should match this shape
- * if/when it wires real Anthropic / OpenAI generation routes.
- */
-type NotConfiguredReason = 'no-gateway' | 'no-bff-route'
-
-function notConfiguredResponse(provider: FetchAiProvider, reason: NotConfiguredReason): Response {
-  const body = {
-    ok: false,
-    error: 'provider-not-configured',
-    provider,
-    reason,
-    fix:
-      reason === 'no-gateway'
-        ? `Set VITE_AI_GATEWAY_URL in .env.local to route ${provider} through Vercel AI Gateway, or add a /api/${provider}/generate route to the dev BFF.`
-        : `No BFF route registered for /api/${provider}/generate yet. Add the route or set VITE_AI_GATEWAY_URL.`,
-  } as const
-  return new Response(JSON.stringify(body), {
-    status: 501,
-    headers: { 'Content-Type': 'application/json' },
-  })
-}
-
-/**
  * Canonical AI call. Tools should prefer this over
- * `fetchWithKeys('/api/gemini/generate', ...)` so a single switch (the
+ * `fetchWithKeys('/api/<provider>/generate', ...)` so a single switch (the
  * `VITE_AI_GATEWAY_URL` env var) can flip the whole app between the local dev
- * BFF and the Vercel AI Gateway without touching call sites. Migration is
- * gradual — existing `fetchWithKeys` callers keep working.
+ * BFF and the Vercel AI Gateway without touching call sites.
  *
  * Behavior:
  *  - If `VITE_AI_GATEWAY_URL` is set, POSTs to `${VITE_AI_GATEWAY_URL}/<provider>`
  *    with the same JSON body and forwards every `x-user-key-*` header that
  *    `fetchWithKeys` would attach.
- *  - Otherwise falls back to the existing dev BFF: `gemini` → `/api/gemini/generate`.
- *  - `openai` / `anthropic` without a gateway return a structured 501 response
- *    (see `notConfiguredResponse`) so the BFF agent can wire actual routes later.
+ *  - Otherwise posts to the local dev BFF generate route for the provider:
+ *      gemini    → POST /api/gemini/generate
+ *      openai    → POST /api/openai/generate
+ *      anthropic → POST /api/anthropic/generate
+ *    Each forwards the user's `x-user-key-*` header (Settings) which the BFF
+ *    prefers over the matching `.env.local` value.
  *
- * Prompt caching (Item 9): when `body.cache === true` and `provider === 'anthropic'`,
- * the backend is expected to enable Anthropic prompt caching on the system prompt.
- * The frontend doesn't validate — the server (gateway or future BFF route) decides
- * whether the flag is honored.
+ * Prompt caching: when `body.cache === true` and `provider === 'anthropic'`,
+ * the backend enables Anthropic prompt caching on the system prompt. The
+ * frontend doesn't validate — the server decides whether the flag is honored.
  */
+const PROVIDER_ROUTES: Record<FetchAiProvider, string> = {
+  gemini:    '/api/gemini/generate',
+  openai:    '/api/openai/generate',
+  anthropic: '/api/anthropic/generate',
+}
+
 export function fetchAi(provider: FetchAiProvider, body: FetchAiBody): Promise<Response> {
   const json = JSON.stringify(body)
   const baseInit: RequestInit = {
@@ -127,12 +110,6 @@ export function fetchAi(provider: FetchAiProvider, body: FetchAiBody): Promise<R
     return fetch(`${gateway}/${provider}`, { ...baseInit, headers })
   }
 
-  // No gateway → fall back to dev BFF, but only where a route exists today.
-  if (provider === 'gemini') {
-    return fetchWithKeys('/api/gemini/generate', baseInit)
-  }
-
-  // openai / anthropic: no built-in BFF generation route yet. Return a
-  // structured 501 so callers can branch cleanly until the BFF lands.
-  return Promise.resolve(notConfiguredResponse(provider, 'no-gateway'))
+  // No gateway → local dev BFF. fetchWithKeys attaches the x-user-key-* headers.
+  return fetchWithKeys(PROVIDER_ROUTES[provider], baseInit)
 }

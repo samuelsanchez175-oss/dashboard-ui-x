@@ -45,22 +45,22 @@ export function parseTunebatPaste(raw: string): { bpm: number | null; key: strin
   let key: string | null = null
 
   const bpmM =
-    text.match(/\bBPM\b\s*[:\u2013\-]\s*(\d+(?:\.\d+)?)/i) ??
-    text.match(/\bBeats\s+per\s+minute\b\s*[:\u2013\-]\s*(\d+)/i)
+    text.match(/\bBPM\b\s*[:\u2013-]\s*(\d+(?:\.\d+)?)/i) ??
+    text.match(/\bBeats\s+per\s+minute\b\s*[:\u2013-]\s*(\d+)/i)
   if (bpmM?.[1]) {
     const n = Math.round(Number(bpmM[1]))
     if (n >= 40 && n <= 240) bpm = n
   }
 
   const keyM =
-    text.match(/\bInitial\s+Key\b\s*[:\u2013\-]\s*([^\n\r]+)/i) ??
-    text.match(/\bKey\b\s*[:\u2013\-]\s*([^\n\r]+)/i)
+    text.match(/\bInitial\s+Key\b\s*[:\u2013-]\s*([^\n\r]+)/i) ??
+    text.match(/\bKey\b\s*[:\u2013-]\s*([^\n\r]+)/i)
   if (keyM?.[1]) {
     key = keyM[1].split('|')[0]?.trim()?.slice(0, 48) ?? null
     if (key?.length === 0) key = null
   }
 
-  const camelotM = text.match(/\bCamelot\b\s*[:\u2013\-]\s*(\d{1,2}[AB])\b/i)
+  const camelotM = text.match(/\bCamelot\b\s*[:\u2013-]\s*(\d{1,2}[AB])\b/i)
   const camelot = camelotM?.[1] ?? null
 
   if (camelot) {

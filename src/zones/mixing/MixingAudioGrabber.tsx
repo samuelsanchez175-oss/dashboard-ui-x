@@ -302,7 +302,7 @@ export default function MixingAudioGrabber() {
           scale: null,
           rapKeyTip: 'Local re-scan failed — file may be corrupt or unsupported in this browser.',
           source: 'estimated',
-          analyzedAt: Date.now(), // eslint-disable-line react-hooks/purity -- async handler, not render
+          analyzedAt: Date.now(),  
         },
       })
     } finally {

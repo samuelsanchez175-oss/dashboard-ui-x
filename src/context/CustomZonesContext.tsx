@@ -36,17 +36,17 @@ export function CustomZonesProvider({ children }: { children: React.ReactNode })
     const id = `custom-${Date.now()}`
     persist([...zones, { ...zone, id, createdAt: Date.now() }])
     return id
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [zones])
 
   const updateZone = useCallback((id: string, updates: Partial<Omit<CustomZone, 'id' | 'createdAt'>>) => {
     persist(zones.map(z => z.id === id ? { ...z, ...updates } : z))
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [zones])
 
   const removeZone = useCallback((id: string) => {
     persist(zones.filter(z => z.id !== id))
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [zones])
 
   return (
@@ -56,6 +56,7 @@ export function CustomZonesProvider({ children }: { children: React.ReactNode })
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- provider + hook colocated (context pattern); fast-refresh granularity only, no runtime impact
 export function useCustomZones() {
   const ctx = useContext(CustomZonesContext)
   if (!ctx) throw new Error('useCustomZones must be used within CustomZonesProvider')

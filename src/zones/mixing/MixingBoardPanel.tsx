@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Loader2, Music2, Sparkles } from 'lucide-react'
 
 const STORAGE_KEY = 'mixing-zone-ai-notes'
@@ -31,15 +31,11 @@ ${roughNotes.trim()}
 }
 
 export default function MixingBoardPanel() {
-  const [draft,   setDraft]   = useState('')
-  const [summary, setSummary] = useState('')
+  const [stored]              = useState(loadStored)
+  const [draft,   setDraft]   = useState(stored?.draft ?? '')
+  const [summary, setSummary] = useState(stored?.summary ?? '')
   const [busy,    setBusy]    = useState(false)
   const [error,   setError]   = useState<string | null>(null)
-
-  useEffect(() => {
-    const s = loadStored()
-    if (s) { setDraft(s.draft); setSummary(s.summary) }
-  }, [])
 
   const persist = (d: string, s: string) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ draft: d, summary: s, updatedAt: new Date().toISOString() }))

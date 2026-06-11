@@ -97,7 +97,7 @@ export default function ToolsStemSplitterPage({ onNavigate }: ToolsStemSplitterP
   useEffect(() => {
     let cancelled = false
     void (async () => {
-      let id: string | null = null
+      let id: string | null
       try {
         id = sessionStorage.getItem('inbound-clip-tools-stem-splitter')
         if (id) sessionStorage.removeItem('inbound-clip-tools-stem-splitter')

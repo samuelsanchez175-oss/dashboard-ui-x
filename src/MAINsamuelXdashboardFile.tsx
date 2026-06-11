@@ -42,7 +42,6 @@ const SESSION_TOUCHED_ZONE_SEED = [
   'harmony-services',
   'harmony-projects',
   'harmony-portfolio',
-  'cdl-hub',
 ] as const
 
 function App() {

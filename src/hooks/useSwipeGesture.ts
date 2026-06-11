@@ -46,12 +46,14 @@ export function useSwipeGesture(options: UseSwipeGestureOptions): void {
     onSwipeUp: options.onSwipeUp,
     onSwipeDown: options.onSwipeDown,
   })
-  handlersRef.current = {
-    onSwipeRight: options.onSwipeRight,
-    onSwipeLeft: options.onSwipeLeft,
-    onSwipeUp: options.onSwipeUp,
-    onSwipeDown: options.onSwipeDown,
-  }
+  useEffect(() => {
+    handlersRef.current = {
+      onSwipeRight: options.onSwipeRight,
+      onSwipeLeft: options.onSwipeLeft,
+      onSwipeUp: options.onSwipeUp,
+      onSwipeDown: options.onSwipeDown,
+    }
+  })
 
   useEffect(() => {
     if (!enabled) return

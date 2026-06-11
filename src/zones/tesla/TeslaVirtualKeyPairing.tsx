@@ -67,6 +67,7 @@ export default function TeslaVirtualKeyPairing() {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- read virtual-key state on mount; setState before the await is intentional
     void refresh()
   }, [refresh])
 

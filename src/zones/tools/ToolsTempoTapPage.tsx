@@ -135,6 +135,7 @@ export default function ToolsTempoTapPage({ onNavigate }: ToolsTempoTapPageProps
     if (!metronomeOn || bpm <= 0) {
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
       rafRef.current = 0
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- clear the beat indicator when the metronome is turned off (cleanup branch of the scheduler)
       setActiveDot(null)
       return
     }

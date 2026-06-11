@@ -120,17 +120,6 @@ function FleetKpiStrip({ kpis, units }: { kpis: TeslaKpis; units: TeslaUnits }) 
 }
 
 function SocMultiChart({ series }: { series: TeslaSocSeries[] }) {
-  if (series.length === 0) {
-    return (
-      <div className="rounded-xl p-4 shadow-[var(--shadow-sm)]" style={CARD_BORDER}>
-        <EmptyState
-          icon={Activity}
-          title="No battery traces"
-          description="Live Fleet data did not include SOC series for these vehicles yet."
-        />
-      </div>
-    )
-  }
   const cap = 5
   const shown = series.slice(0, cap)
   const more = series.length - shown.length
@@ -173,9 +162,21 @@ function SocMultiChart({ series }: { series: TeslaSocSeries[] }) {
       area = `${top} L ${lastX.toFixed(1)} ${baseY.toFixed(1)} L ${firstX.toFixed(1)} ${baseY.toFixed(1)} Z`
     }
     return { paths: linePaths, areaFirst: area }
-  }, [shown])
+  }, [shown, iw, ih])
 
   const gridYs = [0, 0.25, 0.5, 0.75, 1].map(t => padT + t * ih)
+
+  if (series.length === 0) {
+    return (
+      <div className="rounded-xl p-4 shadow-[var(--shadow-sm)]" style={CARD_BORDER}>
+        <EmptyState
+          icon={Activity}
+          title="No battery traces"
+          description="Live Fleet data did not include SOC series for these vehicles yet."
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="rounded-xl p-4 shadow-[var(--shadow-sm)]" style={CARD_BORDER}>

@@ -62,6 +62,7 @@ function writeEntries(entries: RecentEntry[]): void {
 /*  Imperative API                                                     */
 /* ------------------------------------------------------------------ */
 
+// eslint-disable-next-line react-refresh/only-export-components -- imperative helper colocated with the component; fast-refresh only, no runtime impact
 export function recordMapSearch(term: string): void {
   const trimmed = (term ?? '').trim()
   if (!trimmed) return

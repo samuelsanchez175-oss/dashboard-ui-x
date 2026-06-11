@@ -50,6 +50,7 @@ export default function ToolsYoutubePage({ onNavigate }: ToolsYoutubePageProps) 
   /** Object URL for the most recent clip — used by the inline <audio> player. */
   const [clipObjectUrl, setClipObjectUrl] = useState<string | null>(null)
   const [playingPreview, setPlayingPreview] = useState(false)
+  const [previewTime, setPreviewTime] = useState(0)
   const audioElRef = useRef<HTMLAudioElement | null>(null)
 
   const tapButtonRef = useRef<HTMLButtonElement | null>(null)
@@ -562,6 +563,7 @@ export default function ToolsYoutubePage({ onNavigate }: ToolsYoutubePageProps) 
                     onEnded={() => setPlayingPreview(false)}
                     onPause={() => setPlayingPreview(false)}
                     onPlay={() => setPlayingPreview(true)}
+                    onTimeUpdate={e => setPreviewTime(e.currentTarget.currentTime)}
                     controls
                     preload="metadata"
                     className="flex-1"
@@ -596,7 +598,7 @@ export default function ToolsYoutubePage({ onNavigate }: ToolsYoutubePageProps) 
                   className="text-[9px] uppercase tracking-[0.1em]"
                   style={{ color: PALETTE.textMuted, fontFamily: "'DM Mono', monospace" }}
                 >
-                  {inlinePlayerState.fmt(audioElRef.current?.currentTime ?? 0)} ·{' '}
+                  {inlinePlayerState.fmt(previewTime)} ·{' '}
                   {lastClip.sizeKb.toLocaleString()} KB
                 </span>
               </section>

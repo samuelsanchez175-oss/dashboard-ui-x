@@ -610,16 +610,17 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
   /** Last dropped file — kept so the RE-RUN CLIP button can re-process the
    * same clip with updated settings without the user re-dropping it. */
   const lastFileRef = useRef<File | null>(null)
+  /** Reactive mirror of `lastFileRef` presence — a ref isn't reactive, so the
+   *  RE-RUN CLIP button reads this state (not the ref) for its enabled/styled state. */
+  const [hasLastFile, setHasLastFile] = useState(false)
 
   /** One localStorage read per mount. Returns null for any schema version
    *  other than 1 (migrated forward) or the current `MELODY_POST_UI_SCHEMA_V`,
    *  so persisted state from prior "full quantize" defaults gets re-initialised
    *  from the relaxed defaults. */
-  const melodyPostInitRef = useRef<MelodyPostUiState | null>(null)
-  if (melodyPostInitRef.current === null) {
-    melodyPostInitRef.current = loadMelodyPostUiStateFromStorage() ?? defaultMelodyPostUiState()
-  }
-  const mpInit = melodyPostInitRef.current
+  const [mpInit] = useState<MelodyPostUiState>(
+    () => loadMelodyPostUiStateFromStorage() ?? defaultMelodyPostUiState(),
+  )
 
   /**
    * Melody post-processing inspired by NeuralNote (browser-only; not the C++ plugin).
@@ -705,6 +706,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
 
   useEffect(() => {
     if (!result) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset the user's trim selection when a new analysis result loads (reset-editable-state-on-item-change)
     setTrimStart(0)
     setTrimEnd(result.durationSec)
     setTrimCommitted(false)
@@ -715,6 +717,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
    * versa. Without this the user would see a confusingly truncated piano roll. */
   useEffect(() => {
     if (!result) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- re-reset trim when EXTRACT LOOP toggles, since the effective duration changes
     setTrimStart(0)
     setTrimEnd(extractLoopActive && result.loop.found ? result.loop.barCount * result.loop.barSec : result.durationSec)
     setTrimCommitted(false)
@@ -786,6 +789,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
 
   const runFile = useCallback(async (file: File) => {
     lastFileRef.current = file
+    setHasLastFile(true)
     setBusy(true)
     setError(null)
     setFileName(file.name)
@@ -907,7 +911,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
   useEffect(() => {
     let cancelled = false
     void (async () => {
-      let id: string | null = null
+      let id: string | null
       try {
         id = sessionStorage.getItem('inbound-clip-tools-chord-detector')
         if (id) sessionStorage.removeItem('inbound-clip-tools-chord-detector')
@@ -1088,6 +1092,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
         loopRestartingRef.current = false
         // Tiny gap between iterations so the synth's release tail finishes.
         window.setTimeout(() => {
+          // eslint-disable-next-line react-hooks/immutability -- deferred self-reference in the recursive preview-loop scheduler; resolves at call time, after declaration
           if (previewingRef.current) schedulePreviewPass()
         }, 120)
       } else {
@@ -1129,6 +1134,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
     if (duration <= 0) {
       stopPreview()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- omits clippedLeadNotes by design to keep previewMidi stable for the recursive scheduler
   }, [result, clippedSegments, stopPreview, schedulePreviewPass])
 
   // Stop any preview when the trim changes (the clipped segments are different now).
@@ -1265,6 +1271,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
 
   const reset = useCallback(() => {
     lastFileRef.current = null
+    setHasLastFile(false)
     setFileName(null)
     setResult(null)
     setError(null)
@@ -1673,7 +1680,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                   changed settings" action. Disabled until a clip has been run. */}
               <button
                 type="button"
-                disabled={!lastFileRef.current || busy}
+                disabled={!hasLastFile || busy}
                 onClick={() => {
                   const f = lastFileRef.current
                   if (f) void runFile(f)
@@ -1681,17 +1688,17 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 className="flex items-center justify-center gap-2 py-5 text-[11px] uppercase tracking-[0.2em] transition-colors disabled:cursor-not-allowed"
                 style={{
                   background: PALETTE.surface,
-                  color: !lastFileRef.current || busy ? PALETTE.textMuted : PALETTE.green,
+                  color: !hasLastFile || busy ? PALETTE.textMuted : PALETTE.green,
                   border: `1px solid ${
-                    !lastFileRef.current || busy ? PALETTE.line : PALETTE.green
+                    !hasLastFile || busy ? PALETTE.line : PALETTE.green
                   }`,
-                  opacity: !lastFileRef.current || busy ? 0.5 : 1,
+                  opacity: !hasLastFile || busy ? 0.5 : 1,
                 }}
               >
                 <span
                   className="block size-2"
                   style={{
-                    background: !lastFileRef.current || busy ? PALETTE.textMuted : PALETTE.green,
+                    background: !hasLastFile || busy ? PALETTE.textMuted : PALETTE.green,
                     borderRadius: '50%',
                   }}
                   aria-hidden
@@ -1872,6 +1879,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                 controls row, and the slider knobs are intentionally hidden
                 in this build (defaults are tuned). Re-add as an Advanced
                 drawer later if needed. */}
+            {/* eslint-disable-next-line no-constant-binary-expression -- intentionally hidden in this build; kept for a future Advanced drawer */}
             {false && (
             <section className="flex flex-col" style={{ background: PALETTE.surface }}>
               <div
@@ -1888,7 +1896,7 @@ export default function ToolsChordDetectorPage({ onNavigate }: ToolsChordDetecto
                   </span>
                   <button
                     type="button"
-                    disabled={!lastFileRef.current || busy}
+                    disabled={!hasLastFile || busy}
                     onClick={() => {
                       const f = lastFileRef.current
                       if (f) void runFile(f)

@@ -47,21 +47,9 @@ const FILE_TO_ZONE = [
   [/^src\/zones\/pulse\//, ['pulse']],
   // —— Harmony (single stack → all tab routes) ——
   [/^src\/zones\/harmony\//, ['harmony-services', 'harmony-todos', 'harmony-portfolio']],
-  // —— CPW / vocals / CDL / dev / web / Tesla ——
+  // —— CPW / vocals / dev / web / Tesla ——
   [/^src\/zones\/cpw\//, ['cpw-projects']],
   [/^src\/zones\/vocals\//, ['vocals']],
-  [/^src\/zones\/cdl\/CdlHubZone/, ['cdl-hub']],
-  [/^src\/zones\/cdl\/CdlQuiz/, ['cdl-hub']],
-  [/^src\/zones\/cdl\/CdlHazmatPage/, ['cdl-hazmat']],
-  [/^src\/zones\/cdl\/CdlAirBrakesPage/, ['cdl-air-brakes']],
-  [/^src\/zones\/cdl\/CdlTankerPage/, ['cdl-tanker']],
-  [/^src\/zones\/cdl\/CdlTankerHazmatPage/, ['cdl-tanker-hazmat']],
-  [/^src\/zones\/cdl\/CdlPassengerPage/, ['cdl-passenger']],
-  [/^src\/zones\/cdl\/CdlSchoolBusPage/, ['cdl-school-bus']],
-  [/^src\/zones\/cdl\/CdlDoublesTriplesPage/, ['cdl-doubles-triples']],
-  [/^src\/zones\/cdl\/CdlTankerDoublesPage/, ['cdl-tanker-doubles']],
-  [/^src\/zones\/cdl\/cdl-questions/, ['cdl-hub']],
-  [/^src\/zones\/cdl\//, ['cdl-hub']],
   [/^src\/zones\/dev\/DiagnosticsZone/, ['dev-diagnostics']],
   [/^src\/zones\/dev\/DevSettings/, ['dev']],
   [/^src\/zones\/dev\//, ['dev', 'dev-diagnostics']],

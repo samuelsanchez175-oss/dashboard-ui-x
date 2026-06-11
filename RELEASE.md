@@ -39,19 +39,10 @@ Click each primary nav item; main canvas loads with no blank/error shell.
 19. [ ] **HARMONY STACK → Portfolio**
 20. [ ] **CPW → Projects**
 21. [ ] **PULSE → AI digest**
-22. [ ] **CDL PRAC → All quizzes**
-23. [ ] **CDL PRAC → Hazmat (H)**
-24. [ ] **CDL PRAC → Air Brakes**
-25. [ ] **CDL PRAC → Tanker (N)**
-26. [ ] **CDL PRAC → Tanker + HazMat (X)**
-27. [ ] **CDL PRAC → Passenger (P)**
-28. [ ] **CDL PRAC → School Bus (S)**
-29. [ ] **CDL PRAC → Doubles / Triples (T)**
-30. [ ] **CDL PRAC → Tanker Doubles**
-31. [ ] **WEB DESIGN → Designer browser**
-32. [ ] **DEV → Diagnostics**
-33. [ ] **DEV → Settings & API**
-34. [ ] **TESLA → Tesla Fleet**
+22. [ ] **WEB DESIGN → Designer browser**
+23. [ ] **DEV → Diagnostics**
+24. [ ] **DEV → Settings & API**
+25. [ ] **TESLA → Tesla Fleet**
 
 ## Theme + density
 

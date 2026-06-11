@@ -27,7 +27,7 @@ export function filenameToWhoSampledQueries(fileName: string): WhoSampledFilenam
   let simplified = primary
     .replace(/^\([^)]*\)\s*/g, '')
     .replace(/^\[[^\]]*\]\s*/g, '')
-    .replace(/\s*[\u3010\[][^\]\u3011]*[\]\u3011]\s*/g, '')
+    .replace(/\s*[\u3010[][^\]\u3011]*[\]\u3011]\s*/g, '')
     .replace(/\s*-\s*type\s+beat\s*/gi, ' ')
     .replace(/\s*type\s+beat\s*/gi, ' ')
     .replace(/\s*-\s*/g, ' ')

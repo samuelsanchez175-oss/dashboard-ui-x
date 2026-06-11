@@ -47,7 +47,7 @@ export function setLastHandoff(p: HandoffPayload): void {
  */
 export function consumeLastHandoff(kind: HandoffKind): HandoffPayload | null {
   if (typeof window === 'undefined') return null
-  let raw: string | null = null
+  let raw: string | null
   try {
     raw = window.sessionStorage.getItem(storageKeyFor(kind))
   } catch {

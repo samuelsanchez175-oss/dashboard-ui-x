@@ -95,6 +95,7 @@ export default function DailyBriefZone() {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch the brief JSON on mount; the loading flag before the await is intentional
     void load()
   }, [load])
 

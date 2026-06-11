@@ -59,6 +59,7 @@ export default function ConnectionPill({ activeRouteId, onNavigate }: Connection
 
   useEffect(() => {
     if (!modalOpen) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- load a fresh draft from storage each time the modal opens (reset-on-open, not a cascading render)
     setDraft(loadDraft())
   }, [modalOpen])
 

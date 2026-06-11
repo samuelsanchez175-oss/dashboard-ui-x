@@ -481,6 +481,7 @@ export function useTeslaFleetData(): UseTeslaFleetDataResult {
   useEffect(() => {
     if (mockDataEnabled) {
       abortRef.current?.abort()
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync UI to demo state when mock mode / missing credentials toggle (external-condition sync)
       setLoading(false)
       setLivePayload(null)
       setLiveFallbackToDemo(false)

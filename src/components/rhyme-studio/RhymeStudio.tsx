@@ -278,6 +278,7 @@ export default function RhymeStudio() {
   /* Mount: consume any pending phonetics→rhyme handoff. */
   useEffect(() => {
     const pending = consumeLastHandoff('phonetics-to-rhyme')
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot consume of a cross-zone handoff from sessionStorage on mount
     if (pending) applyPhoneticsHandoff(pending)
   }, [applyPhoneticsHandoff])
 

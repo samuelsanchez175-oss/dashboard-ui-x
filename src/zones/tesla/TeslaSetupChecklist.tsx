@@ -164,6 +164,7 @@ export default function TeslaSetupChecklist() {
   }, [checkPartnerStatus])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- probe Tesla OAuth status on mount; setState before the await is intentional
     void refresh()
     // Don't re-fire on identity changes of refresh — it's stable via useCallback.
     // eslint-disable-next-line react-hooks/exhaustive-deps

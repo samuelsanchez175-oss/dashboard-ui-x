@@ -538,6 +538,7 @@ export default function TeslaFleetMap({
   // Bump the "synced at" timestamp whenever a meaningful Tesla field changes —
   // gives the user honest feedback that data is fresh.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- record wall-clock time of the last meaningful Tesla data change; not derivable in render
     setSyncedAt(Date.now())
   }, [v.batteryPercent, v.rangeMiles, v.charging, v.lat, v.lng, v.chargingState])
 
@@ -610,6 +611,7 @@ export default function TeslaFleetMap({
 
   // Reset iframe loaded flag whenever the URL changes — show skeleton during reload.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset the iframe skeleton flag when the map URL params change (the iframe's onLoad sets it back true)
     setIframeLoaded(false)
   }, [googleKey, mapType, zoom, searchQuery])
 

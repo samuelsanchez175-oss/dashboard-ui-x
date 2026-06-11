@@ -38,7 +38,7 @@ export const useUpdatesStore = create<UpdatesState>((set, get) => ({
     if (ids.length === 0) return
     const now = Date.now()
     set(state => {
-      let next = { ...state.entries }
+      const next = { ...state.entries }
       for (const id of ids) {
         const prev = next[id]
         next[id] = {
@@ -53,7 +53,8 @@ export const useUpdatesStore = create<UpdatesState>((set, get) => ({
   clear: (id: ZoneId) => {
     set(state => {
       if (!(id in state.entries)) return state
-      const { [id]: _removed, ...rest } = state.entries
+      const rest = { ...state.entries }
+      delete rest[id]
       return { entries: rest }
     })
   },

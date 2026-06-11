@@ -52,6 +52,9 @@ export type ConfigStatusResponse = {
   GEMINI_API_KEY: boolean
   GOOGLE_API_KEY: boolean
   RSS_FEED_URLS: boolean
+  AGENT_FARM_YOUTUBE_CHANNEL_ID: boolean
+  OPENAI_API_KEY: boolean
+  OPENAI_BASE_URL: boolean
   /** Dedicated key for Harmony Stack → Client Projects prompt builder (see `/api/harmony/client-projects/build-prompt`). */
   HARMONY_CLIENT_PROJECTS_AI_KEY: boolean
   /** Server-only paths for mixing / YouTube audio (`process.env`, not browser headers). */
@@ -473,6 +476,144 @@ async function geminiGenerate(
   }
 }
 
+type GenerateResult =
+  | { ok: true; preview: string | null; model: string }
+  | { ok: false; error: string; message: string }
+
+/**
+ * OpenAI-compatible chat completion (mirrors `geminiGenerate`). Honors
+ * `OPENAI_BASE_URL` for Azure / OpenRouter / local gateways. Body is the
+ * shared `fetchAi` shape: `{ prompt, system?, model? }`.
+ */
+async function openAiGenerate(
+  apiKey: string | undefined,
+  baseUrlRaw: string | undefined,
+  body: unknown,
+): Promise<GenerateResult> {
+  if (!apiKey?.trim()) {
+    return {
+      ok: false,
+      error: 'MISSING_CONFIG',
+      message: 'Add OPENAI_API_KEY (.env or Settings). For Azure/OpenRouter, set OPENAI_BASE_URL.',
+    }
+  }
+  const obj = (body && typeof body === 'object' ? body : {}) as {
+    prompt?: unknown
+    system?: unknown
+    model?: unknown
+  }
+  const prompt =
+    typeof obj.prompt === 'string' && obj.prompt.trim() ? obj.prompt.trim() : 'Say hello in one short sentence.'
+  const system = typeof obj.system === 'string' && obj.system.trim() ? obj.system.trim() : undefined
+  const model = typeof obj.model === 'string' && obj.model.trim() ? obj.model.trim() : 'gpt-4o-mini'
+  const base = normalizeOpenAiBase(baseUrlRaw)
+  const messages: Array<{ role: 'system' | 'user'; content: string }> = [
+    ...(system ? [{ role: 'system' as const, content: system }] : []),
+    { role: 'user' as const, content: prompt },
+  ]
+  try {
+    const res = await fetch(`${base}/chat/completions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey.trim()}` },
+      body: JSON.stringify({ model, messages, max_tokens: 1024 }),
+    })
+    const text = await res.text()
+    if (!res.ok) {
+      let msg = `OpenAI-compatible HTTP ${res.status}`
+      try {
+        const j = JSON.parse(text) as { error?: { message?: string } | string }
+        if (typeof j?.error === 'object' && j.error && typeof j.error.message === 'string') msg = j.error.message
+        else if (typeof j?.error === 'string') msg = j.error
+      } catch {
+        if (text) msg = text.slice(0, 400)
+      }
+      return { ok: false, error: 'UPSTREAM', message: msg.slice(0, 400) }
+    }
+    let parsed: { choices?: ReadonlyArray<{ message?: { content?: string } }> }
+    try {
+      parsed = JSON.parse(text) as { choices?: ReadonlyArray<{ message?: { content?: string } }> }
+    } catch {
+      return { ok: false, error: 'UPSTREAM', message: 'Invalid JSON from OpenAI-compatible endpoint.' }
+    }
+    const preview = parsed.choices?.[0]?.message?.content ?? null
+    return { ok: true, preview, model }
+  } catch {
+    return { ok: false, error: 'NETWORK', message: 'Could not reach OpenAI-compatible chat/completions.' }
+  }
+}
+
+/**
+ * Anthropic Messages API (mirrors `geminiGenerate`). Body is the shared
+ * `fetchAi` shape: `{ prompt, system?, cache? }`. When `cache === true`, the
+ * system prompt is sent as a cache-controlled block so Anthropic prompt caching
+ * kicks in. Raw `fetch` (no SDK dependency), consistent with the rest of this BFF.
+ */
+async function anthropicGenerate(apiKey: string | undefined, body: unknown): Promise<GenerateResult> {
+  if (!apiKey?.trim()) {
+    return { ok: false, error: 'MISSING_CONFIG', message: 'Set ANTHROPIC_API_KEY (.env or Settings).' }
+  }
+  const obj = (body && typeof body === 'object' ? body : {}) as {
+    prompt?: unknown
+    system?: unknown
+    cache?: unknown
+  }
+  const prompt =
+    typeof obj.prompt === 'string' && obj.prompt.trim() ? obj.prompt.trim() : 'Say hello in one short sentence.'
+  const system = typeof obj.system === 'string' && obj.system.trim() ? obj.system.trim() : undefined
+  const cache = obj.cache === true
+  const model = 'claude-opus-4-8'
+  // System as a cache-controlled block only when requested; otherwise a plain
+  // string (or omitted). Sampling params are intentionally absent — Opus 4.8
+  // rejects temperature/top_p/top_k.
+  const systemField =
+    system == null
+      ? undefined
+      : cache
+        ? [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }]
+        : system
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey.trim(),
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: 1024,
+        ...(systemField != null ? { system: systemField } : {}),
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    })
+    const text = await res.text()
+    if (!res.ok) {
+      let msg = `Anthropic HTTP ${res.status}`
+      try {
+        const j = JSON.parse(text) as { error?: { message?: string } }
+        if (typeof j?.error?.message === 'string') msg = j.error.message
+      } catch {
+        if (text) msg = text.slice(0, 400)
+      }
+      return { ok: false, error: 'UPSTREAM', message: msg.slice(0, 400) }
+    }
+    let parsed: { content?: ReadonlyArray<{ type?: string; text?: string }> }
+    try {
+      parsed = JSON.parse(text) as { content?: ReadonlyArray<{ type?: string; text?: string }> }
+    } catch {
+      return { ok: false, error: 'UPSTREAM', message: 'Invalid JSON from Anthropic.' }
+    }
+    const preview =
+      parsed.content
+        ?.map(b => (b?.type === 'text' && typeof b.text === 'string' ? b.text : ''))
+        .filter(Boolean)
+        .join('') ?? null
+    return { ok: true, preview, model }
+  } catch {
+    return { ok: false, error: 'NETWORK', message: 'Could not reach Anthropic messages API.' }
+  }
+}
+
 const xmlParser = new XMLParser({
   ignoreAttributes: false,
   trimValues: true,
@@ -724,6 +865,36 @@ export function attachAgentFarmBff(
       return
     }
 
+    if (method === 'POST' && path === '/api/openai/generate') {
+      let parsed: unknown
+      try {
+        parsed = await readJsonBody(req)
+      } catch {
+        jsonRes(res, 400, { ok: false, error: 'BAD_REQUEST', message: 'Invalid JSON body.' })
+        return
+      }
+      const result = await openAiGenerate(
+        pickKey('OPENAI_API_KEY', req, env),
+        pickKey('OPENAI_BASE_URL', req, env),
+        parsed,
+      )
+      jsonRes(res, result.ok ? 200 : 502, result)
+      return
+    }
+
+    if (method === 'POST' && path === '/api/anthropic/generate') {
+      let parsed: unknown
+      try {
+        parsed = await readJsonBody(req)
+      } catch {
+        jsonRes(res, 400, { ok: false, error: 'BAD_REQUEST', message: 'Invalid JSON body.' })
+        return
+      }
+      const result = await anthropicGenerate(pickKey('ANTHROPIC_API_KEY', req, env), parsed)
+      jsonRes(res, result.ok ? 200 : 502, result)
+      return
+    }
+
     if (method === 'GET' && path === '/api/youtube/channel') {
       const handle = u.searchParams.get('handle')?.trim() ?? ''
       const key = youtubeDataKeyForReq(req, env)
@@ -744,6 +915,9 @@ export function attachAgentFarmBff(
         GEMINI_API_KEY:  Boolean(pickKey('GEMINI_API_KEY',  req, env)),
         GOOGLE_API_KEY:  Boolean(pickKey('GOOGLE_API_KEY',  req, env)),
         RSS_FEED_URLS:   Boolean(pickKey('RSS_FEED_URLS',   req, env)),
+        AGENT_FARM_YOUTUBE_CHANNEL_ID: Boolean(pickKey('AGENT_FARM_YOUTUBE_CHANNEL_ID', req, env)),
+        OPENAI_API_KEY:  Boolean(pickKey('OPENAI_API_KEY',  req, env)),
+        OPENAI_BASE_URL: Boolean(pickKey('OPENAI_BASE_URL', req, env)),
         HARMONY_CLIENT_PROJECTS_AI_KEY: Boolean(pickKey('HARMONY_CLIENT_PROJECTS_AI_KEY', req, env)),
         FFMPEG_PATH: Boolean(env.FFMPEG_PATH?.trim()),
         YT_DLP_PATH: Boolean(env.YT_DLP_PATH?.trim()),

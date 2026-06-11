@@ -51,6 +51,7 @@ export function DiagnosticsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     alive.current = true
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- run diagnostics on mount; the running flag set before the await is intentional
     void refresh()
     let intervalId: ReturnType<typeof setInterval> | undefined
     if (import.meta.env.DEV) {
@@ -117,6 +118,7 @@ export function DiagnosticsProvider({ children }: { children: ReactNode }) {
   return <DiagnosticsContext.Provider value={value}>{children}</DiagnosticsContext.Provider>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- provider + hook colocated (context pattern); fast-refresh granularity only, no runtime impact
 export function useDiagnostics(): DiagnosticsContextValue {
   const ctx = useContext(DiagnosticsContext)
   if (!ctx) throw new Error('useDiagnostics must be used within DiagnosticsProvider')

@@ -127,7 +127,7 @@ export function validateNotesAgainstCQT(
   sampleRate: number,
   options: ValidateCQTOptions = {},
 ): ValidateCQTResult {
-  const cqtFmin = options.cqtFmin ?? 32.703195662574829 // C1
+  const cqtFmin = options.cqtFmin ?? 32.70319566257483 // C1
   const binsPerOctave = options.binsPerOctave ?? 12
   const octaves = options.octaves ?? 7
   const hopSize = Math.max(1, options.hopSize ?? 512)
