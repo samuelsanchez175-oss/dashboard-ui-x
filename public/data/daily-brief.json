@@ -1,62 +1,208 @@
 {
-  "date": "2026-06-10",
+  "date": "2026-06-11",
   "active_project": "XJournal AI",
   "synthesis": [
-    "Today's focus is XJournal AI and the shift from Model G v4 to v5 — the design document landed this morning and is ready to implement. The v4 RAG audit proved that prompt steering was the only mechanism actually moving output quality; v5 strips away the rule-gating, score tournament, and 6-deep retry cliff, replacing them with a single direct prompt, contextual continuity across the full verse arc, and a hybrid audio input path (MIR metadata → text facts + raw audio bytes → Gemini multimodal \"listen\"). Before opening the v5 branch, two loose ends from the 2026-06-02 iPad session should be resolved: the generation sliders Phase 2 code is uncommitted and will cause drift, and the iPad editor writing column is still left-aligned at maxWidth: 680. The single most important action today is to commit or stash the uncommitted slider work, then start the v5 coordinator swap — the BPM/Key/Scale metadata editor fields are already mostly built and just need wiring into the new prompt assembly path."
+    "Today's work centers on XJournal AI's lyric engine at a turning point: Model G v4.1 landed yesterday with multi-bar punchlines (b93b60c), and PR #9 is sitting ready to make v5 selectable in the UI alongside per-line feedback fixes. The vigorous-bartik session left off with v5 essentially done — the first action is to review and merge PR #9 so the new model tier is testable by real sessions. Alongside that, the Dashboard X audit from the relaxed-saha session produced a clean batch of verified fixes still uncommitted in worktree branch claude/relaxed-saha-2b85c3; letting those rot risks losing the port-correction and .env.example work. After the merge, the natural next build target is the four remaining sliders (Slang density, Imply↔Explain, Rhyme hardness, Verse length) plus wiring BPM/Key/Scale metadata into the v5 prompt assembly path — closing the gap between the metadata editor that already exists and the generation path that doesn't yet consume it."
+  ],
+  "plan": [
+    {
+      "title": "Review + merge PR #9",
+      "note": "open the PR, verify v5 selectable + per-line feedback, merge to main",
+      "priority": "high",
+      "done": false
+    },
+    {
+      "title": "Commit Dashboard X worktree",
+      "note": "commit the 4 verified fixes in branch `claude/relaxed-saha-2b85c3` before the worktree decays",
+      "priority": "high",
+      "done": false
+    },
+    {
+      "title": "Set Vercel env keys",
+      "note": "add the 12 server keys to `samuel-x-dashboard` project in Vercel dashboard (currently zero configured)",
+      "priority": "med",
+      "done": false
+    },
+    {
+      "title": "Wire BPM/Key/Scale into v5 prompt",
+      "note": "feed existing metadata editor values into the v5 coordinator's prompt assembly",
+      "priority": "med",
+      "done": false
+    },
+    {
+      "title": "Build remaining sliders",
+      "note": "add Slang density, Imply↔Explain, Rhyme hardness, Verse length controls to the generation UI",
+      "priority": "low",
+      "done": false
+    }
   ],
   "tools": [
     {
-      "name": "Github",
-      "desc": "commit or stash the uncommitted generation sliders delta before starting v5 branch work."
+      "name": "ElevenLabs",
+      "desc": "voice synthesis for XJournal AI lyric playback and audio preview"
     },
     {
-      "name": "VS Code",
-      "desc": "primary environment for Swift/Xcode work on the v5 coordinator and audio pipeline."
-    },
-    {
-      "name": "Figma",
-      "desc": "iPad layout reference for the remaining center-column polish (editor writing area at regular width)."
+      "name": "Gemini Image Generation",
+      "desc": "Gemini ecosystem grounding; Model G v5 uses Gemini multimodal \"listen\" path"
     },
     {
       "name": "Logic Pro",
-      "desc": "audio reference for BPM/Key/Scale metadata that feeds the v5 MIR text-facts path."
+      "desc": "BPM/Key/Scale source data that feeds MIR metadata into Model G prompts"
+    },
+    {
+      "name": "Github",
+      "desc": "PR #9 review, branch management, merge to main"
     },
     {
       "name": "Obsidian",
-      "desc": "vault anchors for v5 design: Model G — v5 Simplified Pipeline & Audio Input (Design 2026-06-10) and Model G — v4 RAG Wiring Audit (2026-06-04)."
+      "desc": "vault session continuity and handoff tracking across XJournal AI sessions"
     }
   ],
-  "tracks": [
-    {
-      "title": "Night Drive (EXAMPLE)",
-      "bpm": "142",
-      "key": "C#",
-      "scale": "minor"
-    },
-    {
-      "title": "Sunrise Anthem (EXAMPLE)",
-      "bpm": "128",
-      "key": "F",
-      "scale": "major"
-    }
-  ],
+  "tracks": [],
   "handoffs": [
     {
-      "name": "Generation sliders Phase 2",
-      "note": "uncommitted delta in `ContentView.CCV.*`; resume: commit or stash before branching for v5, then complete the Phase 2 slider wiring."
+      "name": "2026-06-11-vigorous-bartik-60e9da-ec8dbbb7",
+      "note": "Model G v4.1 committed; resume at PR #9 to make v5 selectable + remaining slider backlog"
     },
     {
-      "name": "Keychain `-34018` bug",
-      "note": "root-caused (simulator uses UserDefaults fallback `e6fb59e`), not fixed for production; resume: implement the proper entitlement fix so real-device API key saves reliably."
+      "name": "2026-06-11-relaxed-saha-2b85c3-2a48355c",
+      "note": "Shipped to prod; XJournal AI open bugs + Polymarket follow-up items remain"
     },
     {
-      "name": "iPad editor column centering",
-      "note": "writing surface left-aligned at `maxWidth: 680` on wide pane; resume: center the column so the wide iPad layout feels intentional."
+      "name": "2026-06-10-ui-dashboard-x-audit-bfc6fa8f",
+      "note": "Dashboard X audit complete; 4 fixes uncommitted in `claude/relaxed-saha-2b85c3` worktree"
     },
     {
-      "name": "Model G v5 implementation",
-      "note": "design spec is complete as of today; resume: swap coordinator, wire audio path, remove `HardRejectionEngine` and score-gated selection tournament."
+      "name": "2026-06-10-llm-builder-local-cc8262dc",
+      "note": "Obsidian vault architecture discussion; vault consolidation strategy unresolved"
     }
   ],
-  "resurface": []
+  "resurface": [
+    {
+      "name": "Obsidian CLI - Vault-to-LLM Integration",
+      "note": "directly relevant to the LLM builder vault strategy session; worth reading before deciding on vault consolidation"
+    },
+    {
+      "name": "Pixel Agents - Agent Activity Visualizer",
+      "note": "useful reference as XJournal AI's multi-agent generation pipeline grows"
+    }
+  ],
+  "vault": {
+    "name": "OB CLAUDE vault",
+    "brief_file": "🌅 Daily Brief/Briefs/2026-06-11.md",
+    "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%8C%85%20Daily%20Brief/Briefs/2026-06-11",
+    "generated_at": "2026-06-11T10:50:29",
+    "counts": {
+      "briefs": 2,
+      "clippings": 149,
+      "tools": 32,
+      "handoffs": 1,
+      "tracks": 2
+    },
+    "recent_briefs": [
+      "2026-06-11",
+      "2026-06-10"
+    ]
+  },
+  "ai_sessions": [
+    {
+      "title": "test-project (2026-06-11)",
+      "source": "test",
+      "project": "test-project",
+      "status": "open",
+      "updated": "2026-06-11",
+      "started_with": "",
+      "file": "🤝 Handoffs/Handoff — test-project (2026-06-11).md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/Handoff%20%E2%80%94%20test-project%20%282026-06-11%29",
+      "resume_prompt": "Read \"🤝 Handoffs/Handoff — test-project (2026-06-11).md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+    },
+    {
+      "title": "2026-06-10-vigorous-bartik-60e9da-ec8dbbb7",
+      "source": "claude",
+      "project": "XJournal AI",
+      "status": "open",
+      "updated": "2026-06-11",
+      "started_with": "so now that Model gv4 is present and model GL v1 is present. i recently gave a prompt to gemini to write me some lyrics and i was honestly impressed by gemini And that's kind of th",
+      "file": "🤝 Handoffs/2026-06-10-vigorous-bartik-60e9da-ec8dbbb7.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-06-10-vigorous-bartik-60e9da-ec8dbbb7",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-06-10-vigorous-bartik-60e9da-ec8dbbb7.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+    },
+    {
+      "title": "2026-06-10-ob-claude-vault-a8172dca",
+      "source": "claude",
+      "project": "XJournal AI",
+      "status": "open",
+      "updated": "2026-06-11",
+      "started_with": "📂 Obsidian Daily Brief Master & Workflow Architecture Handoff Project Overview: The goal is to architect a centralized, automated knowledge management dashboard inside Obsidian, al",
+      "file": "🤝 Handoffs/2026-06-10-ob-claude-vault-a8172dca.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-06-10-ob-claude-vault-a8172dca",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-06-10-ob-claude-vault-a8172dca.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+    },
+    {
+      "title": "2026-06-10-upbeat-lumiere-39284e-6679dfdd",
+      "source": "claude",
+      "project": "XJournal AI",
+      "status": "open",
+      "updated": "2026-06-11",
+      "started_with": "Can we get the poly market bought running already? Let me know what else you need? I saw before that people are loading the dashboard inside of the browser and from there interacti",
+      "file": "🤝 Handoffs/2026-06-10-upbeat-lumiere-39284e-6679dfdd.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-06-10-upbeat-lumiere-39284e-6679dfdd",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-06-10-upbeat-lumiere-39284e-6679dfdd.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+    },
+    {
+      "title": "2026-06-11-relaxed-saha-2b85c3-2a48355c",
+      "source": "claude",
+      "project": "XJournal AI",
+      "status": "open",
+      "updated": "2026-06-11",
+      "started_with": "using the fable V Can you look at the project and see if there's anything that we need to improve or work on either visual or wiring system? I wanna make sure all of my API keys ar",
+      "file": "🤝 Handoffs/2026-06-11-relaxed-saha-2b85c3-2a48355c.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-06-11-relaxed-saha-2b85c3-2a48355c",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-06-11-relaxed-saha-2b85c3-2a48355c.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+    },
+    {
+      "title": "2026-06-11-nifty-thompson-49c4cf-fb234921",
+      "source": "claude",
+      "project": "XJournal AI",
+      "status": "open",
+      "updated": "2026-06-11",
+      "started_with": "In this video, Apple announced that they have the ability to now play video on the car display. Can you please create an app that uses YouTube for video playback? If, if possible, ",
+      "file": "🤝 Handoffs/2026-06-11-nifty-thompson-49c4cf-fb234921.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-06-11-nifty-thompson-49c4cf-fb234921",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-06-11-nifty-thompson-49c4cf-fb234921.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+    }
+  ],
+  "pipeline": {
+    "last_run": "2026-06-11 10:18:32",
+    "last_status": "ok",
+    "model": "claude-sonnet-4-6",
+    "next_run": "07:00 daily",
+    "streak": 2,
+    "chat_ingest": "every 2h",
+    "chat_ingest_last": "2026-06-11T10:07"
+  },
+  "delta": {
+    "vs_date": "2026-06-10",
+    "tools_added": [
+      "ElevenLabs",
+      "Gemini Image Generation"
+    ],
+    "tools_removed": [
+      "Figma",
+      "VS Code"
+    ],
+    "handoffs_added": [
+      "2026-06-10-llm-builder-local-cc8262dc",
+      "2026-06-10-ui-dashboard-x-audit-bfc6fa8f",
+      "2026-06-11-relaxed-saha-2b85c3-2a48355c",
+      "2026-06-11-vigorous-bartik-60e9da-ec8dbbb7"
+    ],
+    "handoffs_resolved": [
+      "Generation sliders Phase 2",
+      "Keychain `-34018` bug",
+      "Model G v5 implementation",
+      "iPad editor column centering"
+    ],
+    "counts_changed": {}
+  }
 }

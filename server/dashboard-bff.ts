@@ -11,8 +11,39 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import { handleMixingYoutubeAudioPost } from './mixing-youtube-audio'
 import { tryHandleTeslaFleetRoutes } from './tesla-fleet-bff'
 import { tryHandlePolymarketRoutes } from './polymarket-bff'
+import { exec } from 'node:child_process'
+import { promisify } from 'node:util'
 
 type Next = () => void
+
+const execAsync = promisify(exec)
+const VAULT_DIR = '/Users/samuel/Documents/OB CLAUDE vault'
+
+async function readJsonBody(req: IncomingMessage): Promise<any> {
+  return new Promise((resolve, reject) => {
+    let body = ''
+    req.on('data', chunk => {
+      body += chunk
+    })
+    req.on('end', () => {
+      try {
+        resolve(body ? JSON.parse(body) : {})
+      } catch (e) {
+        reject(e)
+      }
+    })
+    req.on('error', err => reject(err))
+  })
+}
+
+async function runCommand(cmd: string): Promise<{ ok: boolean; stdout: string; stderr: string; error?: string }> {
+  try {
+    const { stdout, stderr } = await execAsync(cmd)
+    return { ok: true, stdout, stderr }
+  } catch (err: any) {
+    return { ok: false, stdout: err.stdout || '', stderr: err.stderr || '', error: err.message }
+  }
+}
 
 const REDDIT_CLAUDESKILLS_RSS = 'https://www.reddit.com/r/claudeskills/.rss'
 
@@ -257,6 +288,112 @@ export function attachDashboardBff(
 
     if (!pathName.startsWith('/api/digest/') && !pathName.startsWith('/api/local/')) {
       next()
+      return
+    }
+
+    // POST /api/local/brief/generate
+    if (pathName === '/api/local/brief/generate' && method === 'POST') {
+      const cmd = `bash "${VAULT_DIR}/automation/daily-brief/run_brief.sh"`
+      const outcome = await runCommand(cmd)
+      jsonRes(res, outcome.ok ? 200 : 500, outcome)
+      return
+    }
+
+    // POST /api/local/chat-ingest/run
+    if (pathName === '/api/local/chat-ingest/run' && method === 'POST') {
+      const cmd = `python3 "${VAULT_DIR}/automation/chat-ingest/auto_ingest.py"`
+      const outcome = await runCommand(cmd)
+      jsonRes(res, outcome.ok ? 200 : 500, outcome)
+      return
+    }
+
+    // POST /api/local/brief/build
+    if (pathName === '/api/local/brief/build' && method === 'POST') {
+      const cmd = `python3 "${VAULT_DIR}/dashboard-ui/build.py"`
+      const outcome = await runCommand(cmd)
+      jsonRes(res, outcome.ok ? 200 : 500, outcome)
+      return
+    }
+
+    // GET /api/local/vault/logs?type=brief|ingest
+    if ((pathName === '/api/local/vault/logs' || pathName.startsWith('/api/local/vault/logs?')) && method === 'GET') {
+      const qs = new URL(req.url ?? '', 'http://localhost').searchParams
+      const type = qs.get('type')
+      const logFile = type === 'ingest'
+        ? path.join(VAULT_DIR, 'automation/chat-ingest/ingest.log')
+        : path.join(VAULT_DIR, 'automation/daily-brief/run.log')
+      try {
+        const content = await fs.readFile(logFile, 'utf-8')
+        const lines = content.split('\n')
+        const tail = lines.slice(-50).join('\n')
+        jsonRes(res, 200, { ok: true, logs: tail })
+      } catch (err: any) {
+        jsonRes(res, 404, { ok: false, error: 'LOGS_NOT_FOUND', message: err.message })
+      }
+      return
+    }
+
+    // GET /api/local/vault/file?path=...
+    if ((pathName === '/api/local/vault/file' || pathName.startsWith('/api/local/vault/file?')) && method === 'GET') {
+      const qs = new URL(req.url ?? '', 'http://localhost').searchParams
+      const relPath = qs.get('path')
+      if (!relPath || relPath.includes('\0')) {
+        jsonRes(res, 400, { ok: false, error: 'BAD_REQUEST', message: 'Invalid file path.' })
+        return
+      }
+      const normalized = path.normalize(relPath).replace(/^(\.\.(\/|\\|$))+/, '')
+      const fullPath = path.resolve(VAULT_DIR, normalized)
+      if (!fullPath.startsWith(VAULT_DIR)) {
+        jsonRes(res, 403, { ok: false, error: 'FORBIDDEN', message: 'Path traversal blocked.' })
+        return
+      }
+      try {
+        const body = await fs.readFile(fullPath)
+        res.statusCode = 200
+        res.setHeader('Content-Type', 'text/markdown; charset=utf-8')
+        res.end(body)
+      } catch (err: any) {
+        jsonRes(res, 404, { ok: false, error: 'FILE_NOT_FOUND', message: err.message })
+      }
+      return
+    }
+
+    // POST /api/local/vault/write-handoff
+    if (pathName === '/api/local/vault/write-handoff' && method === 'POST') {
+      try {
+        const body = await readJsonBody(req)
+        const { project, source, content } = body
+        if (!project || !content) {
+          jsonRes(res, 400, { ok: false, error: 'BAD_REQUEST', message: 'Project and content are required.' })
+          return
+        }
+
+        const dateStr = new Date().toISOString().slice(0, 10)
+        const filename = `Handoff — ${project} (${dateStr}).md`
+        const fullPath = path.join(VAULT_DIR, '🤝 Handoffs', filename)
+
+        // Generate frontmatter
+        const frontmatter = [
+          '---',
+          'type: handoff',
+          `project: "${project}"`,
+          'status: open',
+          `source: ${source || 'manual'}`,
+          `created: ${dateStr}`,
+          `updated: ${dateStr}`,
+          `tags: ["handoff", "${source || 'manual'}"]`,
+          '---',
+          '',
+          `# Handoff — ${project} (${dateStr})`,
+          '',
+          content
+        ].join('\n')
+
+        await fs.writeFile(fullPath, frontmatter, 'utf-8')
+        jsonRes(res, 200, { ok: true, filename })
+      } catch (err: any) {
+        jsonRes(res, 500, { ok: false, error: 'WRITE_FAILED', message: err.message })
+      }
       return
     }
 
