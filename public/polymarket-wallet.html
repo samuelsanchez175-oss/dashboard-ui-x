@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Polymarket Wallet · BFF monitor</title>
+<style>
+  :root{
+    --bg:#0a0b0d; --panel:#131519; --panel2:#171a1f; --line:#23262d;
+    --txt:#e7e9ee; --dim:#8b909b; --blue:#2E5CFF; --green:#16c784;
+    --amber:#f5a623; --red:#ff4d4f; --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;padding:0 0 60px}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+  header{display:flex;align-items:center;justify-content:space-between;
+    padding:22px 0 16px;border-bottom:1px solid var(--line);margin-bottom:24px;flex-wrap:wrap;gap:12px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:30px;height:30px;border-radius:8px;background:var(--blue);
+    display:grid;place-items:center;font-weight:800;color:#fff;font-size:15px}
+  .brand h1{font-size:15px;margin:0;letter-spacing:.04em;text-transform:uppercase;font-weight:700}
+  .brand small{color:var(--dim);font-size:11px}
+  .meta{display:flex;align-items:center;gap:14px;font-size:12px;color:var(--dim)}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+  .dot.stale{background:var(--amber)} .dot.err{background:var(--red)}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(22,199,132,.45)}70%{box-shadow:0 0 0 7px rgba(22,199,132,0)}100%{box-shadow:0 0 0 0 rgba(22,199,132,0)}}
+  button{font:inherit;color:var(--txt);background:var(--panel2);border:1px solid var(--line);
+    border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px}
+  button:hover{border-color:var(--blue)}
+
+  .steps{display:flex;margin-bottom:24px;background:var(--panel);
+    border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .step{flex:1;padding:14px 18px;display:flex;align-items:center;gap:11px}
+  .step+.step{border-left:1px solid var(--line)}
+  .scircle{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;
+    font-size:12px;font-weight:700;border:1px solid var(--line);color:var(--dim);flex:none}
+  .step.done .scircle{background:var(--green);border-color:var(--green);color:#04140c}
+  .step.active .scircle{background:var(--blue);border-color:var(--blue);color:#fff}
+  .step .lbl{font-size:13px;font-weight:600} .step.done .lbl{color:var(--green)}
+  .step .sub{font-size:11px;color:var(--dim)}
+
+  .grid{display:grid;gap:16px;grid-template-columns:repeat(3,1fr);margin-bottom:16px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}.steps{flex-direction:column}.step+.step{border-left:none;border-top:1px solid var(--line)}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}
+  .card h2{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin:0 0 14px;font-weight:600}
+  .num{font-family:var(--mono);font-size:30px;font-weight:600;line-height:1}
+  .unit{font-size:12px;color:var(--dim);margin-top:8px}
+  .big{color:var(--green)}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--dim);font-family:var(--mono)}
+  .chip.warn{color:var(--amber);border-color:rgba(245,166,35,.4);background:rgba(245,166,35,.07)}
+  .chip.ok{color:var(--green);border-color:rgba(22,199,132,.4);background:rgba(22,199,132,.07)}
+
+  .addr{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .addr:last-child{border-bottom:none}
+  .addr .k{font-size:12px;color:var(--dim)} .addr .v{font-family:var(--mono);font-size:12px}
+  .addr a{color:var(--blue);text-decoration:none;font-size:11px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;color:var(--dim);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:0 0 10px;border-bottom:1px solid var(--line)}
+  td{padding:11px 0;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12px}
+  tr:last-child td{border-bottom:none}
+  .yes{color:var(--green)} .no{color:var(--red)}
+  .empty{color:var(--dim);font-size:13px;padding:18px 0;text-align:center}
+  .err{color:var(--red);font-size:12px;font-family:var(--mono)}
+  details{margin-top:16px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 18px}
+  summary{cursor:pointer;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim)}
+  pre{margin:12px 0 0;font-family:var(--mono);font-size:11px;color:var(--txt);white-space:pre-wrap;word-break:break-all;max-height:340px;overflow:auto}
+  .barewrap{margin-top:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo">P</div>
+      <div><h1>Polymarket Wallet</h1><small>live BFF monitor · GET /api/polymarket/wallet · refreshes 15s</small></div>
+    </div>
+    <div class="meta">
+      <span id="ago">connecting…</span>
+      <span class="dot" id="dot"></span>
+      <button id="refresh">Refresh</button>
+    </div>
+  </header>
+
+  <div class="steps">
+    <div class="step" data-step="fund"><div class="scircle">1</div>
+      <div><div class="lbl">Funded</div><div class="sub" id="s-fund">—</div></div></div>
+    <div class="step" data-step="approve"><div class="scircle">2</div>
+      <div><div class="lbl">Approved</div><div class="sub" id="s-approve">—</div></div></div>
+    <div class="step" data-step="ready"><div class="scircle">3</div>
+      <div><div class="lbl">Ready to trade</div><div class="sub" id="s-ready">—</div></div></div>
+  </div>
+
+  <div class="grid">
+    <div class="card"><h2>Spendable balance</h2><div class="num big" id="bal">—</div><div class="unit">pUSD · ready to bet</div></div>
+    <div class="card"><h2>Gas (POL)</h2><div class="num" id="pol">—</div><div class="unit" id="pol-sub">Polygon gas for approvals</div></div>
+    <div class="card"><h2>Portfolio value</h2><div class="num" id="val">—</div><div class="unit">open positions mark-to-market</div></div>
+  </div>
+
+  <div class="card barewrap"><h2>Addresses</h2>
+    <div class="addr"><div><div class="k">Proxy · holds funds</div><div class="v" id="a-proxy">—</div></div><a id="l-proxy" target="_blank" rel="noreferrer">explorer ↗</a></div>
+    <div class="addr"><div><div class="k">EOA · signer / gas</div><div class="v" id="a-eoa">—</div></div><a id="l-eoa" target="_blank" rel="noreferrer">explorer ↗</a></div>
+  </div>
+
+  <div class="card barewrap"><h2>Positions</h2><div id="positions"><div class="empty">loading…</div></div></div>
+  <div class="card barewrap"><h2>Recent activity</h2><div id="activity"><div class="empty">loading…</div></div></div>
+
+  <details>
+    <summary>Raw BFF response (track polymarket-bff changes)</summary>
+    <pre id="raw">—</pre>
+  </details>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+let last=0;
+const short=a=>a?a.slice(0,8)+'…'+a.slice(-6):'—';
+const money=v=>v==null?'—':'$'+Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+function setStep(el,state,sub){
+  el.classList.remove('done','active');
+  if(state)el.classList.add(state);
+  if(sub!=null)el.querySelector('.sub').textContent=sub;
+  el.querySelector('.scircle').textContent=state==='done'?'✓':el.dataset.idx;
+}
+
+function render(d){
+  $('#raw').textContent=JSON.stringify(d,null,2);
+  const bal=d.balance, pol=d.gasPol, approved=d.approved===true;
+  const funded=(bal||0)>0;
+
+  $('#bal').textContent=money(bal);
+  $('#pol').textContent=pol==null?'—':Number(pol).toFixed(4);
+  const polWarn=pol!=null&&pol===0;
+  $('#pol-sub').innerHTML=polWarn?'<span class="chip warn">⛽ no gas — approvals blocked</span>'
+    :(pol!=null?'<span class="chip ok">gas available</span>':'Polygon gas for approvals');
+  $('#val').textContent=money(d.portfolioValue);
+
+  const ad=d.addresses||{};
+  $('#a-proxy').textContent=short(ad.proxy); $('#a-eoa').textContent=short(ad.eoa);
+  if(ad.proxy)$('#l-proxy').href='https://polygonscan.com/address/'+ad.proxy;
+  if(ad.eoa)$('#l-eoa').href='https://polygonscan.com/address/'+ad.eoa;
+
+  const pos=d.positions||[];
+  $('#positions').innerHTML=pos.length?
+    '<table><thead><tr><th>Market</th><th>Side</th><th style="text-align:right">Value</th><th style="text-align:right">PnL</th></tr></thead><tbody>'+
+    pos.map(p=>`<tr><td style="font-family:inherit">${p.title||'—'}</td><td>${p.outcome||''}</td><td style="text-align:right">${money(p.value)}</td><td style="text-align:right;color:${(p.pnl||0)>=0?'var(--green)':'var(--red)'}">${(p.pnl||0)>=0?'+':''}${money(p.pnl)}</td></tr>`).join('')+
+    '</tbody></table>'
+    :'<div class="empty">No positions yet — place your first bet to see it here.</div>';
+
+  const act=d.activity||[];
+  $('#activity').innerHTML=act.length?
+    act.slice(0,15).map(a=>`<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:12px"><span class="chip">${a.type||'—'}</span><span style="flex:1;color:var(--txt)">${a.title||'—'}</span><span style="font-family:var(--mono);color:var(--dim)">${a.size?Number(a.size).toFixed(2):''}</span></div>`).join('')
+    :'<div class="empty">No activity yet.</div>';
+
+  setStep($('.step[data-step=fund]'),funded?'done':'active',funded?money(bal)+' in':'waiting on deposit');
+  setStep($('.step[data-step=approve]'),approved?'done':(funded?'active':''),approved?'contracts approved':(polWarn?'needs POL for gas':'run approve set'));
+  setStep($('.step[data-step=ready]'),(funded&&approved)?'done':'',(funded&&approved)?'place an order':'after approvals');
+
+  last=Date.now();
+  $('#dot').classList.remove('stale','err');
+  if(d.status==='error'||d.ok===false)$('#dot').classList.add('err');
+}
+
+async function tick(){
+  try{
+    const r=await fetch('/api/polymarket/wallet',{cache:'no-store'});
+    render(await r.json());
+  }catch(e){$('#dot').classList.add('err');$('#raw').textContent='fetch failed: '+e;}
+}
+function ago(){
+  if(!last)return;
+  const s=Math.round((Date.now()-last)/1000);
+  $('#ago').textContent='updated '+(s<2?'just now':s+'s ago');
+  if(s>30)$('#dot').classList.add('stale');
+}
+document.querySelectorAll('.scircle').forEach((c,i)=>c.closest('.step').dataset.idx=i+1);
+$('#refresh').onclick=tick;
+tick();
+setInterval(tick,15000);
+setInterval(ago,1000);
+</script>
+</body>
+</html>

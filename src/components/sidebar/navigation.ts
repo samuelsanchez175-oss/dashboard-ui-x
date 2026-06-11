@@ -27,6 +27,8 @@ import {
   Stethoscope,
   Sunrise,
   Truck,
+  Users,
+  Wallet,
   Wand2,
   Workflow,
   Wrench,
@@ -152,6 +154,14 @@ export const NAV_SECTIONS: NavSection[] = [
     id:    'tesla',
     title: 'TESLA',
     items: [{ id: 'tesla', label: 'Tesla Fleet', icon: Car }],
+  },
+  {
+    id:    'polymarket',
+    title: 'POLYMARKET',
+    items: [
+      { id: 'polymarket', label: 'Wallet', icon: Wallet },
+      { id: 'polymarket-copy', label: 'Copy Scout', icon: Users },
+    ],
   },
 ]
 

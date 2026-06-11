@@ -10,6 +10,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 
 import { handleMixingYoutubeAudioPost } from './mixing-youtube-audio'
 import { tryHandleTeslaFleetRoutes } from './tesla-fleet-bff'
+import { tryHandlePolymarketRoutes } from './polymarket-bff'
 
 type Next = () => void
 
@@ -234,6 +235,10 @@ export function attachDashboardBff(
     }
 
     if (tryHandleTeslaFleetRoutes(req, res)) {
+      return
+    }
+
+    if (tryHandlePolymarketRoutes(req, res)) {
       return
     }
 
