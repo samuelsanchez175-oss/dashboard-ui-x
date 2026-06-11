@@ -153,6 +153,7 @@ async function getPositions(): Promise<unknown[]> {
     const p = raw as Record<string, unknown>
     return {
       title: str(p.title) || str(p.slug) || '—',
+      slug: str(p.slug),
       outcome: str(p.outcome),
       size: num(p.size),
       avgPrice: num(p.avgPrice),
@@ -160,6 +161,7 @@ async function getPositions(): Promise<unknown[]> {
       value: num(p.currentValue) || num(p.value),
       pnl: num(p.cashPnl) || num(p.pnl),
       percentPnl: num(p.percentPnl),
+      conditionId: str(p.conditionId)
     }
   })
 }
@@ -213,6 +215,131 @@ async function handleWallet(_req: IncomingMessage, res: ServerResponse): Promise
     settle('positions', getPositions, (v) => (out.positions = v)),
     settle('activity', getActivity, (v) => (out.activity = v)),
   ])
+
+  if (Object.keys(errors).length >= 6) out.status = 'error'
+  jsonRes(res, 200, out)
+}
+
+async function handleBot(_req: IncomingMessage, res: ServerResponse): Promise<void> {
+  const errors: Record<string, string> = {}
+  const out: Record<string, any> = {
+    ok: true,
+    status: 'live',
+    ts: Date.now(),
+    addresses: { proxy: PROXY, eoa: EOA },
+    balance: null,
+    portfolioValue: null,
+    gasPol: null,
+    approved: null,
+    positions: [],
+    errors,
+    monitored_markets: 0,
+    eligible_markets: 0,
+    in_range_markets: 0,
+    markets: []
+  }
+
+  const settle = async <T,>(key: string, fn: () => Promise<T>, assign: (v: T) => void): Promise<void> => {
+    try {
+      assign(await fn())
+    } catch (e) {
+      errors[key] = e instanceof Error ? e.message : String(e)
+    }
+  }
+
+  // Fetch wallet stats
+  await Promise.all([
+    settle('balance', getCollateral, (v) => (out.balance = v)),
+    settle('portfolioValue', getValue, (v) => (out.portfolioValue = v)),
+    settle('gasPol', getPol, (v) => (out.gasPol = v)),
+    settle('approved', getApproved, (v) => (out.approved = v)),
+    settle('positions', getPositions, (v) => (out.positions = v)),
+  ])
+
+  // Fetch open markets from Gamma API
+  try {
+    const rawMarkets = await fetchJson('https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=100') as any[]
+    if (Array.isArray(rawMarkets)) {
+      const EXCLUDED_KEYWORDS = [
+        'crypto', 'cryptocurrency', 'bitcoin', 'ethereum', 'defi', 'nft', 'solana', 'polygon', 'blockchain', 'token', 'airdrop', 'stablecoin', 'memecoin', 'altcoin', 'btc', 'xrp', 'bnb', 'dogecoin', 'doge',
+        'finance', 'stocks', 'forex', 'commodities', 'fed rate', 'fed funds', 'interest rate', 'inflation', 'gdp', 'earnings', 'ipo', 'etf', 's&p', 'nasdaq', 'dow jones', 'yield',
+        'mlb', 'nba', 'nfl', 'nhl', 'baseball', 'basketball', 'football', 'hockey', 'soccer', 'mls', 'premier league', 'la liga', 'serie a', 'bundesliga', 'champions league', 'uefa', 'fifa', 'tennis', 'golf', 'ufc', 'mma', 'boxing', 'f1', 'formula 1', 'olympics', 'super bowl', 'world cup'
+      ]
+
+      const parseJsonList = (val: any): any[] => {
+        if (Array.isArray(val)) return val
+        if (typeof val === 'string') {
+          try { return JSON.parse(val) } catch { return [] }
+        }
+        return []
+      }
+
+      const filtered = rawMarkets.filter((m: any) => {
+        // Binary Yes/No outcomes check
+        const outcomes = parseJsonList(m.outcomes)
+        if (outcomes.length !== 2) return false
+        const labels = outcomes.map(o => String(o).trim().toLowerCase())
+        if (!labels.includes('yes') || !labels.includes('no')) return false
+
+        // Exclude sports features
+        if (m.sportsMarketType || m.gameStartTime || String(m.feeType || '').startsWith('sports') || m.negRisk) return false
+
+        // Exclude based on keywords in title/description/category
+        const textToSearch = `${m.question} ${m.groupItemTitle} ${m.category} ${m.description}`.toLowerCase()
+        if (EXCLUDED_KEYWORDS.some(kw => textToSearch.includes(kw))) return false
+
+        // Ends within 3 months check
+        const endIso = m.endDate || m.endDateIso
+        if (!endIso) return false
+        const endTs = new Date(endIso).getTime()
+        const nowTs = Date.now()
+        const threeMonthsMs = 3 * 30 * 24 * 60 * 60 * 1000
+        if (endTs < nowTs || endTs > nowTs + threeMonthsMs) return false
+
+        return true
+      })
+
+      out.monitored_markets = filtered.length
+      // Eligible markets are monitored markets where we don't have a position
+      const ownedConditionIds = new Set((out.positions || []).map((p: any) => p.conditionId).filter(Boolean))
+      const eligibleMarkets = filtered.filter(m => !ownedConditionIds.has(m.conditionId))
+      out.eligible_markets = eligibleMarkets.length
+
+      // In range markets are eligible markets where NO token price is below the cap (default 25c)
+      // Prices are in outcomePrices: e.g. ["0.75", "0.25"] (Yes, No)
+      const parseProbabilityPair = (val: any): [number, number] => {
+        const prices = parseJsonList(val)
+        if (prices.length < 2) return [0, 0]
+        return [parseFloat(prices[0]) || 0, parseFloat(prices[1]) || 0]
+      }
+
+      const inRangeMarkets = eligibleMarkets.filter(m => {
+        const [, noPrice] = parseProbabilityPair(m.outcomePrices)
+        return noPrice > 0 && noPrice <= 0.25
+      })
+      out.in_range_markets = inRangeMarkets.length
+
+      // Return details of top 15 eligible markets for the UI to show in scanned list or proposals
+      out.markets = eligibleMarkets.slice(0, 15).map(m => {
+        const [yesPrice, noPrice] = parseProbabilityPair(m.outcomePrices)
+        const tokenIds = parseJsonList(m.clobTokenIds)
+        return {
+          slug: m.slug || '',
+          title: m.question || m.slug || '',
+          condition_id: m.conditionId || '',
+          yes_token_id: tokenIds[0] || '',
+          no_token_id: tokenIds[1] || '',
+          yes_price: yesPrice,
+          no_price: noPrice,
+          volume: parseFloat(m.volume) || 0,
+          liquidity: parseFloat(m.liquidity) || 0,
+          end_date: m.endDate || ''
+        }
+      })
+    }
+  } catch (e) {
+    errors['markets'] = e instanceof Error ? e.message : String(e)
+  }
 
   if (Object.keys(errors).length >= 6) out.status = 'error'
   jsonRes(res, 200, out)
@@ -374,6 +501,10 @@ export function tryHandlePolymarketRoutes(req: IncomingMessage, res: ServerRespo
   const method = (req.method ?? 'GET').toUpperCase()
   if (method === 'GET' && pathName === '/api/polymarket/wallet') {
     void handleWallet(req, res)
+    return true
+  }
+  if (method === 'GET' && pathName === '/api/polymarket/bot') {
+    void handleBot(req, res)
     return true
   }
   if (method === 'GET' && pathName === '/api/polymarket/leaderboard') {

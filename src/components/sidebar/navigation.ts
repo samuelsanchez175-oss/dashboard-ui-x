@@ -62,6 +62,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { id: 'polymarket', label: 'Wallet', icon: Wallet },
       { id: 'polymarket-copy', label: 'Copy Scout', icon: Users },
+      { id: 'polymarket-bot', label: 'Bot Cockpit', icon: Cpu },
     ],
   },
   {

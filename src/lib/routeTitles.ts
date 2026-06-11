@@ -15,6 +15,7 @@ const NON_TOOL_TITLES: Record<string, string> = {
   'harmony-todos': 'Harmony todos',
   'mixing': 'Mixing',
   'mixing-audio-grab': 'Audio grab',
+  'polymarket-bot': 'Bot Cockpit',
   'pulse': 'Pulse digest',
   'rhyme-studio': 'Rhyme studio',
   'tesla': 'Tesla Fleet',

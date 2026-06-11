@@ -241,6 +241,29 @@ export function usePolymarketBotData(): BotState {
             ...paperPositions.map(p => p.title.toLowerCase())
           ])
 
+          const closed = j.closed || {}
+          const count = closed.count || 0
+          const netRealized = closed.netRealized || 0
+          const settledWins = closed.settledWins || 0
+          const winRate = count > 0 ? settledWins / count : 0
+          const concentrationPct = closed.concentrationPct || 0
+
+          // MrFadiAi Copy Filters:
+          // - Win rate >= 60%
+          // - Net PnL >= $500
+          // - Single-trade profit concentration <= 30%
+          const passesWinRate = winRate >= 0.60
+          const passesPnL = netRealized >= 500
+          const passesConcentration = concentrationPct <= 30
+
+          // Calculate confidence score dynamically
+          let baseConfidence = 50
+          if (passesWinRate) baseConfidence += 15
+          if (passesPnL) baseConfidence += 15
+          if (passesConcentration) baseConfidence += 10
+          if (count >= 15) baseConfidence += 5
+
+          // Propose open trades from this user
           j.open.forEach((pos: any) => {
             const title = pos.title || ''
             if (title && !ownedTitles.has(title.toLowerCase())) {
@@ -262,8 +285,8 @@ export function usePolymarketBotData(): BotState {
                     proposedPrice: pos.curPrice || 0.50,
                     targetSize: Math.round((settings.tradeSize / (pos.curPrice || 0.50)) * 100) / 100,
                     cost: settings.tradeSize,
-                    confidence: 72,
-                    strategy: 'Copy-Trader Scout',
+                    confidence: Math.min(99, baseConfidence),
+                    strategy: `Copy Scout (${passesWinRate && passesPnL && passesConcentration ? 'Verified' : 'Unverified'})`,
                     marketTitle: pos.title
                   }
                 ]

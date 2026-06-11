@@ -31,6 +31,7 @@ const WebDesignerZone = lazy(() => import('../zones/web-designer/WebDesignerZone
 const TeslaFleet = lazy(() => import('../zones/tesla/TeslaMock'))
 const PolymarketWallet = lazy(() => import('../zones/polymarket/PolymarketWalletZone'))
 const PolymarketCopy = lazy(() => import('../zones/polymarket/CopyTraderZone'))
+const PolymarketBot = lazy(() => import('../zones/polymarket/PolymarketBotZone'))
 const PulseDigest = lazy(() => import('../zones/pulse/PulseDigest'))
 const DailyBriefZone = lazy(() => import('../zones/brief/DailyBriefZone'))
 const DevSettings = lazy(() => import('../zones/dev/DevSettings'))
@@ -149,6 +150,9 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
       break
     case 'polymarket-copy':
       body = <PolymarketCopy />
+      break
+    case 'polymarket-bot':
+      body = <PolymarketBot />
       break
     case 'zone-builder':
       body = (

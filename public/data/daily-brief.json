@@ -91,12 +91,12 @@
     "name": "OB CLAUDE vault",
     "brief_file": "🌅 Daily Brief/Briefs/2026-06-11.md",
     "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%8C%85%20Daily%20Brief/Briefs/2026-06-11",
-    "generated_at": "2026-06-11T10:50:29",
+    "generated_at": "2026-06-11T10:58:15",
     "counts": {
       "briefs": 2,
-      "clippings": 149,
-      "tools": 32,
-      "handoffs": 1,
+      "clippings": 151,
+      "tools": 34,
+      "handoffs": 62,
       "tracks": 2
     },
     "recent_briefs": [
@@ -204,5 +204,2586 @@
       "iPad editor column centering"
     ],
     "counts_changed": {}
-  }
+  },
+  "workflows": [
+    {
+      "name": "3D AI Studio - Image & Text to 3D Generator",
+      "activation_tools": [
+        "Photoshop"
+      ],
+      "used_with": [
+        "Blender",
+        "Unity",
+        "Unreal Engine 5"
+      ],
+      "steps": [
+        "Activation:** Use Photoshop to generate or clean a 2D base image.",
+        "Execution:** Pass the output into [3D AI Studio] to convert the 2D image into a 3D model.",
+        "Refinement/Output:** Import the result into Blender, Unity, or Unreal Engine 5 to texture, rig, and integrate the asset into your scene."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/3D AI Studio - Image & Text to 3D Generator.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/3D%20AI%20Studio%20-%20Image%20%26%20Text%20to%203D%20Generator"
+    },
+    {
+      "name": "3D Model Generation",
+      "activation_tools": [],
+      "used_with": [
+        "00_Toolkit_Index",
+        "3D AI Studio - Image & Text to 3D Generator",
+        "Blender",
+        "Meshy - AI-Powered 3D Asset Generator",
+        "Tripo AI - 3D Generation Platform",
+        "[Meshy - AI-Powered 3D Asset Generator",
+        "[Tripo AI - 3D Generation Platform"
+      ],
+      "steps": [],
+      "file": "🧰 AI Toolkit/3D Model Generation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/3D%20Model%20Generation"
+    },
+    {
+      "name": "3DLogoLab - 2D to 3D Logo Animator",
+      "activation_tools": [
+        "Illustrator",
+        "Photoshop"
+      ],
+      "used_with": [
+        "Web Browser"
+      ],
+      "steps": [
+        "Activation:** Use Illustrator or Photoshop to design and export a clean logo graphic.",
+        "Execution:** Upload the logo into [3DLogoLab] to define thickness, apply Web Browser materials, and set rotation animations.",
+        "Refinement/Output:** Export the rendered video and import it into After Effects or Premiere Pro for post-processing and logo stingers."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/3DLogoLab - 2D to 3D Logo Animator.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/3DLogoLab%20-%202D%20to%203D%20Logo%20Animator"
+    },
+    {
+      "name": "Abacus AI - Enterprise AI Platform",
+      "activation_tools": [
+        "ChatGPT - Conversational AI Assistance"
+      ],
+      "used_with": [
+        "GitHub"
+      ],
+      "steps": [
+        "Activation:** Design and test prompt behaviors or mock up visual assets in ChatGPT - Conversational AI Assistance.",
+        "Execution:** Load your training data or prompt schemas into Abacus AI - Enterprise AI Platform AI] to instantiate specialized enterprise agents.",
+        "Refinement/Output:** Use the generated models to produce hyper-realistic videos or batch data, refinement-checked with tools like Midjourney - Royalty-Free Image Alternatives."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Productivity & Study/Abacus AI - Enterprise AI Platform.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Productivity%20%26%20Study/Abacus%20AI%20-%20Enterprise%20AI%20Platform"
+    },
+    {
+      "name": "Aceternity UI - Copy-Paste Animated Components",
+      "activation_tools": [
+        "Figma"
+      ],
+      "used_with": [
+        "Web Browser"
+      ],
+      "steps": [
+        "Activation:** Design page layouts or user interactions in Figma.",
+        "Execution:** Browse [Aceternity UI] in the Web Browser, customize settings, and copy the React and Tailwind CSS code.",
+        "Refinement/Output:** Paste the code into a project inside VS Code and compile/run the application using [Next.js] to deploy the animated frontend interface."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Video & Audio/Aceternity UI - Copy-Paste Animated Components.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Video%20%26%20Audio/Aceternity%20UI%20-%20Copy-Paste%20Animated%20Components"
+    },
+    {
+      "name": "AF Inventions - SNAP CLICK Remote Mount",
+      "activation_tools": [
+        "MakerWorld"
+      ],
+      "used_with": [
+        "3D Printer",
+        "Cura"
+      ],
+      "steps": [
+        "Activation:** Download the design files and print profiles from the AF Inventions page on [MakerWorld].",
+        "Execution:** Slice the model files in [Cura] or Bambu Studio, selecting the optimal PLA settings.",
+        "Refinement/Output:** Print the parts on a [3D Printer], insert the magnets, and screw/tape the bracket to your wall to organize home remotes."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/AF Inventions - SNAP CLICK Remote Mount.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/AF%20Inventions%20-%20SNAP%20CLICK%20Remote%20Mount"
+    },
+    {
+      "name": "Aholo Viewer - 3D Gaussian Splatting Web Renderer",
+      "activation_tools": [
+        "Luma AI"
+      ],
+      "used_with": [
+        "Web Browser"
+      ],
+      "steps": [
+        "Activation:** Use [Luma AI] to scan a physical environment and export it as a 3D Gaussian Splat (.ply).",
+        "Execution:** Pass the splat file into [Aholo Viewer] to stream and render the environment in a Web Browser.",
+        "Refinement/Output:** Access the scene via Web Browser or package it for interactive exploration in Unreal Engine 5."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Aholo Viewer - 3D Gaussian Splatting Web Renderer.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Aholo%20Viewer%20-%203D%20Gaussian%20Splatting%20Web%20Renderer"
+    },
+    {
+      "name": "AI Mindset Framework - Strategic AI Productivity",
+      "activation_tools": [
+        "Mindset"
+      ],
+      "used_with": [
+        "ChatGPT - Conversational AI Assistance",
+        "Claude AI - AI Coding and Content Creation",
+        "Notion"
+      ],
+      "steps": [
+        "Use Mindset to conceptualize and outline task steps strategically.",
+        "Pass the output into ChatGPT - Conversational AI Assistance or Claude AI - AI Coding and Content Creation to execute and refine your plans.",
+        "Import the result into Notion to organize, store, and share your optimized productivity guides."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/AI Mindset Framework - Strategic AI Productivity.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/AI%20Mindset%20Framework%20-%20Strategic%20AI%20Productivity"
+    },
+    {
+      "name": "Animata - Copy-Paste React & Tailwind Animations",
+      "activation_tools": [
+        "Figma"
+      ],
+      "used_with": [
+        "React",
+        "Tailwind CSS"
+      ],
+      "steps": [
+        "Activation:** Design interactive mockups and layout wireframes in Figma.",
+        "Execution:** Select and copy animated code components from [Animata].",
+        "Refinement/Output:** Paste the code into your [React] project styled with [Tailwind CSS] to run interactive, fluid UI animations."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Animata - Copy-Paste React & Tailwind Animations.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Animata%20-%20Copy-Paste%20React%20%26%20Tailwind%20Animations"
+    },
+    {
+      "name": "Apify - Instagram Lead Extraction",
+      "activation_tools": [
+        "Instagram"
+      ],
+      "used_with": [
+        "Notion"
+      ],
+      "steps": [
+        "Activation: Search for target audience locations, hashtags, or competitor profiles on Instagram**.",
+        "Execution: Pass the target Instagram URLs or search terms into Apify** (using the Instagram Scraper actor) to extract profile details, emails, or phone numbers.",
+        "Refinement/Output: Export the extracted contacts into a CSV and upload it to Meta Ads Manager to create a custom lookalike audience, or import it into Notion** for sales outreach."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Marketing & Business/Apify - Instagram Lead Extraction.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Marketing%20%26%20Business/Apify%20-%20Instagram%20Lead%20Extraction"
+    },
+    {
+      "name": "Arnis - Convert Geography to Minecraft World",
+      "activation_tools": [
+        "OpenStreetMap"
+      ],
+      "used_with": [
+        "Minecraft"
+      ],
+      "steps": [
+        "Use OpenStreetMap to choose and define real-world coordinates.",
+        "Pass the output into Arnis to download geographic data and generate the world file.",
+        "Import the result into Minecraft to explore and play within the blocky replica of the real world."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Arnis - Convert Geography to Minecraft World.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Arnis%20-%20Convert%20Geography%20to%20Minecraft%20World"
+    },
+    {
+      "name": "Arnis - Real-World Map to Minecraft Generator",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Minecraft"
+      ],
+      "steps": [
+        "Activation:** Use Web Browser to select a real-world coordinates bounding box on OpenStreetMap.",
+        "Execution:** Run [Arnis] to fetch building geometry and elevation data and convert it into a Minecraft save folder.",
+        "Refinement/Output:** Load the generated world file into Minecraft to explore and customize the physical representation."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Arnis - Real-World Map to Minecraft Generator.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Arnis%20-%20Real-World%20Map%20to%20Minecraft%20Generator"
+    },
+    {
+      "name": "Blockade Labs Skybox AI - 360 Scene Generator",
+      "activation_tools": [
+        "Skybox AI - 3D Skybox Generation"
+      ],
+      "used_with": [
+        "Skybox AI - 3D Skybox Generation"
+      ],
+      "steps": [
+        "Activation:** Use Web Browser to access the Skybox AI - 3D Skybox Generation editor and input environment prompts.",
+        "Execution:** Pass the prompt into Blockade Labs Skybox AI - 360 Scene Generator AI] to generate a seamless 360-degree environment map.",
+        "Refinement/Output:** Export the HDRI image and load it into Blender or Unreal Engine 5 as a Skybox AI - 3D Skybox Generation dome or lighting environment."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Blockade Labs Skybox AI - 360 Scene Generator.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Blockade%20Labs%20Skybox%20AI%20-%20360%20Scene%20Generator"
+    },
+    {
+      "name": "CADmapper - Generate 3D City Models",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Blender"
+      ],
+      "steps": [
+        "Use Web Browser to select and outline a city area on the interactive map.",
+        "Pass the output into CADmapper to generate and download the structured 3D model.",
+        "Import the result into Blender or AutoCAD to customize, render, or integrate the model into architectural designs."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/CADmapper - Generate 3D City Models.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/CADmapper%20-%20Generate%203D%20City%20Models"
+    },
+    {
+      "name": "Car-Part - Auto Parts Search",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Spreadsheet"
+      ],
+      "steps": [
+        "Use Web Browser to enter vehicle details and the specific auto part needed.",
+        "Pass the output into Car-Part to search salvage yard inventories.",
+        "Import the result into Spreadsheet to catalog parts, compare pricing, and plan repairs."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Car-Part - Auto Parts Search.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Car-Part%20-%20Auto%20Parts%20Search"
+    },
+    {
+      "name": "Car-Part - Salvage Auto Parts Locator",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Spreadsheet"
+      ],
+      "steps": [
+        "Use Web Browser to input auto part details and your zip code.",
+        "Pass the output into Car-Part to view available salvaged parts.",
+        "Import the result into Spreadsheet or contacts to arrange purchase and pickup."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Car-Part - Salvage Auto Parts Locator.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Car-Part%20-%20Salvage%20Auto%20Parts%20Locator"
+    },
+    {
+      "name": "Carbon - Code Screenshot Generator",
+      "activation_tools": [
+        "VS Code"
+      ],
+      "used_with": [
+        "Notion"
+      ],
+      "steps": [
+        "Activation:** Copy a snippet of source code from your code editor (e.g., VS Code).",
+        "Execution:** Paste the code into [Carbon - Code Screenshot Generator] to style it with custom fonts, colors, and layout properties.",
+        "Refinement/Output:** Download the styled graphic and insert the final image into presentation slides or documentation pages on Notion."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/Carbon - Code Screenshot Generator.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/Carbon%20-%20Code%20Screenshot%20Generator"
+    },
+    {
+      "name": "ChatGPT - Conversational AI Assistance",
+      "activation_tools": [
+        "ChatGPT"
+      ],
+      "used_with": [
+        "Notion",
+        "VS Code"
+      ],
+      "steps": [
+        "Use ChatGPT to prompt the system for custom content or scripts.",
+        "Pass the output into ChatGPT to analyze data or debug code fragments.",
+        "Import the result into VS Code or Notion to finalize your development task."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/ChatGPT - Conversational AI Assistance.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/ChatGPT%20-%20Conversational%20AI%20Assistance"
+    },
+    {
+      "name": "ChatGPT Prompting Guide - ChatGPT Optimization",
+      "activation_tools": [
+        "ChatGPT - Conversational AI Assistance"
+      ],
+      "used_with": [
+        "ChatGPT - Conversational AI Assistance",
+        "Notion"
+      ],
+      "steps": [
+        "Use ChatGPT - Conversational AI Assistance to enter structured system prompts and tasks.",
+        "Pass the output into ChatGPT - Conversational AI Assistance Prompting Guide methodologies to iterate and refine the AI's response.",
+        "Import the result into Notion to save the generated text, code, or structured guides."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/ChatGPT Prompting Guide - ChatGPT Optimization.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/ChatGPT%20Prompting%20Guide%20-%20ChatGPT%20Optimization"
+    },
+    {
+      "name": "ChatGPT Simulation Guide - Simulation Theory Exploration",
+      "activation_tools": [
+        "ChatGPT - Conversational AI Assistance"
+      ],
+      "used_with": [
+        "ChatGPT - Conversational AI Assistance",
+        "Obsidian"
+      ],
+      "steps": [
+        "Use ChatGPT - Conversational AI Assistance to query simulation theory concepts and consciousness properties.",
+        "Pass the output into ChatGPT - Conversational AI Assistance Simulation Guide prompts to deepen the philosophical framework.",
+        "Import the result into Obsidian to link notes and organize your personal simulation database."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/ChatGPT Simulation Guide - Simulation Theory Exploration.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/ChatGPT%20Simulation%20Guide%20-%20Simulation%20Theory%20Exploration"
+    },
+    {
+      "name": "Chordify - Interactive Chord Diagrams & Sheet Music",
+      "activation_tools": [
+        "Browser",
+        "Mobile App"
+      ],
+      "used_with": [
+        "FL Studio"
+      ],
+      "steps": [
+        "Activation:** Select a song or backing track on [YouTube] or upload a custom audio file.",
+        "Execution:** Pass the audio/video link into [Chordify] to automatically analyze the track and generate synced chord diagrams.",
+        "Refinement/Output:** Play along with the diagrams using a physical guitar or piano, or export the chord progression details into a DAW like FL Studio to rebuild or remix the song."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Video & Audio/Chordify - Interactive Chord Diagrams & Sheet Music.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Video%20%26%20Audio/Chordify%20-%20Interactive%20Chord%20Diagrams%20%26%20Sheet%20Music"
+    },
+    {
+      "name": "City Roads - Custom Map Art Generator",
+      "activation_tools": [
+        "OpenStreetMap"
+      ],
+      "used_with": [
+        "Figma",
+        "Illustrator"
+      ],
+      "steps": [
+        "Activation: Search for a city name on City Roads** to retrieve geographic road path inputs.",
+        "Execution: Customize the road line width and background colors, then export the map as a vector SVG file from City Roads**.",
+        "Refinement/Output: Import the SVG into Illustrator or Figma** to clean up paths, add typography, and finalize the layout for print design or digital wallpapers."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Marketing & Business/City Roads - Custom Map Art Generator.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Marketing%20%26%20Business/City%20Roads%20-%20Custom%20Map%20Art%20Generator"
+    },
+    {
+      "name": "Claude - Social Media Content Generation",
+      "activation_tools": [
+        "Notion"
+      ],
+      "used_with": [
+        "ElevenLabs"
+      ],
+      "steps": [
+        "Activation: Write raw ideas, outline notes, or a rough draft of your message in Notion**.",
+        "Execution: Input the raw draft into Claude** along with a specialized prompt directing it to write a high-conversion social media caption and video script.",
+        "Refinement/Output: Import the finalized script into ElevenLabs to generate an AI voiceover, then compile it with visual elements to publish on Instagram**."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Marketing & Business/Claude - Social Media Content Generation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Marketing%20%26%20Business/Claude%20-%20Social%20Media%20Content%20Generation"
+    },
+    {
+      "name": "Claude AI - AI Coding and Content Creation",
+      "activation_tools": [
+        "Claude - Social Media Content Generation"
+      ],
+      "used_with": [
+        "Claude - Social Media Content Generation",
+        "Obsidian"
+      ],
+      "steps": [
+        "Use Claude - Social Media Content Generation AI to input source documents and project requirements.",
+        "Pass the output into Claude - Social Media Content Generation AI to generate the code structure or script draft.",
+        "Import the result into Obsidian or YouTube upload planners to coordinate your publishing workflow."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Claude AI - AI Coding and Content Creation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Claude%20AI%20-%20AI%20Coding%20and%20Content%20Creation"
+    },
+    {
+      "name": "Claude Code - Agentic Content Strategy",
+      "activation_tools": [
+        "Claude - Social Media Content Generation"
+      ],
+      "used_with": [
+        "Claude - Social Media Content Generation"
+      ],
+      "steps": [
+        "Activation:** Run Claude - Social Media Content Generation Code - Agentic Content Strategy] in the terminal with a request to research current online trends or topic briefs.",
+        "Execution:** Pass findings through Claude - Social Media Content Generation Code - Agentic Content Strategy] to generate video concepts, script outlines, and script hooks.",
+        "Refinement/Output:** Write the finalized scripts and analysis to markdown files inside Obsidian to prep for recording and production."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/Claude Code - Agentic Content Strategy.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/Claude%20Code%20-%20Agentic%20Content%20Strategy"
+    },
+    {
+      "name": "Claude Code - Blender Agent Automation",
+      "activation_tools": [
+        "Claude - Social Media Content Generation"
+      ],
+      "used_with": [
+        "Blender",
+        "Claude - Social Media Content Generation"
+      ],
+      "steps": [
+        "Activation:** Launch the CLI in your workspace using Claude - Social Media Content Generation Code].",
+        "Execution:** Prompt Claude - Social Media Content Generation Code] to write scripts or assemble scenes in the background of Blender via MCP tools.",
+        "Refinement/Output:** View the constructed 3D scene directly inside Blender for final rendering and shading."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Claude Code - Blender Agent Automation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Claude%20Code%20-%20Blender%20Agent%20Automation"
+    },
+    {
+      "name": "Claude Code - Command Line Coding and Automation",
+      "activation_tools": [
+        "Claude - Social Media Content Generation"
+      ],
+      "used_with": [
+        "Claude - Social Media Content Generation",
+        "VS Code"
+      ],
+      "steps": [
+        "Use Claude - Social Media Content Generation Code to initialize the CLI agent in your repository directory.",
+        "Pass the output into Claude - Social Media Content Generation Code to analyze, write, and debug code files.",
+        "Import the result into VS Code or git commits to merge the reviewed and tested code."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Claude Code - Command Line Coding and Automation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Claude%20Code%20-%20Command%20Line%20Coding%20and%20Automation"
+    },
+    {
+      "name": "Claude Code - Figma to Web 3D Workflow",
+      "activation_tools": [
+        "Figma"
+      ],
+      "used_with": [
+        "Claude - Social Media Content Generation"
+      ],
+      "steps": [
+        "Activation:** Export wireframe layouts and asset specs from Figma.",
+        "Execution:** Direct Claude - Social Media Content Generation Code] in your terminal to implement the markup, styles, and webGL viewers.",
+        "Refinement/Output:** Open the local site in a Web Browser to verify interactivity and responsive styling."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Claude Code - Figma to Web 3D Workflow.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Claude%20Code%20-%20Figma%20to%20Web%203D%20Workflow"
+    },
+    {
+      "name": "Claude Cookbooks - Front-End Design Patterns",
+      "activation_tools": [
+        "Claude - Social Media Content Generation"
+      ],
+      "used_with": [
+        "Claude Code - Command Line Coding and Automation",
+        "VS Code"
+      ],
+      "steps": [
+        "Activation:** Retrieve a structured UI design or system prompt from Claude - Social Media Content Generation Cookbooks - Front-End Design Patterns].",
+        "Execution:** Pass the system prompt along with your project requirements into Claude Code - Command Line Coding and Automation to write clean React/Tailwind code.",
+        "Refinement/Output:** Test and preview the generated interface components inside VS Code."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/Claude Cookbooks - Front-End Design Patterns.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/Claude%20Cookbooks%20-%20Front-End%20Design%20Patterns"
+    },
+    {
+      "name": "Claude Creative Suite - Creative Application Control",
+      "activation_tools": [
+        "Claude AI - AI Coding and Content Creation"
+      ],
+      "used_with": [
+        "Claude - Social Media Content Generation",
+        "Photoshop"
+      ],
+      "steps": [
+        "Use Claude AI - AI Coding and Content Creation to describe your track arrangement or design layer properties.",
+        "Pass the output into Claude - Social Media Content Generation Creative Suite to generate assets or control tools via scripts.",
+        "Import the result into Ableton Live or Photoshop to complete the final mix or design polish."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Claude Creative Suite - Creative Application Control.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Claude%20Creative%20Suite%20-%20Creative%20Application%20Control"
+    },
+    {
+      "name": "CleanPNG - Transparent PNG Downloads",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Illustrator",
+        "Photoshop"
+      ],
+      "steps": [
+        "Use Web Browser to search the CleanPNG database for specific design assets.",
+        "Pass the output into CleanPNG to download the transparent background file.",
+        "Import the result into Photoshop or Illustrator to incorporate the asset into your graphics project."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/CleanPNG - Transparent PNG Downloads.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/CleanPNG%20-%20Transparent%20PNG%20Downloads"
+    },
+    {
+      "name": "Clipfy - Automated Video Batch Creator",
+      "activation_tools": [
+        "ChatGPT - Conversational AI Assistance",
+        "ElevenLabs"
+      ],
+      "used_with": [
+        "DaVinci Resolve"
+      ],
+      "steps": [
+        "Activation: Generate a voiceover using ElevenLabs based on a script drafted in ChatGPT - Conversational AI Assistance**, and collect stock video clips from background libraries.",
+        "Execution: Upload the audio files and video clips into Clipfy** to batch-stitch them together and automatically generate dynamic captions.",
+        "Refinement/Output: Download the batch of generated videos and publish them directly to Instagram, or import them into DaVinci Resolve** for final sound mixing and grading."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Marketing & Business/Clipfy - Automated Video Batch Creator.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Marketing%20%26%20Business/Clipfy%20-%20Automated%20Video%20Batch%20Creator"
+    },
+    {
+      "name": "Clipzi - AI Short-Form Video Generator",
+      "activation_tools": [
+        "Browser"
+      ],
+      "used_with": [
+        "DaVinci Resolve",
+        "Premiere Pro"
+      ],
+      "steps": [
+        "Activation:** Record long-form video content using digital cameras, screen recording software, or download podcast episodes.",
+        "Execution:** Upload the raw video into [Clipzi] to detect viral segments, reframe to 9:16 vertical aspect ratio, and burn in animated captions.",
+        "Refinement/Output:** Import the generated short-form clips into DaVinci Resolve or Premiere Pro for final audio mixing, visual polish, and direct export to [TikTok] or YouTube Shorts."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Video & Audio/Clipzi - AI Short-Form Video Generator.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Video%20%26%20Audio/Clipzi%20-%20AI%20Short-Form%20Video%20Generator"
+    },
+    {
+      "name": "ComfyUI - Node-Based AI Image Generation",
+      "activation_tools": [
+        "Local Server"
+      ],
+      "used_with": [
+        "Photoshop"
+      ],
+      "steps": [
+        "Use Local Server to run the ComfyUI application and open the node-based UI.",
+        "Pass the output into ComfyUI to load your upscaling nodes and process the image.",
+        "Import the result into Photoshop to apply finishing touches and final adjustments."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/ComfyUI - Node-Based AI Image Generation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/ComfyUI%20-%20Node-Based%20AI%20Image%20Generation"
+    },
+    {
+      "name": "Coolors - Color Palette Design",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Figma",
+        "Photoshop"
+      ],
+      "steps": [
+        "Use Web Browser to launch the Coolors palette generator.",
+        "Pass the output into Coolors to lock specific colors and generate matching schemes.",
+        "Import the result into Figma or Photoshop to apply the palette to your web layouts or graphic designs."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Coolors - Color Palette Design.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Coolors%20-%20Color%20Palette%20Design"
+    },
+    {
+      "name": "Coolors - Design Color Palette Design",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Figma"
+      ],
+      "steps": [
+        "Use Web Browser to launch the Coolors application.",
+        "Pass the output into Coolors to explore color combinations and check contrast.",
+        "Import the result into Figma to establish your visual design hierarchy."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Coolors - Design Color Palette Design.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Coolors%20-%20Design%20Color%20Palette%20Design"
+    },
+    {
+      "name": "Coolors Generator - Custom Color Palette Creation",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Coolors - Color Palette Design",
+        "Figma",
+        "Illustrator"
+      ],
+      "steps": [
+        "Use Web Browser to enter a primary brand color hex code.",
+        "Pass the output into Coolors - Color Palette Design Generator to generate complementary color combinations.",
+        "Import the result into Figma or Illustrator to define your digital product design system."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Coolors Generator - Custom Color Palette Creation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Coolors%20Generator%20-%20Custom%20Color%20Palette%20Creation"
+    },
+    {
+      "name": "CreativeMode - AI Minecraft Mod Generator",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Minecraft"
+      ],
+      "steps": [
+        "Activation:** Describe a custom mod mechanic inside a Web Browser text interface.",
+        "Execution:** Process the description through [CreativeMode] to compile a package.",
+        "Refinement/Output:** Download and run the mod package using the launcher inside Minecraft to play the custom mod."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/CreativeMode - AI Minecraft Mod Generator.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/CreativeMode%20-%20AI%20Minecraft%20Mod%20Generator"
+    },
+    {
+      "name": "CSS Gradient - Gradient Wallpaper Generation",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Figma",
+        "Photoshop"
+      ],
+      "steps": [
+        "Use Web Browser to select primary colors and set gradient direction.",
+        "Pass the output into CSS Gradient to generate and fine-tune the color stops.",
+        "Import the result into Figma or Photoshop to serve as a background layer for your graphic layouts."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/CSS Gradient - Gradient Wallpaper Generation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/CSS%20Gradient%20-%20Gradient%20Wallpaper%20Generation"
+    },
+    {
+      "name": "CSS Loaders - Open-Source CSS Loading Animations",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Figma",
+        "React"
+      ],
+      "steps": [
+        "Activation:** Open Web Browser to access the CSS Loaders interface.",
+        "Execution:** Select a spinner, adjust the sliders for size, speed, and thickness, and copy the code from [CSS Loaders].",
+        "Refinement/Output:** Paste the stylesheet classes directly into your code editor to render the animation in a web app like [React]."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/CSS Loaders - Open-Source CSS Loading Animations.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/CSS%20Loaders%20-%20Open-Source%20CSS%20Loading%20Animations"
+    },
+    {
+      "name": "Cursor - C++ Gameplay Programming",
+      "activation_tools": [
+        "Unreal Engine 5"
+      ],
+      "used_with": [
+        "Unreal Engine 5"
+      ],
+      "steps": [
+        "Activation:** Index the codebase directory of Unreal Engine 5 within [Cursor - C++ Gameplay Programming].",
+        "Execution:** Use the AI composer or inline prompt inside [Cursor - C++ Gameplay Programming] to generate gameplay mechanics (e.g., player dashing or enemy pathfinding C++ classes).",
+        "Refinement/Output:** Compile and test the generated gameplay systems directly in the Unreal Engine 5 Editor."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/Cursor - C++ Gameplay Programming.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/Cursor%20-%20C%2B%2B%20Gameplay%20Programming"
+    },
+    {
+      "name": "Dimensions.com - Architectural CAD Blocks",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Illustrator"
+      ],
+      "steps": [
+        "Use Web Browser to search for specific scaled objects or furniture items.",
+        "Pass the output into Dimensions.com to review measurements and download the required format.",
+        "Import the result into AutoCAD or Illustrator to incorporate the vector blocks into your architectural layouts."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Dimensions.com - Architectural CAD Blocks.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Dimensions.com%20-%20Architectural%20CAD%20Blocks"
+    },
+    {
+      "name": "Dropship.io - Dropshipping Product Research",
+      "activation_tools": [
+        "TikTok",
+        "Instagram"
+      ],
+      "used_with": [
+        "Shopify"
+      ],
+      "steps": [
+        "Activation: Spot trending product advertisements and viral hooks on TikTok or Instagram**.",
+        "Execution: Look up those product terms or competitor store URLs in Dropship.io** to check their sales volume, revenue history, sourcing costs, and profit margins.",
+        "Refinement/Output: Import the validated winning products into Shopify** and launch optimized video ads targeting the verified customer demographic."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Marketing & Business/Dropship.io - Dropshipping Product Research.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Marketing%20%26%20Business/Dropship.io%20-%20Dropshipping%20Product%20Research"
+    },
+    {
+      "name": "Eden AI - Multi-Model AI Aggregator",
+      "activation_tools": [
+        "Eden AI - Multi-Model AI Aggregator"
+      ],
+      "used_with": [
+        "VS Code"
+      ],
+      "steps": [
+        "Activation:** Generate an API credential and select preferred models inside Eden AI - Multi-Model AI Aggregator AI - Multi-Model AI Aggregator].",
+        "Execution:** Send scraping, transcription, or OCR payloads to the unified API from your code in VS Code.",
+        "Refinement/Output:** Receive the standardized JSON response and save the parsed content into your application's database."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/Eden AI - Multi-Model AI Aggregator.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/Eden%20AI%20-%20Multi-Model%20AI%20Aggregator"
+    },
+    {
+      "name": "ElevenLabs",
+      "activation_tools": [],
+      "used_with": [
+        "GitHub"
+      ],
+      "steps": [],
+      "file": "🧰 AI Toolkit/ElevenLabs.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/ElevenLabs"
+    },
+    {
+      "name": "Failory - Startup Failure Analysis",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Notion"
+      ],
+      "steps": [
+        "Use Web Browser to browse and filter startup cases by failure category.",
+        "Pass the output into Failory to read interviews and dissect the business errors.",
+        "Import the result into Notion to summarize takeaways for your own startup strategy."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Failory - Startup Failure Analysis.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Failory%20-%20Startup%20Failure%20Analysis"
+    },
+    {
+      "name": "FL Studio - Yeat Vocal Chain Preset",
+      "activation_tools": [
+        "FL Studio"
+      ],
+      "used_with": [
+        "FL Studio"
+      ],
+      "steps": [
+        "Activation:** Record a dry vocal track using a professional microphone and input the audio clip into FL Studio.",
+        "Execution:** Route the raw audio track into an FL Studio mixer channel loaded with the [Yeat Vocal Chain Preset] (configured with tools like Fruity Parametric EQ 2, Fruity Limiter, Pitcher, and delay plugins).",
+        "Refinement/Output:** Export the processed vocal stem alongside the instrumental track to finalize the song mix and bounce the master file."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Video & Audio/FL Studio - Yeat Vocal Chain Preset.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Video%20%26%20Audio/FL%20Studio%20-%20Yeat%20Vocal%20Chain%20Preset"
+    },
+    {
+      "name": "Flaticon - Vector Icon Library",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Figma",
+        "Illustrator"
+      ],
+      "steps": [
+        "Use Web Browser to search for specific icons or UI design symbols.",
+        "Pass the output into Flaticon to select and download matching vector files.",
+        "Import the result into Figma or Illustrator to incorporate the icons into your app layout."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Flaticon - Vector Icon Library.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Flaticon%20-%20Vector%20Icon%20Library"
+    },
+    {
+      "name": "FMHY - Free Resource Directory",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "VS Code"
+      ],
+      "steps": [
+        "Activation:** Open [FMHY - Free Resource Directory] in a Web Browser to locate free software utilities or open-source libraries.",
+        "Execution:** Select the verified links in [FMHY - Free Resource Directory] to download tools or configure settings.",
+        "Refinement/Output:** Deploy the downloaded utilities into your local environment or integrate them into your VS Code workflow."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/FMHY - Free Resource Directory.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/FMHY%20-%20Free%20Resource%20Directory"
+    },
+    {
+      "name": "Font Moodify - Mood-Based Font Selection",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Figma",
+        "Illustrator"
+      ],
+      "steps": [
+        "Use Web Browser to select an emotional mood or enter a custom style keyword.",
+        "Pass the output into Font Moodify to generate font pairings that match that tone.",
+        "Import the result into Figma or Illustrator to incorporate the typography into your visual design guide."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Font Moodify - Mood-Based Font Selection.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Font%20Moodify%20-%20Mood-Based%20Font%20Selection"
+    },
+    {
+      "name": "Formia - 3D Animated Logo Generator",
+      "activation_tools": [
+        "Illustrator"
+      ],
+      "used_with": [
+        "After Effects",
+        "Premiere Pro"
+      ],
+      "steps": [
+        "Activation:** Use Illustrator to design and export a clean 2D vector logo as an SVG.",
+        "Execution:** Pass the SVG into [Formia] to extrude it into 3D and customize materials and rotation animations.",
+        "Refinement/Output:** Export the animation as a video or GIF and import it into Premiere Pro or After Effects for final video placement."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Formia - 3D Animated Logo Generator.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Formia%20-%203D%20Animated%20Logo%20Generator"
+    },
+    {
+      "name": "freeCodeCamp - Interactive Coding Education",
+      "activation_tools": [
+        "User Input"
+      ],
+      "used_with": [
+        "GitHub"
+      ],
+      "steps": [
+        "Activation:** Create an account on [freeCodeCamp - Interactive Coding Education] and select a certification path.",
+        "Execution:** Work through interactive tutorials and write code inside [freeCodeCamp - Interactive Coding Education] to pass validation tests.",
+        "Refinement/Output:** Push completed projects to GitHub to build a developer portfolio."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/freeCodeCamp - Interactive Coding Education.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/freeCodeCamp%20-%20Interactive%20Coding%20Education"
+    },
+    {
+      "name": "FreeMoCap - Open-Source Motion Capture System",
+      "activation_tools": [
+        "Camera"
+      ],
+      "used_with": [
+        "Blender",
+        "Unreal Engine 5"
+      ],
+      "steps": [
+        "Activation:** Record motion clips using any standard [Camera] or webcam array.",
+        "Execution:** Feed the video files into [FreeMoCap] to compute and triangulate the 3D skeletal coordinates.",
+        "Refinement/Output:** Export the skeletal animation data and retarget it onto character rigs in Blender or Unreal Engine 5."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/FreeMoCap - Open-Source Motion Capture System.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/FreeMoCap%20-%20Open-Source%20Motion%20Capture%20System"
+    },
+    {
+      "name": "Futurepedia - AI Directory Discovery",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Claude AI - AI Coding and Content Creation"
+      ],
+      "steps": [
+        "Use Web Browser to search the directory for specific technical solutions.",
+        "Pass the output into Futurepedia to read ratings and compare similar AI tools.",
+        "Import the result into Claude AI - AI Coding and Content Creation or other tools to complete your project requirements."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Futurepedia - AI Directory Discovery.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Futurepedia%20-%20AI%20Directory%20Discovery"
+    },
+    {
+      "name": "Futurepedia - AI Tools Aggregation",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Claude AI - AI Coding and Content Creation"
+      ],
+      "steps": [
+        "Use Web Browser to explore various AI categories (e.g. video, coding).",
+        "Pass the output into Futurepedia to check tool reviews and details.",
+        "Import the result into Claude AI - AI Coding and Content Creation or your project planner to organize your tech stack."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Futurepedia - AI Tools Aggregation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Futurepedia%20-%20AI%20Tools%20Aggregation"
+    },
+    {
+      "name": "Futurepedia - Discovering Secret AI Tools",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Claude AI - AI Coding and Content Creation"
+      ],
+      "steps": [
+        "Use Web Browser to explore new AI releases in the database.",
+        "Pass the output into Futurepedia to read comparative features and test links.",
+        "Import the result into Claude AI - AI Coding and Content Creation or your editor tool to implement the new automation."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Futurepedia - Discovering Secret AI Tools.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Futurepedia%20-%20Discovering%20Secret%20AI%20Tools"
+    },
+    {
+      "name": "Futurepedia - Discovering Web Tools",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "ChatGPT - Conversational AI Assistance"
+      ],
+      "steps": [
+        "Use Web Browser to query the list of utility sites.",
+        "Pass the output into Futurepedia to discover new file converters or automation scripts.",
+        "Import the result into ChatGPT - Conversational AI Assistance or your pipeline editor to optimize daily tasks."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Futurepedia - Discovering Web Tools.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Futurepedia%20-%20Discovering%20Web%20Tools"
+    },
+    {
+      "name": "Futuretools - AI Tool Discovery",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "ChatGPT - Conversational AI Assistance"
+      ],
+      "steps": [
+        "Use Web Browser to browse and filter tools by category or popularity.",
+        "Pass the output into Futuretools to find and compare suitable tools for a project.",
+        "Import the result into ChatGPT - Conversational AI Assistance or other AI applications to optimize your daily workflows."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Futuretools - AI Tool Discovery.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Futuretools%20-%20AI%20Tool%20Discovery"
+    },
+    {
+      "name": "Futuretools - AI Tools Search",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "ChatGPT - Conversational AI Assistance"
+      ],
+      "steps": [
+        "Use Web Browser to filter tools on the Futuretools dashboard.",
+        "Pass the output into Futuretools to choose the top-rated AI app.",
+        "Import the result into ChatGPT - Conversational AI Assistance to design a productive work pipeline."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Futuretools - AI Tools Search.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Futuretools%20-%20AI%20Tools%20Search"
+    },
+    {
+      "name": "Futuretools - Discovering Tech AI Tools",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "ChatGPT - Conversational AI Assistance",
+        "Claude AI - AI Coding and Content Creation"
+      ],
+      "steps": [
+        "Use Web Browser to search the database under technical categories.",
+        "Pass the output into Futuretools to evaluate ratings and feature lists.",
+        "Import the result into ChatGPT - Conversational AI Assistance or Claude AI - AI Coding and Content Creation to improve code writing speed."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Futuretools - Discovering Tech AI Tools.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Futuretools%20-%20Discovering%20Tech%20AI%20Tools"
+    },
+    {
+      "name": "Futuretools - Productivity AI Directory",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "ChatGPT - Conversational AI Assistance",
+        "Claude AI - AI Coding and Content Creation"
+      ],
+      "steps": [
+        "Use Web Browser to explore the productivity category on the directory.",
+        "Pass the output into Futuretools to identify and compare automation tools.",
+        "Import the result into ChatGPT - Conversational AI Assistance or Claude AI - AI Coding and Content Creation prompts to streamline your daily tasks."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Futuretools - Productivity AI Directory.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Futuretools%20-%20Productivity%20AI%20Directory"
+    },
+    {
+      "name": "Futuretools Directory - Productivity Workflows Discovery",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "ChatGPT - Conversational AI Assistance",
+        "Claude AI - AI Coding and Content Creation",
+        "Futuretools - AI Tools Search"
+      ],
+      "steps": [
+        "Use Web Browser to search the directory categories.",
+        "Pass the output into Futuretools - AI Tools Search Directory to evaluate reviews and tool pages.",
+        "Import the result into ChatGPT - Conversational AI Assistance or Claude AI - AI Coding and Content Creation to run your custom automation."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Futuretools Directory - Productivity Workflows Discovery.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Futuretools%20Directory%20-%20Productivity%20Workflows%20Discovery"
+    },
+    {
+      "name": "Gambo AI - Text-to-Game Prototyping",
+      "activation_tools": [
+        "Text Prompt"
+      ],
+      "used_with": [
+        "Web Browser"
+      ],
+      "steps": [
+        "Use Text Prompt to describe your 2D game idea (e.g., arcade platformer).",
+        "Pass the output into Gambo AI - Text-to-Game Prototyping AI to compile the sprites and game code.",
+        "Import the result into Web Browser to play, refine via follow-up prompts, or share the game link."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Gambo AI - Text-to-Game Prototyping.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Gambo%20AI%20-%20Text-to-Game%20Prototyping"
+    },
+    {
+      "name": "Gamma App - AI Presentation & Webpage Generator",
+      "activation_tools": [
+        "ChatGPT - Conversational AI Assistance"
+      ],
+      "used_with": [
+        "Notion"
+      ],
+      "steps": [
+        "Activation:** Use ChatGPT - Conversational AI Assistance Voice to interview yourself on a topic, and copy the transcribed text or outline.",
+        "Execution:** Paste the transcription into [Gamma App] and choose the theme/format to auto-generate a deck or document.",
+        "Refinement/Output:** Refine layout details using Gamma's editor, then export the finished product to Notion or download as a PDF to share with clients or students."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Video & Audio/Gamma App - AI Presentation & Webpage Generator.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Video%20%26%20Audio/Gamma%20App%20-%20AI%20Presentation%20%26%20Webpage%20Generator"
+    },
+    {
+      "name": "Gamma App - Instant Slide Presentations",
+      "activation_tools": [
+        "Canva"
+      ],
+      "used_with": [
+        "GitHub"
+      ],
+      "steps": [
+        "Activation:** Organize your topic outline, key bullet points, or visual mockups in Canva.",
+        "Execution:** Import the outline into [Gamma App] to automatically generate and animate the slides.",
+        "Refinement/Output:** Fine-tune individual cards using the inline editor, then export the file as a PPTX for a final presentation in [PowerPoint]."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Productivity & Study/Gamma App - Instant Slide Presentations.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Productivity%20%26%20Study/Gamma%20App%20-%20Instant%20Slide%20Presentations"
+    },
+    {
+      "name": "Gemini Image Generation",
+      "activation_tools": [],
+      "used_with": [
+        "Gemini - Web Design Upgrades",
+        "GitHub"
+      ],
+      "steps": [],
+      "file": "🧰 AI Toolkit/Gemini Image Generation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Gemini%20Image%20Generation"
+    },
+    {
+      "name": "GeoSpy AI - Photo Location Identification",
+      "activation_tools": [
+        "Image Upload"
+      ],
+      "used_with": [
+        "Obsidian"
+      ],
+      "steps": [
+        "Use Image Upload to input the target photo into the system.",
+        "Pass the output into GeoSpy AI - Photo Location Identification AI to parse landmarks and predict coordinates.",
+        "Import the result into Google Maps or Obsidian to record and map the location."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/GeoSpy AI - Photo Location Identification.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/GeoSpy%20AI%20-%20Photo%20Location%20Identification"
+    },
+    {
+      "name": "Go Viral! - Misinformation Educational Game",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Web Browser"
+      ],
+      "steps": [
+        "Use Web Browser to navigate to the Go Viral! game website.",
+        "Pass the output into Go Viral! to play through the educational simulator.",
+        "Import the result into Web Browser blogs or social discussions to spread awareness of misinformation tactics."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Go Viral! - Misinformation Educational Game.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Go%20Viral%21%20-%20Misinformation%20Educational%20Game"
+    },
+    {
+      "name": "Google AI Studio - Rapid Web Prototyping",
+      "activation_tools": [
+        "Text Prompt"
+      ],
+      "used_with": [
+        "VS Code",
+        "Web Browser"
+      ],
+      "steps": [
+        "Use Text Prompt to define your web prototype, styling, and behaviors.",
+        "Pass the output into Google AI Studio to run the model and build the application prototype.",
+        "Import the result into VS Code or compile in Web Browser to run your finalized web tool."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Google AI Studio - Rapid Web Prototyping.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Google%20AI%20Studio%20-%20Rapid%20Web%20Prototyping"
+    },
+    {
+      "name": "Google Earth Studio - Geographic Map Animator",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "After Effects"
+      ],
+      "steps": [
+        "Activation:** Define geographical path points and coordinates on the globe using a Web Browser.",
+        "Execution:** Use [Google Earth Studio] to set keyframes and render the high-resolution camera sweep.",
+        "Refinement/Output:** Export the camera track data and render clip, and compile the final sequence in After Effects."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Google Earth Studio - Geographic Map Animator.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Google%20Earth%20Studio%20-%20Geographic%20Map%20Animator"
+    },
+    {
+      "name": "Google Flights - Cheap Flights Search",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Calendar"
+      ],
+      "steps": [
+        "Use Web Browser to enter departure city, destination, and flexible dates.",
+        "Pass the output into Google Flights to compare flight prices and airline carriers.",
+        "Import the result into Calendar to lock in travel dates and set up departure notifications."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Google Flights - Cheap Flights Search.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Google%20Flights%20-%20Cheap%20Flights%20Search"
+    },
+    {
+      "name": "GPAI - AI STEM Copilot",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Notion"
+      ],
+      "steps": [
+        "Activation:** Input a math formula or abstract physical setup via Web Browser.",
+        "Execution:** Pass the details into [GPAI] to generate a clean, publication-ready vector diagram.",
+        "Refinement/Output:** Export the high-resolution vector graphic and insert it into a research document in Notion or slide deck."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/GPAI - AI STEM Copilot.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/GPAI%20-%20AI%20STEM%20Copilot"
+    },
+    {
+      "name": "Graphite - Vector Graphics Design",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Illustrator",
+        "Photoshop"
+      ],
+      "steps": [
+        "Use Web Browser to launch the Graphite online editor.",
+        "Pass the output into Graphite to create vector shapes and adjust parameters via node flows.",
+        "Import the result into Illustrator or Photoshop to assemble final graphic layouts."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Graphite - Vector Graphics Design.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Graphite%20-%20Vector%20Graphics%20Design"
+    },
+    {
+      "name": "Hacksplaining - Interactive Cybersecurity Lessons",
+      "activation_tools": [
+        "Browser"
+      ],
+      "used_with": [
+        "burpsuite",
+        "sqlmap"
+      ],
+      "steps": [
+        "Activation:** Select a security module (e.g., SQL Injection) from the lesson directory on [Hacksplaining - Interactive Cybersecurity Lessons].",
+        "Execution:** Work through the interactive attack simulation inside [Hacksplaining - Interactive Cybersecurity Lessons] to understand how vulnerability parameters are exploited.",
+        "Refinement/Output:** Write secure defenses in your codebase and verify application security using testing tools like [burpsuite] or [sqlmap]."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/Hacksplaining - Interactive Cybersecurity Lessons.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/Hacksplaining%20-%20Interactive%20Cybersecurity%20Lessons"
+    },
+    {
+      "name": "Haikei - SVGs and Vector Shapes Generation",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Figma",
+        "VS Code"
+      ],
+      "steps": [
+        "Use Web Browser to choose a vector generator type (e.g. blobs, waves).",
+        "Pass the output into Haikei to tweak shapes and download the vector.",
+        "Import the result into Figma or VS Code to incorporate the SVGs into your website layout."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Haikei - SVGs and Vector Shapes Generation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Haikei%20-%20SVGs%20and%20Vector%20Shapes%20Generation"
+    },
+    {
+      "name": "HAIL MARY - Adversarial AI Red Teaming",
+      "activation_tools": [
+        "GPT",
+        "Claude"
+      ],
+      "used_with": [
+        "Command Line",
+        "Python"
+      ],
+      "steps": [
+        "Activation:** Input target model parameters and security policies into [HAIL MARY - Adversarial AI Red Teaming].",
+        "Execution:** Run automated penetration testing loops inside [HAIL MARY - Adversarial AI Red Teaming] to stress-test LLM safety barriers.",
+        "Refinement/Output:** Export the security logs and jailbreak validation metrics into [Python] scripts or databases for model training."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/HAIL MARY - Adversarial AI Red Teaming.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/HAIL%20MARY%20-%20Adversarial%20AI%20Red%20Teaming"
+    },
+    {
+      "name": "HeyGen - AI Video Avatar Generator",
+      "activation_tools": [
+        "ElevenLabs"
+      ],
+      "used_with": [
+        "GitHub"
+      ],
+      "steps": [
+        "Activation:** Synthesize high-quality custom voice clips or scripts inside ElevenLabs.",
+        "Execution:** Paste the script and upload the voice clip into [HeyGen] to animate the digital avatar's lip-sync and facial expressions.",
+        "Refinement/Output:** Download the generated avatar footage, and import it into CapCut to apply templates, transitions, and overlays."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Productivity & Study/HeyGen - AI Video Avatar Generator.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Productivity%20%26%20Study/HeyGen%20-%20AI%20Video%20Avatar%20Generator"
+    },
+    {
+      "name": "Hi3D - High-Fidelity Image-to-3D Generator",
+      "activation_tools": [
+        "Camera"
+      ],
+      "used_with": [
+        "Blender"
+      ],
+      "steps": [
+        "Activation:** Photograph a physical object from multiple angles using a standard [Camera].",
+        "Execution:** Upload the images to [Hi3D] to generate the mesh structure and PBR textures.",
+        "Refinement/Output:** Download the watertight STL/OBJ file, clean it up in Blender, and fabricate it on a [3D Printer]."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Hi3D - High-Fidelity Image-to-3D Generator.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Hi3D%20-%20High-Fidelity%20Image-to-3D%20Generator"
+    },
+    {
+      "name": "Hostinger AI Builder - Automated Website Building",
+      "activation_tools": [
+        "Text Prompt"
+      ],
+      "used_with": [
+        "Web Browser"
+      ],
+      "steps": [
+        "Use Text Prompt to describe your business type and design requirements.",
+        "Pass the output into Hostinger AI Builder to automatically draft the website pages.",
+        "Import the result into Web Browser to customize elements, configure domains, and launch the live site."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Hostinger AI Builder - Automated Website Building.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Hostinger%20AI%20Builder%20-%20Automated%20Website%20Building"
+    },
+    {
+      "name": "iFakeTextMessage - Fake Chat Generation",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Photoshop",
+        "Premiere Pro"
+      ],
+      "steps": [
+        "Use Web Browser to write the script dialogue in the message creator interface.",
+        "Pass the output into iFakeTextMessage to compile and export the fake chat screenshot.",
+        "Import the result into Premiere Pro or Photoshop to overlay the chat graphic onto your video."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/iFakeTextMessage - Fake Chat Generation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/iFakeTextMessage%20-%20Fake%20Chat%20Generation"
+    },
+    {
+      "name": "Imagen",
+      "activation_tools": [],
+      "used_with": [
+        "GitHub"
+      ],
+      "steps": [],
+      "file": "🧰 AI Toolkit/Imagen.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imagen"
+    },
+    {
+      "name": "Jitter - Web-Based Text & UI Animator",
+      "activation_tools": [
+        "Figma"
+      ],
+      "used_with": [
+        "Premiere Pro"
+      ],
+      "steps": [
+        "Activation:** Create vector layouts and clean copy layouts inside Figma.",
+        "Execution:** Import the vector elements into [Jitter] and use the timeline to apply text fly-ins and spring animations.",
+        "Refinement/Output:** Render the animation clip and overlay it on video timelines inside Premiere Pro."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Jitter - Web-Based Text & UI Animator.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Jitter%20-%20Web-Based%20Text%20%26%20UI%20Animator"
+    },
+    {
+      "name": "Kittl - Professional Graphic Design",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Illustrator",
+        "Photoshop"
+      ],
+      "steps": [
+        "Use Web Browser to open Kittl and pick a design template.",
+        "Pass the output into Kittl to apply custom text warp and generate vector assets.",
+        "Import the result into Illustrator or Photoshop to prepare the graphics for print or web."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Kittl - Professional Graphic Design.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Kittl%20-%20Professional%20Graphic%20Design"
+    },
+    {
+      "name": "Koen AI - Content Systems Automation",
+      "activation_tools": [
+        "n8n"
+      ],
+      "used_with": [
+        "ChatGPT - Conversational AI Assistance",
+        "Claude AI - AI Coding and Content Creation"
+      ],
+      "steps": [
+        "Use n8n to initiate the content automation trigger.",
+        "Pass the output into Koen AI - Content Systems Automation AI to generate scripts via Claude AI - AI Coding and Content Creation.",
+        "Import the result into ChatGPT - Conversational AI Assistance or scheduling planners to publish the assets."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Koen AI - Content Systems Automation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Koen%20AI%20-%20Content%20Systems%20Automation"
+    },
+    {
+      "name": "Koen AI Automation - AI Workflow Education",
+      "activation_tools": [
+        "n8n"
+      ],
+      "used_with": [
+        "Claude AI - AI Coding and Content Creation",
+        "Koen AI - Content Systems Automation",
+        "Notion"
+      ],
+      "steps": [
+        "Use n8n to structure custom automation triggers.",
+        "Pass the output into Koen AI - Content Systems Automation Automation template guidelines to connect Claude AI - AI Coding and Content Creation.",
+        "Import the result into Notion to log workflow performance and organize leads."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Koen AI Automation - AI Workflow Education.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Koen%20AI%20Automation%20-%20AI%20Workflow%20Education"
+    },
+    {
+      "name": "Learn Anything - Interactive Mind Maps",
+      "activation_tools": [
+        "Browser"
+      ],
+      "used_with": [
+        "Obsidian"
+      ],
+      "steps": [
+        "Activation:** Query a technical skill or language (e.g., Rust or Kubernetes) inside [Learn Anything - Interactive Mind Maps].",
+        "Execution:** Browse the visual learning nodes in [Learn Anything - Interactive Mind Maps] to locate curated documentation and tutorials.",
+        "Refinement/Output:** Work through the recommended learning paths and consolidate findings inside Obsidian."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/Learn Anything - Interactive Mind Maps.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/Learn%20Anything%20-%20Interactive%20Mind%20Maps"
+    },
+    {
+      "name": "LLM Coding Benchmark - Code Generation Comparison",
+      "activation_tools": [
+        "ChatGPT - Conversational AI Assistance",
+        "Claude AI - AI Coding and Content Creation"
+      ],
+      "used_with": [
+        "Cursor - C++ Gameplay Programming"
+      ],
+      "steps": [
+        "Use ChatGPT - Conversational AI Assistance, Claude AI - AI Coding and Content Creation, Gemini to generate boilerplate code for a game clone.",
+        "Pass the output into LLM Coding Benchmark parameters to compare code quality.",
+        "Import the result into Cursor - C++ Gameplay Programming Code to fix bugs and run the compiled game."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/LLM Coding Benchmark - Code Generation Comparison.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/LLM%20Coding%20Benchmark%20-%20Code%20Generation%20Comparison"
+    },
+    {
+      "name": "Lovable - Full-Stack App Generation",
+      "activation_tools": [
+        "User Input"
+      ],
+      "used_with": [
+        "GitHub"
+      ],
+      "steps": [
+        "Activation:** Input a description or UI outline of your application into [Lovable - Full-Stack App Generation].",
+        "Execution:** Allow the generation engine within [Lovable - Full-Stack App Generation] to build the React interface while linking databases to [Supabase].",
+        "Refinement/Output:** Synchronize the project code into GitHub to run further customizations or custom scripts in VS Code."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/Lovable - Full-Stack App Generation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/Lovable%20-%20Full-Stack%20App%20Generation"
+    },
+    {
+      "name": "Lovart AI - AI Concept Art Generation",
+      "activation_tools": [
+        "Text Prompt"
+      ],
+      "used_with": [
+        "Blender",
+        "Photoshop"
+      ],
+      "steps": [
+        "Use Text Prompt to describe character features and visual style.",
+        "Pass the output into Lovart AI - AI Concept Art Generation AI to generate character concepts.",
+        "Import the result into Blender or Photoshop to model and paint the final 3D assets."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Lovart AI - AI Concept Art Generation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Lovart%20AI%20-%20AI%20Concept%20Art%20Generation"
+    },
+    {
+      "name": "Luma AI Genie - Text-to-3D Generator",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Blender",
+        "Unity"
+      ],
+      "steps": [
+        "Activation:** Open a Web Browser and access the Genie generation workspace.",
+        "Execution:** Enter a descriptive prompt in [Luma AI Genie] and select the best generated mesh variation.",
+        "Refinement/Output:** Download the OBJ file, optimize mesh topology and materials in Blender, and load the asset into Unity."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Luma AI Genie - Text-to-3D Generator.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Luma%20AI%20Genie%20-%20Text-to-3D%20Generator"
+    },
+    {
+      "name": "Magenta RealTime 2 - On-Device Live Music Generation",
+      "activation_tools": [
+        "MIDI Controller",
+        "Python"
+      ],
+      "used_with": [
+        "FL Studio"
+      ],
+      "steps": [
+        "Activation:** Input musical notes via a physical keyboard/synthesizer or a MIDI sequencer in a DAW like [Ableton Live].",
+        "Execution:** Stream the MIDI output in real-time into [Magenta RealTime 2] to generate matching instrumental accompaniment.",
+        "Refinement/Output:** Route the generated audio output back into [Ableton Live] or FL Studio for mixing, effects processing, and final recording."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Video & Audio/Magenta RealTime 2 - On-Device Live Music Generation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Video%20%26%20Audio/Magenta%20RealTime%202%20-%20On-Device%20Live%20Music%20Generation"
+    },
+    {
+      "name": "ManyChat - Chat Marketing Automation",
+      "activation_tools": [
+        "Instagram"
+      ],
+      "used_with": [
+        "Notion"
+      ],
+      "steps": [
+        "Activation: Publish a promotional Reel on Instagram** requesting users to comment a trigger word (e.g., \"AI\") to get access to a tool list.",
+        "Execution: Detect the comment and launch a direct message conversation flow in ManyChat** to qualify the lead, capture their email, and deliver the link.",
+        "Refinement/Output: Sync the captured email and customer data to Notion or Shopify** to initiate an automated email newsletter sequence."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Marketing & Business/ManyChat - Chat Marketing Automation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Marketing%20%26%20Business/ManyChat%20-%20Chat%20Marketing%20Automation"
+    },
+    {
+      "name": "Mapify - Visual Topic Breakdown",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Notion"
+      ],
+      "steps": [
+        "Use Web Browser to input a dense document or topic query into the app.",
+        "Pass the output into Mapify to generate the interactive visual mind map.",
+        "Import the result into Notion to log your learning summaries and structured study guides."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Mapify - Visual Topic Breakdown.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Mapify%20-%20Visual%20Topic%20Breakdown"
+    },
+    {
+      "name": "Meshy - AI-Powered 3D Asset Generator",
+      "activation_tools": [
+        "Midjourney - Royalty-Free Image Alternatives"
+      ],
+      "used_with": [
+        "Blender",
+        "Unreal Engine 5"
+      ],
+      "steps": [
+        "Activation:** Render a detailed character concept image using Midjourney - Royalty-Free Image Alternatives.",
+        "Execution:** Upload the image to [Meshy] to generate a textured, rigged 3D character mesh.",
+        "Refinement/Output:** Download the rigged FBX model, customize details in Blender, and import it into Unreal Engine 5."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Meshy - AI-Powered 3D Asset Generator.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Meshy%20-%20AI-Powered%203D%20Asset%20Generator"
+    },
+    {
+      "name": "Microsoft Math Solver - Mathematical Problem Solving",
+      "activation_tools": [
+        "Notion"
+      ],
+      "used_with": [
+        "GitHub"
+      ],
+      "steps": [
+        "Activation:** Collect or scan math problems from your lecture notes in Notion.",
+        "Execution:** Paste or draw the formula into [Microsoft Math Solver] to generate the step-by-step solution path and graphs.",
+        "Refinement/Output:** Re-create functional visualizations in [Desmos] and copy the detailed solutions back to your Notion study notes."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Productivity & Study/Microsoft Math Solver - Mathematical Problem Solving.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Productivity%20%26%20Study/Microsoft%20Math%20Solver%20-%20Mathematical%20Problem%20Solving"
+    },
+    {
+      "name": "Midjourney - Royalty-Free Image Alternatives",
+      "activation_tools": [
+        "Image Upload"
+      ],
+      "used_with": [
+        "Photoshop"
+      ],
+      "steps": [
+        "Use Image Upload to upload a copyrighted reference image to Midjourney.",
+        "Pass the output into Midjourney with a prompt to describe and generate a royalty-free alternative.",
+        "Import the result into Photoshop to retouch and combine the generated image into your project."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Midjourney - Royalty-Free Image Alternatives.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Midjourney%20-%20Royalty-Free%20Image%20Alternatives"
+    },
+    {
+      "name": "Mindsmith - AI eLearning Course Creator",
+      "activation_tools": [
+        "Notion"
+      ],
+      "used_with": [
+        "GitHub"
+      ],
+      "steps": [
+        "Activation:** Compile curriculum outlines and course objectives in Notion.",
+        "Execution:** Feed the raw outlines or reference docs into [Mindsmith] to draft lessons, interactive scenarios, and knowledge checks.",
+        "Refinement/Output:** Complete final edits on text styling, and download the module as a SCORM file or slide format for use in [PowerPoint]."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Productivity & Study/Mindsmith - AI eLearning Course Creator.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Productivity%20%26%20Study/Mindsmith%20-%20AI%20eLearning%20Course%20Creator"
+    },
+    {
+      "name": "Mobbin - Mobile and Web Design Reference",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Figma"
+      ],
+      "steps": [
+        "Use Web Browser to search Mobbin for specific user flow screenshots.",
+        "Pass the output into Mobbin to analyze navigation steps and design patterns.",
+        "Import the result into Figma to serve as reference layouts for your UI prototypes."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Mobbin - Mobile and Web Design Reference.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Mobbin%20-%20Mobile%20and%20Web%20Design%20Reference"
+    },
+    {
+      "name": "Modo - Text-to-Hardware Prototyping",
+      "activation_tools": [
+        "Text Prompt"
+      ],
+      "used_with": [
+        "CAD",
+        "3D Printer"
+      ],
+      "steps": [
+        "Use Text Prompt to describe the desired electronics hardware design.",
+        "Pass the output into Modo to generate the schematics, parts lists, and CAD layouts.",
+        "Import the result into 3D Printer or PCB assembly tools to fabricate and assemble the prototype."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Modo - Text-to-Hardware Prototyping.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Modo%20-%20Text-to-Hardware%20Prototyping"
+    },
+    {
+      "name": "My Big TOE (Thomas Campbell) - Simulation Theory Exploration",
+      "activation_tools": [
+        "Mindset"
+      ],
+      "used_with": [
+        "Notion"
+      ],
+      "steps": [
+        "Use Mindset to conceptualize reality as a virtual consciousness model.",
+        "Pass the output into My Big TOE guidelines to model personal development steps.",
+        "Import the result into Notion to keep records of your metaphysical hypotheses."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/My Big TOE (Thomas Campbell) - Simulation Theory Exploration.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/My%20Big%20TOE%20%28Thomas%20Campbell%29%20-%20Simulation%20Theory%20Exploration"
+    },
+    {
+      "name": "MyInstants - Meme Sound Effects Library",
+      "activation_tools": [
+        "Browser"
+      ],
+      "used_with": [
+        "Web Browser"
+      ],
+      "steps": [
+        "Activation:** Identify a scene in a video timeline that requires a humorous or standard sound effect (e.g. dramatic record scratch).",
+        "Execution:** Search [MyInstants] in the Web Browser, preview matching sound buttons, and download the MP3 file.",
+        "Refinement/Output:** Import the MP3 clip into DaVinci Resolve or FL Studio and sync it with the video frames or music tracks."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Video & Audio/MyInstants - Meme Sound Effects Library.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Video%20%26%20Audio/MyInstants%20-%20Meme%20Sound%20Effects%20Library"
+    },
+    {
+      "name": "Napkin AI - Text to Diagram Generation",
+      "activation_tools": [
+        "Notion"
+      ],
+      "used_with": [
+        "GitHub"
+      ],
+      "steps": [
+        "Activation:** Write technical articles, summaries, or process documentation inside Notion.",
+        "Execution:** Import the draft into Napkin AI - Text to Diagram Generation AI] to automatically construct visual breakdowns, flowcharts, and concepts.",
+        "Refinement/Output:** Refine colors and icon styles within the interactive canvas, then export the visuals to insert into slides in [PowerPoint]."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Productivity & Study/Napkin AI - Text to Diagram Generation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Productivity%20%26%20Study/Napkin%20AI%20-%20Text%20to%20Diagram%20Generation"
+    },
+    {
+      "name": "NetMovies - Free Movie Streaming",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Web Browser"
+      ],
+      "steps": [
+        "Use Web Browser to visit the streaming site and search for a title.",
+        "Pass the output into NetMovies to run and stream the media file.",
+        "Import the result into Web Browser tools or casting apps to play content on external monitors."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/NetMovies - Free Movie Streaming.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/NetMovies%20-%20Free%20Movie%20Streaming"
+    },
+    {
+      "name": "NexLev - YouTube Niche Research",
+      "activation_tools": [
+        "Browser"
+      ],
+      "used_with": [
+        "Claude Code - Command Line Coding and Automation"
+      ],
+      "steps": [
+        "Activation:** Identify high-RPM niches or competitor channel strategies using [NexLev - YouTube Niche Research].",
+        "Execution:** Pass the chosen niche data and competitor angles to Claude Code - Command Line Coding and Automation to write video scripts and outline content.",
+        "Refinement/Output:** Edit the final video and upload it to [YouTube] to build channel traffic."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/NexLev - YouTube Niche Research.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/NexLev%20-%20YouTube%20Niche%20Research"
+    },
+    {
+      "name": "NFC Tools - NFC Tag Programming App",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Google Photos",
+        "Carrd",
+        "3D Printer"
+      ],
+      "steps": [
+        "Activation:** Set up a target destination (e.g., a shared album on [Google Photos] or a web landing page in [Carrd]).",
+        "Execution:** Program an NFC tag with the destination link using [NFC Tools] on your mobile device.",
+        "Refinement/Output:** Mount the programmed tag inside a custom shell printed on a [3D Printer] to create a physical scannable shortcut."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/NFC Tools - NFC Tag Programming App.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/NFC%20Tools%20-%20NFC%20Tag%20Programming%20App"
+    },
+    {
+      "name": "Niantic Lightship - Spatial Mapping and Digital Twins",
+      "activation_tools": [
+        "Pokemon Go"
+      ],
+      "used_with": [
+        "Blender",
+        "Unity"
+      ],
+      "steps": [
+        "Use Pokemon Go or scanning apps to collect geographic spatial scans.",
+        "Pass the output into Niantic Lightship to compile geographic meshes and 3D twins.",
+        "Import the result into Unity or Blender to build interactive AR layers and navigation models."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Niantic Lightship - Spatial Mapping and Digital Twins.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Niantic%20Lightship%20-%20Spatial%20Mapping%20and%20Digital%20Twins"
+    },
+    {
+      "name": "Notion - Workspace and AI Wiki",
+      "activation_tools": [
+        "Claude - Social Media Content Generation"
+      ],
+      "used_with": [
+        "GitHub",
+        "Notion"
+      ],
+      "steps": [
+        "Activation:** Gather logs, concepts, or code structures from developer chat logs in Claude - Social Media Content Generation.",
+        "Execution:** Consolidate data inside a custom database on Notion and activate Notion AI to organize the files and compile executive briefs.",
+        "Refinement/Output:** Share the polished wiki pages or database lists directly with teams or store them in a personal knowledge vault."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Productivity & Study/Notion - Workspace and AI Wiki.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Productivity%20%26%20Study/Notion%20-%20Workspace%20and%20AI%20Wiki"
+    },
+    {
+      "name": "NotTools - Customizable Web Utilities",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Photoshop"
+      ],
+      "steps": [
+        "Use Web Browser to access NotTools and select a tool (e.g. tweet maker).",
+        "Pass the output into NotTools to customize parameters, text, and logos.",
+        "Import the result into Photoshop or design files to compile mockup layouts."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/NotTools - Customizable Web Utilities.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/NotTools%20-%20Customizable%20Web%20Utilities"
+    },
+    {
+      "name": "NVIDIA AI ToyBox Car Explorer - Interactive 3D Car Exploration",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Unreal Engine 5"
+      ],
+      "steps": [
+        "Use Web Browser to launch the Nvidia AI Car Explorer tool.",
+        "Pass the output into NVIDIA AI ToyBox Car Explorer to adjust design features and preview 3D car models.",
+        "Import the result into Unreal Engine 5 to animate the model or insert it into an interactive game environment."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/NVIDIA AI ToyBox Car Explorer - Interactive 3D Car Exploration.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/NVIDIA%20AI%20ToyBox%20Car%20Explorer%20-%20Interactive%203D%20Car%20Exploration"
+    },
+    {
+      "name": "Obsidian - Knowledge Base Management",
+      "activation_tools": [
+        "Obsidian"
+      ],
+      "used_with": [
+        "Claude Code - Command Line Coding and Automation",
+        "Obsidian"
+      ],
+      "steps": [
+        "Activation:** Write notes and link related ideas using wiki-style links inside Obsidian - Knowledge Base Management].",
+        "Execution:** Connect the vault directory to Claude Code - Command Line Coding and Automation using Obsidian CLI - Vault-to-LLM Integration].",
+        "Refinement/Output:** Command Claude Code - Command Line Coding and Automation to run analysis prompts (e.g., /ideas, /trace) and append synthesized drafts directly inside Obsidian - Knowledge Base Management]."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/Obsidian - Knowledge Base Management.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/Obsidian%20-%20Knowledge%20Base%20Management"
+    },
+    {
+      "name": "Obsidian CLI - Vault-to-LLM Integration",
+      "activation_tools": [
+        "Obsidian"
+      ],
+      "used_with": [
+        "Claude Code - Command Line Coding and Automation",
+        "Obsidian"
+      ],
+      "steps": [
+        "Activation:** Initialize Obsidian CLI - Vault-to-LLM Integration] in your terminal to index a local Obsidian vault directory.",
+        "Execution:** Load the indexed skills into Claude Code - Command Line Coding and Automation to execute connection and synthesis queries (e.g., finding cross-domain ideas).",
+        "Refinement/Output:** Write the resulting AI-synthesized outlines or links directly back into your Obsidian vault as new notes."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/Obsidian CLI - Vault-to-LLM Integration.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/Obsidian%20CLI%20-%20Vault-to-LLM%20Integration"
+    },
+    {
+      "name": "One More Shot AI - Beat-Synced Music Video Generator",
+      "activation_tools": [
+        "Suno AI - Text-to-Music Generation"
+      ],
+      "used_with": [
+        "DaVinci Resolve",
+        "One More Shot AI - Beat-Synced Music Video Generator",
+        "Premiere Pro"
+      ],
+      "steps": [
+        "Activation:** Generate a song using an AI tool like Suno AI - Text-to-Music Generation or [Udio], and prepare reference face images.",
+        "Execution:** Upload the audio track and reference images into One More Shot AI - Beat-Synced Music Video Generator AI], select the visual style, and generate the video.",
+        "Refinement/Output:** Import the rendered video into DaVinci Resolve or Premiere Pro for final color grading, cuts, and title overlays."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Video & Audio/One More Shot AI - Beat-Synced Music Video Generator.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Video%20%26%20Audio/One%20More%20Shot%20AI%20-%20Beat-Synced%20Music%20Video%20Generator"
+    },
+    {
+      "name": "Peepshow - Video Analysis for LLMs",
+      "activation_tools": [
+        "Terminal",
+        "Whisper"
+      ],
+      "used_with": [
+        "Claude Code - Command Line Coding and Automation"
+      ],
+      "steps": [
+        "Activation:** Execute [Peepshow - Video Analysis for LLMs] in your terminal, providing the path to a video file.",
+        "Execution:** Allow the utility to transcribe the audio with [Whisper] and output visual frame summaries in a local folder.",
+        "Refinement/Output:** Load the structured markdown file into Claude Code - Command Line Coding and Automation to write subtitles, metadata, or social media summaries."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/Peepshow - Video Analysis for LLMs.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/Peepshow%20-%20Video%20Analysis%20for%20LLMs"
+    },
+    {
+      "name": "Peter AI - Mindset and Cognitive Alignment",
+      "activation_tools": [
+        "Mindset"
+      ],
+      "used_with": [
+        "Obsidian"
+      ],
+      "steps": [
+        "Use Mindset to reflect and outline behavioral targets.",
+        "Pass the output into Peter AI - Mindset and Cognitive Alignment AI templates to map action sequences and mental alignment.",
+        "Import the result into Obsidian to record progress and visualize behavioral changes."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Peter AI - Mindset and Cognitive Alignment.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Peter%20AI%20-%20Mindset%20and%20Cognitive%20Alignment"
+    },
+    {
+      "name": "Pixel Agents - Agent Activity Visualizer",
+      "activation_tools": [
+        "VS Code"
+      ],
+      "used_with": [
+        "Claude Code - Command Line Coding and Automation"
+      ],
+      "steps": [
+        "Activation:** Install and configure the [Pixel Agents - Agent Activity Visualizer] extension inside VS Code.",
+        "Execution:** Launch Claude Code - Command Line Coding and Automation inside the integrated terminal to initiate tasks like code generation or building.",
+        "Refinement/Output:** Keep track of current operations visually as the active pixel avatar changes animation states inside the [Pixel Agents - Agent Activity Visualizer] dashboard."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/Pixel Agents - Agent Activity Visualizer.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/Pixel%20Agents%20-%20Agent%20Activity%20Visualizer"
+    },
+    {
+      "name": "PNGWing - Transparent Vector and PNG Search",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Illustrator",
+        "Photoshop"
+      ],
+      "steps": [
+        "Use Web Browser to search the PNGWing database for required assets.",
+        "Pass the output into PNGWing to download the high-resolution PNG file.",
+        "Import the result into Photoshop or Illustrator to compile the graphic into your final design layout."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/PNGWing - Transparent Vector and PNG Search.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/PNGWing%20-%20Transparent%20Vector%20and%20PNG%20Search"
+    },
+    {
+      "name": "PrintPal 3D - City and Terrain 3D Modeler",
+      "activation_tools": [
+        "Google Maps"
+      ],
+      "used_with": [
+        "3D Printer",
+        "Blender"
+      ],
+      "steps": [
+        "Activation:** Capture a high-contrast terrain or satellite screenshot using [Google Maps].",
+        "Execution:** Upload the image into [PrintPal 3D] to define height parameters and extrude the model.",
+        "Refinement/Output:** Download the watertight STL file and load it into your slicer for fabrication on a [3D Printer]."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/PrintPal 3D - City and Terrain 3D Modeler.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/PrintPal%203D%20-%20City%20and%20Terrain%203D%20Modeler"
+    },
+    {
+      "name": "ProductionCrate - Stock VFX Elements Library",
+      "activation_tools": [
+        "Premiere Pro"
+      ],
+      "used_with": [
+        "GitHub"
+      ],
+      "steps": [
+        "Activation:** Assemble raw video clips on a timeline inside Premiere Pro.",
+        "Execution:** Search the [ProductionCrate] library for matching visual and audio effects (such as smoke or shockwaves) and download them.",
+        "Refinement/Output:** Import the stock elements into After Effects to composite them over the original layers."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Productivity & Study/ProductionCrate - Stock VFX Elements Library.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Productivity%20%26%20Study/ProductionCrate%20-%20Stock%20VFX%20Elements%20Library"
+    },
+    {
+      "name": "PrusaSlicer - 3D Print Quality Optimization",
+      "activation_tools": [
+        "Blender"
+      ],
+      "used_with": [
+        "3D Printer"
+      ],
+      "steps": [
+        "Activation:** Export a 3D model (STL/OBJ) from Blender.",
+        "Execution:** Import the model into [PrusaSlicer] to adjust adaptive layer height, optimize print orientation, and select the appropriate filament profile.",
+        "Refinement/Output:** Export the sliced G-code and send it to your [3D Printer] to materialize the physical object."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/PrusaSlicer - 3D Print Quality Optimization.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/PrusaSlicer%20-%203D%20Print%20Quality%20Optimization"
+    },
+    {
+      "name": "Quizlet - AI Flashcards and Study Tools",
+      "activation_tools": [
+        "Notion"
+      ],
+      "used_with": [
+        "GitHub"
+      ],
+      "steps": [
+        "Activation:** Take lecture notes and draft summary study guides in Notion.",
+        "Execution:** Import your notes or generate study Q&As via ChatGPT - Conversational AI Assistance, then load the questions into [Quizlet] to create an interactive study deck.",
+        "Refinement/Output:** Run flashcard matching games or take practice tests in [Quizlet] to reinforce knowledge retention."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Productivity & Study/Quizlet - AI Flashcards and Study Tools.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Productivity%20%26%20Study/Quizlet%20-%20AI%20Flashcards%20and%20Study%20Tools"
+    },
+    {
+      "name": "Relevance AI - Autonomous Agent Teams",
+      "activation_tools": [
+        "Relevance AI - Autonomous Agent Teams"
+      ],
+      "used_with": [
+        "Notion",
+        "Relevance AI - Autonomous Agent Teams",
+        "Slack"
+      ],
+      "steps": [
+        "Activation:** Input a project brief, goal, or database query into Relevance AI - Autonomous Agent Teams AI - Autonomous Agent Teams].",
+        "Execution:** Pass the inputs to specialized agents within Relevance AI - Autonomous Agent Teams AI - Autonomous Agent Teams] to conduct research, analyze data, and synthesize findings.",
+        "Refinement/Output:** Export the finalized reports, alerts, or actions into Notion or distribute them via Slack."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/Relevance AI - Autonomous Agent Teams.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/Relevance%20AI%20-%20Autonomous%20Agent%20Teams"
+    },
+    {
+      "name": "Remaker AI - Face Swap & Outfit Changer",
+      "activation_tools": [
+        "Midjourney - Royalty-Free Image Alternatives"
+      ],
+      "used_with": [
+        "DaVinci Resolve",
+        "Photoshop",
+        "Remaker AI - Face Swap & Outfit Changer"
+      ],
+      "steps": [
+        "Activation:** Capture or export an image/video using a digital camera or creation software like Midjourney - Royalty-Free Image Alternatives or [DALL-E 3].",
+        "Execution:** Upload the file into Remaker AI - Face Swap & Outfit Changer AI] to swap faces, change outfits, or upscale the resolution.",
+        "Refinement/Output:** Import the generated asset into Photoshop (for image correction) or DaVinci Resolve (for video editing and color grading) to finalize the production."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Video & Audio/Remaker AI - Face Swap & Outfit Changer.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Video%20%26%20Audio/Remaker%20AI%20-%20Face%20Swap%20%26%20Outfit%20Changer"
+    },
+    {
+      "name": "Remaker AI - Video Face Swapping",
+      "activation_tools": [
+        "Video and Photo"
+      ],
+      "used_with": [
+        "DaVinci Resolve",
+        "Premiere Pro",
+        "Remaker AI - Face Swap & Outfit Changer"
+      ],
+      "steps": [
+        "Use Video and Photo inputs to upload your source video and replacement face photo.",
+        "Pass the output into Remaker AI - Face Swap & Outfit Changer AI to execute the face swap processing.",
+        "Import the result into Premiere Pro or DaVinci Resolve to integrate the swap into your video sequence."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Remaker AI - Video Face Swapping.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Remaker%20AI%20-%20Video%20Face%20Swapping"
+    },
+    {
+      "name": "Remotion - Programmatic Video Creation",
+      "activation_tools": [
+        "Terminal",
+        "Claude Code"
+      ],
+      "used_with": [
+        "Claude Code - Command Line Coding and Automation"
+      ],
+      "steps": [
+        "Activation:** Create a React workspace with [Remotion - Programmatic Video Creation] and configure video dimensions and frame rates.",
+        "Execution:** Use Claude Code - Command Line Coding and Automation to write React layouts, component templates, and SVG graphics inside the [Remotion - Programmatic Video Creation] codebase.",
+        "Refinement/Output:** Execute rendering scripts in your terminal to output final MP4 video assets."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/Remotion - Programmatic Video Creation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/Remotion%20-%20Programmatic%20Video%20Creation"
+    },
+    {
+      "name": "Remotion - Programmatic Video Creation",
+      "activation_tools": [
+        "ChatGPT - Conversational AI Assistance",
+        "Claude - Social Media Content Generation"
+      ],
+      "used_with": [
+        "DaVinci Resolve",
+        "VS Code"
+      ],
+      "steps": [
+        "Activation:** Use Claude - Social Media Content Generation or ChatGPT - Conversational AI Assistance to write a video screenplay script and generate the structured JSON/TSX data for the video scenes.",
+        "Execution:** Pass the script data into [Remotion] inside VS Code to compile the video frames using React components and command-line execution tools.",
+        "Refinement/Output:** Render the compiled project into an MP4 file, and upload the final result to host portals or import it into editing software like DaVinci Resolve for further post-production."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Video & Audio/Remotion - Programmatic Video Creation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Video%20%26%20Audio/Remotion%20-%20Programmatic%20Video%20Creation"
+    },
+    {
+      "name": "RetroArch - Retro Game Emulation Frontend",
+      "activation_tools": [
+        "RetroArch"
+      ],
+      "used_with": [
+        "ROMs",
+        "Game Controller",
+        "OBS Studio"
+      ],
+      "steps": [
+        "Activation:** Obtain legally backed game ROM or ISO files from physical retro game media.",
+        "Execution:** Open [RetroArch], load the correct console emulation core (e.g. Beetle PSX for PlayStation), and boot the ROM.",
+        "Refinement/Output:** Play the game using a hardware [Game Controller] and stream or record gameplay sessions via [OBS Studio] for sharing online."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Video & Audio/RetroArch - Retro Game Emulation Frontend.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Video%20%26%20Audio/RetroArch%20-%20Retro%20Game%20Emulation%20Frontend"
+    },
+    {
+      "name": "roadmap.sh - Developer Learning Paths",
+      "activation_tools": [
+        "User Input"
+      ],
+      "used_with": [
+        "GitHub"
+      ],
+      "steps": [
+        "Activation:** Select a specific learning track (e.g., DevOps, React) on [roadmap.sh - Developer Learning Paths].",
+        "Execution:** Follow the learning nodes sequentially, using freeCodeCamp - Interactive Coding Education to learn the underlying skills.",
+        "Refinement/Output:** Implement the required skills in demo projects and publish them on GitHub."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/roadmap.sh - Developer Learning Paths.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/roadmap.sh%20-%20Developer%20Learning%20Paths"
+    },
+    {
+      "name": "Rodin Gen-2.5 - AI 3D Asset Generator",
+      "activation_tools": [
+        "Photoshop"
+      ],
+      "used_with": [
+        "Blender",
+        "Unreal Engine 5"
+      ],
+      "steps": [
+        "Activation:** Edit or paint a 2D character profile reference in Photoshop.",
+        "Execution:** Upload the design into [Rodin Gen-2.5] to generate segmented 3D geometries and materials.",
+        "Refinement/Output:** Export the model parts and assemble them in Blender before rigging and loading into Unreal Engine 5."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Rodin Gen-2.5 - AI 3D Asset Generator.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Rodin%20Gen-2.5%20-%20AI%203D%20Asset%20Generator"
+    },
+    {
+      "name": "RoomGPT - AI Interior Redesign",
+      "activation_tools": [
+        "Photo Upload"
+      ],
+      "used_with": [
+        "Blender",
+        "Photoshop"
+      ],
+      "steps": [
+        "Use Photo Upload to upload a photo of your existing room layout.",
+        "Pass the output into RoomGPT to generate new interior design options.",
+        "Import the result into Photoshop or Blender to model and refine the design concept."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/RoomGPT - AI Interior Redesign.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/RoomGPT%20-%20AI%20Interior%20Redesign"
+    },
+    {
+      "name": "Rosebud AI - Generative AI Game Development",
+      "activation_tools": [
+        "Text Prompt"
+      ],
+      "used_with": [
+        "Unity"
+      ],
+      "steps": [
+        "Use Text Prompt to describe your game concept, genre, and assets.",
+        "Pass the output into Rosebud AI - Generative AI Game Development AI to generate, build, and test the playable prototype.",
+        "Import the result into Unity to apply custom logic, polish the gameplay, and compile the final build."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Rosebud AI - Generative AI Game Development.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Rosebud%20AI%20-%20Generative%20AI%20Game%20Development"
+    },
+    {
+      "name": "Runway",
+      "activation_tools": [],
+      "used_with": [
+        "GitHub"
+      ],
+      "steps": [],
+      "file": "🧰 AI Toolkit/Runway.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Runway"
+    },
+    {
+      "name": "Sailner 3D - Full-Color 3D Printing",
+      "activation_tools": [
+        "Blender"
+      ],
+      "used_with": [
+        "Sailner 3D Printer"
+      ],
+      "steps": [
+        "Activation:** Author and color-paint a high-fidelity 3D asset in Blender.",
+        "Execution:** Prepare the colored model file and send it to the WJP engine on a [Sailner 3D Printer].",
+        "Refinement/Output:** Clean off support structures post-printing to reveal the detailed, full-color prototype."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Sailner 3D - Full-Color 3D Printing.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Sailner%203D%20-%20Full-Color%203D%20Printing"
+    },
+    {
+      "name": "Sailner 3D - Transparent Resin Printing",
+      "activation_tools": [
+        "Blender"
+      ],
+      "used_with": [
+        "Sailner 3D Printer"
+      ],
+      "steps": [
+        "Activation:** Model a 3D part with defined internal channels or clear lenses in Blender.",
+        "Execution:** Upload the multi-material design file to a J402Plus or equivalent [Sailner 3D Printer].",
+        "Refinement/Output:** Post-process the printed model by polishing and applying a clear coat to achieve high transparency."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Sailner 3D - Transparent Resin Printing.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Sailner%203D%20-%20Transparent%20Resin%20Printing"
+    },
+    {
+      "name": "Skybox AI - 3D Skybox Generation",
+      "activation_tools": [
+        "Skybox AI - 3D Skybox Generation"
+      ],
+      "used_with": [
+        "Unity",
+        "Unreal Engine 5"
+      ],
+      "steps": [
+        "Use Text Prompt to describe the theme and style of your Skybox AI - 3D Skybox Generation.",
+        "Pass the output into Skybox AI - 3D Skybox Generation AI to render the immersive 360-degree scene.",
+        "Import the result into Unreal Engine 5 or Unity to serve as the environment backdrop for your game or project."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Skybox AI - 3D Skybox Generation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Skybox%20AI%20-%203D%20Skybox%20Generation"
+    },
+    {
+      "name": "Slow Roads - Procedural 3D Driving Game",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Web Browser"
+      ],
+      "steps": [
+        "Activation:** Load the game client directly inside a modern Web Browser.",
+        "Execution:** Launch the procedurally generated map in [Slow Roads] and customize vehicle handling, time of day, and weather.",
+        "Refinement/Output:** Navigate the infinite landscapes directly from the Web Browser controls."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Slow Roads - Procedural 3D Driving Game.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Slow%20Roads%20-%20Procedural%203D%20Driving%20Game"
+    },
+    {
+      "name": "Spline - 3D Website Element Design",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Figma"
+      ],
+      "steps": [
+        "Use Web Browser to upload vector shapes or draw layer structures in Spline.",
+        "Pass the output into Spline to animate depth properties and export the interactive code.",
+        "Import the result into Webflow or Figma to embed the 3D perspective layout into your website."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Spline - 3D Website Element Design.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Spline%20-%203D%20Website%20Element%20Design"
+    },
+    {
+      "name": "Ssemble - AI Video Clipper",
+      "activation_tools": [
+        "DaVinci Resolve"
+      ],
+      "used_with": [
+        "GitHub"
+      ],
+      "steps": [
+        "Activation:** Edit and render a master long-form video or podcast in DaVinci Resolve.",
+        "Execution:** Upload the video file into [Ssemble] and activate the AI video clipper to isolate engaging clips and burn-in vertical text overlays.",
+        "Refinement/Output:** Add final branding filters inside Ssemble, then export the project and publish directly to [TikTok]."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Productivity & Study/Ssemble - AI Video Clipper.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Productivity%20%26%20Study/Ssemble%20-%20AI%20Video%20Clipper"
+    },
+    {
+      "name": "Storywizard AI - Children's Storybook Generation",
+      "activation_tools": [
+        "Text Prompt"
+      ],
+      "used_with": [
+        "\"Storywizard AI - Children's Storybook Generation\""
+      ],
+      "steps": [
+        "Use Text Prompt to input characters, themes, and educational goals.",
+        "Pass the output into Storywizard AI - Children's Storybook Generation AI to generate the illustrated storybook pages.",
+        "Import the result into PDF or publishing tools to distribute the e-book to young readers."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Storywizard AI - Children's Storybook Generation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Storywizard%20AI%20-%20Children%27s%20Storybook%20Generation"
+    },
+    {
+      "name": "StudyQuest - Gamified Study Materials",
+      "activation_tools": [
+        "Notion"
+      ],
+      "used_with": [
+        "GitHub"
+      ],
+      "steps": [
+        "Activation:** Export study guides, research papers, or syllabus documents from Notion.",
+        "Execution:** Upload the documents into [StudyQuest] to automatically parse key concepts and generate gaming templates.",
+        "Refinement/Output:** Play through the generated games, and export the resulting vocabulary sets into Quizlet - AI Flashcards and Study Tools for reinforcement."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Productivity & Study/StudyQuest - Gamified Study Materials.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Productivity%20%26%20Study/StudyQuest%20-%20Gamified%20Study%20Materials"
+    },
+    {
+      "name": "Suno AI - Faceless Kids Video Workflow",
+      "activation_tools": [
+        "ChatGPT - Conversational AI Assistance"
+      ],
+      "used_with": [
+        "ElevenLabs",
+        "Premiere Pro",
+        "Suno AI - Text-to-Music Generation"
+      ],
+      "steps": [
+        "Use ChatGPT - Conversational AI Assistance to outline nursery rhymes and video scripts.",
+        "Pass the output into Suno AI - Text-to-Music Generation AI and ElevenLabs to generate background music and narrative voiceovers.",
+        "Import the result into Premiere Pro along with graphics to output the final children's video."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Suno AI - Faceless Kids Video Workflow.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Suno%20AI%20-%20Faceless%20Kids%20Video%20Workflow"
+    },
+    {
+      "name": "Suno AI - Text-to-Music Generation",
+      "activation_tools": [
+        "ChatGPT - Conversational AI Assistance",
+        "Claude - Social Media Content Generation"
+      ],
+      "used_with": [
+        "DaVinci Resolve",
+        "FL Studio",
+        "Premiere Pro",
+        "Suno AI - Text-to-Music Generation"
+      ],
+      "steps": [
+        "Activation:** Use ChatGPT - Conversational AI Assistance or Claude - Social Media Content Generation to brainstorm song concepts, generate lyrics, or refine prompts for musical styles.",
+        "Execution:** Pass the prompt or lyrics into Suno AI - Text-to-Music Generation AI] to generate the master music track.",
+        "Refinement/Output:** Import the generated audio file into a DAW like FL Studio (for remastering, mixing, or adding instruments) or DaVinci Resolve / Premiere Pro (to sync with video content)."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Video & Audio/Suno AI - Text-to-Music Generation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Video%20%26%20Audio/Suno%20AI%20-%20Text-to-Music%20Generation"
+    },
+    {
+      "name": "Tencent Hunyuan3D - Open-Source 3D Asset Generation",
+      "activation_tools": [
+        "Photoshop"
+      ],
+      "used_with": [
+        "Blender",
+        "Unreal Engine 5"
+      ],
+      "steps": [
+        "Activation:** Generate or modify a reference concept artwork using Photoshop.",
+        "Execution:** Run [Tencent Hunyuan3D] locally to generate a textured 3D mesh model of the subject.",
+        "Refinement/Output:** Open the model inside Blender for final rigging, and import the asset into Unreal Engine 5 for level integration."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Tencent Hunyuan3D - Open-Source 3D Asset Generation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Tencent%20Hunyuan3D%20-%20Open-Source%203D%20Asset%20Generation"
+    },
+    {
+      "name": "Tesla Mobile App - Booking Tesla Service Appointments",
+      "activation_tools": [
+        "Tesla App"
+      ],
+      "used_with": [
+        "Calendar"
+      ],
+      "steps": [
+        "Use Tesla App to view car diagnostics and open the service menu.",
+        "Pass the output into Tesla Mobile App to book an appointment and select mobile service options.",
+        "Import the result into Calendar to lock in the repair window."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Tesla Mobile App - Booking Tesla Service Appointments.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Tesla%20Mobile%20App%20-%20Booking%20Tesla%20Service%20Appointments"
+    },
+    {
+      "name": "Thangs - 3D Model Repository",
+      "activation_tools": [
+        "Fusion360"
+      ],
+      "used_with": [
+        "Cura",
+        "PrusaSlicer",
+        "3D Printer"
+      ],
+      "steps": [
+        "Activation:** Export a finished mechanical assembly as an OBJ/STL from [Fusion360].",
+        "Execution:** Upload the design to [Thangs] for portfolio sharing, or search the site for parts like a shelf bracket.",
+        "Refinement/Output:** Slice the downloaded STL model in [Cura] and print it on a [3D Printer]."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Thangs - 3D Model Repository.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Thangs%20-%203D%20Model%20Repository"
+    },
+    {
+      "name": "The Delegation - 3D Agent Visualizer",
+      "activation_tools": [
+        "Browser",
+        "Gemini"
+      ],
+      "used_with": [
+        "Gemini",
+        "Three.js"
+      ],
+      "steps": [
+        "Activation:** Input a project prompt, developer task, or business brief into [The Delegation - 3D Agent Visualizer].",
+        "Execution:** Initiate the simulation inside [The Delegation - 3D Agent Visualizer] and watch [Gemini] orchestrate character behaviors and dialogue.",
+        "Refinement/Output:** Review generated outputs (code files, texts) and download the completed deliverables."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/The Delegation - 3D Agent Visualizer.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/The%20Delegation%20-%203D%20Agent%20Visualizer"
+    },
+    {
+      "name": "There's An AI For That - AI Tools Search Engine",
+      "activation_tools": [
+        "Notion"
+      ],
+      "used_with": [
+        "GitHub"
+      ],
+      "steps": [
+        "Activation:** Identify a repetitive work step or missing automation capability inside Notion.",
+        "Execution:** Search [There's An AI For That] using natural language to discover niche AI tools designed for that task.",
+        "Refinement/Output:** Test the discovered tools, and document the top candidates in a central stack on Notion."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Productivity & Study/There's An AI For That - AI Tools Search Engine.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Productivity%20%26%20Study/There%27s%20An%20AI%20For%20That%20-%20AI%20Tools%20Search%20Engine"
+    },
+    {
+      "name": "Thumbnail.ai - YouTube Thumbnail Design",
+      "activation_tools": [
+        "Photoshop"
+      ],
+      "used_with": [
+        "GitHub"
+      ],
+      "steps": [
+        "Activation:** Finalize your video title and visual assets in Photoshop or a planning doc.",
+        "Execution:** Paste your video concept (e.g. survival challenges) into [Thumbnail.ai] to generate relevant background illustrations and layouts.",
+        "Refinement/Output:** Add final text styling, contrast adjustments, and export the file directly to upload as a custom cover on [YouTube]."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Productivity & Study/Thumbnail.ai - YouTube Thumbnail Design.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Productivity%20%26%20Study/Thumbnail.ai%20-%20YouTube%20Thumbnail%20Design"
+    },
+    {
+      "name": "Tripo AI - 3D Generation Platform",
+      "activation_tools": [
+        "ChatGPT - Conversational AI Assistance"
+      ],
+      "used_with": [
+        "Blender",
+        "Tripo AI - 3D Generation Platform",
+        "Unreal Engine 5"
+      ],
+      "steps": [
+        "Activation:** Prompt ChatGPT - Conversational AI Assistance to write detailed character and prop descriptive blueprints.",
+        "Execution:** Paste the prompts into Tripo AI - 3D Generation Platform AI] to generate draft 3D meshes and UV-mapped textures.",
+        "Refinement/Output:** Import the mesh files into Blender to fix geometry, then load them into Unreal Engine 5 for level building."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Tripo AI - 3D Generation Platform.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Tripo%20AI%20-%203D%20Generation%20Platform"
+    },
+    {
+      "name": "TripoSR - Fast 3D Reconstruction Model",
+      "activation_tools": [
+        "ComfyUI - Node-Based AI Image Generation"
+      ],
+      "used_with": [
+        "Blender",
+        "Unreal Engine 5"
+      ],
+      "steps": [
+        "Activation:** Generate a reference image of an object or character in ComfyUI - Node-Based AI Image Generation.",
+        "Execution:** Load the image locally into [TripoSR] to reconstruct the 3D voxel and generate a draft mesh.",
+        "Refinement/Output:** Load the OBJ model into Blender to clean mesh topology, and import it into Unreal Engine 5."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/TripoSR - Fast 3D Reconstruction Model.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/TripoSR%20-%20Fast%203D%20Reconstruction%20Model"
+    },
+    {
+      "name": "TrustMRR - Micro SaaS Acquisition Marketplace",
+      "activation_tools": [
+        "Stripe",
+        "LemonSqueezy"
+      ],
+      "used_with": [
+        "Web Browser"
+      ],
+      "steps": [
+        "Activation: Link your startup's payment processor account (e.g., Stripe or LemonSqueezy) to TrustMRR** to ingest verified Monthly Recurring Revenue (MRR) metrics.",
+        "Execution: Configure your project listing details, upload descriptive assets, and submit the startup to the TrustMRR** marketplace database.",
+        "Refinement/Output:** Browse active offers from interested buyers on the platform and execute the transaction to finalize the business acquisition."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Marketing & Business/TrustMRR - Micro SaaS Acquisition Marketplace.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Marketing%20%26%20Business/TrustMRR%20-%20Micro%20SaaS%20Acquisition%20Marketplace"
+    },
+    {
+      "name": "TubeOnAI - YouTube Video to PDF Summarizer",
+      "activation_tools": [
+        "Browser"
+      ],
+      "used_with": [
+        "Notion",
+        "Web Browser"
+      ],
+      "steps": [
+        "Activation:** Copy the URL of a YouTube lecture, tutorial, or podcast episode.",
+        "Execution:** Paste the link into [TubeOnAI] in the Web Browser to generate an AI summary and outline.",
+        "Refinement/Output:** Download the summary as a PDF, import it into Notion or Obsidian as a permanent study note, or study it on screen."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Video & Audio/TubeOnAI - YouTube Video to PDF Summarizer.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Video%20%26%20Audio/TubeOnAI%20-%20YouTube%20Video%20to%20PDF%20Summarizer"
+    },
+    {
+      "name": "Tutor AI - Personalized Course Generation",
+      "activation_tools": [
+        "Notion"
+      ],
+      "used_with": [
+        "GitHub"
+      ],
+      "steps": [
+        "Activation:** Outline your learning goals or collect reference topics in Notion.",
+        "Execution:** Enter the desired topic into Tutor AI - Personalized Course Generation AI] to generate a customized, multi-chapter learning path.",
+        "Refinement/Output:** Copy the generated lessons, explanations, and quiz questions into a Notion study hub for active recall and revision."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Productivity & Study/Tutor AI - Personalized Course Generation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Productivity%20%26%20Study/Tutor%20AI%20-%20Personalized%20Course%20Generation"
+    },
+    {
+      "name": "Veo",
+      "activation_tools": [],
+      "used_with": [
+        "GitHub"
+      ],
+      "steps": [],
+      "file": "🧰 AI Toolkit/Veo.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Veo"
+    },
+    {
+      "name": "Wan 2.2 Animate - Character Animation Model",
+      "activation_tools": [
+        "ComfyUI - Node-Based AI Image Generation"
+      ],
+      "used_with": [
+        "DaVinci Resolve",
+        "Premiere Pro"
+      ],
+      "steps": [
+        "Activation:** Generate a clean character graphic using ComfyUI - Node-Based AI Image Generation (e.g. via Stable Diffusion).",
+        "Execution:** Pass the image and a video demonstrating the target motion into [Wan 2.2 Animate] to generate the animated video.",
+        "Refinement/Output:** Bring the generated animated sequence into DaVinci Resolve or Premiere Pro for final color grading and composting."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Wan 2.2 Animate - Character Animation Model.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Wan%202.2%20Animate%20-%20Character%20Animation%20Model"
+    },
+    {
+      "name": "WebSim - Interactive Web Simulations",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Figma"
+      ],
+      "steps": [
+        "Activation:** Enter an app concept, mock domain, or structural prompt into the Web Browser input bar of [WebSim - Interactive Web Simulations].",
+        "Execution:** Allow the sandbox engine in [WebSim - Interactive Web Simulations] to render the HTML layouts and interactive scripts.",
+        "Refinement/Output:** Inspect the generated front-end code, copy it, and paste it into local files to run inside Figma or developer directories."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/WebSim - Interactive Web Simulations.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/WebSim%20-%20Interactive%20Web%20Simulations"
+    },
+    {
+      "name": "Z3D - AI 3D Environment Generation",
+      "activation_tools": [
+        "Text Prompt"
+      ],
+      "used_with": [
+        "Blender",
+        "Unreal Engine 5"
+      ],
+      "steps": [
+        "Use Text Prompt to describe the landscape or city style of the environment.",
+        "Pass the output into Z3D to render the editable 3D scene.",
+        "Import the result into Blender or Unreal Engine 5 to animate or insert the environment into your game project."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Z3D - AI 3D Environment Generation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Z3D%20-%20AI%203D%20Environment%20Generation"
+    },
+    {
+      "name": "Zoo Text-to-CAD - Natural Language CAD Generator",
+      "activation_tools": [
+        "Web Browser"
+      ],
+      "used_with": [
+        "Fusion360",
+        "SolidWorks",
+        "FreeCAD"
+      ],
+      "steps": [
+        "Activation:** Write a mechanical specification prompt in a text editor or Web Browser.",
+        "Execution:** Send the request to [Zoo Text-to-CAD] to generate a solid model and parametric math coordinates.",
+        "Refinement/Output:** Import the generated STEP file into [Fusion360] or [SolidWorks] for precise dimensions and engineering adjustments."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Zoo Text-to-CAD - Natural Language CAD Generator.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Zoo%20Text-to-CAD%20-%20Natural%20Language%20CAD%20Generator"
+    }
+  ]
 }

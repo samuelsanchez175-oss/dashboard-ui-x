@@ -251,6 +251,41 @@ async function readLocalContent(repoRoot: string, rel: string | null): Promise<{
   }
 }
 
+function updateFrontmatter(content: string, updates: Record<string, any>): string {
+  const match = content.match(/^---([\s\S]*?)\n---\n?([\s\S]*)$/)
+  if (match) {
+    const rawFm = match[1]
+    const body = match[2]
+    const lines = rawFm.split('\n')
+    const updatedKeys = new Set<string>()
+    const newLines = lines.map(line => {
+      const keyMatch = line.match(/^([^:]+):(.*)$/)
+      if (keyMatch) {
+        const key = keyMatch[1].trim()
+        if (updates[key] !== undefined) {
+          updatedKeys.add(key)
+          return `${key}: ${updates[key]}`
+        }
+      }
+      return line
+    })
+    for (const [k, v] of Object.entries(updates)) {
+      if (!updatedKeys.has(k)) {
+        newLines.push(`${k}: ${v}`)
+      }
+    }
+    return `---${newLines.join('\n')}\n---\n${body}`
+  } else {
+    // No frontmatter, prepend it
+    const fmLines = ['---']
+    for (const [k, v] of Object.entries(updates)) {
+      fmLines.push(`${k}: ${v}`)
+    }
+    fmLines.push('---', '')
+    return fmLines.join('\n') + content
+  }
+}
+
 /**
  * Attach dashboard routes: GET /api/digest/reddit, GET /api/local/file?path=
  */
@@ -393,6 +428,84 @@ export function attachDashboardBff(
         jsonRes(res, 200, { ok: true, filename })
       } catch (err: any) {
         jsonRes(res, 500, { ok: false, error: 'WRITE_FAILED', message: err.message })
+      }
+      return
+    }
+
+    // POST /api/local/vault/resolve-handoff
+    if (pathName === '/api/local/vault/resolve-handoff' && method === 'POST') {
+      try {
+        const body = await readJsonBody(req)
+        const { path: relPath } = body
+        if (!relPath) {
+          jsonRes(res, 400, { ok: false, error: 'BAD_REQUEST', message: 'Handoff file path is required.' })
+          return
+        }
+
+        const normalized = path.normalize(relPath).replace(/^(\.\.(\/|\\|$))+/, '')
+        const fullPath = path.resolve(VAULT_DIR, normalized)
+        if (!fullPath.startsWith(VAULT_DIR)) {
+          jsonRes(res, 403, { ok: false, error: 'FORBIDDEN', message: 'Path traversal blocked.' })
+          return
+        }
+
+        const content = await fs.readFile(fullPath, 'utf-8')
+        const updatedContent = updateFrontmatter(content, { status: 'resolved' })
+        await fs.writeFile(fullPath, updatedContent, 'utf-8')
+
+        // Trigger chat-ingest + build run to sync dashboard state
+        const ingestCmd = `python3 "${VAULT_DIR}/automation/chat-ingest/auto_ingest.py"`
+        const buildCmd = `python3 "${VAULT_DIR}/dashboard-ui/build.py"`
+        const ingestOutcome = await runCommand(ingestCmd)
+        const buildOutcome = await runCommand(buildCmd)
+
+        jsonRes(res, 200, {
+          ok: true,
+          message: 'Handoff resolved and snapshot rebuilt.',
+          ingest: ingestOutcome,
+          build: buildOutcome
+        })
+      } catch (err: any) {
+        jsonRes(res, 500, { ok: false, error: 'RESOLVE_FAILED', message: err.message })
+      }
+      return
+    }
+
+    // POST /api/local/vault/dismiss-tool
+    if (pathName === '/api/local/vault/dismiss-tool' && method === 'POST') {
+      try {
+        const body = await readJsonBody(req)
+        const { path: relPath, familiar } = body
+        if (!relPath) {
+          jsonRes(res, 400, { ok: false, error: 'BAD_REQUEST', message: 'Tool file path is required.' })
+          return
+        }
+
+        const normalized = path.normalize(relPath).replace(/^(\.\.(\/|\\|$))+/, '')
+        const fullPath = path.resolve(VAULT_DIR, normalized)
+        if (!fullPath.startsWith(VAULT_DIR)) {
+          jsonRes(res, 403, { ok: false, error: 'FORBIDDEN', message: 'Path traversal blocked.' })
+          return
+        }
+
+        const content = await fs.readFile(fullPath, 'utf-8')
+        const updates: Record<string, any> = familiar
+          ? { familiar: true }
+          : { status: 'dismissed' }
+        const updatedContent = updateFrontmatter(content, updates)
+        await fs.writeFile(fullPath, updatedContent, 'utf-8')
+
+        // Trigger brief regeneration (which builds and pushes the snap automatically)
+        const briefCmd = `bash "${VAULT_DIR}/automation/daily-brief/run_brief.sh"`
+        const outcome = await runCommand(briefCmd)
+
+        jsonRes(res, 200, {
+          ok: true,
+          message: 'Tool dismissed and daily brief regenerated.',
+          brief: outcome
+        })
+      } catch (err: any) {
+        jsonRes(res, 500, { ok: false, error: 'DISMISS_FAILED', message: err.message })
       }
       return
     }
