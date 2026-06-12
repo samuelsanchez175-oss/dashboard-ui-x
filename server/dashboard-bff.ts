@@ -286,6 +286,25 @@ function updateFrontmatter(content: string, updates: Record<string, any>): strin
   }
 }
 
+async function findFileRecursively(dir: string, filename: string): Promise<string | null> {
+  try {
+    const entries = await fs.readdir(dir, { withFileTypes: true })
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name)
+      if (entry.isDirectory()) {
+        const found = await findFileRecursively(fullPath, filename)
+        if (found) return found
+      } else if (entry.isFile() && entry.name.toLowerCase() === filename.toLowerCase()) {
+        return fullPath
+      }
+    }
+  } catch {
+    // Ignore errors
+  }
+  return null
+}
+
+
 /**
  * Attach dashboard routes: GET /api/digest/reddit, GET /api/local/file?path=
  */
@@ -328,7 +347,7 @@ export function attachDashboardBff(
 
     // POST /api/local/brief/generate
     if (pathName === '/api/local/brief/generate' && method === 'POST') {
-      const cmd = `bash "${VAULT_DIR}/automation/daily-brief/run_brief.sh"`
+      const cmd = `bash "${VAULT_DIR}/⚙️ automation/daily-brief/run_brief.sh"`
       const outcome = await runCommand(cmd)
       jsonRes(res, outcome.ok ? 200 : 500, outcome)
       return
@@ -336,7 +355,7 @@ export function attachDashboardBff(
 
     // POST /api/local/chat-ingest/run
     if (pathName === '/api/local/chat-ingest/run' && method === 'POST') {
-      const cmd = `python3 "${VAULT_DIR}/automation/chat-ingest/auto_ingest.py"`
+      const cmd = `python3 "${VAULT_DIR}/⚙️ automation/chat-ingest/auto_ingest.py"`
       const outcome = await runCommand(cmd)
       jsonRes(res, outcome.ok ? 200 : 500, outcome)
       return
@@ -344,7 +363,7 @@ export function attachDashboardBff(
 
     // POST /api/local/brief/build
     if (pathName === '/api/local/brief/build' && method === 'POST') {
-      const cmd = `python3 "${VAULT_DIR}/dashboard-ui/build.py"`
+      const cmd = `python3 "${VAULT_DIR}/📊 dashboard-ui/build.py"`
       const outcome = await runCommand(cmd)
       jsonRes(res, outcome.ok ? 200 : 500, outcome)
       return
@@ -355,8 +374,8 @@ export function attachDashboardBff(
       const qs = new URL(req.url ?? '', 'http://localhost').searchParams
       const type = qs.get('type')
       const logFile = type === 'ingest'
-        ? path.join(VAULT_DIR, 'automation/chat-ingest/ingest.log')
-        : path.join(VAULT_DIR, 'automation/daily-brief/run.log')
+        ? path.join(VAULT_DIR, '⚙️ automation/chat-ingest/ingest.log')
+        : path.join(VAULT_DIR, '⚙️ automation/daily-brief/run.log')
       try {
         const content = await fs.readFile(logFile, 'utf-8')
         const lines = content.split('\n')
@@ -454,8 +473,8 @@ export function attachDashboardBff(
         await fs.writeFile(fullPath, updatedContent, 'utf-8')
 
         // Trigger chat-ingest + build run to sync dashboard state
-        const ingestCmd = `python3 "${VAULT_DIR}/automation/chat-ingest/auto_ingest.py"`
-        const buildCmd = `python3 "${VAULT_DIR}/dashboard-ui/build.py"`
+        const ingestCmd = `python3 "${VAULT_DIR}/⚙️ automation/chat-ingest/auto_ingest.py"`
+        const buildCmd = `python3 "${VAULT_DIR}/📊 dashboard-ui/build.py"`
         const ingestOutcome = await runCommand(ingestCmd)
         const buildOutcome = await runCommand(buildCmd)
 
@@ -481,8 +500,21 @@ export function attachDashboardBff(
           return
         }
 
-        const normalized = path.normalize(relPath).replace(/^(\.\.(\/|\\|$))+/, '')
-        const fullPath = path.resolve(VAULT_DIR, normalized)
+        let fullPath = ''
+        if (relPath.endsWith('.md')) {
+          const normalized = path.normalize(relPath).replace(/^(\.\.(\/|\\|$))+/, '')
+          fullPath = path.resolve(VAULT_DIR, normalized)
+        } else {
+          const filename = `${relPath}.md`
+          const searchDir = path.join(VAULT_DIR, '🧰 AI Toolkit')
+          const found = await findFileRecursively(searchDir, filename)
+          if (!found) {
+            jsonRes(res, 404, { ok: false, error: 'FILE_NOT_FOUND', message: `Could not find tool file for name: ${relPath}` })
+            return
+          }
+          fullPath = found
+        }
+
         if (!fullPath.startsWith(VAULT_DIR)) {
           jsonRes(res, 403, { ok: false, error: 'FORBIDDEN', message: 'Path traversal blocked.' })
           return
@@ -496,7 +528,7 @@ export function attachDashboardBff(
         await fs.writeFile(fullPath, updatedContent, 'utf-8')
 
         // Trigger brief regeneration (which builds and pushes the snap automatically)
-        const briefCmd = `bash "${VAULT_DIR}/automation/daily-brief/run_brief.sh"`
+        const briefCmd = `bash "${VAULT_DIR}/⚙️ automation/daily-brief/run_brief.sh"`
         const outcome = await runCommand(briefCmd)
 
         jsonRes(res, 200, {

@@ -82,6 +82,15 @@ interface VaultInfo {
   recent_briefs: string[]
 }
 
+interface BriefWorkflow {
+  name: string
+  activation_tools: string[]
+  used_with: string[]
+  steps: string[]
+  file: string
+  obsidian_uri: string
+}
+
 interface BriefJson {
   date: string
   active_project: string
@@ -95,6 +104,7 @@ interface BriefJson {
   ai_sessions?: AiSession[]
   pipeline?: Pipeline
   delta?: Delta | null
+  workflows?: BriefWorkflow[]
 }
 
 const DATA_URL = '/data/daily-brief.json'
@@ -168,20 +178,7 @@ const PRIORITY_DOT: Record<string, string> = {
   low: 'bg-sky-500',
 }
 
-function DismissButton({ label, onClick }: { label: string; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      title={label}
-      onClick={onClick}
-      className="ml-auto shrink-0 self-start rounded-md p-1.5 opacity-60 transition-opacity hover:opacity-100 hover:[background:var(--bg-muted)] sm:opacity-0 sm:group-hover:opacity-60 sm:focus:opacity-100"
-      style={{ color: 'var(--text-3)' }}
-    >
-      <X className="size-3.5" aria-hidden />
-    </button>
-  )
-}
+
 
 function RestoreLine({ count, onRestore }: { count: number; onRestore: () => void }) {
   if (count === 0) return null
@@ -288,6 +285,7 @@ export default function DailyBriefZone() {
 
   // Local Dev Controls State
   const [isLocalHost, setIsLocalHost] = useState(false)
+  const [workflowSearch, setWorkflowSearch] = useState('')
   const [runningAction, setRunningAction] = useState<string | null>(null)
   const [actionLogs, setActionLogs] = useState<string>('')
   const [showLogConsole, setShowLogConsole] = useState(false)
@@ -462,6 +460,54 @@ export default function DailyBriefZone() {
   const restoreTools = () => updateDismissed({ ...dismissed, tools: [] })
   const restoreHandoffs = () => updateDismissed({ ...dismissed, handoffs: [] })
 
+  const [actionInProgress, setActionInProgress] = useState<string | null>(null)
+
+  const permanentlyDismissTool = async (name: string) => {
+    setActionInProgress(name)
+    try {
+      const res = await fetch('/api/local/vault/dismiss-tool', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: name, familiar: true })
+      })
+      const json = await res.json()
+      if (json.ok) {
+        await load()
+      } else {
+        alert('Failed to permanently dismiss: ' + (json.message || 'Unknown error'))
+      }
+    } catch (err: any) {
+      alert('Network error: ' + err.message)
+    } finally {
+      setActionInProgress(null)
+    }
+  }
+
+  const resolveHandoff = async (relPath: string) => {
+    setActionInProgress(relPath)
+    try {
+      const res = await fetch('/api/local/vault/resolve-handoff', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: relPath })
+      })
+      const json = await res.json()
+      if (json.ok) {
+        await load()
+      } else {
+        alert('Failed to resolve handoff: ' + (json.message || 'Unknown error'))
+      }
+    } catch (err: any) {
+      alert('Network error: ' + err.message)
+    } finally {
+      setActionInProgress(null)
+    }
+  }
+
+  const handleResolveHandoff = async (name: string) => {
+    await resolveHandoff(`🤝 Handoffs/${name}.md`)
+  }
+
   const togglePlan = (title: string) => {
     const next = planDone.includes(title)
       ? planDone.filter(t => t !== title)
@@ -483,6 +529,15 @@ export default function DailyBriefZone() {
 
   const visibleTools = data ? data.tools.filter(t => !dismissed.tools.includes(t.name)) : []
   const visibleHandoffs = data ? data.handoffs.filter(h => !dismissed.handoffs.includes(h.name)) : []
+  const filteredWorkflows = (data?.workflows || []).filter(w => {
+    const term = workflowSearch.toLowerCase()
+    return (
+      w.name.toLowerCase().includes(term) ||
+      (w.steps || []).some(s => s.toLowerCase().includes(term)) ||
+      (w.activation_tools || []).some(t => t.toLowerCase().includes(term)) ||
+      (w.used_with || []).some(t => t.toLowerCase().includes(term))
+    )
+  })
   const plan = data?.plan ?? []
   const planDoneCount = plan.filter(p => planDone.includes(p.title)).length
   const pipe = data?.pipeline
@@ -874,7 +929,31 @@ export default function DailyBriefZone() {
                             {t.desc}
                           </span>
                         </span>
-                        <DismissButton label={`Dismiss ${t.name}`} onClick={() => dismissTool(t.name)} />
+                        <div className="ml-auto shrink-0 self-start flex items-center gap-1 opacity-60 transition-opacity hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-60 sm:focus-within:opacity-100">
+                          <button
+                            type="button"
+                            title="Dismiss for today (local)"
+                            aria-label={`Dismiss ${t.name}`}
+                            onClick={() => dismissTool(t.name)}
+                            className="rounded-md p-1.5 hover:[background:var(--bg-muted)] transition-colors"
+                            style={{ color: 'var(--text-3)' }}
+                          >
+                            <X className="size-3.5" aria-hidden />
+                          </button>
+                          {isLocalHost && (
+                            <button
+                              type="button"
+                              title="Mark as Familiar (Permanent vault update)"
+                              aria-label={`Mark ${t.name} as familiar`}
+                              disabled={actionInProgress === t.name}
+                              onClick={() => void permanentlyDismissTool(t.name)}
+                              className="rounded-md p-1.5 hover:[background:var(--bg-muted)] hover:text-emerald-600 transition-colors"
+                              style={{ color: 'var(--text-3)' }}
+                            >
+                              <Check className="size-3.5" aria-hidden />
+                            </button>
+                          )}
+                        </div>
                       </li>
                     ))
                   ) : (
@@ -909,7 +988,31 @@ export default function DailyBriefZone() {
                             {h.note}
                           </span>
                         </span>
-                        <DismissButton label={`Dismiss ${h.name}`} onClick={() => dismissHandoff(h.name)} />
+                        <div className="ml-auto shrink-0 self-start flex items-center gap-1 opacity-60 transition-opacity hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-60 sm:focus-within:opacity-100">
+                          <button
+                            type="button"
+                            title="Dismiss for today (local)"
+                            aria-label={`Dismiss ${h.name}`}
+                            onClick={() => dismissHandoff(h.name)}
+                            className="rounded-md p-1.5 hover:[background:var(--bg-muted)] transition-colors"
+                            style={{ color: 'var(--text-3)' }}
+                          >
+                            <X className="size-3.5" aria-hidden />
+                          </button>
+                          {isLocalHost && (
+                            <button
+                              type="button"
+                              title="Resolve handoff (Permanent vault update)"
+                              aria-label={`Resolve ${h.name}`}
+                              disabled={actionInProgress === h.name}
+                              onClick={() => void handleResolveHandoff(h.name)}
+                              className="rounded-md p-1.5 hover:[background:var(--bg-muted)] hover:text-emerald-600 transition-colors"
+                              style={{ color: 'var(--text-3)' }}
+                            >
+                              <Check className="size-3.5" aria-hidden />
+                            </button>
+                          )}
+                        </div>
                       </li>
                     ))
                   ) : (
@@ -1085,6 +1188,100 @@ export default function DailyBriefZone() {
                 )}
               </ul>
             </SectionCard>
+
+            {/* Workflows & Orchestrations */}
+            {data.workflows && data.workflows.length > 0 ? (
+              <SectionCard title="Workflows & Orchestrations" count={filteredWorkflows.length}>
+                <div className="mb-4">
+                  <input
+                    type="text"
+                    placeholder="Search workflows, tools, or steps..."
+                    value={workflowSearch}
+                    onChange={e => setWorkflowSearch(e.target.value)}
+                    className="w-full sm:w-80 rounded-lg border p-2 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    style={{ borderColor: 'var(--border-soft)', background: 'var(--bg-card-soft)', color: 'var(--text-1)' }}
+                  />
+                </div>
+                {filteredWorkflows.length > 0 ? (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {filteredWorkflows.map(w => (
+                      <div
+                        key={w.name}
+                        className="rounded-xl border p-4 flex flex-col justify-between transition-all hover:border-emerald-500/50"
+                        style={{ borderColor: 'var(--border-soft)', background: 'var(--bg-card-soft)' }}
+                      >
+                        <div>
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <h3 className="text-sm font-semibold leading-snug" style={{ color: 'var(--text-1)' }}>
+                              {w.name}
+                            </h3>
+                            <a
+                              href={w.obsidian_uri}
+                              title="Open workflow note in Obsidian"
+                              className="rounded-lg border p-1 transition-colors hover:[background:var(--bg-muted)] shrink-0"
+                              style={{ borderColor: 'var(--border-soft)', color: 'var(--text-3)' }}
+                            >
+                              <ExternalLink className="size-3" aria-hidden />
+                            </a>
+                          </div>
+
+                          {/* Connections / Tags */}
+                          <div className="flex flex-wrap gap-1 mb-2">
+                            {w.activation_tools.map(tool => (
+                              <span
+                                key={`act-${tool}`}
+                                className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-600 border border-emerald-500/20"
+                                title="Activation tool (input)"
+                              >
+                                Input: {tool}
+                              </span>
+                            ))}
+                            {w.used_with.map(tool => (
+                              <span
+                                key={`with-${tool}`}
+                                className="rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-semibold text-blue-600 border border-blue-500/20"
+                                title="Used in tandem with"
+                              >
+                                Co-tool: {tool}
+                              </span>
+                            ))}
+                          </div>
+
+                          {/* Step-by-step pipeline */}
+                          {w.steps.length > 0 ? (
+                            <div className="mt-3 space-y-2 border-t pt-3" style={{ borderColor: 'var(--border-soft)' }}>
+                              <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-4)' }}>
+                                Sequence Pipeline
+                              </p>
+                              <ol className="space-y-2 text-xs">
+                                {w.steps.map((step, idx) => (
+                                  <li key={idx} className="flex gap-2" style={{ color: 'var(--text-2)' }}>
+                                    <span className="font-semibold text-emerald-600 tabular-nums shrink-0">{idx + 1}.</span>
+                                    <span className="leading-relaxed">{step}</span>
+                                  </li>
+                                ))}
+                              </ol>
+                            </div>
+                          ) : (
+                            <p className="text-xs italic mt-2" style={{ color: 'var(--text-4)' }}>
+                              Tandem relationships tagged, no step sequence documented.
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="mt-4 flex items-center justify-between border-t pt-2.5 text-[10px]" style={{ borderColor: 'var(--border-soft)', color: 'var(--text-4)' }}>
+                          <span>{w.file.split('/').pop()}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm italic" style={{ color: 'var(--text-3)' }}>
+                    No workflows match your search term.
+                  </p>
+                )}
+              </SectionCard>
+            ) : null}
 
             {/* Resurface */}
             {data.resurface.length > 0 ? (
