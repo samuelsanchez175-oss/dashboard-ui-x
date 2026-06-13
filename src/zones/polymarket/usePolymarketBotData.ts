@@ -129,6 +129,33 @@ export interface HistorySummary {
   winRate: number | null
 }
 
+// Cockpit runs locally — try BFF proxy first, fall back to direct browser call.
+// Direct call works from any URL (Vercel, localhost) as long as cockpit.py is
+// running on this Mac, because cockpit serves CORS headers for all origins.
+const COCKPIT_DIRECT = 'http://localhost:8770'
+
+async function gammaMktTokenId(conditionId: string, slug: string, outcome: string): Promise<string> {
+  const out = outcome.toLowerCase()
+  const urls = [
+    conditionId ? `https://gamma-api.polymarket.com/markets?conditionId=${encodeURIComponent(conditionId)}` : '',
+    slug        ? `https://gamma-api.polymarket.com/markets?slug=${encodeURIComponent(slug)}` : '',
+  ].filter(Boolean)
+  for (const url of urls) {
+    try {
+      const r = await fetch(url)
+      if (!r.ok) continue
+      const arr = await r.json() as unknown[]
+      const m = (Array.isArray(arr) ? arr[0] : arr) as Record<string, unknown> | undefined
+      if (!m) continue
+      const raw = m.clobTokenIds
+      const ids: string[] = typeof raw === 'string' ? JSON.parse(raw) as string[] : (Array.isArray(raw) ? raw as string[] : [])
+      const token = out === 'yes' ? ids[0] : ids[1]
+      if (token) return token
+    } catch { continue }
+  }
+  return ''
+}
+
 const DEFAULT_SETTINGS: BotSettings = {
   priceCap: 0.25,
   tradeSize: 3,
@@ -200,50 +227,64 @@ export function usePolymarketBotData(): BotState {
 
   // --- Poll cockpit for real proposal queue + fills ---
   const pollCockpit = useCallback(async () => {
+    type CockpitState = {
+      ok?: boolean; offline?: boolean
+      proposals?: Array<{
+        id: string; market?: string; token?: string; side?: string
+        amount?: number; price?: number; confidence?: number
+        strategy?: string; status?: string
+      }>
+      fills?: CockpitFill[]
+      wallet?: { balance?: number }
+    }
+
+    let j: CockpitState | null = null
+
+    // 1. Try BFF proxy (works when running on localhost dev server)
     try {
       const r = await fetch('/api/polymarket/cockpit/state', { cache: 'no-store' })
-      if (!r.ok) { setCockpitOnline(false); return }
-      const j = await r.json() as {
-        ok?: boolean
-        offline?: boolean
-        proposals?: Array<{
-          id: string; market?: string; token?: string; side?: string
-          amount?: number; price?: number; confidence?: number
-          strategy?: string; status?: string
-        }>
-        fills?: CockpitFill[]
+      if (r.ok) {
+        const parsed = await r.json() as CockpitState
+        if (!parsed.offline) j = parsed
       }
-      if (j.offline) { setCockpitOnline(false); return }
-      setCockpitOnline(true)
+    } catch { /* try direct */ }
 
-      // Merge cockpit-side pending proposals into local proposals list
-      const cockpitPending = (j.proposals ?? []).filter(p => p.status === 'pending')
-      setProposals(prev => {
-        const existingIds = new Set(prev.map(p => p.id))
-        const newFromCockpit: TradeProposal[] = cockpitPending
-          .filter(cp => !existingIds.has(cp.id))
-          .map(cp => ({
-            id: cp.id,
-            title: cp.market ?? '—',
-            slug: '',
-            condition_id: '',
-            token_id: cp.token ?? '',
-            outcome: cp.side === 'buy' ? 'YES' : cp.side ?? 'YES',
-            proposedPrice: cp.price ?? 0,
-            targetSize: cp.amount ?? 0,
-            cost: cp.amount ?? 0,
-            confidence: (cp.confidence as number) ?? 0,
-            strategy: cp.strategy ?? 'cockpit',
-            marketTitle: cp.market ?? '—',
-            _fromCockpit: true,
-          }))
-        return [...prev, ...newFromCockpit]
-      })
-
-      if (Array.isArray(j.fills)) setFills(j.fills.slice().reverse().slice(0, 20))
-    } catch {
-      setCockpitOnline(false)
+    // 2. Fallback: call cockpit directly from browser (CORS enabled on cockpit)
+    if (!j) {
+      try {
+        const r = await fetch(`${COCKPIT_DIRECT}/api/state`, { cache: 'no-store', mode: 'cors' })
+        if (r.ok) j = await r.json() as CockpitState
+      } catch { /* cockpit not running */ }
     }
+
+    if (!j) { setCockpitOnline(false); return }
+    setCockpitOnline(true)
+
+    // Merge cockpit-side pending proposals
+    const cockpitPending = (j.proposals ?? []).filter(p => p.status === 'pending')
+    setProposals(prev => {
+      const existingIds = new Set(prev.map(p => p.id))
+      const newFromCockpit: TradeProposal[] = cockpitPending
+        .filter(cp => !existingIds.has(cp.id))
+        .map(cp => ({
+          id: cp.id,
+          title: cp.market ?? '—',
+          slug: '',
+          condition_id: '',
+          token_id: cp.token ?? '',
+          outcome: cp.side === 'buy' ? 'YES' : cp.side ?? 'YES',
+          proposedPrice: cp.price ?? 0,
+          targetSize: cp.amount ?? 0,
+          cost: cp.amount ?? 0,
+          confidence: (cp.confidence as number) ?? 0,
+          strategy: cp.strategy ?? 'cockpit',
+          marketTitle: cp.market ?? '—',
+          _fromCockpit: true,
+        }))
+      return [...prev, ...newFromCockpit]
+    })
+
+    if (Array.isArray(j.fills)) setFills(j.fills.slice().reverse().slice(0, 20))
   }, [])
 
   useEffect(() => {
@@ -254,13 +295,32 @@ export function usePolymarketBotData(): BotState {
 
   // --- Poll history endpoint (fills + settlement enrichment) ---
   const pollHistory = useCallback(async () => {
+    type HistoryResp = { fills?: CockpitFill[]; summary?: HistorySummary; offline?: boolean }
+    let j: HistoryResp | null = null
+
+    // Try BFF first (has settlement enrichment via data-api cross-reference)
     try {
       const r = await fetch('/api/polymarket/cockpit/history', { cache: 'no-store' })
-      if (!r.ok) return
-      const j = await r.json() as { fills?: CockpitFill[]; summary?: HistorySummary }
-      if (Array.isArray(j.fills)) setHistory(j.fills)
-      if (j.summary) setHistorySummary(j.summary)
-    } catch { /* non-fatal */ }
+      if (r.ok) {
+        const parsed = await r.json() as HistoryResp
+        if (!parsed.offline) j = parsed
+      }
+    } catch { /* try direct */ }
+
+    // Fallback: read fills directly from cockpit (no settlement enrichment, but shows fills)
+    if (!j) {
+      try {
+        const r = await fetch(`${COCKPIT_DIRECT}/api/state`, { cache: 'no-store', mode: 'cors' })
+        if (r.ok) {
+          const state = await r.json() as { fills?: CockpitFill[] }
+          j = { fills: (state.fills ?? []).slice().reverse() }
+        }
+      } catch { /* non-fatal */ }
+    }
+
+    if (!j) return
+    if (Array.isArray(j.fills)) setHistory(j.fills)
+    if (j.summary) setHistorySummary(j.summary)
   }, [])
 
   useEffect(() => {
@@ -373,7 +433,7 @@ export function usePolymarketBotData(): BotState {
     return () => { active = false; clearInterval(id) }
   }, [data, settings.strategies.copyScout, settings.copyTargetAddress, settings.tradeSize])
 
-  // --- Real approve: propose to cockpit (with token_id lookup) then execute ---
+  // --- Real approve: BFF proxy → direct browser fallback ---
   const approveProposal = useCallback((id: string) => {
     setProposals(prev => {
       const prop = prev.find(p => p.id === id)
@@ -382,44 +442,69 @@ export function usePolymarketBotData(): BotState {
       setApprovingId(id)
       setApprovalError(null)
 
+      const postJson = async (url: string, body: unknown, opts: RequestInit = {}) => {
+        const r = await fetch(url, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(body),
+          ...opts,
+        })
+        return r.json() as Promise<{ ok: boolean; id?: string; error?: string; offline?: boolean; result?: unknown }>
+      }
+
       const doApprove = async () => {
         try {
           if (prop._fromCockpit) {
             // Already in cockpit queue — just approve by id
-            const r = await fetch('/api/polymarket/cockpit/approve', {
-              method: 'POST',
-              headers: { 'content-type': 'application/json' },
-              body: JSON.stringify({ id }),
-            })
-            const j = await r.json() as { ok: boolean; error?: string; result?: unknown }
-            if (!j.ok) throw new Error(j.error ?? String(j.result) ?? 'approve failed')
+            // Try BFF proxy first, then direct
+            let j = await postJson('/api/polymarket/cockpit/approve', { id }).catch(() => ({ ok: false, offline: true } as { ok: boolean; offline?: boolean; error?: string }))
+            if (j.offline || !j.ok) {
+              j = await postJson(`${COCKPIT_DIRECT}/api/approve`, { id }, { mode: 'cors' })
+            }
+            if (!j.ok) throw new Error((j as { error?: string }).error ?? 'approve failed')
+
           } else {
-            // Frontend-generated proposal — submit + execute in one shot
-            const r = await fetch('/api/polymarket/cockpit/execute', {
-              method: 'POST',
-              headers: { 'content-type': 'application/json' },
-              body: JSON.stringify({
-                marketTitle: prop.marketTitle,
-                title: prop.title,
-                slug: prop.slug,
-                condition_id: prop.condition_id,
-                token_id: prop.token_id,
-                outcome: prop.outcome,
-                side: 'buy',
-                cost: prop.cost,
-                amount: prop.cost,
-                proposedPrice: prop.proposedPrice,
-                price: prop.proposedPrice,
-                confidence: prop.confidence,
+            // Resolve token_id if missing, then propose+approve
+            let tokenId = prop.token_id
+
+            // Try BFF execute route (handles token lookup server-side)
+            const bffPayload = {
+              marketTitle: prop.marketTitle, slug: prop.slug,
+              condition_id: prop.condition_id, token_id: tokenId,
+              outcome: prop.outcome, side: 'buy',
+              cost: prop.cost, amount: prop.cost,
+              proposedPrice: prop.proposedPrice, price: prop.proposedPrice,
+              confidence: prop.confidence, strategy: prop.strategy,
+              rationale: `Approved via dashboard — ${prop.strategy}`,
+            }
+            const bffRes = await postJson('/api/polymarket/cockpit/execute', bffPayload).catch(() => ({ ok: false, offline: true } as { ok: boolean; offline?: boolean; error?: string }))
+
+            if (!bffRes.offline && bffRes.ok) {
+              // BFF handled it — done
+            } else {
+              // BFF offline → do it directly from the browser
+              // 1. Resolve token_id from Gamma API
+              if (!tokenId) {
+                tokenId = await gammaMktTokenId(prop.condition_id, prop.slug, prop.outcome)
+              }
+              if (!tokenId) throw new Error(`Cannot find token for "${prop.marketTitle}" — no condition_id or slug`)
+
+              // 2. Add to cockpit queue
+              const propRes = await postJson(`${COCKPIT_DIRECT}/api/propose`, {
+                token: tokenId, market: prop.marketTitle, side: 'buy',
+                amount: prop.cost, price: prop.proposedPrice,
+                outcome: prop.outcome, confidence: prop.confidence,
                 strategy: prop.strategy,
                 rationale: `Approved via dashboard — ${prop.strategy}`,
-              }),
-            })
-            const j = await r.json() as { ok: boolean; error?: string; offline?: boolean }
-            if (j.offline) throw new Error('Cockpit is offline — run cockpit.py first')
-            if (!j.ok) throw new Error(j.error ?? 'execute failed')
+              }, { mode: 'cors' })
+              if (!propRes.ok) throw new Error(propRes.error ?? 'propose failed')
+
+              // 3. Immediately approve
+              const approveRes = await postJson(`${COCKPIT_DIRECT}/api/approve`, { id: propRes.id }, { mode: 'cors' })
+              if (!approveRes.ok) throw new Error((approveRes as { error?: string }).error ?? 'approve failed')
+            }
           }
-          // Remove from queue on success, refresh cockpit + history
+
           setProposals(cur => cur.filter(p => p.id !== id))
           void pollCockpit()
           void pollHistory()
@@ -431,7 +516,7 @@ export function usePolymarketBotData(): BotState {
       }
 
       void doApprove()
-      return prev // state update happens async
+      return prev
     })
   }, [pollCockpit, pollHistory])
 
