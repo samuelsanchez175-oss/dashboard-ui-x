@@ -43,12 +43,15 @@ export default function PolymarketBotZone() {
     lastUpdated,
     settings,
     proposals,
-    paperPositions,
-    paperTrades,
+    fills,
+    approvingId,
+    approvalError,
+    cockpitOnline,
     setSettings,
     approveProposal,
     dismissProposal,
-    clearPaperData
+    clearPaperData,
+    refresh,
   } = usePolymarketBotData()
 
   // 1s ticker so "updated Ns ago" stays live.
@@ -60,16 +63,11 @@ export default function PolymarketBotZone() {
 
   const cashBalance = data?.balance ?? 0
   const realPositionsValue = data?.portfolioValue ?? 0
-  const paperPositionsValue = paperPositions.reduce((acc, p) => acc + p.value, 0)
-  const totalPositionsValue = realPositionsValue + paperPositionsValue
+  const totalPositionsValue = realPositionsValue
 
-  const paperOpenPnL = paperPositions.reduce((acc, p) => acc + p.pnl, 0)
-  const paperRealizedPnL = paperTrades
-    .filter(t => t.status === 'success' && t.action === 'sell')
-    .reduce((acc, t) => acc + t.amount, 0)
-  const sessionPnL = paperOpenPnL + paperRealizedPnL
+  const sessionPnL = 0 // sourced from real fills when available
 
-  const allPositions = [...(data?.positions || []), ...paperPositions]
+  const allPositions = data?.positions ?? []
 
   const toggleTheme = () => {
     document.documentElement.classList.toggle('dark')
@@ -97,10 +95,10 @@ export default function PolymarketBotZone() {
             </div>
           </div>
           <div className="header-actions">
-            <div className="socket connected">
-              socket: connected (updated {fmtAgo(lastUpdated)})
+            <div className={`socket ${cockpitOnline ? 'connected' : 'disconnected'}`}>
+              cockpit: {cockpitOnline ? 'live' : 'offline'} · updated {fmtAgo(lastUpdated)}
             </div>
-            <button className="theme-toggle" type="button" aria-label="Toggle theme" title="Switch theme" onClick={toggleTheme}>🌙</button>
+            <button className="theme-toggle" type="button" aria-label="Refresh" title="Refresh" onClick={refresh}>↻</button>
           </div>
         </div>
 
@@ -193,8 +191,17 @@ export default function PolymarketBotZone() {
           <section className="panel" style={{ marginBottom: '18px', border: '1px solid var(--accent)' }}>
             <div className="panel-head">
               <h2 className="panel-title" style={{ color: 'var(--accent)' }}>Awaiting Approval Queue</h2>
-              <div className="panel-note">Manual execution required</div>
+              <div className="panel-note">
+                {cockpitOnline
+                  ? <span style={{ color: 'var(--green)' }}>● cockpit live — approve executes real order</span>
+                  : <span style={{ color: 'var(--red)' }}>● cockpit offline — start cockpit.py to trade</span>}
+              </div>
             </div>
+            {approvalError && (
+              <div style={{ padding: '8px 12px', marginBottom: '10px', background: 'rgba(255,77,79,0.1)', border: '1px solid var(--red)', borderRadius: '8px', color: 'var(--red)', fontSize: '13px' }}>
+                ✕ {approvalError}
+              </div>
+            )}
             <div className="table-wrap">
               <table>
                 <thead>
@@ -210,28 +217,46 @@ export default function PolymarketBotZone() {
                   </tr>
                 </thead>
                 <tbody>
-                  {proposals.map((prop: TradeProposal) => (
-                    <tr key={prop.id}>
-                      <td className="mono" style={{ fontSize: '0.75rem' }}>{prop.strategy}</td>
-                      <td>
-                        <a href={`https://polymarket.com/event/${prop.slug}`} target="_blank" rel="noreferrer" className="market-link">
-                          <span className="market-name">{prop.marketTitle}</span>
-                          <span className="market-slug">{prop.slug}</span>
-                        </a>
-                      </td>
-                      <td><span className="outcome-pill">{prop.outcome}</span></td>
-                      <td className="mono">{(prop.proposedPrice * 100).toFixed(0)}¢</td>
-                      <td className="mono">{prop.targetSize.toLocaleString()}</td>
-                      <td className="mono font-bold">{fmtUsd(prop.cost)}</td>
-                      <td className="mono"><span className={prop.confidence >= 80 ? 'positive' : 'negative'}>{prop.confidence}%</span></td>
-                      <td>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <button className="btn-dismiss" onClick={() => dismissProposal(prop.id)}>Skip</button>
-                          <button className="btn-approve" onClick={() => approveProposal(prop.id)}>Approve</button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {proposals.map((prop: TradeProposal) => {
+                    const isApproving = approvingId === prop.id
+                    const isBusy = approvingId !== null
+                    return (
+                      <tr key={prop.id} style={{ opacity: isBusy && !isApproving ? 0.5 : 1 }}>
+                        <td className="mono" style={{ fontSize: '0.75rem' }}>{prop.strategy}</td>
+                        <td>
+                          <a href={`https://polymarket.com/event/${prop.slug}`} target="_blank" rel="noreferrer" className="market-link">
+                            <span className="market-name">{prop.marketTitle}</span>
+                            {prop.slug && <span className="market-slug">{prop.slug}</span>}
+                          </a>
+                        </td>
+                        <td><span className="outcome-pill">{prop.outcome}</span></td>
+                        <td className="mono">{prop.proposedPrice > 0 ? (prop.proposedPrice * 100).toFixed(0) + '¢' : '—'}</td>
+                        <td className="mono">{prop.targetSize > 0 ? prop.targetSize.toLocaleString() : '—'}</td>
+                        <td className="mono font-bold">{fmtUsd(prop.cost)}</td>
+                        <td className="mono"><span className={prop.confidence >= 80 ? 'positive' : 'negative'}>{prop.confidence}%</span></td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                              className="btn-dismiss"
+                              disabled={isBusy}
+                              onClick={() => dismissProposal(prop.id)}
+                            >
+                              Skip
+                            </button>
+                            <button
+                              className="btn-approve"
+                              disabled={isBusy || !cockpitOnline}
+                              title={!cockpitOnline ? 'Start cockpit.py first' : undefined}
+                              onClick={() => approveProposal(prop.id)}
+                              style={isApproving ? { opacity: 0.7 } : undefined}
+                            >
+                              {isApproving ? '⏳ placing…' : `Approve ${fmtUsd(prop.cost)}`}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
@@ -263,12 +288,11 @@ export default function PolymarketBotZone() {
                     <tr><td colSpan={8} className="empty">No open positions</td></tr>
                   ) : (
                     allPositions.map((p, idx) => {
-                      const isPaper = !data?.positions?.some(real => real.conditionId === p.conditionId && real.outcome === p.outcome)
                       return (
                         <tr key={idx}>
                           <td className="mono">
-                            <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: isPaper ? 'var(--accent)' : 'var(--text)' }}>
-                              {isPaper ? 'PAPER' : 'REAL'}
+                            <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--green)' }}>
+                              REAL
                             </span>
                           </td>
                           <td>
@@ -301,29 +325,23 @@ export default function PolymarketBotZone() {
 
           <section className="panel">
             <div className="panel-head">
-              <h2 className="panel-title">Recent Trades</h2>
-              <div className="panel-note">Paper trade ledger tail</div>
+              <h2 className="panel-title">Recent Fills</h2>
+              <div className="panel-note">{cockpitOnline ? 'live from cockpit' : 'cockpit offline'}</div>
             </div>
             <div className="trade-list">
-              {paperTrades.length === 0 ? (
-                <div className="empty">No trades yet</div>
+              {fills.length === 0 ? (
+                <div className="empty">{cockpitOnline ? 'No fills yet — approve a trade above' : 'Start cockpit.py to see fills'}</div>
               ) : (
-                paperTrades.map((t, idx) => (
+                fills.map((f, idx) => (
                   <div className="trade-item" key={idx}>
                     <div className="trade-top">
-                      <div className={`trade-action ${t.action === 'buy' ? 'positive' : 'negative'}`}>
-                        {t.action}
-                      </div>
-                      <div className="trade-meta mono">{fmtTime(t.ts)}</div>
+                      <div className="trade-action positive">buy</div>
+                      <div className="trade-meta mono">{fmtTime(f.ts)}</div>
                     </div>
-                    <div className="trade-meta">
-                      {t.side} | {t.market_slug}
-                    </div>
+                    <div className="trade-meta">{f.market}</div>
                     <div className="trade-detail">
-                      <strong>Amount:</strong> {fmtUsd(t.amount)} &nbsp;
-                      <strong>Price:</strong> {fmtUsd(t.reference_price, 4)}
-                      <br/>
-                      <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>{t.strategy}</span>
+                      <strong>Amount:</strong> {fmtUsd(f.amount)} &nbsp;
+                      <strong>Side:</strong> {f.side}
                     </div>
                   </div>
                 ))

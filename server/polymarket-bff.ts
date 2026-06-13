@@ -490,6 +490,174 @@ async function handleCopy(req: IncomingMessage, res: ServerResponse): Promise<vo
   })
 }
 
+// --- cockpit proxy (localhost:8770) ------------------------------------------
+const COCKPIT_URL = 'http://127.0.0.1:8770'
+const COCKPIT_TIMEOUT_MS = 10_000
+const COCKPIT_EXEC_TIMEOUT_MS = 90_000
+
+function readBody(req: IncomingMessage): Promise<Record<string, unknown>> {
+  return new Promise((resolve) => {
+    const chunks: Buffer[] = []
+    req.on('data', (c: Buffer) => chunks.push(c))
+    req.on('end', () => {
+      try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}') as Record<string, unknown>) }
+      catch { resolve({}) }
+    })
+    req.on('error', () => resolve({}))
+  })
+}
+
+async function cockpitFetch(path: string, opts: RequestInit = {}, timeoutMs = COCKPIT_TIMEOUT_MS): Promise<unknown> {
+  const ctrl = new AbortController()
+  const t = setTimeout(() => ctrl.abort(), timeoutMs)
+  try {
+    const r = await fetch(`${COCKPIT_URL}${path}`, { ...opts, signal: ctrl.signal })
+    return await r.json()
+  } catch (e: unknown) {
+    const code = (e as NodeJS.ErrnoException).code
+    if (code === 'ECONNREFUSED' || code === 'ECONNRESET') {
+      throw new Error('cockpit offline — run: python3 ~/polymarket-dashboard/cockpit.py')
+    }
+    throw e
+  } finally {
+    clearTimeout(t)
+  }
+}
+
+async function cockpitPost(path: string, body: unknown, timeoutMs = COCKPIT_TIMEOUT_MS): Promise<unknown> {
+  return cockpitFetch(path, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  }, timeoutMs)
+}
+
+async function resolveTokenId(conditionId: string, slug: string, outcome: string): Promise<string> {
+  const outLower = outcome.toLowerCase()
+  // Try conditionId first, then slug
+  const urls = [
+    conditionId ? `https://gamma-api.polymarket.com/markets?conditionId=${encodeURIComponent(conditionId)}` : null,
+    slug ? `https://gamma-api.polymarket.com/markets?slug=${encodeURIComponent(slug)}` : null,
+  ].filter(Boolean) as string[]
+
+  for (const url of urls) {
+    try {
+      const data = await fetchJson(url) as unknown[]
+      const markets = Array.isArray(data) ? data : [data]
+      const m = markets[0] as Record<string, unknown> | undefined
+      if (!m) continue
+      const raw = m.clobTokenIds
+      const ids: string[] = typeof raw === 'string' ? JSON.parse(raw) as string[] : (Array.isArray(raw) ? raw as string[] : [])
+      const token = outLower === 'yes' ? ids[0] : ids[1]
+      if (token) return token
+    } catch { continue }
+  }
+  return ''
+}
+
+async function handleCockpitState(_req: IncomingMessage, res: ServerResponse): Promise<void> {
+  try {
+    const state = await cockpitFetch('/api/state')
+    jsonRes(res, 200, { ok: true, ...(state as object) })
+  } catch (e) {
+    jsonRes(res, 503, { ok: false, offline: true, error: errMsg(e) })
+  }
+}
+
+async function handleCockpitPropose(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  const b = await readBody(req)
+  let tokenId = str(b.token_id || b.token)
+
+  if (!tokenId) {
+    tokenId = await resolveTokenId(str(b.condition_id), str(b.slug), str(b.outcome))
+  }
+  if (!tokenId) {
+    jsonRes(res, 400, { ok: false, error: `Cannot resolve token_id for market "${str(b.marketTitle || b.title)}" — condition_id or slug required` })
+    return
+  }
+
+  const proposal = {
+    token: tokenId,
+    token_id: tokenId,
+    market: str(b.marketTitle || b.market || b.title || '—'),
+    side: str(b.side || 'buy'),
+    amount: num(b.cost || b.amount),
+    price: num(b.proposedPrice || b.price),
+    confidence: b.confidence,
+    strategy: str(b.strategy),
+    rationale: str(b.rationale),
+  }
+
+  try {
+    const result = await cockpitPost('/api/propose', proposal)
+    jsonRes(res, 200, result as object)
+  } catch (e) {
+    jsonRes(res, 503, { ok: false, error: errMsg(e) })
+  }
+}
+
+async function handleCockpitApprove(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  const b = await readBody(req)
+  try {
+    const result = await cockpitPost('/api/approve', { id: str(b.id) }, COCKPIT_EXEC_TIMEOUT_MS)
+    jsonRes(res, 200, result as object)
+  } catch (e) {
+    jsonRes(res, 503, { ok: false, error: errMsg(e) })
+  }
+}
+
+async function handleCockpitReject(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  const b = await readBody(req)
+  try {
+    const result = await cockpitPost('/api/reject', { id: str(b.id) })
+    jsonRes(res, 200, result as object)
+  } catch (e) {
+    jsonRes(res, 503, { ok: false, error: errMsg(e) })
+  }
+}
+
+// propose → resolve token_id → add to cockpit queue → immediately approve (execute)
+async function handleCockpitExecute(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  const b = await readBody(req)
+  let tokenId = str(b.token_id || b.token)
+  if (!tokenId) {
+    tokenId = await resolveTokenId(str(b.condition_id), str(b.slug), str(b.outcome))
+  }
+  if (!tokenId) {
+    jsonRes(res, 400, { ok: false, error: `Cannot resolve token_id for "${str(b.marketTitle || b.title)}"` })
+    return
+  }
+
+  let cockpitId: string
+  try {
+    const proposed = await cockpitPost('/api/propose', {
+      token: tokenId,
+      market: str(b.marketTitle || b.market || b.title || '—'),
+      side: str(b.side || 'buy'),
+      amount: num(b.cost || b.amount),
+      price: num(b.proposedPrice || b.price),
+      confidence: b.confidence,
+      strategy: str(b.strategy),
+      rationale: str(b.rationale),
+    }) as { ok: boolean; id?: string; error?: string }
+    if (!proposed.ok || !proposed.id) {
+      jsonRes(res, 500, { ok: false, error: proposed.error || 'propose failed' })
+      return
+    }
+    cockpitId = proposed.id
+  } catch (e) {
+    jsonRes(res, 503, { ok: false, error: errMsg(e) })
+    return
+  }
+
+  try {
+    const result = await cockpitPost('/api/approve', { id: cockpitId }, COCKPIT_EXEC_TIMEOUT_MS)
+    jsonRes(res, 200, result as object)
+  } catch (e) {
+    jsonRes(res, 503, { ok: false, cockpit_id: cockpitId, error: errMsg(e) })
+  }
+}
+
 /**
  * Dispatch Polymarket routes. Returns true if the request was handled (so the
  * caller stops walking the middleware chain), false to pass through.
@@ -499,6 +667,19 @@ export function tryHandlePolymarketRoutes(req: IncomingMessage, res: ServerRespo
   if (!pathName.startsWith('/api/polymarket/')) return false
 
   const method = (req.method ?? 'GET').toUpperCase()
+
+  // Cockpit proxy routes
+  if (pathName.startsWith('/api/polymarket/cockpit/')) {
+    const sub = pathName.slice('/api/polymarket/cockpit/'.length)
+    if (method === 'GET' && sub === 'state') { void handleCockpitState(req, res); return true }
+    if (method === 'POST' && sub === 'propose') { void handleCockpitPropose(req, res); return true }
+    if (method === 'POST' && sub === 'approve') { void handleCockpitApprove(req, res); return true }
+    if (method === 'POST' && sub === 'reject')  { void handleCockpitReject(req, res);  return true }
+    if (method === 'POST' && sub === 'execute') { void handleCockpitExecute(req, res); return true }
+    jsonRes(res, 404, { ok: false, error: 'Unknown cockpit route' })
+    return true
+  }
+
   if (method === 'GET' && pathName === '/api/polymarket/wallet') {
     void handleWallet(req, res)
     return true

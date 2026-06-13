@@ -50,6 +50,8 @@ export interface TradeProposal {
   confidence: number
   strategy: string
   marketTitle: string
+  // cockpit-originated proposals also carry these:
+  _fromCockpit?: boolean
 }
 
 export interface BotSettings {
@@ -84,8 +86,10 @@ export interface BotState {
   lastUpdated: number | null
   settings: BotSettings
   proposals: TradeProposal[]
-  paperPositions: BotPosition[]
-  paperTrades: BotTrade[]
+  fills: CockpitFill[]
+  approvingId: string | null
+  approvalError: string | null
+  cockpitOnline: boolean
   setSettings: (s: BotSettings) => void
   refresh: () => void
   approveProposal: (id: string) => void
@@ -93,15 +97,23 @@ export interface BotState {
   clearPaperData: () => void
 }
 
+export interface CockpitFill {
+  ts: number
+  market: string
+  side: string
+  amount: number
+  result: unknown
+}
+
 const DEFAULT_SETTINGS: BotSettings = {
   priceCap: 0.25,
-  tradeSize: 10,
+  tradeSize: 3,
   strategies: {
-    nobias: true,
-    copyScout: false,
+    nobias: false,
+    copyScout: true,
     hftSniper: false,
   },
-  copyTargetAddress: '0xaB1087e594d761665aEaE0E01518D6857140eD5B', // Example Promising Trader
+  copyTargetAddress: '0xaB1087e594d761665aEaE0E01518D6857140eD5B',
 }
 
 export function usePolymarketBotData(): BotState {
@@ -109,8 +121,11 @@ export function usePolymarketBotData(): BotState {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<number | null>(null)
-  
-  // Local storage backed states
+  const [approvingId, setApprovingId] = useState<string | null>(null)
+  const [approvalError, setApprovalError] = useState<string | null>(null)
+  const [cockpitOnline, setCockpitOnline] = useState(false)
+  const [fills, setFills] = useState<CockpitFill[]>([])
+
   const [settings, setSettingsState] = useState<BotSettings>(() => {
     try {
       const saved = localStorage.getItem('polymarket_bot_settings')
@@ -122,24 +137,6 @@ export function usePolymarketBotData(): BotState {
 
   const [proposals, setProposals] = useState<TradeProposal[]>([])
 
-  const [paperPositions, setPaperPositions] = useState<BotPosition[]>(() => {
-    try {
-      const saved = localStorage.getItem('polymarket_paper_positions')
-      return saved ? (JSON.parse(saved) as BotPosition[]) : []
-    } catch {
-      return []
-    }
-  })
-
-  const [paperTrades, setPaperTrades] = useState<BotTrade[]>(() => {
-    try {
-      const saved = localStorage.getItem('polymarket_paper_trades')
-      return saved ? (JSON.parse(saved) as BotTrade[]) : []
-    } catch {
-      return []
-    }
-  })
-
   const inFlight = useRef(false)
 
   const setSettings = (newSettings: BotSettings) => {
@@ -147,6 +144,7 @@ export function usePolymarketBotData(): BotState {
     localStorage.setItem('polymarket_bot_settings', JSON.stringify(newSettings))
   }
 
+  // --- Fetch main bot market data (BFF) ---
   const run = useCallback(async () => {
     if (inFlight.current) return
     inFlight.current = true
@@ -174,23 +172,75 @@ export function usePolymarketBotData(): BotState {
 
   const refresh = useCallback(() => void run(), [run])
 
-  // Proposer Simulation Loop
+  // --- Poll cockpit for real proposal queue + fills ---
+  const pollCockpit = useCallback(async () => {
+    try {
+      const r = await fetch('/api/polymarket/cockpit/state', { cache: 'no-store' })
+      if (!r.ok) { setCockpitOnline(false); return }
+      const j = await r.json() as {
+        ok?: boolean
+        offline?: boolean
+        proposals?: Array<{
+          id: string; market?: string; token?: string; side?: string
+          amount?: number; price?: number; confidence?: number
+          strategy?: string; status?: string
+        }>
+        fills?: CockpitFill[]
+      }
+      if (j.offline) { setCockpitOnline(false); return }
+      setCockpitOnline(true)
+
+      // Merge cockpit-side pending proposals into local proposals list
+      const cockpitPending = (j.proposals ?? []).filter(p => p.status === 'pending')
+      setProposals(prev => {
+        const existingIds = new Set(prev.map(p => p.id))
+        const newFromCockpit: TradeProposal[] = cockpitPending
+          .filter(cp => !existingIds.has(cp.id))
+          .map(cp => ({
+            id: cp.id,
+            title: cp.market ?? '—',
+            slug: '',
+            condition_id: '',
+            token_id: cp.token ?? '',
+            outcome: cp.side === 'buy' ? 'YES' : cp.side ?? 'YES',
+            proposedPrice: cp.price ?? 0,
+            targetSize: cp.amount ?? 0,
+            cost: cp.amount ?? 0,
+            confidence: (cp.confidence as number) ?? 0,
+            strategy: cp.strategy ?? 'cockpit',
+            marketTitle: cp.market ?? '—',
+            _fromCockpit: true,
+          }))
+        return [...prev, ...newFromCockpit]
+      })
+
+      if (Array.isArray(j.fills)) setFills(j.fills.slice().reverse().slice(0, 20))
+    } catch {
+      setCockpitOnline(false)
+    }
+  }, [])
+
   useEffect(() => {
-    if (!data) return
+    void pollCockpit()
+    const id = setInterval(() => void pollCockpit(), 15_000)
+    return () => clearInterval(id)
+  }, [pollCockpit])
 
-    const newProposals: TradeProposal[] = []
-    const ownedConditionIds = new Set([
-      ...(data.positions || []).map(p => p.conditionId),
-      ...paperPositions.map(p => p.conditionId)
-    ].filter(Boolean))
+  // --- NO-Bias Sniper proposal generator ---
+  useEffect(() => {
+    if (!data || !settings.strategies.nobias || !data.markets) return
+    const ownedConditionIds = new Set((data.positions ?? []).map(p => p.conditionId).filter(Boolean))
 
-    // 1. NO-Bias Sniper Proposer
-    if (settings.strategies.nobias && data.markets) {
-      data.markets.forEach((market) => {
-        if (market.no_price > 0 && market.no_price <= settings.priceCap) {
-          if (!ownedConditionIds.has(market.condition_id)) {
-            newProposals.push({
-              id: `nobias-${market.condition_id}`,
+    setProposals(prev => {
+      const existingIds = new Set(prev.map(p => p.id))
+      const generated: TradeProposal[] = []
+      data.markets!.forEach((market) => {
+        if (market.no_price > 0 && market.no_price <= settings.priceCap && !ownedConditionIds.has(market.condition_id)) {
+          const id = `nobias-${market.condition_id}`
+          const wasDismissed = localStorage.getItem(`dismissed_${id}`) === 'true'
+          if (!existingIds.has(id) && !wasDismissed) {
+            generated.push({
+              id,
               title: `NO on ${market.title}`,
               slug: market.slug,
               condition_id: market.condition_id,
@@ -201,31 +251,16 @@ export function usePolymarketBotData(): BotState {
               cost: settings.tradeSize,
               confidence: 85,
               strategy: 'NO-Bias Sniper',
-              marketTitle: market.title
+              marketTitle: market.title,
             })
           }
         }
       })
-    }
-
-    setProposals(prev => {
-      // Keep manual dismisses and merge new ones
-      const merged = [...newProposals]
-      // Add existing ones if they are still valid and not processed
-      prev.forEach(p => {
-        if (!ownedConditionIds.has(p.condition_id) && !merged.some(m => m.id === p.id)) {
-          // If it was manually dismissed, we don't re-add
-          const wasDismissed = localStorage.getItem(`dismissed_${p.id}`) === 'true'
-          if (!wasDismissed) {
-            merged.push(p)
-          }
-        }
-      })
-      return merged
+      return [...prev, ...generated]
     })
-  }, [data, settings.strategies.nobias, settings.priceCap, settings.tradeSize, paperPositions])
+  }, [data, settings.strategies.nobias, settings.priceCap, settings.tradeSize])
 
-  // 2. Copy Trader Scout Proposer Loop
+  // --- Copy Scout proposal generator ---
   useEffect(() => {
     if (!data || !settings.strategies.copyScout || !settings.copyTargetAddress) return
 
@@ -235,209 +270,151 @@ export function usePolymarketBotData(): BotState {
         const r = await fetch(`/api/polymarket/copy?user=${settings.copyTargetAddress}`)
         if (!r.ok || !active) return
         const j = await r.json()
-        if (j && j.ok && Array.isArray(j.open)) {
-          const ownedTitles = new Set([
-            ...(data.positions || []).map(p => p.title.toLowerCase()),
-            ...paperPositions.map(p => p.title.toLowerCase())
-          ])
+        if (!j?.ok || !Array.isArray(j.open)) return
 
-          const closed = j.closed || {}
-          const count = closed.count || 0
-          const netRealized = closed.netRealized || 0
-          const settledWins = closed.settledWins || 0
-          const winRate = count > 0 ? settledWins / count : 0
-          const concentrationPct = closed.concentrationPct || 0
+        const ownedTitles = new Set((data.positions ?? []).map(p => p.title.toLowerCase()))
+        const closed = j.closed ?? {}
+        const count = closed.count ?? 0
+        const netRealized = closed.netRealized ?? 0
+        const settledWins = closed.settledWins ?? 0
+        const winRate = count > 0 ? settledWins / count : 0
+        const concentrationPct = closed.concentrationPct ?? 0
 
-          // MrFadiAi Copy Filters:
-          // - Win rate >= 60%
-          // - Net PnL >= $500
-          // - Single-trade profit concentration <= 30%
-          const passesWinRate = winRate >= 0.60
-          const passesPnL = netRealized >= 500
-          const passesConcentration = concentrationPct <= 30
+        const passesWinRate = winRate >= 0.60
+        const passesPnL = netRealized >= 500
+        const passesConcentration = concentrationPct <= 30
+        let baseConfidence = 50
+        if (passesWinRate) baseConfidence += 15
+        if (passesPnL) baseConfidence += 15
+        if (passesConcentration) baseConfidence += 10
+        if (count >= 15) baseConfidence += 5
 
-          // Calculate confidence score dynamically
-          let baseConfidence = 50
-          if (passesWinRate) baseConfidence += 15
-          if (passesPnL) baseConfidence += 15
-          if (passesConcentration) baseConfidence += 10
-          if (count >= 15) baseConfidence += 5
+        const label = passesWinRate && passesPnL && passesConcentration ? 'Verified' : 'Unverified'
 
-          // Propose open trades from this user
-          j.open.forEach((pos: any) => {
-            const title = pos.title || ''
-            if (title && !ownedTitles.has(title.toLowerCase())) {
-              const propId = `copy-${settings.copyTargetAddress}-${pos.title}-${pos.outcome}`
-              const wasDismissed = localStorage.getItem(`dismissed_${propId}`) === 'true'
-              if (wasDismissed) return
+        j.open.forEach((pos: {
+          title?: string; slug?: string; conditionId?: string
+          outcome?: string; curPrice?: number
+        }) => {
+          const title = pos.title ?? ''
+          if (!title || ownedTitles.has(title.toLowerCase())) return
+          const propId = `copy-${settings.copyTargetAddress}-${pos.title}-${pos.outcome}`
+          const wasDismissed = localStorage.getItem(`dismissed_${propId}`) === 'true'
+          if (wasDismissed) return
 
-              setProposals(prev => {
-                if (prev.some(p => p.id === propId)) return prev
-                return [
-                  ...prev,
-                  {
-                    id: propId,
-                    title: `${pos.outcome} on ${pos.title}`,
-                    slug: pos.slug || '',
-                    condition_id: pos.conditionId || '',
-                    token_id: '',
-                    outcome: pos.outcome,
-                    proposedPrice: pos.curPrice || 0.50,
-                    targetSize: Math.round((settings.tradeSize / (pos.curPrice || 0.50)) * 100) / 100,
-                    cost: settings.tradeSize,
-                    confidence: Math.min(99, baseConfidence),
-                    strategy: `Copy Scout (${passesWinRate && passesPnL && passesConcentration ? 'Verified' : 'Unverified'})`,
-                    marketTitle: pos.title
-                  }
-                ]
-              })
-            }
-          })
-        }
-      } catch (_) {
-        // ignore fetch failures silently in loop
-      }
-    }
-
-    void scout()
-    const id = setInterval(scout, 60_000) // Poll copy scouting every minute
-    return () => {
-      active = false
-      clearInterval(id)
-    }
-  }, [data, settings.strategies.copyScout, settings.copyTargetAddress, settings.tradeSize, paperPositions])
-
-  // 3. Simulated HFT Arbitrage Proposer Loop (Simulates a proposed trade every few mins if active)
-  useEffect(() => {
-    if (!data || !settings.strategies.hftSniper) return
-
-    const runArb = () => {
-      if (data.markets && data.markets.length > 0) {
-        // Pick a random market to pretend we found a pricing discrepancy on Yes + No < $1.00
-        const randMarket = data.markets[Math.floor(Math.random() * data.markets.length)]
-        const propId = `arb-${randMarket.condition_id}`
-        const wasDismissed = localStorage.getItem(`dismissed_${propId}`) === 'true'
-        if (wasDismissed) return
-
-        setProposals(prev => {
-          if (prev.some(p => p.id === propId)) return prev
-          const spreadSum = randMarket.yes_price + randMarket.no_price
-          if (spreadSum >= 1.0) {
-            // Simulate a mock arbitrage proposal
+          setProposals(prev => {
+            if (prev.some(p => p.id === propId)) return prev
             return [
               ...prev,
               {
                 id: propId,
-                title: `Arbitrage: YES (${randMarket.yes_price * 100}¢) + NO (${randMarket.no_price * 100}¢)`,
-                slug: randMarket.slug,
-                condition_id: randMarket.condition_id,
-                token_id: randMarket.yes_token_id,
-                outcome: 'YES + NO',
-                proposedPrice: spreadSum,
-                targetSize: 20,
-                cost: 18.5,
-                confidence: 94,
-                strategy: 'HFT Arbitrageur',
-                marketTitle: randMarket.title
-              }
+                title: `${pos.outcome} on ${pos.title}`,
+                slug: pos.slug ?? '',
+                condition_id: pos.conditionId ?? '',
+                token_id: '',  // resolved by BFF on execute
+                outcome: pos.outcome ?? 'YES',
+                proposedPrice: pos.curPrice ?? 0.50,
+                targetSize: Math.round((settings.tradeSize / (pos.curPrice ?? 0.50)) * 100) / 100,
+                cost: settings.tradeSize,
+                confidence: Math.min(99, baseConfidence),
+                strategy: `Copy Scout (${label})`,
+                marketTitle: pos.title ?? '—',
+              },
             ]
-          }
-          return prev
+          })
         })
-      }
+      } catch { /* ignore */ }
     }
 
-    const id = setInterval(runArb, 45_000)
-    return () => clearInterval(id)
-  }, [data, settings.strategies.hftSniper])
+    void scout()
+    const id = setInterval(scout, 60_000)
+    return () => { active = false; clearInterval(id) }
+  }, [data, settings.strategies.copyScout, settings.copyTargetAddress, settings.tradeSize])
 
+  // --- Real approve: propose to cockpit (with token_id lookup) then execute ---
   const approveProposal = useCallback((id: string) => {
     setProposals(prev => {
       const prop = prev.find(p => p.id === id)
       if (!prop) return prev
 
-      // Add to paper positions
-      setPaperPositions(positions => {
-        const existingIdx = positions.findIndex(p => p.conditionId === prop.condition_id && p.outcome === prop.outcome)
-        let updated: BotPosition[]
-        if (existingIdx >= 0) {
-          const prevPos = positions[existingIdx]
-          const totalSize = prevPos.size + prop.targetSize
-          const avgPrice = ((prevPos.avgPrice * prevPos.size) + (prop.proposedPrice * prop.targetSize)) / totalSize
-          const currentVal = totalSize * prop.proposedPrice
-          const cost = totalSize * avgPrice
-          const pnl = currentVal - cost
-          const percentPnl = cost > 0 ? (pnl / cost) * 100 : 0
-          updated = [...positions]
-          updated[existingIdx] = {
-            ...prevPos,
-            size: totalSize,
-            avgPrice,
-            curPrice: prop.proposedPrice,
-            value: currentVal,
-            pnl,
-            percentPnl
+      setApprovingId(id)
+      setApprovalError(null)
+
+      const doApprove = async () => {
+        try {
+          if (prop._fromCockpit) {
+            // Already in cockpit queue — just approve by id
+            const r = await fetch('/api/polymarket/cockpit/approve', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ id }),
+            })
+            const j = await r.json() as { ok: boolean; error?: string; result?: unknown }
+            if (!j.ok) throw new Error(j.error ?? String(j.result) ?? 'approve failed')
+          } else {
+            // Frontend-generated proposal — submit + execute in one shot
+            const r = await fetch('/api/polymarket/cockpit/execute', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({
+                marketTitle: prop.marketTitle,
+                title: prop.title,
+                slug: prop.slug,
+                condition_id: prop.condition_id,
+                token_id: prop.token_id,
+                outcome: prop.outcome,
+                side: 'buy',
+                cost: prop.cost,
+                amount: prop.cost,
+                proposedPrice: prop.proposedPrice,
+                price: prop.proposedPrice,
+                confidence: prop.confidence,
+                strategy: prop.strategy,
+                rationale: `Approved via dashboard — ${prop.strategy}`,
+              }),
+            })
+            const j = await r.json() as { ok: boolean; error?: string; offline?: boolean }
+            if (j.offline) throw new Error('Cockpit is offline — run cockpit.py first')
+            if (!j.ok) throw new Error(j.error ?? 'execute failed')
           }
-        } else {
-          updated = [
-            ...positions,
-            {
-              title: prop.marketTitle,
-              slug: prop.slug,
-              outcome: prop.outcome,
-              size: prop.targetSize,
-              avgPrice: prop.proposedPrice,
-              curPrice: prop.proposedPrice,
-              value: prop.cost,
-              pnl: 0,
-              percentPnl: 0,
-              conditionId: prop.condition_id
-            }
-          ]
+          // Remove from queue on success, refresh cockpit state
+          setProposals(cur => cur.filter(p => p.id !== id))
+          void pollCockpit()
+        } catch (e) {
+          setApprovalError(e instanceof Error ? e.message : 'unknown error')
+        } finally {
+          setApprovingId(null)
         }
-        localStorage.setItem('polymarket_paper_positions', JSON.stringify(updated))
-        return updated
-      })
+      }
 
-      // Log to paper trades ledger
-      setPaperTrades(trades => {
-        const newTrade: BotTrade = {
-          ts: Date.now() / 1000,
-          action: 'buy',
-          side: prop.outcome,
-          market_slug: prop.slug,
-          amount: prop.cost,
-          reference_price: prop.proposedPrice,
-          status: 'success',
-          strategy: prop.strategy
-        }
-        const updated = [newTrade, ...trades].slice(0, 100)
-        localStorage.setItem('polymarket_paper_trades', JSON.stringify(updated))
-        return updated
-      })
+      void doApprove()
+      return prev // state update happens async
+    })
+  }, [pollCockpit])
 
+  // --- Reject: if cockpit-originated hit cockpit; otherwise just dismiss locally ---
+  const dismissProposal = useCallback((id: string) => {
+    setProposals(prev => {
+      const prop = prev.find(p => p.id === id)
+      if (prop?._fromCockpit) {
+        void fetch('/api/polymarket/cockpit/reject', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id }),
+        }).catch(() => { /* fire and forget */ })
+      } else {
+        localStorage.setItem(`dismissed_${id}`, 'true')
+      }
       return prev.filter(p => p.id !== id)
     })
   }, [])
 
-  const dismissProposal = useCallback((id: string) => {
-    localStorage.setItem(`dismissed_${id}`, 'true')
-    setProposals(prev => prev.filter(p => p.id !== id))
-  }, [])
-
   const clearPaperData = useCallback(() => {
-    localStorage.removeItem('polymarket_paper_positions')
-    localStorage.removeItem('polymarket_paper_trades')
-    // Clear dismisses
-    for (let i = 0; i < localStorage.length; i++) {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
       const key = localStorage.key(i)
-      if (key && key.startsWith('dismissed_')) {
+      if (key && (key.startsWith('dismissed_') || key.startsWith('polymarket_'))) {
         localStorage.removeItem(key)
-        i--
       }
     }
-    setPaperPositions([])
-    setPaperTrades([])
     setProposals([])
   }, [])
 
@@ -448,8 +425,10 @@ export function usePolymarketBotData(): BotState {
     lastUpdated,
     settings,
     proposals,
-    paperPositions,
-    paperTrades,
+    fills,
+    approvingId,
+    approvalError,
+    cockpitOnline,
     setSettings,
     refresh,
     approveProposal,
