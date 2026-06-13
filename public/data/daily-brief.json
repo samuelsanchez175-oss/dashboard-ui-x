@@ -1,37 +1,37 @@
 {
-  "date": "2026-06-12",
+  "date": "2026-06-13",
   "active_project": "XJournal AI",
   "synthesis": [
-    "Model G v4.1 is fully committed — punchline axis, corpus fix, LLM-judge rerank, and the v5 grader de-bias all shipped — but the useModelGv41 flag is still OFF by default, sitting behind a toggle that no real session has flipped on yet. Today starts with a direct listening test: generate 3–5 verses with the flag enabled, run the v5 grader alongside a quick blind-read, and confirm the quality jump is real before flipping the default on and declaring the ablation work closed. PR #9 (Model G v5 selectable in the UI + per-line feedback fixes) remains the key merge gate — until it lands, no user session can reach the new model tier. A sharper new thread also opened this week from WWDC 2026: the nifty-thompson session confirmed that Apple formally added video apps as a supported CarPlay category in iOS 27, and PhoneSceneDelegate already connected in the test binary — the next concrete step is implementing templateApplicationScene(_:didConnect:to:) with a CPPlaybackConfiguration to get actual video routing live. The recommended first action today: open a session on claude/vigorous-bartik-60e9da, run a punchline listening test in the sim, and merge PR #9 before touching anything else."
+    "Model G v4.1 is fully committed across all five phases — punchline axis, corpus fragment filter, LLM-judge rerank, v5 grader de-bias, and multi-bar punchline structures all landed on claude/vigorous-bartik-60e9da by June 11 — but the useModelGv41 toggle remains OFF by default, meaning no real user session has touched the new logic yet. The most important pending handoff is vigorous-bartik-60e9da: the last thing committed was multi-bar punchline framing (b93b60c), and PR #9 (Model G v5 selectable in the UI + per-line feedback deck fixes) is the merge gate blocking any public access to the new tier. A secondary thread opened this week: the nifty-thompson-49c4cf session confirmed that WWDC 2026 formalized video as a CarPlay category in iOS 27, and PhoneSceneDelegate already connected in the Antigravity test binary — the next concrete step there is wiring templateApplicationScene(_:didConnect:to:) with CPPlaybackConfiguration. The single most important action today is opening vigorous-bartik-60e9da, running a quick listening test with useModelGv41 ON in the sim, and merging PR #9 before anything else ships."
   ],
   "plan": [
     {
-      "title": "Listening test: v4.1 punchlines",
-      "note": "generate 3–5 verses with `useModelGv41=true`, confirm grader + ear agree, flip default ON",
+      "title": "Listen test with flag ON",
+      "note": "generate 3–5 verses in sim with `useModelGv41` enabled, score via v5 grader",
       "priority": "high",
       "done": false
     },
     {
       "title": "Merge PR #9",
-      "note": "review `claude/vigorous-bartik-60e9da`, merge Model G v5 selectable + per-line feedback to main",
+      "note": "Model G v5 selectable + per-line feedback; this is the gate before flipping default",
       "priority": "high",
       "done": false
     },
     {
-      "title": "Antigravity: implement templateApplicationScene",
-      "note": "write Swift `didConnect:to:` + `CPPlaybackConfiguration` for CarPlay video",
+      "title": "Flip useModelGv41 default ON",
+      "note": "only after listen test confirms quality delta vs plain v4",
       "priority": "med",
       "done": false
     },
     {
-      "title": "Build 4 remaining sliders",
-      "note": "Slang density, Imply↔Explain, Rhyme hardness, Verse length in the Model G Control Surface",
+      "title": "Wire Antigravity CarPlay scene",
+      "note": "implement `templateApplicationScene(_:didConnect:to:)` + `CPPlaybackConfiguration` in the Antigravity branch",
       "priority": "med",
       "done": false
     },
     {
-      "title": "Polymarket: bridge USDC",
-      "note": "fund the Polygon wallet and verify bot machine state is ready",
+      "title": "Audit remaining v4.1 sliders",
+      "note": "Slang density, Imply↔Explain, Rhyme hardness not yet built from controls table",
       "priority": "low",
       "done": false
     }
@@ -39,58 +39,51 @@
   "tools": [
     {
       "name": "ElevenLabs",
-      "desc": "TTS playback to QA verse audio quality alongside the v4.1 listening test"
+      "desc": "TTS for XJournal AI audio output; relevant if testing verse playback alongside the v4.1 listen test"
     },
     {
       "name": "Gemini Image Generation",
-      "desc": "Gemini ecosystem context; Model G v5 uses Gemini multimodal \"listen\" path"
+      "desc": "cheap Google image gen already proven in the ecosystem; useful if Antigravity needs cover art or thumbnail generation"
     },
     {
       "name": "Veo",
-      "desc": "video generation; directly relevant as Antigravity/CarPlay video routing comes online"
-    },
-    {
-      "name": "Runway",
-      "desc": "text-to-video prototyping for music video mockups tied to XJournal AI tracks"
+      "desc": "Google video gen; directly relevant to Antigravity CarPlay video streaming context"
     },
     {
       "name": "Imagen",
-      "desc": "image gen for in-app artwork tied to lyric sessions"
+      "desc": "Google image gen alternative; compare vs Gemini Image Gen for asset quality in app UI"
     }
   ],
   "tracks": [],
   "handoffs": [
     {
-      "name": "2026-06-11-vigorous-bartik-60e9da-ec8dbbb7",
-      "note": "v4.1 shipped; resume at PR #9 merge + flip `useModelGv41` default ON; remaining slider backlog next"
+      "name": "2026-06-10-vigorous-bartik-60e9da-ec8dbbb7",
+      "note": "XJournal AI Model G v4.1 punchline work; last commit `b93b60c` (multi-bar punchlines); resume here: merge PR #9, then flip the default flag"
     },
     {
       "name": "2026-06-11-nifty-thompson-49c4cf-fb234921",
-      "note": "Antigravity CarPlay: `PhoneSceneDelegate` connected; implement `templateApplicationScene(_:didConnect:to:)` next"
-    },
-    {
-      "name": "2026-06-10-upbeat-lumiere-39284e-6679dfdd",
-      "note": "Polymarket bot: proposed-trades dashboard designed; needs USDC on Polygon to go live"
+      "note": "Antigravity CarPlay video app; `PhoneSceneDelegate` connected; resume here: implement `templateApplicationScene(_:didConnect:to:)` with `CPPlaybackConfiguration`"
     },
     {
       "name": "2026-06-11-relaxed-saha-2b85c3-2a48355c",
-      "note": "Shipped to prod; Harmony Stack / vault audit follow-ups remain open"
+      "note": "Multi-project (chord-detector, Polymarket nav); shipped to production, main up-to-date; resume here: Reddit rate-limit caching follow-up"
     }
   ],
   "resurface": [],
   "vault": {
     "name": "OB CLAUDE vault",
-    "brief_file": "🌅 Daily Brief/Briefs/2026-06-12.md",
-    "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%8C%85%20Daily%20Brief/Briefs/2026-06-12",
-    "generated_at": "2026-06-12T21:12:11",
+    "brief_file": "🌅 Daily Brief/Briefs/2026-06-13.md",
+    "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%8C%85%20Daily%20Brief/Briefs/2026-06-13",
+    "generated_at": "2026-06-13T19:37:01",
     "counts": {
-      "briefs": 3,
+      "briefs": 4,
       "clippings": 151,
       "tools": 34,
       "handoffs": 62,
       "tracks": 2
     },
     "recent_briefs": [
+      "2026-06-13",
       "2026-06-12",
       "2026-06-11",
       "2026-06-10"
@@ -165,33 +158,26 @@
     }
   ],
   "pipeline": {
-    "last_run": "2026-06-12 21:09:20",
+    "last_run": "2026-06-13 19:34:08",
     "last_status": "running",
     "model": "claude-sonnet-4-6",
     "next_run": "07:00 daily",
-    "streak": 3,
+    "streak": 4,
     "chat_ingest": "every 2h",
     "chat_ingest_last": "2026-06-11T10:07"
   },
   "delta": {
-    "vs_date": "2026-06-11",
-    "tools_added": [
-      "Imagen",
-      "Runway",
-      "Veo"
-    ],
+    "vs_date": "2026-06-12",
+    "tools_added": [],
     "tools_removed": [
-      "Github",
-      "Logic Pro",
-      "Obsidian"
+      "Runway"
     ],
     "handoffs_added": [
-      "2026-06-10-upbeat-lumiere-39284e-6679dfdd",
-      "2026-06-11-nifty-thompson-49c4cf-fb234921"
+      "2026-06-10-vigorous-bartik-60e9da-ec8dbbb7"
     ],
     "handoffs_resolved": [
-      "2026-06-10-llm-builder-local-cc8262dc",
-      "2026-06-10-ui-dashboard-x-audit-bfc6fa8f"
+      "2026-06-10-upbeat-lumiere-39284e-6679dfdd",
+      "2026-06-11-vigorous-bartik-60e9da-ec8dbbb7"
     ],
     "counts_changed": {
       "briefs": 1
