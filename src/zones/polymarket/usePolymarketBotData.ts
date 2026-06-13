@@ -231,8 +231,9 @@ export function usePolymarketBotData(): BotState {
       ok?: boolean; offline?: boolean
       proposals?: Array<{
         id: string; market?: string; token?: string; side?: string
-        amount?: number; price?: number; confidence?: number
+        amount?: number; price?: number; confidence?: number | string
         strategy?: string; status?: string
+        outcome?: string; slug?: string; condition_id?: string
       }>
       fills?: CockpitFill[]
       wallet?: { balance?: number }
@@ -260,28 +261,38 @@ export function usePolymarketBotData(): BotState {
     if (!j) { setCockpitOnline(false); return }
     setCockpitOnline(true)
 
-    // Merge cockpit-side pending proposals
+    // Merge cockpit-side pending proposals; remove ones no longer pending
     const cockpitPending = (j.proposals ?? []).filter(p => p.status === 'pending')
+    const pendingIds = new Set(cockpitPending.map(cp => cp.id))
+
+    const confToNum = (c: number | string | undefined): number => {
+      if (typeof c === 'number') return c
+      const map: Record<string, number> = { low: 40, medium: 65, high: 85 }
+      return map[(c ?? '').toString().toLowerCase()] ?? 65
+    }
+
     setProposals(prev => {
-      const existingIds = new Set(prev.map(p => p.id))
+      // Drop cockpit proposals that are no longer pending (placed/rejected/error)
+      const withoutStale = prev.filter(p => !p._fromCockpit || pendingIds.has(p.id))
+      const existingIds = new Set(withoutStale.map(p => p.id))
       const newFromCockpit: TradeProposal[] = cockpitPending
         .filter(cp => !existingIds.has(cp.id))
         .map(cp => ({
           id: cp.id,
           title: cp.market ?? '—',
-          slug: '',
-          condition_id: '',
+          slug: cp.slug ?? '',
+          condition_id: cp.condition_id ?? '',
           token_id: cp.token ?? '',
-          outcome: cp.side === 'buy' ? 'YES' : cp.side ?? 'YES',
+          outcome: cp.outcome ?? (cp.side === 'buy' ? 'YES' : 'NO'),
           proposedPrice: cp.price ?? 0,
           targetSize: cp.amount ?? 0,
           cost: cp.amount ?? 0,
-          confidence: (cp.confidence as number) ?? 0,
+          confidence: confToNum(cp.confidence),
           strategy: cp.strategy ?? 'cockpit',
           marketTitle: cp.market ?? '—',
           _fromCockpit: true,
         }))
-      return [...prev, ...newFromCockpit]
+      return [...withoutStale, ...newFromCockpit]
     })
 
     if (Array.isArray(j.fills)) setFills(j.fills.slice().reverse().slice(0, 20))
@@ -520,16 +531,24 @@ export function usePolymarketBotData(): BotState {
     })
   }, [pollCockpit, pollHistory])
 
-  // --- Reject: if cockpit-originated hit cockpit; otherwise just dismiss locally ---
+  // --- Reject: hit cockpit (BFF first, direct fallback); or just dismiss locally ---
   const dismissProposal = useCallback((id: string) => {
     setProposals(prev => {
       const prop = prev.find(p => p.id === id)
       if (prop?._fromCockpit) {
-        void fetch('/api/polymarket/cockpit/reject', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ id }),
-        }).catch(() => { /* fire and forget */ })
+        const body = JSON.stringify({ id })
+        const headers = { 'content-type': 'application/json' }
+        fetch('/api/polymarket/cockpit/reject', { method: 'POST', headers, body })
+          .then(r => r.json())
+          .then((j: { ok?: boolean; offline?: boolean }) => {
+            if (j.offline || !j.ok) {
+              // BFF couldn't reach cockpit — call directly from browser
+              void fetch(`${COCKPIT_DIRECT}/api/reject`, { method: 'POST', headers, body, mode: 'cors' })
+            }
+          })
+          .catch(() => {
+            void fetch(`${COCKPIT_DIRECT}/api/reject`, { method: 'POST', headers, body, mode: 'cors' })
+          })
       } else {
         localStorage.setItem(`dismissed_${id}`, 'true')
       }

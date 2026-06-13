@@ -224,16 +224,30 @@ export default function PolymarketBotZone() {
                       <tr key={prop.id} style={{ opacity: isBusy && !isApproving ? 0.5 : 1 }}>
                         <td className="mono" style={{ fontSize: '0.75rem' }}>{prop.strategy}</td>
                         <td>
-                          <a href={`https://polymarket.com/event/${prop.slug}`} target="_blank" rel="noreferrer" className="market-link">
-                            <span className="market-name">{prop.marketTitle}</span>
-                            {prop.slug && <span className="market-slug">{prop.slug}</span>}
-                          </a>
+                          {prop.slug ? (
+                            <a href={`https://polymarket.com/event/${prop.slug}`} target="_blank" rel="noreferrer" className="market-link">
+                              <span className="market-name">{prop.marketTitle}</span>
+                              <span className="market-slug">{prop.slug}</span>
+                            </a>
+                          ) : prop.condition_id ? (
+                            <a href={`https://polymarket.com/event/${prop.condition_id}`} target="_blank" rel="noreferrer" className="market-link">
+                              <span className="market-name">{prop.marketTitle}</span>
+                            </a>
+                          ) : (
+                            <a href={`https://polymarket.com/search?q=${encodeURIComponent(prop.marketTitle)}`} target="_blank" rel="noreferrer" className="market-link">
+                              <span className="market-name">{prop.marketTitle}</span>
+                            </a>
+                          )}
                         </td>
                         <td><span className="outcome-pill">{prop.outcome}</span></td>
                         <td className="mono">{prop.proposedPrice > 0 ? (prop.proposedPrice * 100).toFixed(0) + '¢' : '—'}</td>
                         <td className="mono">{prop.targetSize > 0 ? prop.targetSize.toLocaleString() : '—'}</td>
                         <td className="mono font-bold">{fmtUsd(prop.cost)}</td>
-                        <td className="mono"><span className={prop.confidence >= 80 ? 'positive' : 'negative'}>{prop.confidence}%</span></td>
+                        <td className="mono">
+                          <span className={prop.confidence >= 80 ? 'positive' : 'negative'}>
+                            {typeof prop.confidence === 'number' ? prop.confidence + '%' : prop.confidence}
+                          </span>
+                        </td>
                         <td>
                           <div style={{ display: 'flex', gap: '8px' }}>
                             <button
@@ -245,8 +259,8 @@ export default function PolymarketBotZone() {
                             </button>
                             <button
                               className="btn-approve"
-                              disabled={isBusy || !cockpitOnline}
-                              title={!cockpitOnline ? 'Start cockpit.py first' : undefined}
+                              disabled={isBusy || (!cockpitOnline && !prop._fromCockpit)}
+                              title={(!cockpitOnline && !prop._fromCockpit) ? 'Start cockpit.py first' : undefined}
                               onClick={() => approveProposal(prop.id)}
                               style={isApproving ? { opacity: 0.7 } : undefined}
                             >
@@ -296,10 +310,16 @@ export default function PolymarketBotZone() {
                             </span>
                           </td>
                           <td>
-                            <a href={`https://polymarket.com/event/${p.slug}`} target="_blank" rel="noreferrer" className="market-link">
-                              <span className="market-name">{p.title}</span>
-                              <span className="market-slug">{p.slug}</span>
-                            </a>
+                            {p.slug ? (
+                              <a href={`https://polymarket.com/event/${p.slug}`} target="_blank" rel="noreferrer" className="market-link">
+                                <span className="market-name">{p.title}</span>
+                                <span className="market-slug">{p.slug}</span>
+                              </a>
+                            ) : (
+                              <a href={`https://polymarket.com/search?q=${encodeURIComponent(p.title)}`} target="_blank" rel="noreferrer" className="market-link">
+                                <span className="market-name">{p.title}</span>
+                              </a>
+                            )}
                           </td>
                           <td><span className="outcome-pill">{p.outcome}</span></td>
                           <td className="mono">{fmtShares(p.size)}</td>
