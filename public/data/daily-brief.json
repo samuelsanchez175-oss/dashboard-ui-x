@@ -1,37 +1,37 @@
 {
-  "date": "2026-06-11",
+  "date": "2026-06-12",
   "active_project": "XJournal AI",
   "synthesis": [
-    "Today's work centers on XJournal AI's lyric engine at a turning point: Model G v4.1 landed yesterday with multi-bar punchlines (b93b60c), and PR #9 is sitting ready to make v5 selectable in the UI alongside per-line feedback fixes. The vigorous-bartik session left off with v5 essentially done — the first action is to review and merge PR #9 so the new model tier is testable by real sessions. Alongside that, the Dashboard X audit from the relaxed-saha session produced a clean batch of verified fixes still uncommitted in worktree branch claude/relaxed-saha-2b85c3; letting those rot risks losing the port-correction and .env.example work. After the merge, the natural next build target is the four remaining sliders (Slang density, Imply↔Explain, Rhyme hardness, Verse length) plus wiring BPM/Key/Scale metadata into the v5 prompt assembly path — closing the gap between the metadata editor that already exists and the generation path that doesn't yet consume it."
+    "Model G v4.1 is fully committed — punchline axis, corpus fix, LLM-judge rerank, and the v5 grader de-bias all shipped — but the useModelGv41 flag is still OFF by default, sitting behind a toggle that no real session has flipped on yet. Today starts with a direct listening test: generate 3–5 verses with the flag enabled, run the v5 grader alongside a quick blind-read, and confirm the quality jump is real before flipping the default on and declaring the ablation work closed. PR #9 (Model G v5 selectable in the UI + per-line feedback fixes) remains the key merge gate — until it lands, no user session can reach the new model tier. A sharper new thread also opened this week from WWDC 2026: the nifty-thompson session confirmed that Apple formally added video apps as a supported CarPlay category in iOS 27, and PhoneSceneDelegate already connected in the test binary — the next concrete step is implementing templateApplicationScene(_:didConnect:to:) with a CPPlaybackConfiguration to get actual video routing live. The recommended first action today: open a session on claude/vigorous-bartik-60e9da, run a punchline listening test in the sim, and merge PR #9 before touching anything else."
   ],
   "plan": [
     {
-      "title": "Review + merge PR #9",
-      "note": "open the PR, verify v5 selectable + per-line feedback, merge to main",
+      "title": "Listening test: v4.1 punchlines",
+      "note": "generate 3–5 verses with `useModelGv41=true`, confirm grader + ear agree, flip default ON",
       "priority": "high",
       "done": false
     },
     {
-      "title": "Commit Dashboard X worktree",
-      "note": "commit the 4 verified fixes in branch `claude/relaxed-saha-2b85c3` before the worktree decays",
+      "title": "Merge PR #9",
+      "note": "review `claude/vigorous-bartik-60e9da`, merge Model G v5 selectable + per-line feedback to main",
       "priority": "high",
       "done": false
     },
     {
-      "title": "Set Vercel env keys",
-      "note": "add the 12 server keys to `samuel-x-dashboard` project in Vercel dashboard (currently zero configured)",
+      "title": "Antigravity: implement templateApplicationScene",
+      "note": "write Swift `didConnect:to:` + `CPPlaybackConfiguration` for CarPlay video",
       "priority": "med",
       "done": false
     },
     {
-      "title": "Wire BPM/Key/Scale into v5 prompt",
-      "note": "feed existing metadata editor values into the v5 coordinator's prompt assembly",
+      "title": "Build 4 remaining sliders",
+      "note": "Slang density, Imply↔Explain, Rhyme hardness, Verse length in the Model G Control Surface",
       "priority": "med",
       "done": false
     },
     {
-      "title": "Build remaining sliders",
-      "note": "add Slang density, Imply↔Explain, Rhyme hardness, Verse length controls to the generation UI",
+      "title": "Polymarket: bridge USDC",
+      "note": "fund the Polygon wallet and verify bot machine state is ready",
       "priority": "low",
       "done": false
     }
@@ -39,67 +39,59 @@
   "tools": [
     {
       "name": "ElevenLabs",
-      "desc": "voice synthesis for XJournal AI lyric playback and audio preview"
+      "desc": "TTS playback to QA verse audio quality alongside the v4.1 listening test"
     },
     {
       "name": "Gemini Image Generation",
-      "desc": "Gemini ecosystem grounding; Model G v5 uses Gemini multimodal \"listen\" path"
+      "desc": "Gemini ecosystem context; Model G v5 uses Gemini multimodal \"listen\" path"
     },
     {
-      "name": "Logic Pro",
-      "desc": "BPM/Key/Scale source data that feeds MIR metadata into Model G prompts"
+      "name": "Veo",
+      "desc": "video generation; directly relevant as Antigravity/CarPlay video routing comes online"
     },
     {
-      "name": "Github",
-      "desc": "PR #9 review, branch management, merge to main"
+      "name": "Runway",
+      "desc": "text-to-video prototyping for music video mockups tied to XJournal AI tracks"
     },
     {
-      "name": "Obsidian",
-      "desc": "vault session continuity and handoff tracking across XJournal AI sessions"
+      "name": "Imagen",
+      "desc": "image gen for in-app artwork tied to lyric sessions"
     }
   ],
   "tracks": [],
   "handoffs": [
     {
       "name": "2026-06-11-vigorous-bartik-60e9da-ec8dbbb7",
-      "note": "Model G v4.1 committed; resume at PR #9 to make v5 selectable + remaining slider backlog"
+      "note": "v4.1 shipped; resume at PR #9 merge + flip `useModelGv41` default ON; remaining slider backlog next"
+    },
+    {
+      "name": "2026-06-11-nifty-thompson-49c4cf-fb234921",
+      "note": "Antigravity CarPlay: `PhoneSceneDelegate` connected; implement `templateApplicationScene(_:didConnect:to:)` next"
+    },
+    {
+      "name": "2026-06-10-upbeat-lumiere-39284e-6679dfdd",
+      "note": "Polymarket bot: proposed-trades dashboard designed; needs USDC on Polygon to go live"
     },
     {
       "name": "2026-06-11-relaxed-saha-2b85c3-2a48355c",
-      "note": "Shipped to prod; XJournal AI open bugs + Polymarket follow-up items remain"
-    },
-    {
-      "name": "2026-06-10-ui-dashboard-x-audit-bfc6fa8f",
-      "note": "Dashboard X audit complete; 4 fixes uncommitted in `claude/relaxed-saha-2b85c3` worktree"
-    },
-    {
-      "name": "2026-06-10-llm-builder-local-cc8262dc",
-      "note": "Obsidian vault architecture discussion; vault consolidation strategy unresolved"
+      "note": "Shipped to prod; Harmony Stack / vault audit follow-ups remain open"
     }
   ],
-  "resurface": [
-    {
-      "name": "Obsidian CLI - Vault-to-LLM Integration",
-      "note": "directly relevant to the LLM builder vault strategy session; worth reading before deciding on vault consolidation"
-    },
-    {
-      "name": "Pixel Agents - Agent Activity Visualizer",
-      "note": "useful reference as XJournal AI's multi-agent generation pipeline grows"
-    }
-  ],
+  "resurface": [],
   "vault": {
     "name": "OB CLAUDE vault",
-    "brief_file": "🌅 Daily Brief/Briefs/2026-06-11.md",
-    "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%8C%85%20Daily%20Brief/Briefs/2026-06-11",
-    "generated_at": "2026-06-11T20:27:25",
+    "brief_file": "🌅 Daily Brief/Briefs/2026-06-12.md",
+    "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%8C%85%20Daily%20Brief/Briefs/2026-06-12",
+    "generated_at": "2026-06-12T21:12:11",
     "counts": {
-      "briefs": 2,
+      "briefs": 3,
       "clippings": 151,
       "tools": 34,
       "handoffs": 62,
       "tracks": 2
     },
     "recent_briefs": [
+      "2026-06-12",
       "2026-06-11",
       "2026-06-10"
     ]
@@ -173,37 +165,37 @@
     }
   ],
   "pipeline": {
-    "last_run": "2026-06-11 10:18:32",
-    "last_status": "ok",
+    "last_run": "2026-06-12 21:09:20",
+    "last_status": "running",
     "model": "claude-sonnet-4-6",
     "next_run": "07:00 daily",
-    "streak": 2,
+    "streak": 3,
     "chat_ingest": "every 2h",
     "chat_ingest_last": "2026-06-11T10:07"
   },
   "delta": {
-    "vs_date": "2026-06-10",
+    "vs_date": "2026-06-11",
     "tools_added": [
-      "ElevenLabs",
-      "Gemini Image Generation"
+      "Imagen",
+      "Runway",
+      "Veo"
     ],
     "tools_removed": [
-      "Figma",
-      "VS Code"
+      "Github",
+      "Logic Pro",
+      "Obsidian"
     ],
     "handoffs_added": [
-      "2026-06-10-llm-builder-local-cc8262dc",
-      "2026-06-10-ui-dashboard-x-audit-bfc6fa8f",
-      "2026-06-11-relaxed-saha-2b85c3-2a48355c",
-      "2026-06-11-vigorous-bartik-60e9da-ec8dbbb7"
+      "2026-06-10-upbeat-lumiere-39284e-6679dfdd",
+      "2026-06-11-nifty-thompson-49c4cf-fb234921"
     ],
     "handoffs_resolved": [
-      "Generation sliders Phase 2",
-      "Keychain `-34018` bug",
-      "Model G v5 implementation",
-      "iPad editor column centering"
+      "2026-06-10-llm-builder-local-cc8262dc",
+      "2026-06-10-ui-dashboard-x-audit-bfc6fa8f"
     ],
-    "counts_changed": {}
+    "counts_changed": {
+      "briefs": 1
+    }
   },
   "workflows": [
     {
