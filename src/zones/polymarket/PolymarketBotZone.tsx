@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { usePolymarketBotData } from './usePolymarketBotData'
-import type { TradeProposal } from './usePolymarketBotData'
+import type { TradeProposal, CockpitFill } from './usePolymarketBotData'
 import './PolymarketBotZone.css'
 
 const fmtUsd = (value: number | null | undefined, digits = 2) => {
@@ -43,7 +43,8 @@ export default function PolymarketBotZone() {
     lastUpdated,
     settings,
     proposals,
-    fills,
+    history,
+    historySummary,
     approvingId,
     approvalError,
     cockpitOnline,
@@ -65,7 +66,7 @@ export default function PolymarketBotZone() {
   const realPositionsValue = data?.portfolioValue ?? 0
   const totalPositionsValue = realPositionsValue
 
-  const sessionPnL = 0 // sourced from real fills when available
+  const sessionPnL = historySummary?.realizedPnl ?? 0
 
   const allPositions = data?.positions ?? []
   // Paper-trading positions aren't wired to the cockpit feed yet — keep the
@@ -322,29 +323,95 @@ export default function PolymarketBotZone() {
             </div>
           </section>
 
-          <section className="panel">
+          <section className="panel" style={{ gridColumn: '1 / -1' }}>
             <div className="panel-head">
-              <h2 className="panel-title">Recent Fills</h2>
-              <div className="panel-note">{cockpitOnline ? 'live from cockpit' : 'cockpit offline'}</div>
+              <h2 className="panel-title">Trade History</h2>
+              <div className="panel-note" style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                {historySummary && (
+                  <>
+                    <span>{historySummary.totalTrades} trades</span>
+                    <span style={{ color: 'var(--green)' }}>{historySummary.wonTrades}W</span>
+                    <span style={{ color: 'var(--red)' }}>{historySummary.lostTrades}L</span>
+                    <span style={{ color: 'var(--dim)' }}>{historySummary.openTrades} open</span>
+                    {historySummary.winRate != null && (
+                      <span style={{ color: historySummary.winRate >= 0.5 ? 'var(--green)' : 'var(--red)' }}>
+                        {(historySummary.winRate * 100).toFixed(0)}% win rate
+                      </span>
+                    )}
+                    <span style={{ color: historySummary.realizedPnl >= 0 ? 'var(--green)' : 'var(--red)', fontWeight: 600 }}>
+                      PnL: {historySummary.realizedPnl >= 0 ? '+' : ''}{fmtUsd(historySummary.realizedPnl)}
+                    </span>
+                  </>
+                )}
+                {!cockpitOnline && <span style={{ color: 'var(--dim)' }}>cockpit offline</span>}
+              </div>
             </div>
-            <div className="trade-list">
-              {fills.length === 0 ? (
-                <div className="empty">{cockpitOnline ? 'No fills yet — approve a trade above' : 'Start cockpit.py to see fills'}</div>
-              ) : (
-                fills.map((f, idx) => (
-                  <div className="trade-item" key={idx}>
-                    <div className="trade-top">
-                      <div className="trade-action positive">buy</div>
-                      <div className="trade-meta mono">{fmtTime(f.ts)}</div>
-                    </div>
-                    <div className="trade-meta">{f.market}</div>
-                    <div className="trade-detail">
-                      <strong>Amount:</strong> {fmtUsd(f.amount)} &nbsp;
-                      <strong>Side:</strong> {f.side}
-                    </div>
-                  </div>
-                ))
-              )}
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date / Time</th>
+                    <th>Market</th>
+                    <th>Outcome</th>
+                    <th>Strategy</th>
+                    <th>Cost</th>
+                    <th>Price</th>
+                    <th>Shares</th>
+                    <th>Payout</th>
+                    <th>P&amp;L</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {history.length === 0 ? (
+                    <tr>
+                      <td colSpan={10} className="empty">
+                        {cockpitOnline ? 'No trades yet — approve a proposal above to start' : 'Start cockpit.py to see history'}
+                      </td>
+                    </tr>
+                  ) : (
+                    history.map((f: CockpitFill, idx) => {
+                      const statusColor =
+                        f.status === 'won' ? 'var(--green)' :
+                        f.status === 'lost' ? 'var(--red)' :
+                        f.status === 'redeemed' ? 'var(--blue)' : 'var(--dim)'
+                      const pnlColor = (f.pnl ?? 0) >= 0 ? 'var(--green)' : 'var(--red)'
+                      const date = new Date(f.ts * 1000)
+                      const dateStr = date.toLocaleDateString([], { month: 'short', day: 'numeric' })
+                      const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                      return (
+                        <tr key={f.id ?? idx}>
+                          <td className="mono" style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+                            <div>{dateStr}</div>
+                            <div style={{ color: 'var(--dim)' }}>{timeStr}</div>
+                          </td>
+                          <td style={{ maxWidth: '200px' }}>
+                            <span className="market-name" style={{ fontSize: '0.8rem' }}>{f.market}</span>
+                          </td>
+                          <td><span className="outcome-pill">{f.outcome ?? f.side}</span></td>
+                          <td style={{ fontSize: '0.75rem', color: 'var(--dim)' }}>{f.strategy || '—'}</td>
+                          <td className="mono font-bold">{fmtUsd(f.amount)}</td>
+                          <td className="mono">{f.price ? (f.price * 100).toFixed(0) + '¢' : '—'}</td>
+                          <td className="mono">{f.shares_est != null ? f.shares_est.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
+                          <td className="mono">{f.payout != null ? fmtUsd(f.payout) : '—'}</td>
+                          <td>
+                            {f.pnl != null ? (
+                              <span className="mono" style={{ color: pnlColor, fontWeight: 600 }}>
+                                {f.pnl >= 0 ? '+' : ''}{fmtUsd(f.pnl)}
+                              </span>
+                            ) : <span style={{ color: 'var(--dim)' }}>open</span>}
+                          </td>
+                          <td>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: statusColor, textTransform: 'uppercase' }}>
+                              {f.status ?? 'open'}
+                            </span>
+                          </td>
+                        </tr>
+                      )
+                    })
+                  )}
+                </tbody>
+              </table>
             </div>
           </section>
         </div>

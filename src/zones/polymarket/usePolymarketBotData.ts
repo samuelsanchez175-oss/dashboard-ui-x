@@ -87,6 +87,8 @@ export interface BotState {
   settings: BotSettings
   proposals: TradeProposal[]
   fills: CockpitFill[]
+  history: CockpitFill[]
+  historySummary: HistorySummary | null
   approvingId: string | null
   approvalError: string | null
   cockpitOnline: boolean
@@ -98,11 +100,33 @@ export interface BotState {
 }
 
 export interface CockpitFill {
+  id?: string
   ts: number
   market: string
   side: string
+  outcome?: string
+  token?: string
+  strategy?: string
   amount: number
-  result: unknown
+  price?: number
+  shares_est?: number
+  status?: 'open' | 'won' | 'lost' | 'redeemed'
+  payout?: number | null
+  pnl?: number | null
+  settled_ts?: number | null
+  result?: unknown
+}
+
+export interface HistorySummary {
+  totalTrades: number
+  openTrades: number
+  wonTrades: number
+  lostTrades: number
+  totalCost: number
+  totalPayout: number
+  realizedPnl: number
+  openCost: number
+  winRate: number | null
 }
 
 const DEFAULT_SETTINGS: BotSettings = {
@@ -125,6 +149,8 @@ export function usePolymarketBotData(): BotState {
   const [approvalError, setApprovalError] = useState<string | null>(null)
   const [cockpitOnline, setCockpitOnline] = useState(false)
   const [fills, setFills] = useState<CockpitFill[]>([])
+  const [history, setHistory] = useState<CockpitFill[]>([])
+  const [historySummary, setHistorySummary] = useState<HistorySummary | null>(null)
 
   const [settings, setSettingsState] = useState<BotSettings>(() => {
     try {
@@ -225,6 +251,23 @@ export function usePolymarketBotData(): BotState {
     const id = setInterval(() => void pollCockpit(), 15_000)
     return () => clearInterval(id)
   }, [pollCockpit])
+
+  // --- Poll history endpoint (fills + settlement enrichment) ---
+  const pollHistory = useCallback(async () => {
+    try {
+      const r = await fetch('/api/polymarket/cockpit/history', { cache: 'no-store' })
+      if (!r.ok) return
+      const j = await r.json() as { fills?: CockpitFill[]; summary?: HistorySummary }
+      if (Array.isArray(j.fills)) setHistory(j.fills)
+      if (j.summary) setHistorySummary(j.summary)
+    } catch { /* non-fatal */ }
+  }, [])
+
+  useEffect(() => {
+    void pollHistory()
+    const id = setInterval(() => void pollHistory(), 60_000) // less frequent — settlement rarely changes
+    return () => clearInterval(id)
+  }, [pollHistory])
 
   // --- NO-Bias Sniper proposal generator ---
   useEffect(() => {
@@ -376,9 +419,10 @@ export function usePolymarketBotData(): BotState {
             if (j.offline) throw new Error('Cockpit is offline — run cockpit.py first')
             if (!j.ok) throw new Error(j.error ?? 'execute failed')
           }
-          // Remove from queue on success, refresh cockpit state
+          // Remove from queue on success, refresh cockpit + history
           setProposals(cur => cur.filter(p => p.id !== id))
           void pollCockpit()
+          void pollHistory()
         } catch (e) {
           setApprovalError(e instanceof Error ? e.message : 'unknown error')
         } finally {
@@ -389,7 +433,7 @@ export function usePolymarketBotData(): BotState {
       void doApprove()
       return prev // state update happens async
     })
-  }, [pollCockpit])
+  }, [pollCockpit, pollHistory])
 
   // --- Reject: if cockpit-originated hit cockpit; otherwise just dismiss locally ---
   const dismissProposal = useCallback((id: string) => {
@@ -426,6 +470,8 @@ export function usePolymarketBotData(): BotState {
     settings,
     proposals,
     fills,
+    history,
+    historySummary,
     approvingId,
     approvalError,
     cockpitOnline,

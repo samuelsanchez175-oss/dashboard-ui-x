@@ -658,6 +658,98 @@ async function handleCockpitExecute(req: IncomingMessage, res: ServerResponse): 
   }
 }
 
+interface FillRecord {
+  id?: string
+  ts: number
+  market: string
+  side: string
+  outcome?: string
+  token?: string
+  strategy?: string
+  amount: number
+  price?: number
+  shares_est?: number
+  status?: string
+  payout?: number | null
+  pnl?: number | null
+  settled_ts?: number | null
+  result?: unknown
+}
+
+// Fetch fills from cockpit, enrich open ones with current market price + settlement data
+async function handleCockpitHistory(_req: IncomingMessage, res: ServerResponse): Promise<void> {
+  let fills: FillRecord[] = []
+  let cockpitOnline = false
+
+  try {
+    const state = await cockpitFetch('/api/state') as { fills?: FillRecord[] }
+    fills = state.fills ?? []
+    cockpitOnline = true
+  } catch {
+    // cockpit offline — return empty history, not an error
+  }
+
+  // For open fills, check if their market has settled via data-api activity
+  const openFills = fills.filter(f => f.status === 'open' && f.token)
+  if (openFills.length > 0) {
+    try {
+      const activity = await fetchJson(`${DATA_API}/activity?user=${PROXY}&limit=200`) as unknown[]
+      if (Array.isArray(activity)) {
+        // Redemption entries have type REDEEM / SETTLE / CLAIM
+        const redemptions = activity
+          .map(a => a as Record<string, unknown>)
+          .filter(a => {
+            const t = str(a.type).toUpperCase()
+            return t.includes('REDEEM') || t.includes('SETTL') || t.includes('CLAIM')
+          })
+
+        fills = fills.map(f => {
+          if (f.status !== 'open') return f
+          // Match by market title (case-insensitive prefix)
+          const titleLower = f.market.toLowerCase()
+          const match = redemptions.find(r => str(r.title).toLowerCase().includes(titleLower.slice(0, 20)))
+          if (!match) return f
+
+          const payout = num(match.usdcSize) || num(match.size)
+          const pnl = payout - f.amount
+          return {
+            ...f,
+            status: pnl >= 0 ? 'won' : 'lost',
+            payout,
+            pnl,
+            settled_ts: typeof match.timestamp === 'number' ? match.timestamp : null,
+          }
+        })
+      }
+    } catch { /* non-fatal */ }
+  }
+
+  // Compute session totals
+  const totalCost = fills.reduce((s, f) => s + f.amount, 0)
+  const totalPayout = fills.filter(f => f.payout != null).reduce((s, f) => s + (f.payout ?? 0), 0)
+  const realizedPnl = fills.filter(f => f.pnl != null).reduce((s, f) => s + (f.pnl ?? 0), 0)
+  const openCost = fills.filter(f => f.status === 'open').reduce((s, f) => s + f.amount, 0)
+
+  jsonRes(res, 200, {
+    ok: true,
+    cockpitOnline,
+    fills: fills.slice().reverse(), // newest first
+    summary: {
+      totalTrades: fills.length,
+      openTrades: fills.filter(f => f.status === 'open').length,
+      wonTrades: fills.filter(f => f.status === 'won').length,
+      lostTrades: fills.filter(f => f.status === 'lost').length,
+      totalCost,
+      totalPayout,
+      realizedPnl,
+      openCost,
+      winRate: fills.filter(f => f.status !== 'open').length > 0
+        ? fills.filter(f => f.status === 'won').length / fills.filter(f => f.status !== 'open').length
+        : null,
+    },
+  })
+}
+
 /**
  * Dispatch Polymarket routes. Returns true if the request was handled (so the
  * caller stops walking the middleware chain), false to pass through.
@@ -671,7 +763,8 @@ export function tryHandlePolymarketRoutes(req: IncomingMessage, res: ServerRespo
   // Cockpit proxy routes
   if (pathName.startsWith('/api/polymarket/cockpit/')) {
     const sub = pathName.slice('/api/polymarket/cockpit/'.length)
-    if (method === 'GET' && sub === 'state') { void handleCockpitState(req, res); return true }
+    if (method === 'GET' && sub === 'state')   { void handleCockpitState(req, res);   return true }
+    if (method === 'GET' && sub === 'history') { void handleCockpitHistory(req, res); return true }
     if (method === 'POST' && sub === 'propose') { void handleCockpitPropose(req, res); return true }
     if (method === 'POST' && sub === 'approve') { void handleCockpitApprove(req, res); return true }
     if (method === 'POST' && sub === 'reject')  { void handleCockpitReject(req, res);  return true }
