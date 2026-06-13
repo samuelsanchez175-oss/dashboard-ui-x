@@ -68,10 +68,9 @@ export default function PolymarketBotZone() {
   const sessionPnL = 0 // sourced from real fills when available
 
   const allPositions = data?.positions ?? []
-
-  const toggleTheme = () => {
-    document.documentElement.classList.toggle('dark')
-  }
+  // Paper-trading positions aren't wired to the cockpit feed yet — keep the
+  // "real | paper" split honest with an empty set so the count reads 0.
+  const paperPositions: typeof allPositions = []
 
   const handleCopyScoutToggle = () => {
     setSettings({
