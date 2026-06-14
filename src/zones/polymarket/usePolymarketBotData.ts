@@ -176,6 +176,7 @@ export function usePolymarketBotData(): BotState {
   const [approvingId, setApprovingId] = useState<string | null>(null)
   const [approvalError, setApprovalError] = useState<string | null>(null)
   const [cockpitOnline, setCockpitOnline] = useState(false)
+  const [cockpitBalance, setCockpitBalance] = useState<number | null>(null)
   const [fills, setFills] = useState<CockpitFill[]>([])
   const [history, setHistory] = useState<CockpitFill[]>([])
   const [historySummary, setHistorySummary] = useState<HistorySummary | null>(null)
@@ -237,7 +238,7 @@ export function usePolymarketBotData(): BotState {
         outcome?: string; slug?: string; condition_id?: string; end_date?: string
       }>
       fills?: CockpitFill[]
-      wallet?: { balance?: number }
+      wallet?: { balance?: number; gasPol?: number | null; approved?: boolean | null; maxPerTrade?: number }
     }
 
     let j: CockpitState | null = null
@@ -261,6 +262,21 @@ export function usePolymarketBotData(): BotState {
 
     if (!j) { setCockpitOnline(false); return }
     setCockpitOnline(true)
+
+    // Cockpit gets balance via authenticated CLI — more accurate than BFF's eth_call
+    // (Polymarket CLOB balance lives in their system, not as a raw ERC-20 token)
+    if (j.wallet?.balance != null) {
+      setCockpitBalance(j.wallet.balance)
+      setData(prev => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          balance: j!.wallet!.balance!,
+          gasPol: j!.wallet!.gasPol ?? prev.gasPol,
+          approved: j!.wallet!.approved ?? prev.approved,
+        }
+      })
+    }
 
     // Merge cockpit-side pending proposals; remove ones no longer pending
     const cockpitPending = (j.proposals ?? []).filter(p => p.status === 'pending')
@@ -596,6 +612,7 @@ export function usePolymarketBotData(): BotState {
     approvingId,
     approvalError,
     cockpitOnline,
+    cockpitBalance,
     setSettings,
     refresh,
     approveProposal,

@@ -58,6 +58,7 @@ export default function PolymarketBotZone() {
     approvingId,
     approvalError,
     cockpitOnline,
+    cockpitBalance,
     setSettings,
     approveProposal,
     dismissProposal,
@@ -72,7 +73,9 @@ export default function PolymarketBotZone() {
     return () => clearInterval(id)
   }, [])
 
-  const cashBalance = data?.balance ?? 0
+  // Cockpit balance (via CLI) is authoritative — BFF eth_call returns 0 because
+  // Polymarket CLOB funds aren't a raw ERC-20 balance on-chain.
+  const cashBalance = cockpitBalance ?? data?.balance ?? 0
   const realPositionsValue = data?.portfolioValue ?? 0
   const totalPositionsValue = realPositionsValue
 
