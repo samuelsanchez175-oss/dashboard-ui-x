@@ -455,32 +455,46 @@ export function usePolymarketBotData(): BotState {
       setApprovingId(id)
       setApprovalError(null)
 
-      const postJson = async (url: string, body: unknown, opts: RequestInit = {}) => {
+      type CockpitResp = { ok: boolean; id?: string; error?: string; offline?: boolean; result?: unknown }
+
+      const postJson = async (url: string, body: unknown, opts: RequestInit = {}): Promise<CockpitResp> => {
         const r = await fetch(url, {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify(body),
           ...opts,
         })
-        return r.json() as Promise<{ ok: boolean; id?: string; error?: string; offline?: boolean; result?: unknown }>
+        return r.json() as Promise<CockpitResp>
+      }
+
+      // Extract a human-readable error from a cockpit response
+      const cockpitErr = (j: CockpitResp) => {
+        if (j.error) return j.error
+        if (j.result) {
+          const r = typeof j.result === 'string' ? j.result : JSON.stringify(j.result)
+          // Trim long CLI output — first sentence is usually the key error
+          return r.slice(0, 200)
+        }
+        return 'trade failed'
       }
 
       const doApprove = async () => {
         try {
           if (prop._fromCockpit) {
-            // Already in cockpit queue — just approve by id
-            // Try BFF proxy first, then direct
-            let j = await postJson('/api/polymarket/cockpit/approve', { id }).catch(() => ({ ok: false, offline: true } as { ok: boolean; offline?: boolean; error?: string }))
-            if (j.offline || !j.ok) {
+            // Already in cockpit queue — approve by id
+            // BFF first; only fall back to direct when BFF itself is unreachable (offline),
+            // NOT when the cockpit returned a real trade error (ok: false).
+            let j = await postJson('/api/polymarket/cockpit/approve', { id })
+              .catch(() => ({ ok: false, offline: true } as CockpitResp))
+            if (j.offline) {
               j = await postJson(`${COCKPIT_DIRECT}/api/approve`, { id }, { mode: 'cors' })
             }
-            if (!j.ok) throw new Error((j as { error?: string }).error ?? 'approve failed')
+            if (!j.ok) throw new Error(cockpitErr(j))
 
           } else {
-            // Resolve token_id if missing, then propose+approve
+            // Frontend proposal — resolve token then propose+approve
             let tokenId = prop.token_id
 
-            // Try BFF execute route (handles token lookup server-side)
             const bffPayload = {
               marketTitle: prop.marketTitle, slug: prop.slug,
               condition_id: prop.condition_id, token_id: tokenId,
@@ -490,19 +504,21 @@ export function usePolymarketBotData(): BotState {
               confidence: prop.confidence, strategy: prop.strategy,
               rationale: `Approved via dashboard — ${prop.strategy}`,
             }
-            const bffRes = await postJson('/api/polymarket/cockpit/execute', bffPayload).catch(() => ({ ok: false, offline: true } as { ok: boolean; offline?: boolean; error?: string }))
+            const bffRes = await postJson('/api/polymarket/cockpit/execute', bffPayload)
+              .catch(() => ({ ok: false, offline: true } as CockpitResp))
 
             if (!bffRes.offline && bffRes.ok) {
-              // BFF handled it — done
+              // BFF handled it
+            } else if (!bffRes.offline && !bffRes.ok) {
+              // BFF reached cockpit but trade failed — propagate the real error
+              throw new Error(cockpitErr(bffRes))
             } else {
-              // BFF offline → do it directly from the browser
-              // 1. Resolve token_id from Gamma API
+              // BFF offline → go direct from browser
               if (!tokenId) {
                 tokenId = await gammaMktTokenId(prop.condition_id, prop.slug, prop.outcome)
               }
-              if (!tokenId) throw new Error(`Cannot find token for "${prop.marketTitle}" — no condition_id or slug`)
+              if (!tokenId) throw new Error(`Cannot resolve token for "${prop.marketTitle}"`)
 
-              // 2. Add to cockpit queue
               const propRes = await postJson(`${COCKPIT_DIRECT}/api/propose`, {
                 token: tokenId, market: prop.marketTitle, side: 'buy',
                 amount: prop.cost, price: prop.proposedPrice,
@@ -512,9 +528,8 @@ export function usePolymarketBotData(): BotState {
               }, { mode: 'cors' })
               if (!propRes.ok) throw new Error(propRes.error ?? 'propose failed')
 
-              // 3. Immediately approve
               const approveRes = await postJson(`${COCKPIT_DIRECT}/api/approve`, { id: propRes.id }, { mode: 'cors' })
-              if (!approveRes.ok) throw new Error((approveRes as { error?: string }).error ?? 'approve failed')
+              if (!approveRes.ok) throw new Error(cockpitErr(approveRes))
             }
           }
 
