@@ -50,6 +50,7 @@ export interface TradeProposal {
   confidence: number
   strategy: string
   marketTitle: string
+  end_date?: string
   // cockpit-originated proposals also carry these:
   _fromCockpit?: boolean
 }
@@ -233,7 +234,7 @@ export function usePolymarketBotData(): BotState {
         id: string; market?: string; token?: string; side?: string
         amount?: number; price?: number; confidence?: number | string
         strategy?: string; status?: string
-        outcome?: string; slug?: string; condition_id?: string
+        outcome?: string; slug?: string; condition_id?: string; end_date?: string
       }>
       fills?: CockpitFill[]
       wallet?: { balance?: number }
@@ -290,6 +291,7 @@ export function usePolymarketBotData(): BotState {
           confidence: confToNum(cp.confidence),
           strategy: cp.strategy ?? 'cockpit',
           marketTitle: cp.market ?? '—',
+          end_date: cp.end_date ?? '',
           _fromCockpit: true,
         }))
       return [...withoutStale, ...newFromCockpit]

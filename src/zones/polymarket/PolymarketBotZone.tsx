@@ -23,6 +23,22 @@ const fmtShares = (value: number | null | undefined) => {
   return Number(value).toLocaleString("en-US", { maximumFractionDigits: 4 })
 }
 
+const fmtResolves = (endDate: string | null | undefined) => {
+  if (!endDate) return '—'
+  const d = new Date(endDate)
+  if (isNaN(d.getTime())) return '—'
+  const now = Date.now()
+  const diff = d.getTime() - now
+  if (diff < 0) return 'Resolved'
+  const days = Math.floor(diff / 86400000)
+  if (days === 0) return 'Today'
+  if (days === 1) return 'Tomorrow'
+  if (days < 7) return `${days}d`
+  if (days < 30) return `${Math.floor(days / 7)}w`
+  if (days < 365) return `${Math.floor(days / 30)}mo`
+  return `${Math.floor(days / 365)}y`
+}
+
 const fmtAgo = (tsMs: number | null | undefined) => {
   if (!tsMs) return "--"
   const delta = Math.max(0, Math.floor((Date.now() - tsMs) / 1000))
@@ -207,6 +223,7 @@ export default function PolymarketBotZone() {
                     <th>Size</th>
                     <th>Cost</th>
                     <th>Conf.</th>
+                    <th>Resolves</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -241,6 +258,13 @@ export default function PolymarketBotZone() {
                           <span className={prop.confidence >= 80 ? 'positive' : 'negative'}>
                             {typeof prop.confidence === 'number' ? prop.confidence + '%' : prop.confidence}
                           </span>
+                        </td>
+                        <td className="mono" style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+                          {prop.end_date ? (
+                            <span title={new Date(prop.end_date).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}>
+                              {fmtResolves(prop.end_date)}
+                            </span>
+                          ) : '—'}
                         </td>
                         <td>
                           <div style={{ display: 'flex', gap: '8px' }}>
