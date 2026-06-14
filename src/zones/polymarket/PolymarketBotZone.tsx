@@ -23,12 +23,6 @@ const fmtShares = (value: number | null | undefined) => {
   return Number(value).toLocaleString("en-US", { maximumFractionDigits: 4 })
 }
 
-const fmtTime = (epochSec: number | null | undefined) => {
-  if (!epochSec) return "--"
-  const d = new Date(epochSec * 1000)
-  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
-}
-
 const fmtAgo = (tsMs: number | null | undefined) => {
   if (!tsMs) return "--"
   const delta = Math.max(0, Math.floor((Date.now() - tsMs) / 1000))

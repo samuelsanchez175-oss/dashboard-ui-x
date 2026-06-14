@@ -74,7 +74,7 @@
     "name": "OB CLAUDE vault",
     "brief_file": "🌅 Daily Brief/Briefs/2026-06-13.md",
     "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%8C%85%20Daily%20Brief/Briefs/2026-06-13",
-    "generated_at": "2026-06-13T19:37:01",
+    "generated_at": "2026-06-13T20:04:04",
     "counts": {
       "briefs": 4,
       "clippings": 151,
@@ -159,7 +159,7 @@
   ],
   "pipeline": {
     "last_run": "2026-06-13 19:34:08",
-    "last_status": "running",
+    "last_status": "ok",
     "model": "claude-sonnet-4-6",
     "next_run": "07:00 daily",
     "streak": 4,
