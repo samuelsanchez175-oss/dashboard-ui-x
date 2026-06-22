@@ -11,6 +11,7 @@ import ToolsSessionTimerPage from '../zones/tools/ToolsSessionTimerPage'
 import ToolsArrangementPadPage from '../zones/tools/ToolsArrangementPadPage'
 import ToolsSampleSlicerPage from '../zones/tools/ToolsSampleSlicerPage'
 import ToolsStemSplitterPage from '../zones/tools/ToolsStemSplitterPage'
+import ToolsAppIconStudioPage from '../zones/tools/ToolsAppIconStudioPage'
 import HarmonyStackZone from '../zones/harmony/HarmonyStackZone'
 import CpwZone from '../zones/cpw/CpwZone'
 import { parseWebDesignerBookmarkNavId } from '../lib/web-designer-bookmarks'
@@ -94,6 +95,9 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
       break
     case 'tools-stem-splitter':
       body = <ToolsStemSplitterPage onNavigate={onNavigate} />
+      break
+    case 'tools-app-icon':
+      body = <ToolsAppIconStudioPage onNavigate={onNavigate} />
       break
     case 'agent-farm':
       body = <AgentFarm />

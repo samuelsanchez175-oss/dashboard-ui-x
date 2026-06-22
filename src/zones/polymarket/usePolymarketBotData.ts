@@ -93,6 +93,7 @@ export interface BotState {
   approvingId: string | null
   approvalError: string | null
   cockpitOnline: boolean
+  cockpitBalance: number | null
   setSettings: (s: BotSettings) => void
   refresh: () => void
   approveProposal: (id: string) => void

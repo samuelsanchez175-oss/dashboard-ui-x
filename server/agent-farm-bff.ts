@@ -614,6 +614,135 @@ async function anthropicGenerate(apiKey: string | undefined, body: unknown): Pro
   }
 }
 
+type AppStoreCopyData = {
+  appName: string
+  subtitle: string
+  promotionalText: string
+  keywords: string
+  description: string
+  whatsNew: string
+  primaryCategory: string
+}
+
+/**
+ * Infer App Store Connect metadata from an app icon / screenshot using Gemini
+ * 2.0 Flash (multimodal). Uses Gemini's native JSON-schema output so the reply
+ * is always a parseable object. Body: `{ imageBase64, imageMime, notes? }`.
+ */
+async function appStoreCopy(
+  apiKey: string | undefined,
+  body: unknown,
+): Promise<{ ok: true; data: AppStoreCopyData; model: string } | { ok: false; error: string; message: string }> {
+  if (!apiKey?.trim()) {
+    return {
+      ok: false,
+      error: 'MISSING_CONFIG',
+      message: 'Set GEMINI_API_KEY (in .env.local or Dev → Settings) to generate App Store copy.',
+    }
+  }
+  const obj = (body && typeof body === 'object' ? body : {}) as {
+    imageBase64?: unknown
+    imageMime?: unknown
+    notes?: unknown
+  }
+  const imageBase64 = typeof obj.imageBase64 === 'string' ? obj.imageBase64 : ''
+  const imageMime = typeof obj.imageMime === 'string' && obj.imageMime ? obj.imageMime : 'image/jpeg'
+  const notes = typeof obj.notes === 'string' ? obj.notes.trim().slice(0, 1500) : ''
+  if (!imageBase64) {
+    return { ok: false, error: 'BAD_REQUEST', message: 'No image was provided to analyze.' }
+  }
+
+  const prompt = [
+    'You are a senior App Store Optimization (ASO) copywriter.',
+    'Study the attached app image (an app icon and/or a screenshot) plus any developer notes, and infer what the app most likely is and does.',
+    notes
+      ? `Developer notes: ${notes}`
+      : 'No extra notes were provided — infer reasonably from the image and keep claims generic where you are unsure.',
+    'Write polished, specific, benefit-led App Store Connect metadata in natural sentence case. No buzzword soup, no empty filler.',
+    'Respect these hard character limits exactly:',
+    '- appName: 30 max',
+    '- subtitle: 30 max (a short tagline under the name)',
+    '- promotionalText: 170 max (one or two punchy sentences)',
+    '- keywords: 100 max total, comma-separated with NO spaces after commas, singular nouns, no app name, no category words',
+    '- description: 4000 max — a few short paragraphs, then a "Highlights:" line followed by "• " bullet lines',
+    '- whatsNew: 4000 max — release notes for a typical update (improvements and fixes)',
+    '- primaryCategory: one Apple App Store category (e.g. Productivity, Finance, Health & Fitness, Utilities, Photo & Video, Lifestyle).',
+  ].join('\n')
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey.trim())}`
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              { inline_data: { mime_type: imageMime, data: imageBase64 } },
+              { text: prompt },
+            ],
+          },
+        ],
+        generationConfig: {
+          maxOutputTokens: 2048,
+          temperature: 0.7,
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: 'OBJECT',
+            properties: {
+              appName: { type: 'STRING' },
+              subtitle: { type: 'STRING' },
+              promotionalText: { type: 'STRING' },
+              keywords: { type: 'STRING' },
+              description: { type: 'STRING' },
+              whatsNew: { type: 'STRING' },
+              primaryCategory: { type: 'STRING' },
+            },
+            required: ['appName', 'subtitle', 'promotionalText', 'keywords', 'description', 'whatsNew', 'primaryCategory'],
+          },
+        },
+      }),
+    })
+    const text = await res.text()
+    if (!res.ok) {
+      return { ok: false, error: 'UPSTREAM', message: text.slice(0, 400) }
+    }
+    let envelope: { candidates?: ReadonlyArray<{ content?: { parts?: ReadonlyArray<{ text?: string }> } }> }
+    try {
+      envelope = JSON.parse(text) as typeof envelope
+    } catch {
+      return { ok: false, error: 'UPSTREAM', message: 'Invalid response envelope from Gemini.' }
+    }
+    const raw =
+      envelope.candidates?.[0]?.content?.parts
+        ?.map(p => p.text)
+        .filter(Boolean)
+        .join('') ?? ''
+    let data: Partial<AppStoreCopyData>
+    try {
+      data = JSON.parse(raw) as Partial<AppStoreCopyData>
+    } catch {
+      return { ok: false, error: 'UPSTREAM', message: 'The model did not return valid JSON metadata. Try again.' }
+    }
+    const s = (v: unknown): string => (typeof v === 'string' ? v : v == null ? '' : String(v))
+    return {
+      ok: true,
+      model: 'gemini-2.0-flash',
+      data: {
+        appName: s(data.appName),
+        subtitle: s(data.subtitle),
+        promotionalText: s(data.promotionalText),
+        keywords: s(data.keywords),
+        description: s(data.description),
+        whatsNew: s(data.whatsNew),
+        primaryCategory: s(data.primaryCategory),
+      },
+    }
+  } catch {
+    return { ok: false, error: 'NETWORK', message: 'Could not reach Gemini.' }
+  }
+}
+
 const xmlParser = new XMLParser({
   ignoreAttributes: false,
   trimValues: true,
@@ -892,6 +1021,19 @@ export function attachAgentFarmBff(
       }
       const result = await anthropicGenerate(pickKey('ANTHROPIC_API_KEY', req, env), parsed)
       jsonRes(res, result.ok ? 200 : 502, result)
+      return
+    }
+
+    if (method === 'POST' && path === '/api/appstore/copy') {
+      let parsed: unknown
+      try {
+        parsed = await readJsonBody(req)
+      } catch {
+        jsonRes(res, 400, { ok: false, error: 'BAD_REQUEST', message: 'Invalid JSON body.' })
+        return
+      }
+      const result = await appStoreCopy(pickKey('GEMINI_API_KEY', req, env), parsed)
+      jsonRes(res, result.ok ? 200 : result.error === 'BAD_REQUEST' ? 400 : 502, result)
       return
     }
 

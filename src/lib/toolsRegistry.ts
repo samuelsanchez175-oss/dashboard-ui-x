@@ -1,6 +1,7 @@
 import type { LucideIcon } from 'lucide-react'
 import {
   Activity,
+  AppWindow,
   AudioWaveform,
   Columns2,
   Crop,
@@ -171,6 +172,15 @@ export const TOOLS_REGISTRY: ToolDef[] = [
     description: 'Crossover “brightness vs body” split — not ML isolation.',
     badge:       'Beta',
     family:      'detection',
+  },
+  {
+    id:          'tools-app-icon',
+    routeId:     'tools-app-icon',
+    label:       'App Store icon',
+    longLabel:   'App Store Icon Studio',
+    icon:        AppWindow,
+    category:    'utility',
+    description: 'Align any image to a 1024×1024 App Store Connect icon and export PNG.',
   },
 ]
 
