@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14622f">
+<title>CDL One Stop NJ — Pass your NJ CDL the smart way</title>
+<meta name="description" content="CDL One Stop NJ turns the New Jersey commercial driver's license exam into a guided, gamified study plan. Drill every question bank, master the pre-trip inspection, and walk into the test center 100% ready.">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--accent:#1f8a4c;--accent-deep:#14622f;--accent-soft:#e7f3ea;--gold:#e3b24a;--ink:#15281c;--ink-soft:#4a5b50;--paper:#f6f4ec;--paper-2:#eef1e8;--card:#ffffff;--border:#dde2d3}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--ink);background:var(--paper);line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:0 clamp(18px,4vw,40px)}
+a{color:inherit}
+.app-nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px clamp(16px,4vw,40px);background:rgba(255,255,255,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.app-nav-brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--ink);font-weight:700}
+.app-nav-brand img{width:34px;height:34px;border-radius:9px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.app-nav-brand span{font-size:15px;letter-spacing:-.01em}
+.app-nav-links{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.app-nav-links a,.app-nav-links span{text-decoration:none;color:var(--ink-soft);font-size:13.5px;font-weight:500;padding:8px 14px;border-radius:999px;transition:background .15s,color .15s;white-space:nowrap}
+.app-nav-links a:hover{background:var(--accent-soft);color:var(--accent-deep)}
+.app-nav-links a.is-active{background:var(--accent);color:#fff}
+.app-nav-links a.nav-store{border:1.5px solid var(--accent);color:var(--accent-deep)}
+.app-nav-links a.nav-store:hover{background:var(--accent);color:#fff}
+.app-nav-links .nav-store--soon{border:1.5px dashed var(--border);color:var(--ink-soft);opacity:.7;cursor:not-allowed}
+.appstore-badge{display:inline-flex;align-items:center;gap:12px;text-decoration:none}
+.appstore-badge img{height:56px;width:auto;display:block;filter:drop-shadow(0 8px 18px rgba(0,0,0,.20))}
+.appstore-badge--soon{opacity:.7;cursor:not-allowed}
+.soon-pill{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;background:var(--accent);color:#fff;padding:6px 11px;border-radius:999px;white-space:nowrap}
+.app-footer{margin-top:84px;padding:48px clamp(16px,4vw,40px);background:var(--ink);color:rgba(255,255,255,.82);text-align:center}
+.app-footer-brand{display:inline-flex;align-items:center;gap:10px;font-weight:700;color:#fff;margin-bottom:8px}
+.app-footer-brand img{width:28px;height:28px;border-radius:7px}
+.app-footer a{color:#fff;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.32)}
+.app-footer-links{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin:16px 0 10px;font-size:14px}
+.app-footer-fine{font-size:12px;opacity:.55;margin-top:12px;line-height:1.7}
+
+/* ===== Page-specific ===== */
+.hero{position:relative;overflow:hidden;background:radial-gradient(1100px 520px at 50% -12%,#34a862 0%,#1f8a4c 32%,#14622f 72%);color:#fff;text-align:center;padding:clamp(56px,10vw,104px) 0 clamp(60px,9vw,96px)}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:120px;background:linear-gradient(to bottom,transparent,var(--paper));pointer-events:none}
+.hero-inner{position:relative;z-index:1}
+.hero-eyebrow{display:inline-block;font-size:12.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.86);background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);padding:7px 16px;border-radius:999px;margin-bottom:26px}
+.hero-icon{width:120px;height:120px;border-radius:28px;display:block;margin:0 auto 26px;box-shadow:0 20px 48px rgba(0,0,0,.32),0 0 0 1px rgba(255,255,255,.14) inset}
+.hero h1{font-size:clamp(38px,8.5vw,68px);font-weight:700;line-height:1.04;letter-spacing:-.025em;margin-bottom:14px}
+.hero-tagline{font-size:clamp(18px,3.4vw,25px);font-weight:600;color:#fff;margin-bottom:18px}
+.hero-desc{max-width:660px;margin:0 auto 34px;font-size:clamp(15px,2.2vw,18px);color:rgba(255,255,255,.9);line-height:1.6}
+.hero-cta{display:flex;flex-direction:column;align-items:center;gap:14px}
+.hero-cta .appstore-badge img{filter:drop-shadow(0 12px 26px rgba(0,0,0,.34))}
+.hero-cta .soon-pill{background:var(--gold);color:#3a2c06}
+
+.section{padding:clamp(56px,9vw,90px) 0}
+.section-head{text-align:center;max-width:680px;margin:0 auto clamp(38px,6vw,56px)}
+.section-kicker{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.section-head h2{font-size:clamp(28px,5vw,42px);font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.section-head p{margin-top:14px;color:var(--ink-soft);font-size:clamp(15px,2.2vw,18px)}
+
+.features{display:grid;grid-template-columns:1fr;gap:18px}
+@media(min-width:620px){.features{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:920px){.features{grid-template-columns:repeat(3,1fr)}}
+.feature{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px 26px;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.feature:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(20,98,47,.12);border-color:#c7d6c0}
+.feature-glyph{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;background:var(--accent-soft);margin-bottom:18px;line-height:1}
+.feature h3{font-size:19px;font-weight:700;letter-spacing:-.01em;margin-bottom:9px}
+.feature p{font-size:14.5px;color:var(--ink-soft);line-height:1.62}
+
+.shots-sec{background:var(--paper-2)}
+.shots{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(28px,5vw,56px)}
+.shot{flex:1 1 280px;max-width:340px;text-align:center}
+.phone{position:relative;width:100%;max-width:300px;margin:0 auto 20px;background:#11140f;border-radius:42px;padding:11px;box-shadow:0 30px 60px rgba(0,0,0,.26),0 0 0 1px rgba(255,255,255,.05) inset}
+.phone::before{content:"";position:absolute;top:20px;left:50%;transform:translateX(-50%);width:104px;height:26px;background:#11140f;border-radius:0 0 16px 16px;z-index:2}
+.phone img{display:block;width:100%;height:auto;border-radius:32px;background:#fff}
+.shot p{font-size:14.5px;color:var(--ink-soft);line-height:1.55;max-width:300px;margin:0 auto}
+
+.cta-band{background:radial-gradient(900px 440px at 50% -30%,#34a862 0%,#1f8a4c 36%,#14622f 78%);color:#fff;text-align:center;border-radius:32px;padding:clamp(48px,8vw,76px) clamp(22px,5vw,48px);box-shadow:0 28px 60px rgba(20,98,47,.28)}
+.cta-band h2{font-size:clamp(26px,5vw,40px);font-weight:700;letter-spacing:-.02em;line-height:1.1;margin-bottom:14px}
+.cta-band p{max-width:540px;margin:0 auto 32px;font-size:clamp(15px,2.2vw,18px);color:rgba(255,255,255,.9)}
+.cta-band .cta-inner{display:flex;flex-direction:column;align-items:center;gap:14px}
+.cta-band .soon-pill{background:var(--gold);color:#3a2c06}
+.cta-fineprint{margin-top:22px;font-size:13px;color:rgba(255,255,255,.78)}
+
+/* ===== SCROLL SHOWCASE (sweeping 3D reveal) ===== */
+.scrollshow-stage{min-height:clamp(880px,134vh,1320px);display:flex;align-items:flex-start;justify-content:center;padding:clamp(40px,7vw,92px) clamp(8px,3vw,40px) 0}
+.scrollshow-inner{width:100%;max-width:1060px;perspective:1000px}
+.scrollshow-title{max-width:720px;margin:0 auto;text-align:center;will-change:transform}
+.scrollshow-kicker{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-deep);background:var(--accent-soft);padding:6px 14px;border-radius:999px;margin-bottom:16px}
+.scrollshow-title h2{font-size:clamp(28px,5.4vw,46px);line-height:1.06;letter-spacing:-.03em;font-weight:700}
+.scrollshow-title p{margin-top:14px;font-size:clamp(15.5px,2.6vw,18px);color:var(--ink-soft)}
+.scrollshow-card{margin:32px auto 0;width:100%;max-width:1060px;height:clamp(430px,60vh,620px);border:4px solid #6c6c6c;border-radius:30px;background:#222;padding:clamp(8px,1.4vw,20px);box-shadow:0 0 #0000004d,0 9px 20px #0000004a,0 37px 37px #00000042,0 84px 50px #00000026,0 149px 60px #0000000a,0 233px 65px #00000003;transform-origin:50% 0%;transform:rotateX(20deg) scale(1.05);will-change:transform;backface-visibility:hidden}
+.scrollshow-screen{height:100%;width:100%;overflow:hidden;border-radius:18px;background:radial-gradient(120% 150% at 50% 0%, var(--accent) 0%, var(--accent-deep) 80%);display:flex;align-items:center;justify-content:center;padding:clamp(18px,3vw,40px)}
+.scrollshow-scene{display:flex;align-items:center;justify-content:center;gap:clamp(18px,4vw,52px);height:100%}
+.scrollshow-phone{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%}
+.scrollshow-phone .pf{position:relative;height:76%;max-height:470px;border-radius:30px;background:#1c1715;padding:7px;box-shadow:0 18px 44px rgba(0,0,0,.44);border:1px solid rgba(0,0,0,.5)}
+.scrollshow-phone .pf img{display:block;height:100%;width:auto;border-radius:24px}
+.scrollshow-cap{margin-top:14px;font-size:12.5px;color:rgba(255,255,255,.92);text-align:center;max-width:248px;line-height:1.5}
+.scrollshow-cap b{font-weight:600;color:#fff}
+.scrollshow-cap-t{display:block;font-weight:700;font-size:14.5px;color:#fff;letter-spacing:-.01em;margin-bottom:5px}
+@media(max-width:760px){
+  .scrollshow-stage{min-height:clamp(760px,124vh,1100px)}
+  .scrollshow-card{height:clamp(380px,56vh,520px)}
+  .scrollshow-scene{gap:14px}
+  .scrollshow-phone .pf{height:auto;max-height:none;width:36vw;max-width:150px}
+  .scrollshow-phone .pf img{height:auto;width:100%}
+  .scrollshow-cap{font-size:11px;max-width:150px;margin-top:9px}
+}
+@media(prefers-reduced-motion:reduce){.scrollshow-card,.scrollshow-title{transform:none!important}}
+
+/* ===== GOOEY TEXT MORPH (hero title) ===== */
+.gooey-wrap{position:relative;display:block;width:100%;text-align:center}
+.gooey-filtered{position:relative;display:block;width:100%;min-height:1.08em;line-height:1.04;filter:url(#gooeyThreshold)}
+.gooey-filtered .gt{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);margin:0 auto;white-space:nowrap;color:inherit;font:inherit;letter-spacing:inherit}
+@media(prefers-reduced-motion:reduce){.gooey-filtered{filter:none}.gooey-filtered .gt-2{display:none}.gooey-filtered .gt-1{position:static;transform:none;opacity:1!important;filter:none!important}}
+</style>
+</head>
+<body>
+<svg aria-hidden="true" focusable="false" width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden"><defs><filter id="gooeyThreshold"><feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 255 -140"/></filter></defs></svg>
+
+<nav class="app-nav" aria-label="CDL One Stop NJ pages">
+  <a class="app-nav-brand" href="cdl-marketing.html"><img src="portfolio-screenshots/cdl-icon.png" alt=""><span>CDL One Stop NJ</span></a>
+  <div class="app-nav-links"><a href="cdl-marketing.html" class="is-active">Home</a><a href="cdl-support.html">Support</a><a href="https://harmony-stack-productions.vercel.app" target="_blank" rel="noopener">Harmony Stack ↗</a><span class="nav-store nav-store--soon" title="Coming soon to the App Store">App Store · Soon</span></div>
+</nav>
+
+<!-- SCROLL SHOWCASE (sweeping 3D reveal) — lead section -->
+<section class="section scrollshow scrollshow--lead" id="screens">
+  <div class="scrollshow-stage" data-scrollshow>
+    <div class="scrollshow-inner">
+      <div class="scrollshow-title">
+        <span class="scrollshow-kicker">A look inside</span>
+        <h2 class="gooey-wrap" data-gooey data-texts='["Study with momentum","See your readiness","Built for NJ drivers"]' aria-label="Study with momentum"><span class="gooey-filtered" aria-hidden="true"><span class="gt gt-1"></span><span class="gt gt-2"></span></span></h2>
+        <p>Scroll to bring it into focus — clear, focused screens that keep your eyes on the goal: passing the NJ CDL exam.</p>
+      </div>
+      <div class="scrollshow-card">
+        <div class="scrollshow-screen">
+          <div class="scrollshow-scene">
+            <figure class="scrollshow-phone">
+              <span class="pf"><img src="portfolio-screenshots/cdl-onestop-home.png" alt="CDL One Stop NJ Study home screen showing daily streaks, XP levels, and the Pre-Trip Inspection"></span>
+              <figcaption class="scrollshow-cap"><span class="scrollshow-cap-t">Your Study home</span>Daily streaks, XP levels, and quick access to the Parts Map &amp; Pre-Trip Inspection keep you drilling every day.</figcaption>
+            </figure>
+            <figure class="scrollshow-phone">
+              <span class="pf"><img src="portfolio-screenshots/cdl-onestop-info.png" alt="CDL One Stop NJ Readiness Roadmap showing a live score across all 13 test areas"></span>
+              <figcaption class="scrollshow-cap"><span class="scrollshow-cap-t">The Readiness Roadmap</span>A live readiness score across all 13 test areas shows exactly which banks to review before test day.</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<header class="hero">
+  <div class="wrap hero-inner">
+    <span class="hero-eyebrow">Education · CDL Test Prep</span>
+    <img class="hero-icon" src="portfolio-screenshots/cdl-icon.png" alt="CDL One Stop NJ app icon">
+    <h1 class="gooey-wrap" data-gooey data-texts='["CDL One Stop NJ","Ace your NJ CDL","Pass first try"]' aria-label="CDL One Stop NJ"><span class="gooey-filtered" aria-hidden="true"><span class="gt gt-1"></span><span class="gt gt-2"></span></span></h1>
+    <p class="hero-tagline">Pass your NJ CDL — the smart way.</p>
+    <p class="hero-desc">CDL One Stop NJ turns the New Jersey commercial driver's license exam into a guided, gamified study plan. Drill every question bank, master the pre-trip inspection, and watch your readiness climb until you walk into the test center 100% ready.</p>
+    <div class="hero-cta">
+      <div class="appstore-badge appstore-badge--soon" role="img" aria-label="CDL One Stop NJ coming soon to the App Store"><img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store"><span class="soon-pill">Coming soon</span></div>
+    </div>
+  </div>
+</header>
+
+<section class="section" id="features">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="section-kicker">Why drivers choose it</span>
+      <h2>Everything you need to test-ready.</h2>
+      <p>A focused, NJ-specific study system that knows exactly when you're ready to walk in.</p>
+    </div>
+    <div class="features">
+      <article class="feature">
+        <div class="feature-glyph" aria-hidden="true">📈</div>
+        <h3>Readiness Roadmap</h3>
+        <p>A live 0–100% readiness score blends how accurate you are with how much of each question bank you've covered — so you know exactly when you're ready.</p>
+      </article>
+      <article class="feature">
+        <div class="feature-glyph" aria-hidden="true">🗂️</div>
+        <h3>All 13 Test Areas</h3>
+        <p>Core Knowledge, Endorsements, Combination, and Pre-Trip tests, mapped to the real NJ CDL knowledge exam.</p>
+      </article>
+      <article class="feature">
+        <div class="feature-glyph" aria-hidden="true">🚛</div>
+        <h3>Pre-Trip Inspection</h3>
+        <p>An interactive Parts Map and Deep Dive walk you through every truck component and how to inspect it out loud.</p>
+      </article>
+      <article class="feature">
+        <div class="feature-glyph" aria-hidden="true">🔥</div>
+        <h3>Streaks, XP &amp; Levels</h3>
+        <p>Daily streaks and levels keep you showing up. Set your key test dates and study with a countdown.</p>
+      </article>
+      <article class="feature">
+        <div class="feature-glyph" aria-hidden="true">🎯</div>
+        <h3>Smart Miss-Tracking</h3>
+        <p>Every missed question is saved so you can review your weak spots and turn them into strengths.</p>
+      </article>
+      <article class="feature">
+        <div class="feature-glyph" aria-hidden="true">🗽</div>
+        <h3>Built for New Jersey</h3>
+        <p>Focused on NJ Class A / CDL requirements, not a generic national app.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="download">
+  <div class="wrap">
+    <div class="cta-band">
+      <h2>Walk into the test center 100% ready.</h2>
+      <p>Start drilling the banks, master the pre-trip, and let your Readiness Roadmap tell you when it's go time.</p>
+      <div class="cta-inner">
+        <div class="appstore-badge appstore-badge--soon" role="img" aria-label="CDL One Stop NJ coming soon to the App Store"><img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store"><span class="soon-pill">Coming soon</span></div>
+      </div>
+      <p class="cta-fineprint">Your study progress stays on your device. We don't sell your data.</p>
+    </div>
+  </div>
+</section>
+
+<footer class="app-footer">
+  <div class="app-footer-brand"><img src="portfolio-screenshots/cdl-icon.png" alt="">CDL One Stop NJ</div>
+  <div class="app-footer-links"><a href="cdl-marketing.html">Home</a><a href="cdl-support.html">Support</a><span style="opacity:.6">App Store (coming soon)</span><a href="mailto:harmonyStack@gmail.com">Contact</a><a href="harmony-stack-services.html">Harmony Stack</a></div>
+  <div class="app-footer-fine">CDL One Stop NJ is an iOS app built by Harmony Stack.<br>Support: <a href="mailto:harmonyStack@gmail.com">harmonyStack@gmail.com</a> • © 2026 Harmony Stack. All rights reserved.</div>
+</footer>
+
+<script>
+(function(){
+  var stages = [].slice.call(document.querySelectorAll('[data-scrollshow]'));
+  if(!stages.length) return;
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  function mobile(){ return window.innerWidth <= 768; }
+  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+  function update(){
+    var vh = window.innerHeight || document.documentElement.clientHeight, m = mobile();
+    for(var i=0;i<stages.length;i++){
+      var stageEl = stages[i];
+      var card = stageEl.querySelector('.scrollshow-card');
+      var title = stageEl.querySelector('.scrollshow-title');
+      if(!card) continue;
+      var r = stageEl.getBoundingClientRect();
+      var H = stageEl.offsetHeight || r.height;
+      var p = clamp((-r.top) / Math.max(H - vh, 1), 0, 1);
+      var e = p*p*(3-2*p);
+      var rotate = 20 - 20*e;
+      var sf = m ? 0.7 : 1.05, st = m ? 0.9 : 1;
+      var scale = sf + (st - sf) * e;
+      card.style.transform = 'rotateX(' + rotate.toFixed(2) + 'deg) scale(' + scale.toFixed(3) + ')';
+      if(title){ title.style.transform = 'translateY(' + (-100 * e).toFixed(1) + 'px)'; }
+    }
+  }
+  var ticking = false;
+  function onScroll(){ if(!ticking){ ticking = true; requestAnimationFrame(function(){ update(); ticking = false; }); } }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  window.addEventListener('load', update);
+  update();
+})();
+</script>
+
+<script>
+(function(){
+  function initGooey(wrap){
+    var t1 = wrap.querySelector('.gt-1');
+    var t2 = wrap.querySelector('.gt-2');
+    var texts;
+    try { texts = JSON.parse(wrap.getAttribute('data-texts')); } catch(e){ texts = []; }
+    if(!texts.length || !t1 || !t2) return;
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reduce){ t1.textContent = texts[0]; t1.style.opacity = '1'; t2.style.display = 'none'; return; }
+
+    var morphTime = 1.0, cooldownTime = 1.6;
+    var textIndex = texts.length - 1;
+    var time = performance.now();
+    var morph = 0, cooldown = cooldownTime;
+
+    t1.textContent = texts[textIndex % texts.length];
+    t2.textContent = texts[(textIndex + 1) % texts.length];
+
+    function setMorph(fraction){
+      t2.style.filter = 'blur(' + Math.min(8 / fraction - 8, 100) + 'px)';
+      t2.style.opacity = Math.pow(fraction, 0.4) * 100 + '%';
+      var f = 1 - fraction;
+      t1.style.filter = 'blur(' + Math.min(8 / f - 8, 100) + 'px)';
+      t1.style.opacity = Math.pow(f, 0.4) * 100 + '%';
+    }
+    function doCooldown(){
+      morph = 0;
+      t2.style.filter = ''; t2.style.opacity = '100%';
+      t1.style.filter = ''; t1.style.opacity = '0%';
+    }
+    function doMorph(){
+      morph -= cooldown; cooldown = 0;
+      var fraction = morph / morphTime;
+      if(fraction > 1){ cooldown = cooldownTime; fraction = 1; }
+      setMorph(fraction);
+    }
+    function animate(now){
+      requestAnimationFrame(animate);
+      var shouldIncrement = cooldown > 0;
+      var dt = (now - time) / 1000;
+      time = now;
+      cooldown -= dt;
+      if(cooldown <= 0){
+        if(shouldIncrement){
+          textIndex++;
+          t1.textContent = texts[textIndex % texts.length];
+          t2.textContent = texts[(textIndex + 1) % texts.length];
+        }
+        doMorph();
+      } else {
+        doCooldown();
+      }
+    }
+    requestAnimationFrame(animate);
+  }
+  var wraps = document.querySelectorAll('[data-gooey]');
+  for(var i = 0; i < wraps.length; i++){ initGooey(wraps[i]); }
+})();
+</script>
+</body>
+</html>

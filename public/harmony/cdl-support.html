@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f8a4c">
+<title>CDL One Stop NJ — Support &amp; Help</title>
+<meta name="description" content="Support for CDL One Stop NJ, the New Jersey CDL knowledge test prep app. Contact us, read FAQs about study areas, readiness scoring, saved progress, and test dates, or report a bug.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== THEME VARIABLES ===== */
+:root{--accent:#1f8a4c;--accent-deep:#14622f;--accent-soft:#e7f3ea;--gold:#e3b24a;--ink:#15281c;--ink-soft:#4a5b50;--paper:#f6f4ec;--paper-2:#eef1e8;--card:#ffffff;--border:#dde2d3}
+
+/* ===== SHARED_CSS ===== */
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--ink);background:var(--paper);line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:0 clamp(18px,4vw,40px)}
+a{color:inherit}
+.app-nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px clamp(16px,4vw,40px);background:rgba(255,255,255,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.app-nav-brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--ink);font-weight:700}
+.app-nav-brand img{width:34px;height:34px;border-radius:9px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.app-nav-brand span{font-size:15px;letter-spacing:-.01em}
+.app-nav-links{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.app-nav-links a,.app-nav-links span{text-decoration:none;color:var(--ink-soft);font-size:13.5px;font-weight:500;padding:8px 14px;border-radius:999px;transition:background .15s,color .15s;white-space:nowrap}
+.app-nav-links a:hover{background:var(--accent-soft);color:var(--accent-deep)}
+.app-nav-links a.is-active{background:var(--accent);color:#fff}
+.app-nav-links a.nav-store{border:1.5px solid var(--accent);color:var(--accent-deep)}
+.app-nav-links a.nav-store:hover{background:var(--accent);color:#fff}
+.app-nav-links .nav-store--soon{border:1.5px dashed var(--border);color:var(--ink-soft);opacity:.7;cursor:not-allowed}
+.appstore-badge{display:inline-flex;align-items:center;gap:12px;text-decoration:none}
+.appstore-badge img{height:56px;width:auto;display:block;filter:drop-shadow(0 8px 18px rgba(0,0,0,.20))}
+.appstore-badge--soon{opacity:.7;cursor:not-allowed}
+.soon-pill{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;background:var(--accent);color:#fff;padding:6px 11px;border-radius:999px;white-space:nowrap}
+.app-footer{margin-top:84px;padding:48px clamp(16px,4vw,40px);background:var(--ink);color:rgba(255,255,255,.82);text-align:center}
+.app-footer-brand{display:inline-flex;align-items:center;gap:10px;font-weight:700;color:#fff;margin-bottom:8px}
+.app-footer-brand img{width:28px;height:28px;border-radius:7px}
+.app-footer a{color:#fff;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.32)}
+.app-footer-links{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin:16px 0 10px;font-size:14px}
+.app-footer-fine{font-size:12px;opacity:.55;margin-top:12px;line-height:1.7}
+
+/* ===== PAGE-SPECIFIC CSS ===== */
+main{padding-top:clamp(34px,6vw,60px)}
+
+/* dev banner */
+.dev-note{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;text-align:center;background:var(--accent-soft);color:var(--accent-deep);font-size:13px;font-weight:500;padding:10px 18px;border-bottom:1px solid var(--border)}
+.dev-note .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(31,138,76,.18);flex:none}
+
+/* header */
+.support-head{text-align:center;max-width:640px;margin:0 auto;padding-bottom:clamp(28px,5vw,44px)}
+.support-icon{width:88px;height:88px;border-radius:21px;box-shadow:0 12px 30px rgba(20,98,47,.22);display:block;margin:0 auto 22px}
+.support-head h1{font-size:clamp(27px,5.4vw,40px);line-height:1.15;letter-spacing:-.02em;font-weight:700}
+.support-head h1 .accent{color:var(--accent)}
+.support-head p{margin-top:14px;font-size:clamp(15px,2.4vw,17px);color:var(--ink-soft)}
+
+/* section scaffolding */
+.section{margin-top:clamp(34px,5vw,52px)}
+.section-label{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--accent-deep);background:var(--accent-soft);padding:6px 13px;border-radius:999px;margin-bottom:16px}
+.section h2{font-size:clamp(20px,3.4vw,26px);letter-spacing:-.01em;font-weight:700}
+
+/* contact card */
+.contact-card{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:clamp(24px,4vw,38px);box-shadow:0 14px 40px rgba(20,40,28,.07);display:grid;gap:22px;align-items:center}
+@media(min-width:680px){.contact-card{grid-template-columns:1.3fr auto}}
+.contact-card h2{font-size:clamp(20px,3.2vw,25px);font-weight:700;letter-spacing:-.01em}
+.contact-card p{margin-top:9px;color:var(--ink-soft);font-size:15px}
+.contact-card .reply{display:inline-flex;align-items:center;gap:8px;margin-top:14px;font-size:13.5px;font-weight:500;color:var(--accent-deep);background:var(--accent-soft);padding:7px 13px;border-radius:999px}
+.contact-card .reply .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none}
+.contact-actions{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+@media(min-width:680px){.contact-actions{align-items:stretch;min-width:230px}}
+.btn-mail{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600;font-size:15.5px;padding:15px 26px;border-radius:14px;box-shadow:0 8px 20px rgba(31,138,76,.28);transition:transform .15s,box-shadow .15s,background .15s;white-space:nowrap}
+.btn-mail:hover{background:var(--accent-deep);transform:translateY(-2px);box-shadow:0 12px 26px rgba(20,98,47,.32)}
+.btn-mail svg{width:19px;height:19px;flex:none}
+.mail-plain{font-size:13px;color:var(--ink-soft);text-align:center;word-break:break-all}
+.mail-plain a{color:var(--accent-deep);font-weight:500;border-bottom:1px solid var(--border)}
+
+/* FAQ */
+.faq-list{display:flex;flex-direction:column;gap:12px;margin-top:8px}
+.faq-item{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:border-color .15s,box-shadow .15s}
+.faq-item[open]{border-color:var(--accent);box-shadow:0 10px 28px rgba(20,40,28,.08)}
+.faq-item summary{list-style:none;cursor:pointer;display:flex;align-items:flex-start;gap:14px;padding:18px clamp(18px,3vw,24px);font-weight:600;font-size:clamp(15px,2.3vw,17px);line-height:1.4;color:var(--ink)}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:16px}
+.faq-marker{flex:none;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent-deep);display:grid;place-items:center;margin-top:1px;transition:transform .2s,background .2s,color .2s}
+.faq-marker svg{width:14px;height:14px}
+.faq-item[open] .faq-marker{transform:rotate(45deg);background:var(--accent);color:#fff}
+.faq-q-text{flex:1}
+.faq-a{padding:0 clamp(18px,3vw,24px) 20px calc(clamp(18px,3vw,24px) + 40px);color:var(--ink-soft);font-size:15px;line-height:1.6}
+.faq-a a{color:var(--accent-deep);font-weight:500;border-bottom:1px solid var(--border)}
+
+/* closing CTA */
+.closing{margin-top:clamp(34px,5vw,52px);text-align:center;background:linear-gradient(160deg,var(--accent-deep),var(--accent));color:#fff;border-radius:24px;padding:clamp(32px,5vw,52px) clamp(22px,4vw,40px);box-shadow:0 18px 44px rgba(20,98,47,.26)}
+.closing h2{font-size:clamp(21px,3.6vw,28px);font-weight:700;letter-spacing:-.01em;color:#fff}
+.closing p{margin:12px auto 22px;max-width:480px;color:rgba(255,255,255,.9);font-size:15.5px}
+.btn-mail--light{background:#fff;color:var(--accent-deep);box-shadow:0 8px 20px rgba(0,0,0,.18)}
+.btn-mail--light:hover{background:var(--paper);color:var(--accent-deep)}
+
+/* privacy */
+.privacy{margin-top:clamp(26px,4vw,38px);background:var(--paper-2);border:1px solid var(--border);border-radius:18px;padding:clamp(20px,3.5vw,30px)}
+.privacy h3{font-size:17px;font-weight:700;display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.privacy h3 svg{width:19px;height:19px;color:var(--accent);flex:none}
+.privacy p{color:var(--ink-soft);font-size:14.5px;line-height:1.65}
+.privacy p+p{margin-top:9px}
+.privacy a{color:var(--accent-deep);font-weight:500;border-bottom:1px solid var(--border)}
+
+/* coming-soon badge row */
+.badge-row{margin-top:clamp(30px,4.5vw,44px);display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.badge-row .badge-caption{font-size:13px;color:var(--ink-soft);max-width:420px}
+</style>
+</head>
+<body>
+
+<nav class="app-nav" aria-label="CDL One Stop NJ pages">
+  <a class="app-nav-brand" href="cdl-marketing.html"><img src="portfolio-screenshots/cdl-icon.png" alt=""><span>CDL One Stop NJ</span></a>
+  <div class="app-nav-links"><a href="cdl-marketing.html">Home</a><a href="cdl-support.html" class="is-active">Support</a><a href="https://harmony-stack-productions.vercel.app" target="_blank" rel="noopener">Harmony Stack ↗</a><span class="nav-store nav-store--soon" title="Coming soon to the App Store">App Store · Soon</span></div>
+</nav>
+
+<div class="dev-note"><span class="dot"></span>CDL One Stop NJ is currently in development and is not yet live on the App Store.</div>
+
+<main class="wrap">
+
+  <!-- HEADER -->
+  <header class="support-head">
+    <img class="support-icon" src="portfolio-screenshots/cdl-icon.png" alt="CDL One Stop NJ app icon">
+    <h1>CDL One Stop NJ <span class="accent">— Support</span></h1>
+    <p>Real help from the people who built the app. Tell us what you need and we'll get you back on the road to your CDL.</p>
+  </header>
+
+  <!-- CONTACT CARD -->
+  <section class="section" aria-labelledby="contact-heading">
+    <div class="contact-card">
+      <div>
+        <h2 id="contact-heading">Get in touch</h2>
+        <p>Questions, feedback, or trouble with the app? Email our team directly and we'll personally help you sort it out.</p>
+        <span class="reply"><span class="dot"></span>We typically reply within 1–2 business days.</span>
+      </div>
+      <div class="contact-actions">
+        <a class="btn-mail" href="mailto:harmonyStack@gmail.com?subject=CDL%20One%20Stop%20NJ%20Support">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-10 6L2 7"></path></svg>
+          Email Support
+        </a>
+        <p class="mail-plain"><a href="mailto:harmonyStack@gmail.com">harmonyStack@gmail.com</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" aria-labelledby="faq-heading">
+    <span class="section-label">Frequently asked</span>
+    <h2 id="faq-heading">Answers to common questions</h2>
+    <div class="faq-list">
+
+      <details class="faq-item">
+        <summary><span class="faq-marker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></span><span class="faq-q-text">Which license and tests does the app cover?</span></summary>
+        <div class="faq-a">CDL One Stop NJ focuses on the New Jersey CDL knowledge exam — Core Knowledge, Endorsements, Combination, and the Pre-Trip Inspection — across 13 study areas.</div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span class="faq-marker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></span><span class="faq-q-text">How does the readiness score work?</span></summary>
+        <div class="faq-a">Your readiness percentage blends your accuracy with how much of each question bank you've actually seen. Reaching 100% means you've consistently passed practice across every area.</div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span class="faq-marker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></span><span class="faq-q-text">Is my progress saved?</span></summary>
+        <div class="faq-a">Yes. Your streaks, levels, key dates, and missed questions are kept on your device so you can pick up where you left off.</div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span class="faq-marker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></span><span class="faq-q-text">How do I set my test date?</span></summary>
+        <div class="faq-a">On the Study tab, tap "Set up your key dates" to add your exam date and study toward a countdown.</div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span class="faq-marker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></span><span class="faq-q-text">I think an answer is wrong, or I hit a bug.</span></summary>
+        <div class="faq-a">Please email us at <a href="mailto:harmonyStack@gmail.com?subject=CDL%20One%20Stop%20NJ%20Bug%2FAnswer%20Report">harmonyStack@gmail.com</a> with the question text and a screenshot — we review every report.</div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span class="faq-marker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></span><span class="faq-q-text">Is the app available on the App Store yet?</span></summary>
+        <div class="faq-a">CDL One Stop NJ is in active development and coming soon to the App Store. Email us to be notified at launch.</div>
+      </details>
+
+    </div>
+  </section>
+
+  <!-- COMING SOON BADGE -->
+  <div class="badge-row">
+    <div class="appstore-badge appstore-badge--soon" role="img" aria-label="CDL One Stop NJ coming soon to the App Store"><img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store"><span class="soon-pill">Coming soon</span></div>
+    <p class="badge-caption">The App Store listing isn't live yet. Email us and we'll let you know the moment it launches.</p>
+  </div>
+
+  <!-- CLOSING CTA -->
+  <section class="closing" aria-labelledby="closing-heading">
+    <h2 id="closing-heading">Still need help?</h2>
+    <p>We're a small team and we read every message. Reach out any time and a real person will get back to you.</p>
+    <a class="btn-mail btn-mail--light" href="mailto:harmonyStack@gmail.com?subject=CDL%20One%20Stop%20NJ%20Support">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-10 6L2 7"></path></svg>
+      Email harmonyStack@gmail.com
+    </a>
+  </section>
+
+  <!-- PRIVACY -->
+  <section class="privacy" aria-labelledby="privacy-heading">
+    <h3 id="privacy-heading"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>Your privacy</h3>
+    <p>We respect your privacy. CDL One Stop NJ does not sell your personal information. Your study progress — streaks, levels, key dates, and missed questions — is kept on your device.</p>
+    <p>If you email us for support, we only use your message to help you and reply. For any privacy questions, email us at <a href="mailto:harmonyStack@gmail.com?subject=CDL%20One%20Stop%20NJ%20Privacy%20Question">harmonyStack@gmail.com</a>.</p>
+  </section>
+
+</main>
+
+<footer class="app-footer">
+  <div class="app-footer-brand"><img src="portfolio-screenshots/cdl-icon.png" alt="">CDL One Stop NJ</div>
+  <div class="app-footer-links"><a href="cdl-marketing.html">Home</a><a href="cdl-support.html">Support</a><span style="opacity:.6">App Store (coming soon)</span><a href="mailto:harmonyStack@gmail.com">Contact</a><a href="harmony-stack-services.html">Harmony Stack</a></div>
+  <div class="app-footer-fine">CDL One Stop NJ is an iOS app built by Harmony Stack.<br>Support: <a href="mailto:harmonyStack@gmail.com">harmonyStack@gmail.com</a> • © 2026 Harmony Stack. All rights reserved.</div>
+</footer>
+
+</body>
+</html>

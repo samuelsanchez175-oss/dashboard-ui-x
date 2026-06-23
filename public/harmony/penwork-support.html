@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fff7f3">
+<title>Penwork Studio — Support &amp; Help Center</title>
+<meta name="description" content="Get help with Penwork Studio, the songwriting and lyric studio for iOS. Contact support, browse frequently asked questions, and learn how to write, organize, and refine your songs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== THEME VARIABLES ===== */
+:root{--accent:#ff7059;--accent-deep:#e6553d;--accent-soft:#fff0eb;--gold:#ff7059;--ink:#2a2320;--ink-soft:#6b5f59;--paper:#fff7f3;--paper-2:#fdeee7;--card:#ffffff;--border:#f3ddd3}
+
+/* ===== SHARED_CSS ===== */
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--ink);background:var(--paper);line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:0 clamp(18px,4vw,40px)}
+a{color:inherit}
+.app-nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px clamp(16px,4vw,40px);background:rgba(255,255,255,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.app-nav-brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--ink);font-weight:700}
+.app-nav-brand img{width:34px;height:34px;border-radius:9px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.app-nav-brand span{font-size:15px;letter-spacing:-.01em}
+.app-nav-links{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.app-nav-links a,.app-nav-links span{text-decoration:none;color:var(--ink-soft);font-size:13.5px;font-weight:500;padding:8px 14px;border-radius:999px;transition:background .15s,color .15s;white-space:nowrap}
+.app-nav-links a:hover{background:var(--accent-soft);color:var(--accent-deep)}
+.app-nav-links a.is-active{background:var(--accent);color:#fff}
+.app-nav-links a.nav-store{border:1.5px solid var(--accent);color:var(--accent-deep)}
+.app-nav-links a.nav-store:hover{background:var(--accent);color:#fff}
+.app-nav-links .nav-store--soon{border:1.5px dashed var(--border);color:var(--ink-soft);opacity:.7;cursor:not-allowed}
+.appstore-badge{display:inline-flex;align-items:center;gap:12px;text-decoration:none}
+.appstore-badge img{height:56px;width:auto;display:block;filter:drop-shadow(0 8px 18px rgba(0,0,0,.20))}
+.appstore-badge--soon{opacity:.7;cursor:not-allowed}
+.soon-pill{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;background:var(--accent);color:#fff;padding:6px 11px;border-radius:999px;white-space:nowrap}
+.app-footer{margin-top:84px;padding:48px clamp(16px,4vw,40px);background:var(--ink);color:rgba(255,255,255,.82);text-align:center}
+.app-footer-brand{display:inline-flex;align-items:center;gap:10px;font-weight:700;color:#fff;margin-bottom:8px}
+.app-footer-brand img{width:28px;height:28px;border-radius:7px}
+.app-footer a{color:#fff;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.32)}
+.app-footer-links{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin:16px 0 10px;font-size:14px}
+.app-footer-fine{font-size:12px;opacity:.55;margin-top:12px;line-height:1.7}
+
+/* ===== PAGE-SPECIFIC CSS ===== */
+.support-hero{padding:clamp(40px,7vw,72px) 0 clamp(28px,4vw,40px);text-align:center}
+.support-hero-icon{width:88px;height:88px;border-radius:21px;box-shadow:0 12px 30px rgba(230,85,61,.28);display:block;margin:0 auto 22px}
+.support-hero-eyebrow{display:inline-block;font-size:12.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-deep);background:var(--accent-soft);padding:6px 15px;border-radius:999px;margin-bottom:18px}
+.support-hero h1{font-size:clamp(29px,5.2vw,46px);line-height:1.12;letter-spacing:-.02em;font-weight:700;margin-bottom:14px}
+.support-hero h1 .accent{color:var(--accent-deep)}
+.support-hero p{font-size:clamp(15px,2.2vw,18px);color:var(--ink-soft);max-width:540px;margin:0 auto}
+
+/* Contact card */
+.contact-card{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:clamp(26px,4.5vw,42px);box-shadow:0 16px 40px rgba(42,35,32,.07);text-align:center;max-width:680px;margin:0 auto}
+.contact-card .ico{width:54px;height:54px;border-radius:15px;background:var(--accent-soft);color:var(--accent-deep);display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px}
+.contact-card .ico svg{width:27px;height:27px}
+.contact-card h2{font-size:clamp(20px,3vw,26px);letter-spacing:-.01em;margin-bottom:8px}
+.contact-card p{color:var(--ink-soft);font-size:15px;margin-bottom:22px;max-width:430px;margin-left:auto;margin-right:auto}
+.btn-mail{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600;font-size:16px;padding:15px 30px;border-radius:999px;box-shadow:0 10px 26px rgba(230,85,61,.32);transition:transform .15s,box-shadow .15s,background .15s}
+.btn-mail:hover{background:var(--accent-deep);transform:translateY(-2px);box-shadow:0 14px 32px rgba(230,85,61,.4)}
+.btn-mail svg{width:19px;height:19px}
+.contact-reply{display:block;margin-top:16px;font-size:13.5px;color:var(--ink-soft)}
+
+/* Section heading */
+.section{padding-top:clamp(48px,7vw,76px)}
+.section-head{text-align:center;max-width:600px;margin:0 auto clamp(24px,4vw,36px)}
+.section-head .kicker{font-size:12.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-deep);margin-bottom:9px}
+.section-head h2{font-size:clamp(24px,4vw,34px);letter-spacing:-.02em;line-height:1.15}
+.section-head p{color:var(--ink-soft);font-size:15px;margin-top:10px}
+
+/* FAQ accordion */
+.faq{max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:13px}
+.faq details{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:box-shadow .18s,border-color .18s}
+.faq details[open]{box-shadow:0 12px 30px rgba(42,35,32,.07);border-color:var(--accent)}
+.faq summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:14px;padding:19px clamp(18px,3vw,24px);font-weight:600;font-size:clamp(15px,2.1vw,17px);color:var(--ink)}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:hover{color:var(--accent-deep)}
+.faq summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:16px}
+.faq .q-mark{flex:0 0 auto;width:30px;height:30px;border-radius:9px;background:var(--accent-soft);color:var(--accent-deep);font-weight:700;font-size:14px;display:inline-flex;align-items:center;justify-content:center}
+.faq summary .chev{margin-left:auto;flex:0 0 auto;width:20px;height:20px;color:var(--accent-deep);transition:transform .2s}
+.faq details[open] summary .chev{transform:rotate(180deg)}
+.faq .answer{padding:0 clamp(18px,3vw,24px) 21px calc(clamp(18px,3vw,24px) + 30px + 14px);color:var(--ink-soft);font-size:15px;line-height:1.65}
+
+/* Closing CTA */
+.closing{margin-top:clamp(44px,6vw,68px);background:linear-gradient(135deg,var(--paper-2),var(--accent-soft));border:1px solid var(--border);border-radius:24px;padding:clamp(30px,5vw,48px);text-align:center}
+.closing h2{font-size:clamp(22px,3.4vw,30px);letter-spacing:-.02em;margin-bottom:10px}
+.closing p{color:var(--ink-soft);font-size:15.5px;max-width:480px;margin:0 auto 22px}
+.closing a.mail-link{color:var(--accent-deep);font-weight:600;border-bottom:1px solid rgba(230,85,61,.4)}
+.closing .badge-row{display:flex;justify-content:center;margin-top:6px}
+
+/* Privacy note */
+.privacy{max-width:720px;margin:clamp(40px,5vw,56px) auto 0;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:clamp(22px,3.5vw,30px) clamp(22px,4vw,34px)}
+.privacy h3{font-size:17px;display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.privacy h3 svg{width:20px;height:20px;color:var(--accent-deep)}
+.privacy p{color:var(--ink-soft);font-size:14.5px;line-height:1.65}
+.privacy p+p{margin-top:10px}
+.privacy a{color:var(--accent-deep);font-weight:600;border-bottom:1px solid rgba(230,85,61,.4);text-decoration:none}
+</style>
+</head>
+<body>
+<nav class="app-nav" aria-label="Penwork Studio pages">
+  <a class="app-nav-brand" href="penwork-marketing.html"><img src="portfolio-screenshots/penwork-icon.png" alt=""><span>Penwork Studio</span></a>
+  <div class="app-nav-links"><a href="penwork-marketing.html">Home</a><a href="penwork-support.html" class="is-active">Support</a><a href="https://harmony-stack-productions.vercel.app" target="_blank" rel="noopener">Harmony Stack ↗</a><a class="nav-store" href="https://apps.apple.com/us/app/penwork-studio/id6757620114" target="_blank" rel="noopener">App Store ↗</a></div>
+</nav>
+
+<main class="wrap">
+
+  <!-- HEADER -->
+  <header class="support-hero">
+    <img class="support-hero-icon" src="portfolio-screenshots/penwork-icon.png" alt="Penwork Studio app icon">
+    <span class="support-hero-eyebrow">Support Center</span>
+    <h1>Penwork Studio — <span class="accent">Support</span></h1>
+    <p>Questions, bug reports, or just need a hand with your songs? We're here to help you keep writing.</p>
+  </header>
+
+  <!-- CONTACT CARD -->
+  <section aria-labelledby="contact-heading">
+    <div class="contact-card">
+      <span class="ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"></rect><path d="m3 6 9 6 9-6"></path></svg>
+      </span>
+      <h2 id="contact-heading">Get in touch</h2>
+      <p>Email our team directly and we'll get you sorted out. Real humans read every message.</p>
+      <a class="btn-mail" href="mailto:harmonyStack@gmail.com?subject=Penwork%20Studio%20Support">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="3"></rect><path d="m3 6 9 6 9-6"></path></svg>
+        harmonyStack@gmail.com
+      </a>
+      <span class="contact-reply">We typically reply within 1–2 business days.</span>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" aria-labelledby="faq-heading">
+    <div class="section-head">
+      <div class="kicker">Help &amp; Answers</div>
+      <h2 id="faq-heading">Frequently asked questions</h2>
+      <p>Tap a question to expand the answer.</p>
+    </div>
+
+    <div class="faq">
+      <details>
+        <summary><span class="q-mark" aria-hidden="true">Q</span>What is Penwork Studio?<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></summary>
+        <div class="answer">Penwork Studio is a songwriting and lyric studio for writing, organizing, and refining songs — with BPM, key, scale, and syllable counts attached to each one.</div>
+      </details>
+
+      <details>
+        <summary><span class="q-mark" aria-hidden="true">Q</span>How do I create a new song?<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></summary>
+        <div class="answer">Tap the compose / + button on your catalog screen to start a new song, then give it a title and start writing.</div>
+      </details>
+
+      <details>
+        <summary><span class="q-mark" aria-hidden="true">Q</span>What do BPM, Key, Scale, and the syllable counter do?<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></summary>
+        <div class="answer">They let you tag a song with its tempo, musical key, and scale, and the syllable counter shows the length of your lines so you can keep a consistent flow.</div>
+      </details>
+
+      <details>
+        <summary><span class="q-mark" aria-hidden="true">Q</span>Can I organize and search my songs?<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></summary>
+        <div class="answer">Yes — use Folders, sort by BPM or creation date, and search across your whole catalog from the home screen.</div>
+      </details>
+
+      <details>
+        <summary><span class="q-mark" aria-hidden="true">Q</span>Where are my songs stored?<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></summary>
+        <div class="answer">Your songs are saved on your device. We recommend keeping your device backed up so your catalog is protected.</div>
+      </details>
+
+      <details>
+        <summary><span class="q-mark" aria-hidden="true">Q</span>I have a bug report or feature request.<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></summary>
+        <div class="answer">We'd love to hear it — email us at <a href="mailto:harmonyStack@gmail.com">harmonyStack@gmail.com</a> and we read every message.</div>
+      </details>
+    </div>
+  </section>
+
+  <!-- CLOSING CTA -->
+  <section class="closing" aria-labelledby="closing-heading">
+    <h2 id="closing-heading">Still need help?</h2>
+    <p>Didn't find your answer above? Reach out anytime at <a class="mail-link" href="mailto:harmonyStack@gmail.com">harmonyStack@gmail.com</a> — we're happy to help.</p>
+    <div class="badge-row">
+      <a class="appstore-badge" href="https://apps.apple.com/us/app/penwork-studio/id6757620114" target="_blank" rel="noopener" aria-label="Download Penwork Studio on the App Store"><img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store"></a>
+    </div>
+  </section>
+
+  <!-- PRIVACY -->
+  <section class="privacy" aria-labelledby="privacy-heading">
+    <h3 id="privacy-heading">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      Your privacy
+    </h3>
+    <p>We respect your privacy. Penwork Studio does not sell your personal information. Your songs are stored on your own device, and you stay in control of your work.</p>
+    <p>For privacy questions, email us at <a href="mailto:harmonyStack@gmail.com">harmonyStack@gmail.com</a>.</p>
+  </section>
+
+</main>
+
+<footer class="app-footer">
+  <div class="app-footer-brand"><img src="portfolio-screenshots/penwork-icon.png" alt="">Penwork Studio</div>
+  <div class="app-footer-links"><a href="penwork-marketing.html">Home</a><a href="penwork-support.html">Support</a><a href="https://apps.apple.com/us/app/penwork-studio/id6757620114" target="_blank" rel="noopener">App Store</a><a href="mailto:harmonyStack@gmail.com">Contact</a><a href="harmony-stack-services.html">Harmony Stack</a></div>
+  <div class="app-footer-fine">Penwork Studio is an iOS app built by Harmony Stack.<br>Support: <a href="mailto:harmonyStack@gmail.com">harmonyStack@gmail.com</a> • © 2026 Harmony Stack. All rights reserved.</div>
+</footer>
+</body>
+</html>

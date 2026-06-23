@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ff7059">
+<title>Penwork Studio — Where songs get written.</title>
+<meta name="description" content="Penwork Studio is a songwriter's notebook with a producer's brain. Capture lyrics the instant they hit, then tag every song with BPM, key, scale, and syllable counts. Download free on the App Store.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== THEME VARIABLES ===== */
+:root{--accent:#ff7059;--accent-deep:#e6553d;--accent-soft:#fff0eb;--gold:#ff7059;--ink:#2a2320;--ink-soft:#6b5f59;--paper:#fff7f3;--paper-2:#fdeee7;--card:#ffffff;--border:#f3ddd3}
+
+/* ===== SHARED_CSS ===== */
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--ink);background:var(--paper);line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:0 clamp(18px,4vw,40px)}
+a{color:inherit}
+.app-nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px clamp(16px,4vw,40px);background:rgba(255,255,255,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.app-nav-brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--ink);font-weight:700}
+.app-nav-brand img{width:34px;height:34px;border-radius:9px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.app-nav-brand span{font-size:15px;letter-spacing:-.01em}
+.app-nav-links{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.app-nav-links a,.app-nav-links span{text-decoration:none;color:var(--ink-soft);font-size:13.5px;font-weight:500;padding:8px 14px;border-radius:999px;transition:background .15s,color .15s;white-space:nowrap}
+.app-nav-links a:hover{background:var(--accent-soft);color:var(--accent-deep)}
+.app-nav-links a.is-active{background:var(--accent);color:#fff}
+.app-nav-links a.nav-store{border:1.5px solid var(--accent);color:var(--accent-deep)}
+.app-nav-links a.nav-store:hover{background:var(--accent);color:#fff}
+.app-nav-links .nav-store--soon{border:1.5px dashed var(--border);color:var(--ink-soft);opacity:.7;cursor:not-allowed}
+.appstore-badge{display:inline-flex;align-items:center;gap:12px;text-decoration:none}
+.appstore-badge img{height:56px;width:auto;display:block;filter:drop-shadow(0 8px 18px rgba(0,0,0,.20))}
+.appstore-badge--soon{opacity:.7;cursor:not-allowed}
+.soon-pill{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;background:var(--accent);color:#fff;padding:6px 11px;border-radius:999px;white-space:nowrap}
+.app-footer{margin-top:84px;padding:48px clamp(16px,4vw,40px);background:var(--ink);color:rgba(255,255,255,.82);text-align:center}
+.app-footer-brand{display:inline-flex;align-items:center;gap:10px;font-weight:700;color:#fff;margin-bottom:8px}
+.app-footer-brand img{width:28px;height:28px;border-radius:7px}
+.app-footer a{color:#fff;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.32)}
+.app-footer-links{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin:16px 0 10px;font-size:14px}
+.app-footer-fine{font-size:12px;opacity:.55;margin-top:12px;line-height:1.7}
+
+/* ===== PAGE-SPECIFIC CSS ===== */
+section{position:relative}
+
+/* HERO */
+.hero{position:relative;overflow:hidden;background:radial-gradient(1100px 520px at 50% -12%, #ffc4b1 0%, #ff8e74 34%, #ff7059 72%);padding:clamp(46px,9vw,86px) 0 clamp(60px,10vw,108px);text-align:center}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:120px;background:linear-gradient(to bottom,rgba(255,247,243,0),var(--paper));pointer-events:none}
+.hero-inner{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center}
+.hero-icon{width:120px;height:120px;border-radius:28px;box-shadow:0 22px 50px rgba(120,38,18,.34),0 4px 12px rgba(120,38,18,.2);display:block}
+.hero-eyebrow{margin-top:26px;display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:#fff;background:rgba(255,255,255,.20);border:1px solid rgba(255,255,255,.4);padding:7px 15px;border-radius:999px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.hero h1{margin-top:20px;font-size:clamp(40px,9vw,76px);line-height:1.02;letter-spacing:-.035em;font-weight:700;color:#fff}
+.hero .tagline{margin-top:16px;font-size:clamp(20px,4.4vw,29px);font-weight:600;color:#fff;letter-spacing:-.01em}
+.hero .hero-desc{margin:20px auto 0;max-width:620px;font-size:clamp(15.5px,2.6vw,18px);color:rgba(255,255,255,.94);line-height:1.6}
+.hero-cta{margin-top:34px;display:flex;flex-direction:column;align-items:center;gap:13px}
+.hero-cta .appstore-badge img{height:62px;filter:drop-shadow(0 12px 26px rgba(90,24,10,.4))}
+.hero-cta-note{font-size:13px;font-weight:500;color:rgba(255,255,255,.86)}
+
+/* SECTION HEADING */
+.sec{padding:clamp(56px,9vw,92px) 0 0}
+.sec-head{text-align:center;max-width:680px;margin:0 auto clamp(34px,6vw,56px)}
+.sec-kicker{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-deep);background:var(--accent-soft);padding:6px 14px;border-radius:999px;margin-bottom:16px}
+.sec-head h2{font-size:clamp(28px,5.2vw,44px);line-height:1.08;letter-spacing:-.03em;font-weight:700}
+.sec-head p{margin-top:14px;font-size:clamp(15.5px,2.6vw,18px);color:var(--ink-soft)}
+
+/* FEATURES */
+.feature-grid{display:grid;grid-template-columns:1fr;gap:18px}
+@media(min-width:620px){.feature-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:940px){.feature-grid{grid-template-columns:repeat(3,1fr)}}
+.feature-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px 24px;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.feature-card:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(120,38,18,.12);border-color:#f2cdbf}
+.feature-ic{width:52px;height:52px;border-radius:14px;background:linear-gradient(150deg,#fff0eb,#ffd9cd);display:flex;align-items:center;justify-content:center;color:var(--accent-deep);margin-bottom:18px;box-shadow:inset 0 0 0 1px rgba(255,112,89,.18)}
+.feature-ic svg{width:26px;height:26px;display:block}
+.feature-card h3{font-size:19px;font-weight:600;letter-spacing:-.015em;margin-bottom:9px}
+.feature-card p{font-size:15px;color:var(--ink-soft);line-height:1.6}
+
+/* SCREENSHOTS */
+.shots{display:grid;grid-template-columns:1fr;gap:clamp(34px,6vw,56px);align-items:start;justify-items:center}
+@media(min-width:760px){.shots{grid-template-columns:repeat(2,1fr)}}
+.shot{display:flex;flex-direction:column;align-items:center;max-width:330px;width:100%}
+.phone{position:relative;width:100%;max-width:300px;border-radius:46px;background:#1c1715;padding:11px;box-shadow:0 30px 60px rgba(120,38,18,.22),0 8px 18px rgba(0,0,0,.18);border:1px solid rgba(0,0,0,.4)}
+.phone::before{content:"";position:absolute;top:18px;left:50%;transform:translateX(-50%);width:42%;height:7px;border-radius:999px;background:#000;opacity:.55;z-index:3}
+.phone img{display:block;width:100%;border-radius:36px;background:#fff}
+.shot-cap{margin-top:22px;font-size:14.5px;color:var(--ink-soft);text-align:center;max-width:300px;line-height:1.55}
+.shot-cap b{color:var(--ink);font-weight:600}
+
+/* CLOSING CTA */
+.cta-band{margin-top:clamp(64px,10vw,104px)}
+.cta-inner{position:relative;overflow:hidden;background:radial-gradient(900px 440px at 50% -30%, #ffb39e 0%, #ff855f 40%, #f4623f 100%);border-radius:32px;padding:clamp(48px,8vw,76px) clamp(24px,5vw,56px);text-align:center;box-shadow:0 24px 60px rgba(120,38,18,.24)}
+.cta-inner h2{font-size:clamp(28px,5.6vw,46px);line-height:1.06;letter-spacing:-.03em;font-weight:700;color:#fff}
+.cta-inner p{margin:16px auto 0;max-width:560px;font-size:clamp(15.5px,2.6vw,18px);color:rgba(255,255,255,.94)}
+.cta-cta{margin-top:32px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.cta-cta .appstore-badge img{height:60px;filter:drop-shadow(0 12px 26px rgba(90,24,10,.4))}
+.cta-cta-note{font-size:13px;font-weight:500;color:rgba(255,255,255,.86)}
+
+/* ===== SCROLL SHOWCASE (sweeping 3D reveal) ===== */
+.scrollshow-stage{min-height:clamp(880px,134vh,1320px);display:flex;align-items:flex-start;justify-content:center;padding:clamp(40px,7vw,92px) clamp(8px,3vw,40px) 0}
+.scrollshow-inner{width:100%;max-width:1060px;perspective:1000px}
+.scrollshow-title{max-width:720px;margin:0 auto;text-align:center;will-change:transform}
+.scrollshow-kicker{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-deep);background:var(--accent-soft);padding:6px 14px;border-radius:999px;margin-bottom:16px}
+.scrollshow-title h2{font-size:clamp(28px,5.4vw,46px);line-height:1.06;letter-spacing:-.03em;font-weight:700}
+.scrollshow-title p{margin-top:14px;font-size:clamp(15.5px,2.6vw,18px);color:var(--ink-soft)}
+.scrollshow-card{margin:32px auto 0;width:100%;max-width:1060px;height:clamp(430px,60vh,620px);border:4px solid #6c6c6c;border-radius:30px;background:#222;padding:clamp(8px,1.4vw,20px);box-shadow:0 0 #0000004d,0 9px 20px #0000004a,0 37px 37px #00000042,0 84px 50px #00000026,0 149px 60px #0000000a,0 233px 65px #00000003;transform-origin:50% 0%;transform:rotateX(20deg) scale(1.05);will-change:transform;backface-visibility:hidden}
+.scrollshow-screen{height:100%;width:100%;overflow:hidden;border-radius:18px;background:radial-gradient(120% 150% at 50% 0%, var(--accent) 0%, var(--accent-deep) 80%);display:flex;align-items:center;justify-content:center;padding:clamp(18px,3vw,40px)}
+.scrollshow-scene{display:flex;align-items:center;justify-content:center;gap:clamp(18px,4vw,52px);height:100%}
+.scrollshow-phone{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%}
+.scrollshow-phone .pf{position:relative;height:76%;max-height:470px;border-radius:30px;background:#1c1715;padding:7px;box-shadow:0 18px 44px rgba(0,0,0,.44);border:1px solid rgba(0,0,0,.5)}
+.scrollshow-phone .pf img{display:block;height:100%;width:auto;border-radius:24px}
+.scrollshow-cap{margin-top:14px;font-size:12.5px;color:rgba(255,255,255,.92);text-align:center;max-width:248px;line-height:1.5}
+.scrollshow-cap b{font-weight:600;color:#fff}
+.scrollshow-cap-t{display:block;font-weight:700;font-size:14.5px;color:#fff;letter-spacing:-.01em;margin-bottom:5px}
+@media(max-width:760px){
+  .scrollshow-stage{min-height:clamp(760px,124vh,1100px)}
+  .scrollshow-card{height:clamp(380px,56vh,520px)}
+  .scrollshow-scene{gap:14px}
+  .scrollshow-phone .pf{height:auto;max-height:none;width:36vw;max-width:150px}
+  .scrollshow-phone .pf img{height:auto;width:100%}
+  .scrollshow-cap{font-size:11px;max-width:150px;margin-top:9px}
+}
+@media(prefers-reduced-motion:reduce){.scrollshow-card,.scrollshow-title{transform:none!important}}
+
+/* ===== GOOEY TEXT MORPH (hero title) ===== */
+.gooey-wrap{position:relative;display:block;width:100%;text-align:center}
+.gooey-filtered{position:relative;display:block;width:100%;min-height:1.08em;line-height:1.04;filter:url(#gooeyThreshold)}
+.gooey-filtered .gt{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);margin:0 auto;white-space:nowrap;color:inherit;font:inherit;letter-spacing:inherit}
+@media(prefers-reduced-motion:reduce){.gooey-filtered{filter:none}.gooey-filtered .gt-2{display:none}.gooey-filtered .gt-1{position:static;transform:none;opacity:1!important;filter:none!important}}
+</style>
+</head>
+<body>
+
+<svg aria-hidden="true" focusable="false" width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden"><defs><filter id="gooeyThreshold"><feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 255 -140"/></filter></defs></svg>
+
+<nav class="app-nav" aria-label="Penwork Studio pages">
+  <a class="app-nav-brand" href="penwork-marketing.html"><img src="portfolio-screenshots/penwork-icon.png" alt=""><span>Penwork Studio</span></a>
+  <div class="app-nav-links"><a href="penwork-marketing.html" class="is-active">Home</a><a href="penwork-support.html">Support</a><a href="https://harmony-stack-productions.vercel.app" target="_blank" rel="noopener">Harmony Stack ↗</a><a class="nav-store" href="https://apps.apple.com/us/app/penwork-studio/id6757620114" target="_blank" rel="noopener">App Store ↗</a></div>
+</nav>
+
+<!-- SCROLL SHOWCASE (sweeping 3D reveal) — lead section -->
+<section class="sec scrollshow scrollshow--lead" id="screens" aria-labelledby="screens-title">
+  <div class="scrollshow-stage" data-scrollshow>
+    <div class="scrollshow-inner">
+      <div class="scrollshow-title">
+        <span class="scrollshow-kicker">A look inside</span>
+        <h2 id="screens-title" class="gooey-wrap" data-gooey data-texts='["See Penwork in action","Lyrics meet the music","Made for songwriters"]' aria-label="See Penwork in action"><span class="gooey-filtered" aria-hidden="true"><span class="gt gt-1"></span><span class="gt gt-2"></span></span></h2>
+        <p>Scroll to bring the studio into focus — from your catalog to AI line suggestions, the whole writing flow in one place.</p>
+      </div>
+      <div class="scrollshow-card">
+        <div class="scrollshow-screen">
+          <div class="scrollshow-scene">
+            <figure class="scrollshow-phone">
+              <span class="pf"><img src="portfolio-screenshots/penwork-home.png" alt="Penwork Studio catalog screen showing songs with BPM, key, and lyric previews"></span>
+              <figcaption class="scrollshow-cap"><span class="scrollshow-cap-t">Your catalog</span>Every song in one place — each tagged with BPM, key, and a preview of the opening lines.</figcaption>
+            </figure>
+            <figure class="scrollshow-phone">
+              <span class="pf"><img src="portfolio-screenshots/penwork-ai-suggest.png" alt="Penwork Studio Suggest next lines screen with direction, style, words to emphasize, topics, and tone controls"></span>
+              <figcaption class="scrollshow-cap"><span class="scrollshow-cap-t">AI line suggestions</span>Set the direction, style, words to emphasize, and tone — then generate the next lines of your verse.</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap hero-inner">
+    <img class="hero-icon" src="portfolio-screenshots/penwork-icon.png" alt="Penwork Studio app icon">
+    <span class="hero-eyebrow">Music · Songwriting</span>
+    <h1 class="gooey-wrap" data-gooey data-texts='["Penwork Studio","Catch the idea","Songs, sorted"]' aria-label="Penwork Studio"><span class="gooey-filtered" aria-hidden="true"><span class="gt gt-1"></span><span class="gt gt-2"></span></span></h1>
+    <p class="tagline">Where songs get written.</p>
+    <p class="hero-desc">Penwork Studio is a songwriter's notebook with a producer's brain. Capture lyrics the instant they hit, then tag every song with BPM, key, scale, and syllable counts — so your ideas stay organized and ready to record.</p>
+    <div class="hero-cta">
+      <a class="appstore-badge" href="https://apps.apple.com/us/app/penwork-studio/id6757620114" target="_blank" rel="noopener" aria-label="Download Penwork Studio on the App Store"><img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store"></a>
+      <span class="hero-cta-note">Free on iPhone · iOS 16 and later</span>
+    </div>
+  </div>
+</header>
+
+<!-- FEATURES -->
+<section class="sec" id="features" aria-labelledby="features-title">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-kicker">Why Penwork</span>
+      <h2 id="features-title">Lyrics on the left, the music in your head on the right.</h2>
+      <p>Everything a writer needs to catch an idea and shape it into a song — in one focused, fast little studio.</p>
+    </div>
+    <div class="feature-grid">
+
+      <article class="feature-card">
+        <div class="feature-ic" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        </div>
+        <h3>Distraction-Free Editor</h3>
+        <p>A clean writing canvas built for verses, hooks, and bars — nothing between you and the line.</p>
+      </article>
+
+      <article class="feature-card">
+        <div class="feature-ic" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        </div>
+        <h3>Musical Metadata</h3>
+        <p>Tag each song with BPM, key, and scale. A live syllable counter helps you lock your flow.</p>
+      </article>
+
+      <article class="feature-card">
+        <div class="feature-ic" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M16.5 13.5 14 16"/></svg>
+        </div>
+        <h3>Organize Your Catalog</h3>
+        <p>Sort by folders, BPM, or date created, and search your entire songbook instantly.</p>
+      </article>
+
+      <article class="feature-card">
+        <div class="feature-ic" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4.5 13H11l-1 9 8.5-11H12Z"/></svg>
+        </div>
+        <h3>Built for Speed</h3>
+        <p>New song in a single tap, with undo/redo, quick filters, and a timeline of every idea.</p>
+      </article>
+
+      <article class="feature-card">
+        <div class="feature-ic" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+        </div>
+        <h3>Every Idea, Timestamped</h3>
+        <p>From a one-line spark to a finished track, each song keeps its details and history.</p>
+      </article>
+
+      <article class="feature-card">
+        <div class="feature-ic" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/><path d="M9 7h7M9 11h5"/></svg>
+        </div>
+        <h3>Made for Writers</h3>
+        <p>A focused tool for lyricists and artists who want their words and their numbers in one place.</p>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- CLOSING CTA -->
+<section class="cta-band" aria-labelledby="cta-title">
+  <div class="wrap">
+    <div class="cta-inner">
+      <h2 id="cta-title">Your next song is one tap away.</h2>
+      <p>Download Penwork Studio and turn every spark into a song that's organized, tagged, and ready to record.</p>
+      <div class="cta-cta">
+        <a class="appstore-badge" href="https://apps.apple.com/us/app/penwork-studio/id6757620114" target="_blank" rel="noopener" aria-label="Download Penwork Studio on the App Store"><img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store"></a>
+        <span class="cta-cta-note">Free on iPhone · Made by Harmony Stack</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="app-footer">
+  <div class="app-footer-brand"><img src="portfolio-screenshots/penwork-icon.png" alt="">Penwork Studio</div>
+  <div class="app-footer-links"><a href="penwork-marketing.html">Home</a><a href="penwork-support.html">Support</a><a href="https://apps.apple.com/us/app/penwork-studio/id6757620114" target="_blank" rel="noopener">App Store</a><a href="mailto:harmonyStack@gmail.com">Contact</a><a href="harmony-stack-services.html">Harmony Stack</a></div>
+  <div class="app-footer-fine">Penwork Studio is an iOS app built by Harmony Stack.<br>Support: <a href="mailto:harmonyStack@gmail.com">harmonyStack@gmail.com</a> • © 2026 Harmony Stack. All rights reserved.</div>
+</footer>
+
+<script>
+(function(){
+  var stages = [].slice.call(document.querySelectorAll('[data-scrollshow]'));
+  if(!stages.length) return;
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  function mobile(){ return window.innerWidth <= 768; }
+  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+  function update(){
+    var vh = window.innerHeight || document.documentElement.clientHeight, m = mobile();
+    for(var i=0;i<stages.length;i++){
+      var stageEl = stages[i];
+      var card = stageEl.querySelector('.scrollshow-card');
+      var title = stageEl.querySelector('.scrollshow-title');
+      if(!card) continue;
+      var r = stageEl.getBoundingClientRect();
+      var H = stageEl.offsetHeight || r.height;
+      var p = clamp((-r.top) / Math.max(H - vh, 1), 0, 1);
+      var e = p*p*(3-2*p);
+      var rotate = 20 - 20*e;
+      var sf = m ? 0.7 : 1.05, st = m ? 0.9 : 1;
+      var scale = sf + (st - sf) * e;
+      card.style.transform = 'rotateX(' + rotate.toFixed(2) + 'deg) scale(' + scale.toFixed(3) + ')';
+      if(title){ title.style.transform = 'translateY(' + (-100 * e).toFixed(1) + 'px)'; }
+    }
+  }
+  var ticking = false;
+  function onScroll(){ if(!ticking){ ticking = true; requestAnimationFrame(function(){ update(); ticking = false; }); } }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  window.addEventListener('load', update);
+  update();
+})();
+</script>
+
+<script>
+(function(){
+  function initGooey(wrap){
+    var t1 = wrap.querySelector('.gt-1');
+    var t2 = wrap.querySelector('.gt-2');
+    var texts;
+    try { texts = JSON.parse(wrap.getAttribute('data-texts')); } catch(e){ texts = []; }
+    if(!texts.length || !t1 || !t2) return;
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reduce){ t1.textContent = texts[0]; t1.style.opacity = '1'; t2.style.display = 'none'; return; }
+
+    var morphTime = 1.0, cooldownTime = 1.6;
+    var textIndex = texts.length - 1;
+    var time = performance.now();
+    var morph = 0, cooldown = cooldownTime;
+
+    t1.textContent = texts[textIndex % texts.length];
+    t2.textContent = texts[(textIndex + 1) % texts.length];
+
+    function setMorph(fraction){
+      t2.style.filter = 'blur(' + Math.min(8 / fraction - 8, 100) + 'px)';
+      t2.style.opacity = Math.pow(fraction, 0.4) * 100 + '%';
+      var f = 1 - fraction;
+      t1.style.filter = 'blur(' + Math.min(8 / f - 8, 100) + 'px)';
+      t1.style.opacity = Math.pow(f, 0.4) * 100 + '%';
+    }
+    function doCooldown(){
+      morph = 0;
+      t2.style.filter = ''; t2.style.opacity = '100%';
+      t1.style.filter = ''; t1.style.opacity = '0%';
+    }
+    function doMorph(){
+      morph -= cooldown; cooldown = 0;
+      var fraction = morph / morphTime;
+      if(fraction > 1){ cooldown = cooldownTime; fraction = 1; }
+      setMorph(fraction);
+    }
+    function animate(now){
+      requestAnimationFrame(animate);
+      var shouldIncrement = cooldown > 0;
+      var dt = (now - time) / 1000;
+      time = now;
+      cooldown -= dt;
+      if(cooldown <= 0){
+        if(shouldIncrement){
+          textIndex++;
+          t1.textContent = texts[textIndex % texts.length];
+          t2.textContent = texts[(textIndex + 1) % texts.length];
+        }
+        doMorph();
+      } else {
+        doCooldown();
+      }
+    }
+    requestAnimationFrame(animate);
+  }
+  var wraps = document.querySelectorAll('[data-gooey]');
+  for(var i = 0; i < wraps.length; i++){ initGooey(wraps[i]); }
+})();
+</script>
+
+</body>
+</html>
