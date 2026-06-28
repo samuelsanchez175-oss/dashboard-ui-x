@@ -18,6 +18,16 @@ const VAULT = process.env.VAULT_DIR || '/Users/samuel/dev/OB CLAUDE vault'
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
 const OUT = join(repoRoot, 'public', 'data', 'projects.json')
 
+// Don't clobber the AI-reconciled snapshot (Opus doc audit) with raw checkbox data.
+// The Refresh button hits this; bail out so the richer analysis survives.
+try {
+  const existing = JSON.parse(readFileSync(OUT, 'utf8'))
+  if (existing.source === 'opus-doc-audit' || existing.projects?.some(p => p.tasks?.some(t => 'owner' in t))) {
+    console.log('projects.json is AI-enriched (opus-doc-audit) — skipping raw checkbox rebuild to preserve it.')
+    process.exit(0)
+  }
+} catch { /* no existing file — proceed with raw build */ }
+
 /** Top-level folders that are not projects. */
 const EXCLUDE = new Set([
   '🌅 Daily Brief', '🤝 Handoffs', '⚙️ automation', '📊 dashboard-ui',
