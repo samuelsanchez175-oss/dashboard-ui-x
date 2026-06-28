@@ -301,6 +301,11 @@ export default function CpwZone() {
   const refresh = useCallback(async () => {
     setRefreshing(true)
     try { await fetch('/api/local/projects/build', { method: 'POST' }) } catch { /* route absent in prod */ }
+    try { await fetch('/api/local/projects/sync', { method: 'POST' }) } catch { /* route absent in prod */ }
+    try {
+      const map = await fetchCheckoffs()
+      if (Object.keys(map).length) setOverrides(prev => { const n = { ...prev, ...map }; saveOverrides(n); return n })
+    } catch { /* offline */ }
     await fetchData()
     setRefreshing(false)
   }, [fetchData])

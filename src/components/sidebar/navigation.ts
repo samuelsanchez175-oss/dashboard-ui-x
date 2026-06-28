@@ -57,6 +57,11 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [{ id: 'daily-brief', label: 'Daily Brief', icon: Sunrise }],
   },
   {
+    id:    'cpw',
+    title: 'PROJECTS',
+    items: [{ id: 'cpw-projects', label: 'All projects', icon: FolderKanban }],
+  },
+  {
     id:    'polymarket',
     title: 'POLYMARKET',
     items: [
@@ -99,11 +104,6 @@ export const NAV_SECTIONS: NavSection[] = [
       { id: 'harmony-todos', label: 'Client Projects', icon: CheckSquare },
       { id: 'harmony-portfolio', label: 'Portfolio', icon: Images },
     ],
-  },
-  {
-    id:    'cpw',
-    title: 'PROJECTS',
-    items: [{ id: 'cpw-projects', label: 'All projects', icon: FolderKanban }],
   },
   {
     id:    'pulse',

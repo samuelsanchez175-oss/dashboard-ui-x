@@ -415,6 +415,16 @@ export function attachDashboardBff(
       return
     }
 
+    // POST /api/local/projects/sync — pull check-offs from the cloud store → vault note (what the cron does)
+    if (pathName === '/api/local/projects/sync' && method === 'POST') {
+      const url = 'https://suyjphvmurihtpriovnv.supabase.co/rest/v1/checkoffs?select=task_id,done'
+      const token = 'sb_publishable_aIiylimy7JjPz1Wkq5xXAg_AZoBnQSd'
+      const cmd = `CHECKOFF_STORE_URL="${url}" CHECKOFF_STORE_TOKEN="${token}" VAULT_DIR="${VAULT_DIR}" node "${repoRoot}/scripts/sync-checkoffs.mjs"`
+      const outcome = await runCommand(cmd)
+      jsonRes(res, outcome.ok ? 200 : 500, outcome)
+      return
+    }
+
     // GET /api/local/vault/logs?type=brief|ingest
     if ((pathName === '/api/local/vault/logs' || pathName.startsWith('/api/local/vault/logs?')) && method === 'GET') {
       const qs = new URL(req.url ?? '', 'http://localhost').searchParams
