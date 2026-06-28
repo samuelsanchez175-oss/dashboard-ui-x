@@ -28,10 +28,16 @@ if (!STORE_URL) {
 }
 
 async function loadOverrides() {
-  const res = await fetch(STORE_URL, STORE_TOKEN ? { headers: { authorization: `Bearer ${STORE_TOKEN}` } } : undefined)
+  const headers = STORE_TOKEN ? { apikey: STORE_TOKEN, authorization: `Bearer ${STORE_TOKEN}` } : undefined
+  const res = await fetch(STORE_URL, headers ? { headers } : undefined)
   if (!res.ok) throw new Error(`store ${res.status}: ${(await res.text()).slice(0, 200)}`)
   const data = await res.json()
-  // Accept either a flat {taskId: bool} map or {overrides: {...}}.
+  if (Array.isArray(data)) {            // Supabase REST rows: [{task_id, done}]
+    const map = {}
+    for (const row of data) if (row && row.task_id != null) map[row.task_id] = !!row.done
+    return map
+  }
+  // Or a flat {taskId: bool} map / {overrides: {...}}.
   return data && typeof data === 'object' ? (data.overrides ?? data) : {}
 }
 

@@ -11,9 +11,9 @@
   <key>EnvironmentVariables</key>
   <dict>
     <key>VAULT_DIR</key><string>/Users/samuel/dev/OB CLAUDE vault</string>
-    <!-- Fill these in once you pick a cloud store (see scripts/PROJECT-SYNC.md). -->
-    <key>CHECKOFF_STORE_URL</key><string></string>
-    <key>CHECKOFF_STORE_TOKEN</key><string></string>
+    <!-- Supabase project ui-dashboard-checkoffs (publishable key — public by design). -->
+    <key>CHECKOFF_STORE_URL</key><string>https://suyjphvmurihtpriovnv.supabase.co/rest/v1/checkoffs?select=task_id,done</string>
+    <key>CHECKOFF_STORE_TOKEN</key><string>sb_publishable_aIiylimy7JjPz1Wkq5xXAg_AZoBnQSd</string>
   </dict>
   <key>StartInterval</key><integer>900</integer>
   <key>RunAtLoad</key><true/>

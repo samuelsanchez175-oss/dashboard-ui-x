@@ -21,11 +21,9 @@ cp .env.example .env.local        # then set ANTHROPIC_API_KEY=sk-ant-...
 
 ## Enable cross-environment check-off sync (item 2)
 
-Localhost already writes the vault directly — no setup needed. To also capture check-offs made on the **Vercel** site, you need ONE cloud store both Vercel and this Mac can reach. Recommended: **Supabase** (you have it connected) — a `checkoffs(task_id text primary key, done bool)` table.
+**✅ Provisioned (2026-06-28):** Supabase project `ui-dashboard-checkoffs` (`suyjphvmurihtpriovnv`) with a `checkoffs` table. The dashboard reads it on load and upserts on every toggle (`src/lib/checkoffStore.ts`) — so ticking on the **Vercel** site lands in the store, and any device picks it up. The cron plist is pre-filled with the store URL + publishable key.
 
-1. **Store the check-offs from the browser.** Have the dashboard POST the override map to your store on both envs (a tiny Supabase upsert, or a Vercel route that writes to it).
-2. **Point the cron at the store's read endpoint** — set `CHECKOFF_STORE_URL` (returns `{"<taskId>": true|false}`) and optional `CHECKOFF_STORE_TOKEN` in `.env.local` **and** in `scripts/com.user.projects-checkoff-sync.plist`.
-3. **Install the cron:**
+**Only step left — install the cron** so the vault note updates periodically without opening localhost:
 
 ```bash
 cp scripts/com.user.projects-checkoff-sync.plist ~/Library/LaunchAgents/

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import UpdateDot from '../../components/ui/UpdateDot'
+import { fetchCheckoffs, upsertCheckoff } from '../../lib/checkoffStore'
 import {
   Bot, Check, ChevronRight, Circle, Copy, FolderKanban, ListTodo, RefreshCw, UserRound, X,
 } from 'lucide-react'
@@ -285,6 +286,18 @@ export default function CpwZone() {
     void fetchData()
   }, [fetchData])
 
+  // Pull cross-env check-offs (made on Vercel / another device) from the store on mount.
+  useEffect(() => {
+    void fetchCheckoffs().then(map => {
+      if (!Object.keys(map).length) return
+      setOverrides(prev => {
+        const next = { ...prev, ...map }
+        saveOverrides(next)
+        return next
+      })
+    })
+  }, [])
+
   const refresh = useCallback(async () => {
     setRefreshing(true)
     try { await fetch('/api/local/projects/build', { method: 'POST' }) } catch { /* route absent in prod */ }
@@ -302,11 +315,12 @@ export default function CpwZone() {
   const toggleTask = useCallback((taskId: string) => {
     setOverrides(prev => {
       const base = baseDone[taskId] ?? false
-      const current = prev[taskId] ?? base
+      const newVal = !(prev[taskId] ?? base)
       const next = { ...prev }
-      if (!current === base) delete next[taskId]
-      else next[taskId] = !current
+      if (newVal === base) delete next[taskId]
+      else next[taskId] = newVal
       saveOverrides(next)
+      void upsertCheckoff(taskId, newVal) // cross-env store (Supabase)
       return next
     })
   }, [baseDone])
