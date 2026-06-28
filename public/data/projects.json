@@ -1,0 +1,3496 @@
+{
+  "generatedAt": "2026-06-28T12:32:18.824Z",
+  "count": 14,
+  "projects": [
+    {
+      "id": "xjournal-ai-model-g",
+      "name": "XJournal AI - Model G",
+      "emoji": "🧠",
+      "summary": "You don't need to know RAG. Here's the whole thing in one picture, then exactly what to do.",
+      "status": "active",
+      "statusRaw": "implemented (working tree, pending commit + on-device build)",
+      "deadline": null,
+      "accent": "#dc2626",
+      "tasks": [
+        {
+          "id": "xjournal-ai-model-g-0",
+          "title": "Step 1: After the metadata block (var folder: String?, line 22), add the range properties:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-1",
+          "title": "Step 2: In init (after self.folder = nil, line 51), add:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-2",
+          "title": "Step 3: Build in Xcode (⌘B). Expected: 0 errors. SwiftData adds the optional attributes as a lightweight migration (no schema version bump needed for new optionals).",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-3",
+          "title": "Step 4: Commit.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-4",
+          "title": "Step 1: In struct RapMetrics (after let scale: String?, line 18) add:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-5",
+          "title": "Step 2: Update extractMetrics signature (line 139) to accept the range:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-6",
+          "title": "Step 3: In the return RapMetrics(...) (line 184) add the two fields after scale: scale:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-7",
+          "title": "Step 4: Build (⌘B). The two no-arg callers (ContentView.CCV.13.swift:1908,1999) use the defaults and still compile. Expected: 0 errors.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-8",
+          "title": "Step 5: Commit.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-9",
+          "title": "Step 1: In struct GenerationContext (after var musicalScale: String? = nil, line 108) add trailing-default fields (keeps the memberwise init back-compatible for all existing callers):",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-10",
+          "title": "Step 2: Build (⌘B). Expected: 0 errors (existing call sites unaffected by trailing defaults).",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-11",
+          "title": "Step 3: Commit.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-12",
+          "title": "Step 1: After syllableCount(word:) (line 25) add a whole-line counter:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-13",
+          "title": "Step 2: Build (⌘B). Expected: 0 errors.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-14",
+          "title": "Step 3: Sanity (console, optional — paste into any #if DEBUG scratch and read output):",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-15",
+          "title": "Step 1: Add a temperature param to generateFullVerse (line 175):",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-16",
+          "title": "Step 2: Replace the syllRule definition (lines 186-188) with a range-aware version + an example line drawn from the user's own bars:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-17",
+          "title": "Step 3: Append \\(exampleBlock) to the Rules line of the user prompt (line 196), right after the existing \\(syllRule) clause — find \\(syllRule) (no wordy/run-on lines); and change the end of that prompt's Rules sentence to include the example block before the closing \"\"\". Concretely, change the final line of the user string from:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-18",
+          "title": "Step 4: Use the param in the postChat call (line 201): change temperature: 0.8, to temperature: temperature,.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-19",
+          "title": "Step 5: Add a public beat-metadata extractor (place after generateFullVerse, before buildBarCandidatesPrompt ~line 213):",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-20",
+          "title": "Step 6: Build (⌘B). Expected: 0 errors. (The generateFullVerse caller in V3 still compiles — temperature defaults to 0.8 until Task 6 sets it.)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-21",
+          "title": "Step 7: Commit.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-22",
+          "title": "Step 1: Bump candidate count (line 23):",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-23",
+          "title": "Step 2: Add range params to generateRecord (after musicalScale: String? = nil, line 36):",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-24",
+          "title": "Step 3: Pass range into baseContext.makeContext (lines 60-64) and the per-bar makeContext (lines 92-97). In BOTH, after bpm: bpm, musicalKey: musicalKey, musicalScale: musicalScale, add:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-25",
+          "title": "Step 4: Give each candidate a distinct temperature. Replace the task-group loop (lines 70-83) with:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-26",
+          "title": "Step 5: Replace the selection block (lines 86-102, from var best: through the if avg > bestScore loop) with a syllable-fit-primary selection:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-27",
+          "title": "Step 6: Add range params to makeContext signature (line 142-146). After bpm: Int? = nil, musicalKey: String? = nil, musicalScale: String? = nil, add:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-28",
+          "title": "Step 7: In makeContext's GenerationContext(...) (lines 148-156): change the syllableTarget: line to use the new precedence helper, and add the range fields at the end. Replace line 151:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-29",
+          "title": "Step 8: Add the precedence helper next to tempoSyllableTarget (after line 165):",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-30",
+          "title": "Step 9: Build (⌘B). Expected: 0 errors.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-31",
+          "title": "Step 10: Commit.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-32",
+          "title": "Step 1: In the V3 branch coordinatorV3.generateRecord(...) (line 493), after musicalScale: metrics.scale add:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-33",
+          "title": "Step 1: Add range params to generateSuggestions(...) (line 1677). Insert after scale: String? = nil,:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-34",
+          "title": "Step 2: Update its extractMetrics call (line 1718) to pass the range:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-35",
+          "title": "Step 3: Mirror both edits for generateSuggestionsModelGParallel(...) (line 2037 signature; line 2074 extractMetrics call) — add the same syllableMin: Int? = nil, syllableMax: Int? = nil params and pass them into extractMetrics.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-36",
+          "title": "Step 4: Build (⌘B). Expected: 0 errors (callers without the new args use defaults until Task 10).",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-37",
+          "title": "Step 1: Create the file (auto-compiles via synchronized group):",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-38",
+          "title": "Step 3: Sanity for the pure parser (manual/console):",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-39",
+          "title": "Step 1: In ContentView.CCV.8.swift, add a popover view (mirrors BPMPopoverView style; place after BPMPopoverView):",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-40",
+          "title": "Step 2: In ContentView.CCV.13.swift, add the state flag beside the others (search @State private var showURLPopover) :",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-41",
+          "title": "Step 3: Add the popover presentation beside the others (after the URL .sheet block, line 776):",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-42",
+          "title": "Step 4: Add the pill into metadataPillsView (after scalePillMenu, line 1303):",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-43",
+          "title": "Step 5: Add the pill menu + label helper (place after scalePillMenu's definition):",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-44",
+          "title": "Step 6: Wire the range into the four generation calls. At each rapSuggestionEngine.generateSuggestions(...) / generateSuggestionsModelGParallel(...) call (lines ~167, ~541, ~592, ~608 — after scale: item.scale,), add:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-45",
+          "title": "Step 7: Build (⌘B). Expected: 0 errors.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-46",
+          "title": "Step 8: In-app check: open a note → tap the Syllables pill → set a range (e.g. 9–11) → it persists and shows on the pill. Generate Rap Suggestions → bars should cluster in-range more tightly than before.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-47",
+          "title": "Step 9: Commit.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-48",
+          "title": "Step 1: In URLAttachmentPopoverView (CCV.8:293) add bindings + detect state (after @Binding var url: String?, line 294):",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-49",
+          "title": "Step 2: Insert the Detect UI just before the final Clear/Done HStack (line 355). Shows a button when a URL is present; after detection, a confirm row:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-50",
+          "title": "Step 3: Update the call site in ContentView.CCV.13.swift (line 773) to pass the new bindings:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-51",
+          "title": "Step 4: Build (⌘B). Expected: 0 errors.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-52",
+          "title": "Step 5: In-app check: paste a YouTube beat URL whose title has BPM/key (e.g. \"…140 BPM C# Minor\") → tap Detect → \"Found: 140 BPM · C# · Minor\" → Apply → BPM/Key/Scale pills populate.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-53",
+          "title": "Step 6: Commit.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-54",
+          "title": "Step 1: Build + run on simulator/device.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-55",
+          "title": "Step 2: Set BPM=140 only (no range) → generate → confirm bars are shorter/clipped (tempo path: tempoSyllableTarget(140) ≈ 8). Set BPM=75 → bars longer (≈ 11).",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-56",
+          "title": "Step 3: Set Syllables range 9–11 → generate → spot-count several bars (they should sit in 9–11 far more often than on main before this work).",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-57",
+          "title": "Step 4: Paste a beat URL with metadata in the title → Detect → Apply → pills fill → generate uses them.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-58",
+          "title": "Step 5: Confirm v2/v1 unaffected: flip ModelGEnvironment.useModelGv3 = false → old behavior intact (no crashes, no range usage). Restore true.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-59",
+          "title": "Step 6: Final commit if any tweaks.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-60",
+          "title": "Step 1: Create package.json",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-61",
+          "title": "Step 2: Install the dependency",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-62",
+          "title": "Step 3: Ensure node_modules is ignored",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-63",
+          "title": "Step 4: Commit",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-64",
+          "title": "Step 1: Write the failing test",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-65",
+          "title": "Step 2: Run test to verify it fails",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-66",
+          "title": "Step 3: Implement parseBar + helpers in lib/parsers.mjs",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-67",
+          "title": "Step 4: Run test to verify it passes",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-68",
+          "title": "Step 5: Commit",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-69",
+          "title": "Step 1: Write the failing test (append)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-70",
+          "title": "Step 2: Run to verify it fails",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-71",
+          "title": "Step 3: Implement parseConcept (append to lib/parsers.mjs)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-72",
+          "title": "Step 4: Run to verify it passes — node --test → PASS.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-73",
+          "title": "Step 2: Run to verify it fails — node --test → FAIL.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-74",
+          "title": "Step 3: Implement parseSlang (append)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-75",
+          "title": "Step 3: Implement buildCorpus (append to lib/parsers.mjs)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-76",
+          "title": "Step 4: Create build-corpus.mjs (I/O orchestration)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-77",
+          "title": "Step 5: Run to verify it passes — cd \"tools/modelg-corpus\" && node --test → PASS.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-78",
+          "title": "Step 6: Commit",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-79",
+          "title": "Step 1: Run the export against the real vault",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-80",
+          "title": "Step 2: Sanity-check the artifact",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-81",
+          "title": "Step 3: Commit the generated corpus",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-82",
+          "title": "Step 1: Create the fixture corpus The Final Journal AITests/Fixtures/ModelGCorpus.fixture.json",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-83",
+          "title": "Step 2: Write the failing test The Final Journal AITests/ModelGCorpusStoreTests.swift",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-84",
+          "title": "Step 3: Run test to verify it fails",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-85",
+          "title": "Step 4: Create the models XJournal AI/ModelG/Corpus/ModelGCorpusModels.swift",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-86",
+          "title": "Step 5: Create the store XJournal AI/ModelG/Corpus/ModelGCorpusStore.swift",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-87",
+          "title": "Step 6: Run test to verify it passes",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-88",
+          "title": "Step 7: Commit",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-89",
+          "title": "Step 1: Write the failing tests (append)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-90",
+          "title": "Step 2: Run to verify they fail — same xcodebuild test command → FAIL (methods missing).",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-91",
+          "title": "Step 3: Implement the query methods (append inside ModelGCorpusStore)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-92",
+          "title": "Step 4: Run to verify they pass — xcodebuild test → PASS.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-93",
+          "title": "Step 1: Write the failing/affirming test (append)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-94",
+          "title": "Step 2: Run the test",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-95",
+          "title": "Step 3: Commit",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-96",
+          "title": "Step 1: Read ModelGEnvironment.swift:27–43 to match the exact property style, then add (mirroring useModelGv3):",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-97",
+          "title": "Step 2: Leave the v3 default migration as-is (v4 is opt-in, off by default, so A/B holds and production stays on v3 until we flip it). Do NOT auto-enable v4.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-98",
+          "title": "Step 3: Commit: git add \"XJournal AI/ModelG/ModelGEnvironment.swift\" && git commit -m \"feat(modelg-v4): add useModelGv4 flag (opt-in, off by default)\"",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-99",
+          "title": "Step 1: Write the failing test ModelGCorpusRetrieverTests.swift:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-100",
+          "title": "Step 2: Run the test (the xcodebuild test command above with -only-testing:\"The Final Journal AITests/ModelGCorpusRetrieverTests\") → FAIL (type missing).",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-101",
+          "title": "Step 3: Implement ModelGCorpusRetriever.swift:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-102",
+          "title": "Step 4: Run the test → PASS.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-103",
+          "title": "Step 5: Commit: git add \"XJournal AI/ModelG/Corpus/ModelGCorpusRetriever.swift\" \"The Final Journal AITests/ModelGCorpusRetrieverTests.swift\" && git commit -m \"feat(modelg-v4): ModelGCorpusRetriever (lexical exemplars + brand vocab)\"",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-104",
+          "title": "Step 1: Read ModelGLLMService.swift:175–239 (the real current body).",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-105",
+          "title": "Step 2: Change the signature to add a defaulted param (preserves all existing call sites):",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-106",
+          "title": "Step 3: Just before let user = \"\"\" (~:216), build the block:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-107",
+          "title": "Step 4: Insert \\(corpusExemplarBlock)\\(corpusVocabBlock) into the user string near the existing referencesBlock interpolation (after referencesBlock, before the Rules/output line ~:222). Add a one-line system-prompt bias (append to the :227 constant): House style and the reference bars take priority over the requested topic when they conflict.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-108",
+          "title": "Step 5: Build to confirm it compiles (no test yet — behavior is exercised in Task 5/6). xcodebuild build -project \"XJournal AI.xcodeproj\" -scheme \"XJournal AI\" -derivedDataPath /tmp/xjournal-dd CODE_SIGNING_ALLOWED=NO -destination 'platform=iOS Simulator,name=iPhone 17' 2>&1 | tail -5 → BUILD SUCCEEDED.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-109",
+          "title": "Step 6: Commit: git add \"XJournal AI/ModelG/ModelGLLMService.swift\" && git commit -m \"feat(modelg-v4): inject corpus exemplars + vocab into generateFullVerse prompt (default-empty, v1-3 unchanged)\"",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-110",
+          "title": "Step 1: Write failing tests ModelGV4ScoringTests.swift:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-111",
+          "title": "Step 2: Run -only-testing:\"The Final Journal AITests/ModelGV4ScoringTests\" → FAIL (methods missing).",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-112",
+          "title": "Step 3: Implement — read ScoringEngine.swift:12–26 + :36 first, then add to ScoreBreakdown (additive, default 0):",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-113",
+          "title": "Step 4: Run → PASS.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-114",
+          "title": "Step 5: Commit: git add \"XJournal AI/ModelG/ScoringEngine.swift\" \"The Final Journal AITests/ModelGV4ScoringTests.swift\" && git commit -m \"feat(modelg-v4): additive 50/10/40 house/auto/user composite in ScoringEngine\"",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-115",
+          "title": "Step 1: Read the full ModelGCoreCoordinatorV3.swift; copy it to ModelGCoreCoordinatorV4.swift; rename class ModelGCoreCoordinatorV3 → ModelGCoreCoordinatorV4.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-116",
+          "title": "Step 2: After the verse plan is produced, add retrieval:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-117",
+          "title": "Step 3: In the generateFullVerse call (v3 :79–95 task group), pass corpusExemplars: exemplarTexts, corpusVocab: retrieved.vocab.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-118",
+          "title": "Step 4: In consider() (v3 :114–135), compute the v4 breakdown per bar and select by highest average v4Total (keep a hard floor: discard candidates with any bar wildly outside the syllable range via the existing penalty as a tiebreaker only):",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-119",
+          "title": "Step 5: Build → BUILD SUCCEEDED. Commit: git add \"XJournal AI/ModelG/ModelGCoreCoordinatorV4.swift\" && git commit -m \"feat(modelg-v4): ModelGCoreCoordinatorV4 — corpus retrieval + 50/10/40 selection\"",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-120",
+          "title": "Step 1: Read RapSuggestionAPI.swift:485–525. Prepend, before the if ModelGEnvironment.useModelGv3 block (:491):",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-121",
+          "title": "Step 2: Build the whole app → BUILD SUCCEEDED. Run the full test suite (xcodebuild test … -only-testing:\"The Final Journal AITests\") → all pass (Phase 1 + new v4 scorer/retriever tests).",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-122",
+          "title": "Step 3: Manual smoke (Samuel, in-app or via a debug toggle): set ModelGEnvironment.useModelGv4 = true, generate on a note with a theme, confirm lines come back and (eyeball) lean on the corpus vocabulary. v4 is opt-in so this can't regress production.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-123",
+          "title": "Step 4: Commit: git add \"XJournal AI/RapSuggestionAPI.swift\" && git commit -m \"feat(modelg-v4): route generation through V4 coordinator when useModelGv4\"",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-124",
+          "title": "Step 1: Failing test:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-125",
+          "title": "Step 2: Run -only-testing:\"The Final Journal AITests/ModelGEmbeddingTests\" → FAIL.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-126",
+          "title": "Step 3: Implement:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-127",
+          "title": "Step 5: Commit: git add \"XJournal AI/ModelG/Embedding/VectorMath.swift\" \"The Final Journal AITests/ModelGEmbeddingTests.swift\" && git commit -m \"feat(modelg-v4): VectorMath.cosine\"",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-128",
+          "title": "Step 1: Failing test (append) — tests the PURE rankByVectors (no NLEmbedding needed):",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-129",
+          "title": "Step 2: Run → FAIL.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-130",
+          "title": "Step 4: Run → PASS. Build → SUCCEEDED.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-131",
+          "title": "Step 5: Commit: git add \"XJournal AI/ModelG/Embedding/ModelGEmbeddingIndex.swift\" \"The Final Journal AITests/ModelGEmbeddingTests.swift\" && git commit -m \"feat(modelg-v4): ModelGEmbeddingIndex (NLEmbedding, background build, degrade-safe)\"",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-132",
+          "title": "Step 1: Failing test (append) — nil index ⇒ unchanged lexical behavior:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-133",
+          "title": "Step 2: Run → it should still PASS (no behavior change yet) — this is a regression guard. Proceed.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-134",
+          "title": "Step 3: Read the real ModelGCorpusRetriever. Add a stored property var embeddingIndex: ModelGEmbeddingIndex? = nil (keep let store; the synthesized memberwise init then accepts it with a default, so existing ModelGCorpusRetriever(store:) callers — Ghost — are unaffected). In retrieve(...), after building pool but before dedupe/cap, insert the semantic step:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-135",
+          "title": "Step 4: Run the test → PASS. Build → SUCCEEDED.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-136",
+          "title": "Step 5: Commit: git add \"XJournal AI/ModelG/Corpus/ModelGCorpusRetriever.swift\" \"The Final Journal AITests/ModelGEmbeddingTests.swift\" && git commit -m \"feat(modelg-v4): hybrid retrieval — semantic rank when index ready, lexical fallback\"",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-137",
+          "title": "Step 1: Read where V4 builds ModelGCorpusRetriever(store: corpusStore) (the corpus-retrieval step). Replace with:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-138",
+          "title": "Step 2: Build → BUILD SUCCEEDED. Run the FULL suite (-only-testing:\"The Final Journal AITests\") → all pass.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-139",
+          "title": "Step 3: Commit: git add \"XJournal AI/ModelG/ModelGCoreCoordinatorV4.swift\" && git commit -m \"feat(modelg-v4): V4 coordinator builds + uses the semantic embedding index\"",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-140",
+          "title": "Step 1: Failing test ProviderRoutingTests.swift:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-141",
+          "title": "Step 2: Run -only-testing:\"The Final Journal AITests/ProviderRoutingTests\" → FAIL.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-142",
+          "title": "Step 3: Add to ModelGLLMService (near the top of the class):",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-143",
+          "title": "Step 4: Run test → PASS. (Build will fail until Task 2 adds postAnthropic — that's expected; do Task 2 before building.)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-144",
+          "title": "Step 5: (commit after Task 2.)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-145",
+          "title": "Step 1: Add next to postGemini:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-146",
+          "title": "Step 2: Build → BUILD SUCCEEDED. Run ProviderRoutingTests → PASS.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-147",
+          "title": "Step 3: Commit: git add \"XJournal AI/ModelG/ModelGLLMService.swift\" \"The Final Journal AITests/ProviderRoutingTests.swift\" && git commit -m \"feat(modelg-v4): Anthropic (Claude) provider via sk-ant- keys + tested routing\"",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-148",
+          "title": "Step 1: Failing test (append):",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-149",
+          "title": "Step 3: Create XJournal AI/ModelG/ProviderPricing.swift:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-150",
+          "title": "Step 4: Run test → PASS.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-151",
+          "title": "Step 5: Create XJournal AI/ModelG/ProviderPricingView.swift (Momentum-styled compact table):",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-152",
+          "title": "Step 6: Build → SUCCEEDED. Commit: git add \"XJournal AI/ModelG/ProviderPricing.swift\" \"XJournal AI/ModelG/ProviderPricingView.swift\" \"The Final Journal AITests/ProviderRoutingTests.swift\" && git commit -m \"feat(modelg-v4): provider price comparison (data + view)\"",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-153",
+          "title": "Step 1: In the Ghost .popover (the Off/Free/Live VStack added in Phase 4), add below the picker:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-154",
+          "title": "Step 2: Build → SUCCEEDED. Commit: git add \"XJournal AI/ContentView.CCV.14.swift\" && git commit -m \"feat(modelg-v4): open provider price chart from Ghost popover\"",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-155",
+          "title": "Step 1: Create:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-156",
+          "title": "Step 2: Build → SUCCEEDED. Commit: git add \"XJournal AI/ModelG/Ghost/GhostMode.swift\" && git commit -m \"feat(ghost): GhostMode enum + storage key\"",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-157",
+          "title": "Step 1: Write failing tests:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-158",
+          "title": "Step 2: Run -only-testing:\"...GhostSuggestionEngineTests\" → FAIL.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-159",
+          "title": "Step 3: Implement GhostSuggestionEngine.swift:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-160",
+          "title": "Step 4: Run tests → PASS.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-161",
+          "title": "Step 5: Commit: git add \"XJournal AI/ModelG/Ghost/GhostSuggestionEngine.swift\" \"The Final Journal AITests/GhostSuggestionEngineTests.swift\" && git commit -m \"feat(ghost): GhostSuggestionEngine — Free rhyme-ending hints (corpus-ranked)\"",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-162",
+          "title": "Step 1: Create a translucent one-line pill (Momentum styling — match existing toolbar glass). Inputs: hint text, onAccept(String), onDismiss. Shows the candidates as tappable chips; tapping a chip calls onAccept(word); an X calls onDismiss. Use .ultraThinMaterial capsule, single line, dynamic-type friendly. (No business logic in the view.)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-163",
+          "title": "Step 2: Build → SUCCEEDED. Commit: git add \"XJournal AI/ModelG/Ghost/GhostBarPill.swift\" && git commit -m \"feat(ghost): GhostBarPill above-keyboard view\"",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-164",
+          "title": "Step 1: Read DynamicIslandToolbarView (CCV.14:40) — the props/bindings, the enhancedButton row, and the showFontSizePopover popover pattern.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-165",
+          "title": "Step 2: Add @Binding var ghostMode: GhostMode to the struct props + @State private var showGhostPopover = false.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-166",
+          "title": "Step 3: Add a ghost enhancedButton(id: \"ghost\", action: { isEditorFocused = false; showGhostPopover = true; startAutoCollapseTimer() }, label: { Image(systemName: ghostMode == .off ? \"wand.and.stars\" : \"wand.and.stars.inverse\").font(.headline).frame(...) }, hapticStyle: .light) after the magnifyingGlass button, with:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-167",
+          "title": "Step 4: Build → SUCCEEDED. Commit: git add \"XJournal AI/ContentView.CCV.14.swift\" && git commit -m \"feat(ghost): toolbar ghost button + Off/Free/Live chooser\"",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-168",
+          "title": "Step 1: SplashScreenManager.swift:135 — add case toolbarGhost = \"toolbar_ghost\" to SplashScreenID; add it to the toolbar-splash ordering array (find getNextToolbarButtonSplash()).",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-169",
+          "title": "Step 2: CCV.13 — add @AppStorage(GhostMode.storageKey) private var ghostModeRaw = GhostMode.off.rawValue + a computed ghostMode binding; pass ghostMode: into DynamicIslandToolbarView(...) in bottomToolbar.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-170",
+          "title": "Step 3: CCV.13 getButtonInfo (~:2258) — add a .toolbarGhost case with first-run copy:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-171",
+          "title": "Step 4: CCV.13 handleBodyChange — after the existing body, add the trigger:",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-172",
+          "title": "Step 5: CCV.13 — host the pill above the keyboard: in the editor overlay stack, when ghostHint != nil && ghostMode != .off, show GhostBarPill(candidates: ghostHint!.candidates, onAccept: insertGhostWord, onDismiss: { ghostHint = nil }), offset up by keyboardHeight. insertGhostWord(_:) appends the word at the end of item.body (v1: append \" \" + word to the current line; refine to caret-insert later).",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-173",
+          "title": "Step 6: Build → SUCCEEDED. Manual smoke (Samuel): toggle Free, type a line + Enter, see the rhyme pill, tap a word → inserts. Commit: git add \"XJournal AI/ContentView.CCV.13.swift\" \"XJournal AI/SplashScreenManager.swift\" && git commit -m \"feat(ghost): trigger + pill + first-run wiring (Free/Live)\"",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-174",
+          "title": "Perf #1: run the 2 suggestion sets concurrently (RapSuggestionAPI.swift:550) — ~2×, low risk",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-175",
+          "title": "Perf #3.1: request 8 candidates/call instead of 4 — cuts retries",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-176",
+          "title": "v3 §1: add rhyme to the prompt + replace scoreInternalEcho with phonetic rhyme scoring",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-model-g-177",
+          "title": "v3 §3 / Perf #2: single-call planned verse, behind a useModelGv3 flag",
+          "done": false
+        }
+      ],
+      "doneCount": 0,
+      "totalCount": 178
+    },
+    {
+      "id": "xjournal-ai-app",
+      "name": "XJournal AI - App",
+      "emoji": "📱",
+      "summary": "Whole-app map. Pipeline internals: Model G. Back to Home.",
+      "status": "active",
+      "statusRaw": "✅ MERGED — PR #2 merged 2026-06-01 · origin/main @ a3c2cbc",
+      "deadline": null,
+      "accent": "#d97706",
+      "tasks": [
+        {
+          "id": "xjournal-ai-app-0",
+          "title": "Speed: run the 2 suggestion sets concurrently — RapSuggestionAPI.swift:550 (async let/task group). ~2× faster. (Model G — Performance Findings #1)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-1",
+          "title": "Speed: request 8 bar-candidates per call instead of 4 → fewer retry round-trips. (#3)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-2",
+          "title": "Dark: GlassSettings.darkening 0.12 → ~0.05; lift SoftBlueGlass tint; lighten card gradients. (ContentView.CCV.2.swift:228)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-3",
+          "title": "Usability: gate APIDebugInspector, RhymeDiagnosticsPanelView, ModelGControlSurfaceView behind #if DEBUG.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-4",
+          "title": "Usability: replace the literal \"Fallback bar…\" with a friendly error + Retry.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-5",
+          "title": "Hygiene: pick ONE canonical truth CSV, archive dupes; add .gitignore for build artifacts. (Ground Truth & Grading System)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-6",
+          "title": "G0: script computes corpus stats + A1 (cadence) + A2 (rhyme density) + A7 (anti-copy) for saved verses.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-7",
+          "title": "Fix the golden prompt set (~25–50 entries) → eval/golden_prompts.json.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-8",
+          "title": "Baseline: grade Model G v1 vs v2 on the golden set; record numbers.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-9",
+          "title": "G1: add A3–A6 (rhyme quality, flow/stress, tone, lexical); lock weights → eval/grading_log.csv.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-10",
+          "title": "One-call planned verse: generate a short verse plan, then the full 16 bars in 1–3 calls instead of 16+. (Model G — Performance Findings #2)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-11",
+          "title": "Decompose the heaviest views (RapSuggestionView 2.3k, ContentView.CCV.13 2.2k, AudioDetailSheet 2.0k) into small subviews to cut re-renders. (UX — Slow, Dark & Hard to Use)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-12",
+          "title": "Lazy-load lists; move heavy work out of body.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-13",
+          "title": "Prompt: pass the end-word to rhyme against + name the scheme; ask for multisyllabic/internal rhyme. (ModelGLLMService)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-14",
+          "title": "Scoring: replace scoreInternalEcho (rewards word-repetition!) with phonetic rhyme scoring using CMUDICT + RhymeClusterEngine. (ScoringEngine.swift:145)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-15",
+          "title": "Syllables: give an example line at target length instead of a number models can't count.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-16",
+          "title": "Selection: LLM-as-judge rerank of the top candidates.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-17",
+          "title": "Re-grade vs Phase-1 baseline. (Model G — v3 Quality Roadmap)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-18",
+          "title": "Onboarding: 2–3 first-run screens (what it does → write a line → see a verse).",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-19",
+          "title": "Core flow: one-tap Generate with smart defaults; controls behind \"Customize\" (progressive disclosure).",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-20",
+          "title": "Theme toggle: System / Light / Dark; consider Light default.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-21",
+          "title": "Font scalability / Dynamic Type — DONE 2026-06-01 *(the whole app honors the iOS Text Size slider).* Foundation + core + full P1–P3 sweep complete: 32 text fonts converted to scale, all build-verified; every remaining .system(size:) is an intentional decorative/control-glyph keep (or the editor writingFontSize). Spec docs/superpowers/specs/2026-06-01-dynamic-type-foundation-core-surfaces-design.md, BUILD SUCCEEDED. The Momentum ramp (Momentum/MomentumDesignSystem.swift) now maps to semantic styles (Body→.callout, CardTitle→.headline (17, locked 1pt drop), Metadata→.footnote, Section→.caption, Hero scaled+clamped via UIFontMetrics) so it scales live; added chromeClamp() (caps dense chrome at xxxLarge) + scaledHitTarget() (≥44pt). Honors the OS slider only — no in-app control.",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-22",
+          "title": "Foundation + core surfaces — ramp scales; Journal list (CCV.10 search/sort/filter chrome + CCV.11 row) + Note editor (CCV.13 metadata pills + CCV.14 toolbar, body clamped) converted. Editor writing area stays on user writingFontSize (decision B).",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-23",
+          "title": "Follow-up app-wide sweep — DONE: backlog + final state in docs/dynamic-type-offenders.md.",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-24",
+          "title": "P1 — 5 design-system internals in MomentumDesignSystem.swift (FontSizeStepperPopover, MomentumChip, MomentumSquareButtonStyle) — converted + build verified 2026-06-01.",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-25",
+          "title": "P2 — high-traffic screens (RapSuggestionView, OnboardingWelcomeFlow, AnalyticsDashboardView, CCV.12, ModelGControlSurfaceView, InlineAudioCardView, AudioDetailSheet, ReleaseNotesSheetView) — 19 text fonts converted, 8 decorative glyphs kept fixed; build verified 2026-06-01.",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-26",
+          "title": "P3 — sheets / banners / badges / splash — 8 text fonts converted (AIErrorBanner ×5, AchievementBadgeView stat, SplashScreenView app name, ThemeExpansionSheet header); 28 decorative glyphs kept fixed, 15 files needed no edits; build verified 2026-06-01.",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-27",
+          "title": "In-app text-size slider (optional): local control on the editor & Rap Suggestions so a performer can size lyrics for reading aloud without leaving the app.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-28",
+          "title": "Declutter: keep write→lyrics front-and-center; tuck analytics/achievements/paywall.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-29",
+          "title": "Break up RapSuggestionAPI.swift (6.6k) into focused services (prompting / networking / retrieval / orchestration).",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-30",
+          "title": "Unify the two generation paths (systemPromptTemplate vs ModelG/*) or clearly delineate them.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-31",
+          "title": "Promote v3 → default if it out-scores v2 (confirm via ABTestingManager); retire dead paths.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-32",
+          "title": "71 source/data files committed (66 .swift incl. ModelG/* + FlowDNA/*, 4 data CSVs).",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-33",
+          "title": "WIP source checkpoint committed (Signal pipeline, audio, notifications, design system, 24 files).",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-34",
+          "title": "Backend/scripts/CSVs committed (backend/, X Journal CSV files /, scripts).",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-35",
+          "title": ".gitignore triage committed — ignores .cursor/ .vscode/ .claude/ + ~21 dev-note *.md.",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-36",
+          "title": "RapLyricsDatabase.swift deletion committed.",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-37",
+          "title": "Commit CCV.12.swift — your active profile WIP; commit when ready.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-38",
+          "title": "Reconcile main ↔ origin/main — local main ahead 19 / behind 7; run git pull --rebase origin main on main before merge.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-39",
+          "title": "Pushed ui-momentum-reskin to origin/ui-momentum-reskin.",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-40",
+          "title": "PR open: https://github.com/samuelsanchez175-oss/The-Final-Journal-AI/pull/2",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-41",
+          "title": "main reconciled — local main reset to origin/main (acaa4dc). Divergence cleared.",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-42",
+          "title": "Branch fully pushed — trailing commit (10b9e84: 75 stale duplicates deleted + 78 dead GlassSettings.darkening overlays removed) pushed to origin/ui-momentum-reskin.",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-43",
+          "title": "Reconcile main ↔ origin/main (local main ahead 19 / behind 7) — pull/rebase before merge.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-44",
+          "title": "Decide merge scope: branch is mixed (reskin + Model G + lexicon, interleaved) → a reskin-only PR isn't cleanly separable now ⇒ likely merge the whole branch.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-45",
+          "title": "Push ui-momentum-reskin; open PR → main.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-46",
+          "title": "Post-merge (future): editorial dark pass; caption-size pass.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-47",
+          "title": "Fixed b6c7d05 (2026-06-02) — the dropped-save path was Model Preferences: ModelSettingsForm knobs only persisted on the Save button (the sliders already wrote through live), so swipe-dismiss / Cancel silently dropped them. Added .onDisappear { saveSettings() } so the form persists on any dismiss; renamed Cancel → Done (settings are live). ⚠️ If the save you saw drop was elsewhere (note autosave, or per-note BPM/key/scale/syllables), reopen this — those paths were not changed.",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-48",
+          "title": "Fixed — keychain sim persistence + unconditional Profile save (e6fb59e + 978b540, 2026-06-02, Claude): the remaining drop was the API key — adhoc sim builds strip entitlements so SecItemAdd → -34018 (see keychain entry below). e6fb59e adds a UserDefaults fallback in KeychainHelper.save/load/delete triggered ONLY on errSecMissingEntitlement (-34018), so API/Genius/Suno/Uberduck keys now persist on the adhoc simulator with no signing; signed/device builds keep using the Keychain natively (fallback stays empty + is cleared on a successful write — so it's not a security downgrade on real builds). 978b540 makes ProfilePopoverView.onDisappear persist unconditionally (was gated on hasUnsavedChanges) so no Profile field is dropped on swipe-dismiss. Both build-green. ⚠️ Couldn't grab a live sim screenshot — the sim wedged into landscape (split-view) and can't be rotated back here (GUI/accessibility blocked); the changes are deterministic + build-verified. ⚠️ Still untouched: per-note metadata (BPM/key/scale/syllables) save path — reopen if that's the one dropping.",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-49",
+          "title": "Committed 9897c80 (2026-06-02) — slider work: ModelPreferencesView.swift (16 QuestionView radios → spectrum sliders + 3 new sliders), ModelG/ModelGEnvironment.swift (+creativity / effortCandidates / qualityBar), ModelG/ModelGCoreCoordinatorV3.swift (candidate rounds + quality-retry gate + candidateTemps). Builds green; defaults reproduce legacy behavior.",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-50",
+          "title": "Behavioral test the 3 new sliders (Creativity=temp, Effort=best-of-N, Quality bar=retry gate) actually move v3 output — needs an API key entered in the sim app (Profile → AI). The Python harness eval/run_gemini_test.py does NOT read app settings, so it can't validate these.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-51",
+          "title": "Remaining proposed sliders (from the controls→sliders table, not built): Slang/coded-ref density, Imply↔Explain, Rhyme hardness, Verse length, Assertiveness, Risk, Flow density.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-52",
+          "title": "Optional: vault design doc for the generation sliders.",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-53",
+          "title": "Commit EditorHeaderCoralBackground + nav-bar transparency when user approves editor bloom (status bar → pills → gray divider) — MomentumDesignSystem.swift, CCV.13.swift",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-54",
+          "title": "Commit Human Critic / actionable errors / suggestion recall / taste ledger batch when ready (large uncommitted diff alongside Theme Expansion)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-55",
+          "title": "Commit Theme Expansion stack when ready — ThemeCatalog.swift, ThemeIdentificationService.swift, ThemeExpansionSheet.swift, StyleTransferAPI.swift, CCV.13/14",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-56",
+          "title": "Added .derivedData/ to .gitignore — 545af2e (2026-06-02)",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-57",
+          "title": "Untracked xcuserdata/ (5 files, kept on disk) — 545af2e (2026-06-02); stops the bookmarks.plist merge conflict",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-58",
+          "title": "Optional: link or archive docs/superpowers/specs/2026-05-31-ui-pass-sheets-coral-editor-design.md from vault index",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-59",
+          "title": "Momentum branch cleanup (historical): reconcile main ↔ origin/main if still diverged; see Momentum Reskin — Merge Tracker",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-60",
+          "title": "App Store screenshots — 8 finals (iPhone 6.9″ 1320×2868 ×4, iPad 13″ 2064×2752 ×4, PNG/RGB/no-alpha, exact pixels) in ~/Downloads/XJournalAI_AppStore_Screenshots/ (+ loose ~/Downloads/XJournalAI_*.png). One 6.9″ set covers all iPhones; one 13″ covers all iPads. Pipeline + scripts in _work/; reference: auto-memory xjournal-appstore-screenshots",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-61",
+          "title": "Code fix b6c7d05 (2026-06-02) — added keychain-access-groups to XJournal AI.entitlements + replaced the swallowing try? in onboarding & Profile→AI with real error surfacing (alert, not a false \"Saved\"). ⚠️ Full sim persistence still needs a signed/device build — adhoc sim builds strip entitlements, so SecItemAdd still returns -34018 on the simulator here. Original diagnosis kept for reference: Confirmed on iPhone 17 / Pro Max / iPad + 4 fresh xcodebuilds. Fix: sign with team 5WH7EW3W8Y (owns TEAMDB.The-Final-Journal-AI + the app group; this Mac only has cert S34HS6E4J7 → mismatch → adhoc fallback), or test on a real device; add keychain-access-groups to XJournal AI/XJournal AI.entitlements; replace the two swallowing try? (OnboardingWelcomeFlow.swift:229, ContentView.CCV.12.swift:364) with real error surfacing",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-62",
+          "title": "Fixed b6c7d05 (2026-06-02) — onboarding \"Journal & Pen\" → \"XJournal AI\" (OnboardingWelcomeFlow.swift:150 + body) to match the in-app name (72 existing uses).",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-63",
+          "title": "Live Model G screenshot — panels iPhone_6.9_4_model-g.png + iPad_13_4_model-g.png currently use the static editor + ✨ Model G toolbar; capture a real generation once Keychain works (device / provisioned build) and swap them in",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-64",
+          "title": "Editor coral wash — bloom from status bar through pills to gray divider above writing area; writing surface opaque white; timestamp bar pinned above toolbar",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-65",
+          "title": "Home / Momentum — glass filter pills; opaque note list; search/composer opacity",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-66",
+          "title": "Home — journal rows — uniform heights + last-modified timestamps · verified in-app (Samuel, 2026-06-01)",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-67",
+          "title": "Analytics — soft radial glow stat cards (not flat gradient bands)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-68",
+          "title": "What's New — subtle bottom-right card glow; blue LATEST pill",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-69",
+          "title": "Human Critic — generate → critic at top of Rap Suggestions; user quotes bold/black, AI text gray; leave note → Open Last Suggestions recall restores batch + critic; + → Critic sheet matches Rap sheet; missing API key → error banner routes to Profile / Model Preferences",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-70",
+          "title": "Theme Expansion — lyrics with Rolex, trap, RICO, Nobu, opps → auto-select + hint text + bordered filter pills; Re-scan from Lyrics updates selection; AI identify badge when key present",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-71",
+          "title": "Model G v3 picker — Model Preferences settings persist; toolbar Suggest with Model G v3 generates; Regenerate stays on v3",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-72",
+          "title": "Audio surfaces (lightly tested) — WhisperMicButton hold-to-record → transcribe; RapTrackPlaybackView playback + share; confirm Profile → API Settings exposes Suno + Uberduck key fields",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-73",
+          "title": "Transcription backend — Profile → AI tab: Apple Speech vs OpenAI Whisper when sk- key present",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-74",
+          "title": "Support the Creator — tighter social button stack + coral AtmosphereGlow background",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-75",
+          "title": "Gyro glass — specular edge visible on device (simulator auto-rotates fallback)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-76",
+          "title": "Model Preferences: critic voice toggle — shipped 2026-06-01 (Calm editor / Friend / Hype; human_critic_voice AppStorage, default Calm editor; voice threaded into refreshHumanCritic → HumanCriticService.generate)",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-77",
+          "title": "Parallel suggestions: list-level human critic above sideBySideView columns (today: per-card fallback only)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-78",
+          "title": "Per-card listener, diagnostics toggle, silence templates — per spec Phase 2+",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-79",
+          "title": "Improve-flow RapSuggestionView — wire critic bindings (currently empty intentionally)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-80",
+          "title": "Wire selected theme IDs from sheet into Model G prompt context — shipped 2026-06-01 (per-note Item.selectedThemeIDs; selection overrides auto-detect)",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-81",
+          "title": "Hook generateThemeExpansion() to output when product ready (identify-only for now)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-82",
+          "title": "Live auto-select while typing — optional debounced match on currentText without opening sheet",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-83",
+          "title": "Theme-aware Model G — shipped; detection unified on 34-theme ThemeCatalog, gated by \"Apply detected themes\" toggle (Model Preferences, default ON). See Theme & Jargon Data#What to build on top",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-84",
+          "title": "Authority-lexicon word choice in Model G — RapAuthorityLexicon.terms(forTheme:) + extend LexiconGate to Model G",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-85",
+          "title": "UI Overhaul Phase 2 — readability sweep (high-traffic screens) — see UI Overhaul — Phased Plan",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-86",
+          "title": "UI Overhaul Phase 4 — control surface simplification (ModelGControlSurfaceView, Generate defaults + \"Customize\" / \"Advanced\")",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-87",
+          "title": "UI Overhaul Phase 5 — settings grouping, nav demotion, #if DEBUG gate for diagnostics",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-88",
+          "title": "Post-merge: editorial dark pass; caption-size pass — Momentum Reskin — Merge Tracker",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-89",
+          "title": "CCV.12 profile WIP — commit when ready (Momentum Reskin — Merge Tracker)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-90",
+          "title": "De-card the sidebar — .navigationSplitViewColumnWidth(320/360/420) + .navigationSplitViewStyle(.balanced) → flush full-height column (245b6d6)",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-91",
+          "title": "Fill the dead space — JournalDetailPlaceholderView is now a designed empty state (book icon · AtmosphereGlow · headline + hint) with an actionable New Note button (245b6d6, 5fdbb8b)",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-92",
+          "title": "Sidebar header restructure (Samuel pt 1) — stacked coral header: action buttons → large Journal title → filter pills; iPadSidebarHeader gated on horizontalSizeClass == .regular; nav-bar title blanked + pill moved off the bar (938023d); defined coral band (d8aca38)",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-93",
+          "title": "Header buttons fill the row (Samuel: 6 buttons spread evenly, kill the top-left gap) — page1ActionButtons(distributed:) spreads them edge-to-edge; the system sidebar-toggle is removed (.toolbar(removing: .sidebarToggle)) and replaced by a coral toggle as the 6th button driving columnVisibility, plus a re-show button on the detail pane when collapsed. Collapse↔re-show verified via idb (da07a57, 6543a32)",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-94",
+          "title": "Dynamic-island button parity (Samuel pt 2) — verified in code: island buttons sit in one horizontal ScrollView with no size-class gating (CCV.14:357) → all present on iPad; no change needed",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-95",
+          "title": "Center the editor writing column on iPad — today left-aligned at maxWidth: 680, leaving space to the right of the text in the wide pane (Samuel's call; not yet done)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-96",
+          "title": "Collect Samuel's list pt 3+ — cut off after pts 1 & 2 (still pending)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-97",
+          "title": "Optional: drive + polish Rap Suggestions / Model G iPad screens — now reachable (Keychain saves on the sim via the -34018 UserDefaults fallback, e6fb59e)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-98",
+          "title": "Spot-checked key screens — Home ✅ polished · Editor ✅ (column-centering optional, open) · Profile ✅ clean centered form-sheet · Analytics ✅ clean centered card + 2×2 grid. The deprecated-NavigationView worry did not bite on the sheets checked (they present as proper iPad form-sheet cards).",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-99",
+          "title": "Define iPad-parity rubric — no dead panes · intentional width · no stranded phone-only bars · correct sheet/popover presentation · size-class adaptivity · Dynamic Type · dark mode · safe areas · touch targets",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-100",
+          "title": "Auto-inventory every screen mapped to the LOCKED PAGE MAP (Pages 1–12 + ~25 sheets)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-101",
+          "title": "Grade the remaining screens on iPad — Rap Suggestions, Model G control surface, Critic, Theme Expansion, Paywall, Support/Shop, Release Notes, audio sheets · severity P0/P1/P2",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-102",
+          "title": "Global NavigationView → NavigationStack sweep — only if grading shows it's needed (Profile/Analytics were fine without it)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-103",
+          "title": "Deliverables: audit spec + living per-screen checklist (status tracker)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-104",
+          "title": "Feed UserTasteVector into prompts, not just scoring (UserTasteStore wired; scoring only today)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-105",
+          "title": "P3 rhyme — real rhyme via RhymeClusterEngine into A2/A3 generation targets + in-app scoring parity",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-106",
+          "title": "Speed: concurrent suggestion sets — already via withTaskGroup; kept at 2 (user wants two cards); v3 verseCandidateCount trimmed 2→1 for speed (2026-06-01)",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-107",
+          "title": "Speed: 8 bar-candidates per call instead of 4",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-108",
+          "title": "One-call planned verse — done in v3 (plan + verse candidates); ~2 round-trips total",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-109",
+          "title": "Prompt: end-word rhyme target + scheme; multisyllabic/internal rhyme in ModelGLLMService",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-110",
+          "title": "Scoring: phonetic rhyme via CMUDICT + RhymeClusterEngine (replace word-repetition echo scorer)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-111",
+          "title": "UX: replace literal \"Fallback bar…\" with friendly error + Retry",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-112",
+          "title": "G0/G1 grading — corpus stats, golden prompt set, baseline v1 vs v2 — Improvement Roadmap — Phased Goals",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-113",
+          "title": "Decompose RapSuggestionAPI.swift (~6.6k lines); unify legacy vs ModelG/* paths",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-114",
+          "title": "Promote v3 → default if A/B confirms; retire dead paths",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-115",
+          "title": "Decompose heavy views — RapSuggestionView, CCV.13, AudioDetailSheet — UX — Slow, Dark & Hard to Use",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-116",
+          "title": "Suno / Uberduck — keys in Keychain; verify UI + wire button calls for beat/vocal synthesis",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-117",
+          "title": "StyleTransferSheet — orphaned; remove or re-home (toolbar Critic opens ARCritiqueSheet, not style transfer)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-118",
+          "title": "RhymeDiagnosticsPanelView — preview-only; not wired into editor",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-119",
+          "title": "ABTestingManager — cohorts/metrics persist; no in-app UI",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-120",
+          "title": "ShowUpgradePrompt / ShowSubscriptionManagement — notifications posted; no listeners in repo",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-121",
+          "title": "pendingInterventions (retention) — no in-app UI",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-122",
+          "title": "FeatureGate / UsageTracker — isDevelopmentMode = true bypasses all paywall gating; flip to test real limits",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-123",
+          "title": "StoreKit subscription — TODO in ContentView.CCV.14.swift",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-124",
+          "title": "Supabase account — AccountManager.swift SDK dependency + profile sync/upload TODOs",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-125",
+          "title": "Share extension — document / verify ShareViewController target flow",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-126",
+          "title": "Support shop URLs — replace placeholder Twitter/Instagram/Patreon/Facebook/Amazon links (SupportShopSheetView.swift)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-127",
+          "title": "Import from Apple Notes — ContentView.CCV.13.swift toolbar TODO",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-128",
+          "title": "Profile data export — journal + settings export (ContentView.CCV.12.swift)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-129",
+          "title": "Load existing folders — folder picker data (ContentView.CCV.8.swift)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-130",
+          "title": "WritersCritique lexicon fit — analysis stub (WritersCritique.swift)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-131",
+          "title": "CSV dedupe — pick canonical copies; archive older/ + truth final/ dupes — Theme & Jargon Data, Ground Truth & Grading System",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-132",
+          "title": "Fix v8 lexicon junk row 2 (\"Common Themes / Specific Terms\")",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-133",
+          "title": "NewRapDatabase.parseLexiconCSV — stub; finish or document as intentional",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-134",
+          "title": "Few-shot from GOOGLE theme examples file into Model G prompts",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-135",
+          "title": "Taste / personalization — bias theme detection + persona from journal history",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-136",
+          "title": "Grading axes A5 tone + A6 lexical authenticity from themes + lexicon",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-137",
+          "title": "Slang / OOV phonetics — CMUDICT fallback for opp, blick, etc. — Mission, Capabilities & Edge Cases",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-138",
+          "title": "Onboarding — 2–3 first-run screens (write a line → see a verse)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-139",
+          "title": "Core flow — one-tap Generate with smart defaults; progressive disclosure",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-140",
+          "title": "Theme toggle — System / Light / Dark; consider Light default",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-141",
+          "title": "Declutter — write→lyrics front-and-center; tuck analytics/achievements/paywall",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-142",
+          "title": "Open questions: default appearance for new users; key-test ping policy — UI Overhaul — Phased Plan#Open questions for Samuel",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-143",
+          "title": "Refresh runbook sim line — installed runtime is OS 26.5; don't pin missing 26.3.1",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-144",
+          "title": "Update Theme & Jargon Data — Theme Expansion now uses ThemeCatalog (partially done 2026-06-01)",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-145",
+          "title": "Document parallel Model G critic gap in Subsystem Map — Monetization, Growth, Account, Analytics, Audio, Critique if missing",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-146",
+          "title": "ui-momentum-reskin branch tail (historical) — review before delete: ContentView.swift, Signal*.swift, CCV.1/3/4/6, sibling xcodeproj",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-147",
+          "title": "P0 speed — concurrent sets + 8 candidates/call (~2×); v3 ≈ 3 calls/verse",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-148",
+          "title": "P0 dark — GlassSettings.darkening 0.12 → 0.05",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-149",
+          "title": "P0 usability — debug UI gated behind #if DEBUG",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-150",
+          "title": "P1 grading — offline ledger + auto-log + --history (A/B: v3 65.7 vs baseline 56.8)",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-151",
+          "title": "P2 quality — theme + voice in the prompt; Model G v3; Originality→Inspiration slider; full lexicon",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-152",
+          "title": "Build green — fixed compile breaks from new audio services + .modelGv3 (2026-05-31)",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-153",
+          "title": "Model G v3 pickable — toolbar menu + Model Preferences tab + control-surface routing (2026-05-31)",
+          "done": true
+        },
+        {
+          "id": "xjournal-ai-app-154",
+          "title": "P3 — real rhyme (RhymeClusterEngine) into A2/A3 + in-app scoring → see master backlog",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-155",
+          "title": "P4 — UX overhaul in progress via Momentum reskin → master backlog",
+          "done": false
+        },
+        {
+          "id": "xjournal-ai-app-156",
+          "title": "QA / commits / critic / themes — full checklist → master backlog",
+          "done": false
+        }
+      ],
+      "doneCount": 42,
+      "totalCount": 157
+    },
+    {
+      "id": "cdl-prac-one-index",
+      "name": "CDL PRAC one - Index",
+      "emoji": "🗂️",
+      "summary": "_Append new lines; don't rewrite. Newest blockers at top._",
+      "status": "idle",
+      "statusRaw": "",
+      "deadline": null,
+      "accent": "#9333ea",
+      "tasks": [
+        {
+          "id": "cdl-prac-one-index-0",
+          "title": "MapKit location autocomplete on the key-dates location fields (optional; currently plain text).",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-1",
+          "title": "Commit Phase 16 (hero-banner art + glass nav chrome) when the user asks — uncommitted on main (7 hero-* imagesets + HeroBanner/CategoryHero/BackButton/TopEyebrow + ~8 screen edits).",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-2",
+          "title": "(Future) 3D flippable badges + license — needs a provisioned text-to-3D key (Meshy recommended); see shared 3D Model Generation in AI Toolkit/.",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-3",
+          "title": "Strip QA launch hooks (CDL_THEME / CDL_TAB / CDL_OPEN / CDL_SEED / CDL_GALLERY) + the seedSampleMastery debug seed before ship.",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-4",
+          "title": "Remove now-unused MapHomeView ZoneCard / readCount / sectionHeader (orphaned after Parts Map moved to Pre-Trip); move the in-cab test under Pre-Trip too.",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-5",
+          "title": "Toolkit Tier 2 (optional): Vercel CLI (npm i -g vercel) for companion site/leaderboard; Raycast; SF Symbols app. See AI_Toolkit_Reference.",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-6",
+          "title": "Toolkit Tier 3 (stretch): Blender (free) for App Store trailer / 3D; Unreal if cinematic. See AI_Toolkit_Reference.",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-7",
+          "title": "Commit phases 13–18 as focused commits on main (mastery engine, pre-trip tools, heroes, 3D, license card)",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-8",
+          "title": "Strip QA launch-env hooks: CDL_THEME, CDL_TAB, CDL_OPEN, CDL_SEED, CDL_GALLERY",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-9",
+          "title": "Remove seedSampleMastery debug seed function",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-10",
+          "title": "Delete orphaned MapHomeView code: ZoneCard, readCount, sectionHeader",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-11",
+          "title": "Move in-cab test under Pre-Trip (currently still in Articles)",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-12",
+          "title": "Create GitHub remote and push main",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-13",
+          "title": "Add .gitignore entries for /tmp/cdl-dd, /tmp/cdl-shots, /tmp/cdl-meshes",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-14",
+          "title": "Install on device via Xcode \"Sign to Run Locally\"",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-15",
+          "title": "Verify CoreMotion tilt-shine on hero banners and fitness badges",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-16",
+          "title": "Verify haptic feedback on category card press and hero settle",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-17",
+          "title": "Run through full onboarding flow (welcome → signup → class picker → Guest)",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-18",
+          "title": "Complete a full quiz cycle: pick test → answer all → results → review mistakes",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-19",
+          "title": "Verify theme switching (vintage → dark → high-vis → vintage)",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-20",
+          "title": "Test streak increment + streak freeze use",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-21",
+          "title": "Open 3D badge viewer: drag-to-rotate, pop-in entrance, auto-spin hero",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-22",
+          "title": "Flip the license card (front → back → front)",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-23",
+          "title": "Export a Journey key date as .ics and open in Apple Calendar",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-24",
+          "title": "Verify sign-out → re-sign-in re-attaches the existing User row",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-25",
+          "title": "Delete account flow: type confirmation phrase, verify cascade wipe",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-26",
+          "title": "Check time tracking daily rollover across midnight",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-27",
+          "title": "Create Supabase project for CDL PRAC One",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-28",
+          "title": "Wire SupabaseManager + AuthBridge (Phase A design spec exists in docs/superpowers/specs/)",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-29",
+          "title": "Add User.supabaseUserId to SwiftData schema (with migration default)",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-30",
+          "title": "Implement real Google Sign-In (SDK + OAuth client ID)",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-31",
+          "title": "Implement real email/password sign-in (Supabase Auth)",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-32",
+          "title": "Test: sign in on device A → sign out → sign in on device B → same data",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-33",
+          "title": "Handle offline → online sync gracefully (local-first stays the source of truth)",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-34",
+          "title": "Audit all 699 questions against the NJ MVC CDL Manual and FMCSA regulations",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-35",
+          "title": "Fix or flag any outdated/incorrect questions",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-36",
+          "title": "Add General Knowledge question bank (currently only Air Brakes in Core)",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-37",
+          "title": "Complete Deep Dive long-form prose content (currently placeholder)",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-38",
+          "title": "Accessibility pass: add missing VoiceOver labels, test full screen reader flow",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-39",
+          "title": "Consider Dynamic Type support (currently locked font sizes)",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-40",
+          "title": "Add empty-state illustrations for first-launch (no quizzes taken yet, no badges earned)",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-41",
+          "title": "Set marketing bundle ID and provisioning profile",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-42",
+          "title": "Create App Store Connect listing (screenshots, description, keywords)",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-43",
+          "title": "Design app icon (currently Xcode default)",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-44",
+          "title": "Generate 6.7\" and 6.1\" screenshots for all 4 tabs + quiz flow",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-45",
+          "title": "Write privacy policy (no data collected beyond on-device storage)",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-46",
+          "title": "Add privacy nutrition labels in App Store Connect",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-47",
+          "title": "TestFlight internal build → smoke test",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-48",
+          "title": "Submit for App Store review",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-49",
+          "title": "Live leaderboard backed by Supabase (replace MockLeaderboard)",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-50",
+          "title": "Push notifications for streak-at-risk reminders",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-51",
+          "title": "Cloud sync for progress across devices",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-52",
+          "title": "Localization beyond English (Spanish as first candidate — large NJ CDL demographic)",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-53",
+          "title": "Companion marketing website (Vercel)",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-54",
+          "title": "App Store trailer (Blender 3D truck → Descript edit)",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-55",
+          "title": "Design system (tokens, Outfit font, components, noise overlay)",
+          "done": true
+        },
+        {
+          "id": "cdl-prac-one-index-56",
+          "title": "SwiftData models (6 models in schema)",
+          "done": true
+        },
+        {
+          "id": "cdl-prac-one-index-57",
+          "title": "4-tab scaffold (Study · Progress · Profile · Achievements)",
+          "done": true
+        },
+        {
+          "id": "cdl-prac-one-index-58",
+          "title": "Onboarding flow (welcome → signup → class picker → auth)",
+          "done": true
+        },
+        {
+          "id": "cdl-prac-one-index-59",
+          "title": "Study tab with 4 category cards + 15 tests",
+          "done": true
+        },
+        {
+          "id": "cdl-prac-one-index-60",
+          "title": "Quiz engine (state machine, timer, scoring, persistence)",
+          "done": true
+        },
+        {
+          "id": "cdl-prac-one-index-61",
+          "title": "13 JSON question banks (~699 questions)",
+          "done": true
+        },
+        {
+          "id": "cdl-prac-one-index-62",
+          "title": "Profile tab (dashboard, editable profile, settings, sign-out/delete)",
+          "done": true
+        },
+        {
+          "id": "cdl-prac-one-index-63",
+          "title": "Achievements tab (leaderboard + badges vault)",
+          "done": true
+        },
+        {
+          "id": "cdl-prac-one-index-64",
+          "title": "MasteryEngine (readiness = accuracy × coverage, weak areas, mistake pool)",
+          "done": true
+        },
+        {
+          "id": "cdl-prac-one-index-65",
+          "title": "Pre-trip tools (Parts Map, Deep Dive, How to Say It drill)",
+          "done": true
+        },
+        {
+          "id": "cdl-prac-one-index-66",
+          "title": "Theme system (vintage / dark / high-vis)",
+          "done": true
+        },
+        {
+          "id": "cdl-prac-one-index-67",
+          "title": "3D category emblems (FAL/Hunyuan3D → USDZ → SceneKit)",
+          "done": true
+        },
+        {
+          "id": "cdl-prac-one-index-68",
+          "title": "3D badge medallions (8 coins, tier-colored)",
+          "done": true
+        },
+        {
+          "id": "cdl-prac-one-index-69",
+          "title": "Flippable NJ CDL license card",
+          "done": true
+        },
+        {
+          "id": "cdl-prac-one-index-70",
+          "title": "Hero banner art (AI Apple-Fitness-badge style + CoreMotion shine)",
+          "done": true
+        },
+        {
+          "id": "cdl-prac-one-index-71",
+          "title": "Journey key dates + .ics calendar export",
+          "done": true
+        },
+        {
+          "id": "cdl-prac-one-index-72",
+          "title": "Articles hub (6 reference docs + in-cab test + transcriptions)",
+          "done": true
+        },
+        {
+          "id": "cdl-prac-one-index-73",
+          "title": "Commit phases 13–18",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-74",
+          "title": "Strip QA debug hooks (CDL_THEME / CDL_TAB / CDL_OPEN / CDL_SEED / CDL_GALLERY)",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-75",
+          "title": "Physical device install + runtime QA",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-76",
+          "title": "Push to GitHub",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-77",
+          "title": "Google Sign-In (currently stub)",
+          "done": false
+        },
+        {
+          "id": "cdl-prac-one-index-78",
+          "title": "Email/password auth (currently stub)",
+          "done": false
+        }
+      ],
+      "doneCount": 18,
+      "totalCount": 79
+    },
+    {
+      "id": "polymarket-bot",
+      "name": "Polymarket Bot",
+      "emoji": "🤖",
+      "summary": "← Home",
+      "status": "idle",
+      "statusRaw": "",
+      "deadline": null,
+      "accent": "#0d9488",
+      "tasks": [
+        {
+          "id": "polymarket-bot-0",
+          "title": "Fund Polygon wallet with MATIC (gas) — at least 1 MATIC",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-1",
+          "title": "Deposit USDC/pUSD to wallet — at least $10 for initial testing",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-2",
+          "title": "Run polymarket approve set and confirm on-chain approval txns succeed",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-3",
+          "title": "Verify balance with polymarket clob balance --asset-type collateral",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-4",
+          "title": "Place a small limit order: polymarket clob create-order --token TOKEN --side buy --price 0.10 --size 5",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-5",
+          "title": "Confirm order appears in polymarket clob orders",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-6",
+          "title": "Cancel test order with polymarket clob cancel ORDER_ID",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-7",
+          "title": "Document gas costs and fee observations",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-8",
+          "title": "Move private key out of plaintext config.json — integrate macOS Keychain or encrypted file",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-9",
+          "title": "Add --dry-run flag for trading commands (simulate without submitting)",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-10",
+          "title": "Add confirmation prompts for large orders (e.g., >$50) unless --yes flag passed",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-11",
+          "title": "Add automatic retry with exponential backoff for transient network errors",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-12",
+          "title": "Add --timeout flag for all network-bound commands (default 30s)",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-13",
+          "title": "Pre-calculate and display fees before order submission (--show-fees)",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-14",
+          "title": "Add rate-limit awareness — track request count and warn before hitting 429",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-15",
+          "title": "Add polymarket watch TOKEN — poll price/spread at interval, print updates",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-16",
+          "title": "Add color-coded output (green for buys, red for sells, yellow for warnings)",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-17",
+          "title": "Add --verbose flag for debug-level logging (request URLs, response times)",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-18",
+          "title": "Split clob.rs (34 KB) into submodules: clob/read.rs, clob/trade.rs, clob/rewards.rs, clob/keys.rs",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-19",
+          "title": "Expand integration tests beyond CLI flag parsing to mock API responses",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-20",
+          "title": "Add unit tests for auth.rs key resolution logic",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-21",
+          "title": "Add unit tests for config.rs read/write/merge behavior",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-22",
+          "title": "Add polymarket bot whale-scan command",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-23",
+          "title": "Connect to Polymarket WebSocket for real-time large trade alerts",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-24",
+          "title": "Configurable threshold (default $10,000) via --min-amount",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-25",
+          "title": "Output alerts as table rows or JSON events for piping",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-26",
+          "title": "Log whale trades to local SQLite or JSON-lines file",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-27",
+          "title": "Add polymarket bot copy-trade command",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-28",
+          "title": "Fetch weekly active leaderboard, filter top N by PnL",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-29",
+          "title": "Mirror trades with fixed position size (--size flag, default $5)",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-30",
+          "title": "Implement proportional sell logic (trader sells X% → bot sells X%)",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-31",
+          "title": "Auto-redeem resolved positions to free capital",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-32",
+          "title": "Add --follow flag for persistent mode (poll every 60s)",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-33",
+          "title": "Add polymarket bot sniper command",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-34",
+          "title": "Wait until ≤60s before resolution on 5-min crypto markets",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-35",
+          "title": "Only target markets with YES price ≥ $0.95",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-36",
+          "title": "Place resting limit orders only (never cross the spread)",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-37",
+          "title": "Cancel on price reversal below $0.55",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-38",
+          "title": "Enforce 5-share minimum per order",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-39",
+          "title": "Add polymarket bot weather-arb command",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-40",
+          "title": "Integrate external weather API (NOAA GFS or similar ensemble data)",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-41",
+          "title": "Compare ensemble probabilities against Polymarket implied odds",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-42",
+          "title": "Execute only when edge > 3% after bias correction",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-43",
+          "title": "Skip days with high model variance",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-44",
+          "title": "Default to \"No\" bets on extreme temperature brackets",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-45",
+          "title": "Add WebSocket streaming mode for real-time price/trade feeds",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-46",
+          "title": "Add polymarket daemon — long-running process that executes bot configs from a TOML/YAML strategy file",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-47",
+          "title": "Build portfolio management layer (target allocation, rebalance triggers)",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-48",
+          "title": "Add position-level P&L tracking with historical snapshots",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-49",
+          "title": "Create polymarket backtest command — replay strategies against historical price data",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-50",
+          "title": "Add TUI dashboard (ratatui) for monitoring active bots, positions, and alerts",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-51",
+          "title": "Publish as a Rust library crate so agents can import it directly instead of shelling out",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-52",
+          "title": "Add structured logging (tracing) for observability in long-running processes",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-53",
+          "title": "CLI scaffolding (clap + tokio async runtime)",
+          "done": true
+        },
+        {
+          "id": "polymarket-bot-54",
+          "title": "Market browsing, search, events, tags, series, sports",
+          "done": true
+        },
+        {
+          "id": "polymarket-bot-55",
+          "title": "CLOB read-only queries (book, prices, midpoints, spreads, price history)",
+          "done": true
+        },
+        {
+          "id": "polymarket-bot-56",
+          "title": "On-chain data lookups (positions, trades, leaderboards)",
+          "done": true
+        },
+        {
+          "id": "polymarket-bot-57",
+          "title": "Interactive REPL shell with history",
+          "done": true
+        },
+        {
+          "id": "polymarket-bot-58",
+          "title": "Dual output (table + JSON) on all commands",
+          "done": true
+        },
+        {
+          "id": "polymarket-bot-59",
+          "title": "Wallet create / import / show / reset",
+          "done": true
+        },
+        {
+          "id": "polymarket-bot-60",
+          "title": "Order placement (limit, market, batch)",
+          "done": true
+        },
+        {
+          "id": "polymarket-bot-61",
+          "title": "CTF split / merge / redeem operations",
+          "done": true
+        },
+        {
+          "id": "polymarket-bot-62",
+          "title": "Bridge deposit flow",
+          "done": true
+        },
+        {
+          "id": "polymarket-bot-63",
+          "title": "Homebrew tap + install script",
+          "done": true
+        },
+        {
+          "id": "polymarket-bot-64",
+          "title": "Wallet funded with USDC on Polygon",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-65",
+          "title": "Bot strategy automation (Whale Scanner, Copy Trader, etc.)",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-66",
+          "title": "Web dashboard / TUI",
+          "done": false
+        },
+        {
+          "id": "polymarket-bot-67",
+          "title": "WebSocket streaming for real-time data",
+          "done": false
+        }
+      ],
+      "doneCount": 11,
+      "totalCount": 68
+    },
+    {
+      "id": "ui-dashboard-x",
+      "name": "UI Dashboard X",
+      "emoji": "🖥️",
+      "summary": "Home",
+      "status": "idle",
+      "statusRaw": "",
+      "deadline": null,
+      "accent": "#65a30d",
+      "tasks": [
+        {
+          "id": "ui-dashboard-x-0",
+          "title": "Add all 12 env keys to Vercel Environment Variables so diagnostics pass",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-1",
+          "title": "Fix launchd plist schedule — the \"daily\" brief job is configured as weekly (Mon 07:00); change to daily 07:00",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-2",
+          "title": "Split ToolsChordDetectorPage.tsx (2,831 lines) into ≤5 sub-components:",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-3",
+          "title": "ChordDetectorControls — file input, mic toggle, playback",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-4",
+          "title": "ChordDetectorAnalysis — ONNX inference + pitch processing",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-5",
+          "title": "ChordDetectorVisualization — scatter plot + MIDI timeline",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-6",
+          "title": "ChordDetectorMidiExport — MIDI file generation + download",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-7",
+          "title": "ChordDetectorPage — composition root wiring the above",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-8",
+          "title": "Merge or close PR #1",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-9",
+          "title": "Audit and migrate 213 inline style= attributes to Tailwind classes",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-10",
+          "title": "Priority: MAINsamuelXdashboardFile.tsx (5 inline styles using CSS vars)",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-11",
+          "title": "Priority: TweaksPanel.tsx, ConnectionPill.tsx, zone headers",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-12",
+          "title": "Remaining zone-specific components",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-13",
+          "title": "Map CSS custom properties (--bg-app, --border, --text-1, --text-2, --bg-sidebar, --bg-hover) to Tailwind theme.extend tokens",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-14",
+          "title": "Replace hardcoded hex color palettes in zone components with Tailwind token references",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-15",
+          "title": "Remove or reduce reliance on src/App.css (2,891 bytes) and src/index.css (20 KB) in favor of Tailwind @apply or utility-first classes",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-16",
+          "title": "Add a Tailwind config lint (e.g. eslint-plugin-tailwindcss) to CI",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-17",
+          "title": "Generate Playwright visual baselines for all 11 zones (screenshot per zone at desktop + mobile viewport)",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-18",
+          "title": "Add BFF integration tests — hit each /api/* route with mock keys, assert response shape",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-19",
+          "title": "Add error boundaries around each zone component so one zone crash doesn't take down the shell",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-20",
+          "title": "Implement graceful degradation for ONNX model loading (progress indicator + retry + fallback message)",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-21",
+          "title": "Add --watch mode to scripts/genRecentEdits.mjs for dev-time auto-refresh",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-22",
+          "title": "CI pipeline: lint → type-check → Playwright tests → Vercel preview deploy",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-23",
+          "title": "Implement route-level lazy loading (React.lazy) for heavy zones (Tools, Tesla, Mixing) to reduce initial bundle",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-24",
+          "title": "Add Framer Motion page transitions between zone switches",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-25",
+          "title": "Build a real use case for FilesDock or remove the feature-flagged dead code entirely",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-26",
+          "title": "Add offline mode indicator + service worker for Daily Brief cache",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-27",
+          "title": "Integrate Polymarket zone into sidebar as a user-facing zone (or archive)",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-28",
+          "title": "Add WebSocket-based live reload for Daily Brief (watch Obsidian vault file changes)",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-29",
+          "title": "Tesla zone: connect to real Fleet API (replace mock) with proper OAuth flow",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-30",
+          "title": "Rhyme Studio: RAG pipeline with Obsidian vault lyrics/notes",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-31",
+          "title": "Performance audit: target < 500 KB initial JS, < 2s LCP on 4G",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-32",
+          "title": "Core zone navigation + sidebar with mobile swipe gestures",
+          "done": true
+        },
+        {
+          "id": "ui-dashboard-x-33",
+          "title": "Chord Detector, BPM Finder, Stem Splitter, Note Detector tools",
+          "done": true
+        },
+        {
+          "id": "ui-dashboard-x-34",
+          "title": "Agent Farm + YouTube channel integration",
+          "done": true
+        },
+        {
+          "id": "ui-dashboard-x-35",
+          "title": "Piano/MIDI keyboard + Rhyme Studio with local LLM support",
+          "done": true
+        },
+        {
+          "id": "ui-dashboard-x-36",
+          "title": "Tesla Fleet API mock zone with virtual key pairing",
+          "done": true
+        },
+        {
+          "id": "ui-dashboard-x-37",
+          "title": "Daily Brief zone with dismiss controls and workflows panel",
+          "done": true
+        },
+        {
+          "id": "ui-dashboard-x-38",
+          "title": "BFF bundled for Vercel via scripts/bundle-bff.mjs",
+          "done": true
+        },
+        {
+          "id": "ui-dashboard-x-39",
+          "title": "Vercel deployment live at samuel-x-dashboard.vercel.app",
+          "done": true
+        },
+        {
+          "id": "ui-dashboard-x-40",
+          "title": "Fix 12 missing env keys on Vercel for full diagnostic pass",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-41",
+          "title": "Migrate 213 inline style= attrs to Tailwind utility classes",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-42",
+          "title": "Split ToolsChordDetectorPage.tsx (2,831 lines)",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-43",
+          "title": "Add Playwright visual regression baselines",
+          "done": false
+        },
+        {
+          "id": "ui-dashboard-x-44",
+          "title": "Fix launchd schedule — \"daily\" brief job actually runs weekly (Mon 07:00)",
+          "done": false
+        }
+      ],
+      "doneCount": 8,
+      "totalCount": 45
+    },
+    {
+      "id": "tesla-heat-map-x",
+      "name": "Tesla Heat Map X",
+      "emoji": "🌡️",
+      "summary": "Back to Home.",
+      "status": "active",
+      "statusRaw": "Active development — core heat map + trip overlay working",
+      "deadline": null,
+      "accent": "#dc2626",
+      "tasks": [
+        {
+          "id": "tesla-heat-map-x-0",
+          "title": "Migrate API keys from UserDefaults to Keychain",
+          "done": false
+        },
+        {
+          "id": "tesla-heat-map-x-1",
+          "title": "Consolidate Xcode projects (pick one, delete the other)",
+          "done": false
+        },
+        {
+          "id": "tesla-heat-map-x-2",
+          "title": "Add .gitignore for build artifacts",
+          "done": false
+        },
+        {
+          "id": "tesla-heat-map-x-3",
+          "title": "Push to GitHub",
+          "done": false
+        },
+        {
+          "id": "tesla-heat-map-x-4",
+          "title": "Wire up real Tesla Fleet API (replace mock)",
+          "done": false
+        },
+        {
+          "id": "tesla-heat-map-x-5",
+          "title": "Implement OAuth flow for Tesla auth",
+          "done": false
+        },
+        {
+          "id": "tesla-heat-map-x-6",
+          "title": "Rate limiting / backoff for API calls",
+          "done": false
+        },
+        {
+          "id": "tesla-heat-map-x-7",
+          "title": "Background telemetry polling",
+          "done": false
+        },
+        {
+          "id": "tesla-heat-map-x-8",
+          "title": "3D terrain with elevation overlay",
+          "done": false
+        },
+        {
+          "id": "tesla-heat-map-x-9",
+          "title": "Trip playback (animate route over time)",
+          "done": false
+        },
+        {
+          "id": "tesla-heat-map-x-10",
+          "title": "Energy consumption color coding",
+          "done": false
+        },
+        {
+          "id": "tesla-heat-map-x-11",
+          "title": "Multiple trip comparison",
+          "done": false
+        },
+        {
+          "id": "tesla-heat-map-x-12",
+          "title": "Export trip data (GPX/KML)",
+          "done": false
+        },
+        {
+          "id": "tesla-heat-map-x-13",
+          "title": "Unit tests for data layer",
+          "done": false
+        },
+        {
+          "id": "tesla-heat-map-x-14",
+          "title": "UI tests for map interactions",
+          "done": false
+        },
+        {
+          "id": "tesla-heat-map-x-15",
+          "title": "Accessibility audit",
+          "done": false
+        },
+        {
+          "id": "tesla-heat-map-x-16",
+          "title": "App Store screenshots",
+          "done": false
+        },
+        {
+          "id": "tesla-heat-map-x-17",
+          "title": "Heat map visualization view",
+          "done": true
+        },
+        {
+          "id": "tesla-heat-map-x-18",
+          "title": "Trip control overlay (ZStack)",
+          "done": true
+        },
+        {
+          "id": "tesla-heat-map-x-19",
+          "title": "Profile / API key management",
+          "done": true
+        },
+        {
+          "id": "tesla-heat-map-x-20",
+          "title": "Mock data mode for development",
+          "done": true
+        },
+        {
+          "id": "tesla-heat-map-x-21",
+          "title": "Dark / light mode support",
+          "done": true
+        },
+        {
+          "id": "tesla-heat-map-x-22",
+          "title": "Elevation service integration",
+          "done": true
+        },
+        {
+          "id": "tesla-heat-map-x-23",
+          "title": "Consolidate duplicate Xcode projects",
+          "done": false
+        },
+        {
+          "id": "tesla-heat-map-x-24",
+          "title": "Write tests",
+          "done": false
+        },
+        {
+          "id": "tesla-heat-map-x-25",
+          "title": "Live Tesla Fleet API integration (vs mock)",
+          "done": false
+        }
+      ],
+      "doneCount": 6,
+      "totalCount": 26
+    },
+    {
+      "id": "antigravity-carplay",
+      "name": "Antigravity CarPlay",
+      "emoji": "🚗",
+      "summary": "Whole-app map. Back to Home.",
+      "status": "shipped",
+      "statusRaw": "✅ FEATURE COMPLETE — waiting for iOS 27 GA + Apple entitlement",
+      "deadline": null,
+      "accent": "#e11d48",
+      "tasks": [
+        {
+          "id": "antigravity-carplay-0",
+          "title": "Extract branch into standalone repo (avoid iCloud merge bloat)",
+          "done": false
+        },
+        {
+          "id": "antigravity-carplay-1",
+          "title": "Apply for Apple CarPlay video entitlement",
+          "done": false
+        },
+        {
+          "id": "antigravity-carplay-2",
+          "title": "Verify build on iOS 27 beta 2+ as new betas ship",
+          "done": false
+        },
+        {
+          "id": "antigravity-carplay-3",
+          "title": "Build on physical device with entitlement profile",
+          "done": false
+        },
+        {
+          "id": "antigravity-carplay-4",
+          "title": "TestFlight internal testing",
+          "done": false
+        },
+        {
+          "id": "antigravity-carplay-5",
+          "title": "Verify CarPlay hardware rendering (when available)",
+          "done": false
+        },
+        {
+          "id": "antigravity-carplay-6",
+          "title": "Performance profiling on device (AVPlayer memory, HLS buffering)",
+          "done": false
+        },
+        {
+          "id": "antigravity-carplay-7",
+          "title": "Replace sample HLS streams with real content pipeline",
+          "done": false
+        },
+        {
+          "id": "antigravity-carplay-8",
+          "title": "Add content discovery (search, categories, recommendations)",
+          "done": false
+        },
+        {
+          "id": "antigravity-carplay-9",
+          "title": "Implement user accounts and watch history sync",
+          "done": false
+        },
+        {
+          "id": "antigravity-carplay-10",
+          "title": "Polish phone companion UI",
+          "done": false
+        },
+        {
+          "id": "antigravity-carplay-11",
+          "title": "Accessibility audit (VoiceOver on CarPlay)",
+          "done": false
+        },
+        {
+          "id": "antigravity-carplay-12",
+          "title": "App Store Connect screenshots (CarPlay + phone)",
+          "done": false
+        },
+        {
+          "id": "antigravity-carplay-13",
+          "title": "Privacy policy and app review notes",
+          "done": false
+        },
+        {
+          "id": "antigravity-carplay-14",
+          "title": "Submit to App Store review",
+          "done": false
+        },
+        {
+          "id": "antigravity-carplay-15",
+          "title": "Marketing site / landing page",
+          "done": false
+        },
+        {
+          "id": "antigravity-carplay-16",
+          "title": "CarPlay scene with video hardware detection",
+          "done": true
+        },
+        {
+          "id": "antigravity-carplay-17",
+          "title": "Tab bar navigation (Videos / Playlist)",
+          "done": true
+        },
+        {
+          "id": "antigravity-carplay-18",
+          "title": "List items with progress bars over thumbnails",
+          "done": true
+        },
+        {
+          "id": "antigravity-carplay-19",
+          "title": "Details header with Play / Add to Playlist",
+          "done": true
+        },
+        {
+          "id": "antigravity-carplay-20",
+          "title": "AVPlayer with AirPlay support",
+          "done": true
+        },
+        {
+          "id": "antigravity-carplay-21",
+          "title": "Phone companion UI in SwiftUI",
+          "done": true
+        },
+        {
+          "id": "antigravity-carplay-22",
+          "title": "5 sample HLS \"Antigravity Originals\" streams",
+          "done": true
+        },
+        {
+          "id": "antigravity-carplay-23",
+          "title": "33/33 tests across 6 suites (TDD throughout)",
+          "done": true
+        },
+        {
+          "id": "antigravity-carplay-24",
+          "title": "CPNowPlayingTemplate.allowsMiniPlayer behind @available(iOS 27.0, *)",
+          "done": true
+        },
+        {
+          "id": "antigravity-carplay-25",
+          "title": "Merge branch to trunk (stalls on iCloud-synced root)",
+          "done": false
+        },
+        {
+          "id": "antigravity-carplay-26",
+          "title": "Apple CarPlay video entitlement grant",
+          "done": false
+        },
+        {
+          "id": "antigravity-carplay-27",
+          "title": "Device / TestFlight build verification",
+          "done": false
+        },
+        {
+          "id": "antigravity-carplay-28",
+          "title": "App Store submission",
+          "done": false
+        }
+      ],
+      "doneCount": 9,
+      "totalCount": 29
+    },
+    {
+      "id": "sanchez-auto-llc",
+      "name": "Sanchez Auto LLC",
+      "emoji": "🔧",
+      "summary": "Back to Home.",
+      "status": "blocked",
+      "statusRaw": "Early/stalled (last activity 2026-05-06)",
+      "deadline": null,
+      "accent": "#0891b2",
+      "tasks": [
+        {
+          "id": "sanchez-auto-llc-0",
+          "title": "Run npm install and verify dev server starts",
+          "done": false
+        },
+        {
+          "id": "sanchez-auto-llc-1",
+          "title": "Fix service tile responsive layout on iPhone 390px",
+          "done": false
+        },
+        {
+          "id": "sanchez-auto-llc-2",
+          "title": "Visual QA pass on mobile + desktop",
+          "done": false
+        },
+        {
+          "id": "sanchez-auto-llc-3",
+          "title": "Online booking form with appointment scheduling",
+          "done": false
+        },
+        {
+          "id": "sanchez-auto-llc-4",
+          "title": "Google Places gallery integration",
+          "done": false
+        },
+        {
+          "id": "sanchez-auto-llc-5",
+          "title": "Google Maps embed for location",
+          "done": false
+        },
+        {
+          "id": "sanchez-auto-llc-6",
+          "title": "Contact form with email notification",
+          "done": false
+        },
+        {
+          "id": "sanchez-auto-llc-7",
+          "title": "SEO optimization (meta tags, structured data)",
+          "done": false
+        },
+        {
+          "id": "sanchez-auto-llc-8",
+          "title": "Google Business Profile integration",
+          "done": false
+        },
+        {
+          "id": "sanchez-auto-llc-9",
+          "title": "Production Vercel deployment with custom domain",
+          "done": false
+        },
+        {
+          "id": "sanchez-auto-llc-10",
+          "title": "Next.js app with Tailwind + shadcn/ui",
+          "done": true
+        },
+        {
+          "id": "sanchez-auto-llc-11",
+          "title": "Service tiles responsive to iPhone 390px",
+          "done": true
+        },
+        {
+          "id": "sanchez-auto-llc-12",
+          "title": "Static HTML twin as fallback",
+          "done": true
+        },
+        {
+          "id": "sanchez-auto-llc-13",
+          "title": "GitHub repo created",
+          "done": true
+        },
+        {
+          "id": "sanchez-auto-llc-14",
+          "title": "Vercel deployment configured",
+          "done": true
+        },
+        {
+          "id": "sanchez-auto-llc-15",
+          "title": "Booking form / appointment scheduling",
+          "done": false
+        },
+        {
+          "id": "sanchez-auto-llc-16",
+          "title": "SEO optimization",
+          "done": false
+        },
+        {
+          "id": "sanchez-auto-llc-17",
+          "title": "Mobile viewport visual QA",
+          "done": false
+        }
+      ],
+      "doneCount": 5,
+      "totalCount": 18
+    },
+    {
+      "id": "ruview",
+      "name": "RuView",
+      "emoji": "📡",
+      "summary": "Back to Home.",
+      "status": "shipped",
+      "statusRaw": "Working — Observatory UI live",
+      "deadline": null,
+      "accent": "#2563eb",
+      "tasks": [
+        {
+          "id": "ruview-0",
+          "title": "Move project from ~/Downloads/ to ~/Desktop/CLAUDE WORLD/",
+          "done": false
+        },
+        {
+          "id": "ruview-1",
+          "title": "Push to GitHub",
+          "done": false
+        },
+        {
+          "id": "ruview-2",
+          "title": "Run benchmark baselines for accuracy metrics",
+          "done": false
+        },
+        {
+          "id": "ruview-3",
+          "title": "Calibrate for home environment",
+          "done": false
+        },
+        {
+          "id": "ruview-4",
+          "title": "Document ESP32-C6 setup guide",
+          "done": false
+        },
+        {
+          "id": "ruview-5",
+          "title": "Production Docker compose stack",
+          "done": false
+        },
+        {
+          "id": "ruview-6",
+          "title": "Monitoring and alerting",
+          "done": false
+        },
+        {
+          "id": "ruview-7",
+          "title": "Multi-room node mesh",
+          "done": false
+        },
+        {
+          "id": "ruview-8",
+          "title": "WiFi DensePose core engine",
+          "done": true
+        },
+        {
+          "id": "ruview-9",
+          "title": "ESP32-C6 research nodes for WiFi CSI capture",
+          "done": true
+        },
+        {
+          "id": "ruview-10",
+          "title": "Docker deployment for server components",
+          "done": true
+        },
+        {
+          "id": "ruview-11",
+          "title": "Observatory UI (multi-person, presence, WiFi cloud)",
+          "done": true
+        },
+        {
+          "id": "ruview-12",
+          "title": "Tauri v2 desktop app",
+          "done": true
+        },
+        {
+          "id": "ruview-13",
+          "title": "SQLite persistence (ruvector.db)",
+          "done": true
+        },
+        {
+          "id": "ruview-14",
+          "title": "Plugins system",
+          "done": true
+        },
+        {
+          "id": "ruview-15",
+          "title": "Claude plugin integration",
+          "done": true
+        },
+        {
+          "id": "ruview-16",
+          "title": "Move from ~/Downloads/ to CLAUDE WORLD",
+          "done": false
+        },
+        {
+          "id": "ruview-17",
+          "title": "Production deployment",
+          "done": false
+        },
+        {
+          "id": "ruview-18",
+          "title": "Accuracy benchmarking",
+          "done": false
+        }
+      ],
+      "doneCount": 8,
+      "totalCount": 19
+    },
+    {
+      "id": "ap-connect",
+      "name": "AP Connect",
+      "emoji": "📸",
+      "summary": "Back to Home.",
+      "status": "active",
+      "statusRaw": "Active — running on iPhone 17 simulator",
+      "deadline": null,
+      "accent": "#db2777",
+      "tasks": [
+        {
+          "id": "ap-connect-0",
+          "title": "Fix \"My App\" placeholder in batch headline generation",
+          "done": false
+        },
+        {
+          "id": "ap-connect-1",
+          "title": "Add real app name detection from screenshot metadata",
+          "done": false
+        },
+        {
+          "id": "ap-connect-2",
+          "title": "Integrate with App Store Connect API for app metadata",
+          "done": false
+        },
+        {
+          "id": "ap-connect-3",
+          "title": "Auto-fetch app icons and names",
+          "done": false
+        },
+        {
+          "id": "ap-connect-4",
+          "title": "Template library for common layouts",
+          "done": false
+        },
+        {
+          "id": "ap-connect-5",
+          "title": "Unit tests for image generation pipeline",
+          "done": false
+        },
+        {
+          "id": "ap-connect-6",
+          "title": "Push to GitHub",
+          "done": false
+        },
+        {
+          "id": "ap-connect-7",
+          "title": "3-tab interface (Create, Gallery, Settings)",
+          "done": true
+        },
+        {
+          "id": "ap-connect-8",
+          "title": "iOS 26 glass container styling",
+          "done": true
+        },
+        {
+          "id": "ap-connect-9",
+          "title": "Image configuration workflow",
+          "done": true
+        },
+        {
+          "id": "ap-connect-10",
+          "title": "Full-screen preview overlay",
+          "done": true
+        },
+        {
+          "id": "ap-connect-11",
+          "title": "Share sheet for export",
+          "done": true
+        },
+        {
+          "id": "ap-connect-12",
+          "title": "Fix batch headlines (\"My App\" placeholder)",
+          "done": false
+        },
+        {
+          "id": "ap-connect-13",
+          "title": "Add real App Store Connect API integration",
+          "done": false
+        },
+        {
+          "id": "ap-connect-14",
+          "title": "Tests",
+          "done": false
+        }
+      ],
+      "doneCount": 5,
+      "totalCount": 15
+    },
+    {
+      "id": "harmony-stack",
+      "name": "Harmony Stack",
+      "emoji": "🎨",
+      "summary": "Back to Home.",
+      "status": "active",
+      "statusRaw": "Static content, maintained",
+      "deadline": null,
+      "accent": "#7c3aed",
+      "tasks": [
+        {
+          "id": "harmony-stack-0",
+          "title": "Landing page (harmony-stack-landing.html, 20KB)",
+          "done": true
+        },
+        {
+          "id": "harmony-stack-1",
+          "title": "Services page (harmony-stack-services.html, 177KB)",
+          "done": true
+        },
+        {
+          "id": "harmony-stack-2",
+          "title": "Tiered package comparisons (tier01, tier35)",
+          "done": true
+        },
+        {
+          "id": "harmony-stack-3",
+          "title": "Python validation scripts",
+          "done": true
+        },
+        {
+          "id": "harmony-stack-4",
+          "title": "Portfolio screenshots",
+          "done": true
+        },
+        {
+          "id": "harmony-stack-5",
+          "title": "Dynamic pricing calculator",
+          "done": false
+        },
+        {
+          "id": "harmony-stack-6",
+          "title": "Contact / lead capture form",
+          "done": false
+        },
+        {
+          "id": "harmony-stack-7",
+          "title": "Deployment to hosting",
+          "done": false
+        }
+      ],
+      "doneCount": 5,
+      "totalCount": 8
+    },
+    {
+      "id": "p-sultry-room",
+      "name": "P Sultry Room",
+      "emoji": "💅",
+      "summary": "Back to Home.",
+      "status": "active",
+      "statusRaw": "Static site, functional",
+      "deadline": null,
+      "accent": "#059669",
+      "tasks": [
+        {
+          "id": "p-sultry-room-0",
+          "title": "Home page with service descriptions",
+          "done": true
+        },
+        {
+          "id": "p-sultry-room-1",
+          "title": "Booking form page",
+          "done": true
+        },
+        {
+          "id": "p-sultry-room-2",
+          "title": "Pricing page with service tiers",
+          "done": true
+        },
+        {
+          "id": "p-sultry-room-3",
+          "title": "Site drawer navigation",
+          "done": true
+        },
+        {
+          "id": "p-sultry-room-4",
+          "title": "React migration (planned — see BOOKING-REACT-SETUP.md)",
+          "done": false
+        },
+        {
+          "id": "p-sultry-room-5",
+          "title": "Online payment integration",
+          "done": false
+        },
+        {
+          "id": "p-sultry-room-6",
+          "title": "Deployment to hosting",
+          "done": false
+        }
+      ],
+      "doneCount": 4,
+      "totalCount": 7
+    },
+    {
+      "id": "llm-builder-local",
+      "name": "LLM Builder Local",
+      "emoji": "🧠",
+      "summary": "Back to Home.",
+      "status": "idle",
+      "statusRaw": "",
+      "deadline": null,
+      "accent": "#ea580c",
+      "tasks": [
+        {
+          "id": "llm-builder-local-0",
+          "title": "179 songs extracted to chronological lyric lines",
+          "done": true
+        },
+        {
+          "id": "llm-builder-local-1",
+          "title": "Slang & Lexicon category (502 terms)",
+          "done": true
+        },
+        {
+          "id": "llm-builder-local-2",
+          "title": "Entities category (artists, producers, labels)",
+          "done": true
+        },
+        {
+          "id": "llm-builder-local-3",
+          "title": "Thematic Ideas category",
+          "done": true
+        },
+        {
+          "id": "llm-builder-local-4",
+          "title": "Bar Notes (7,599 files!)",
+          "done": true
+        },
+        {
+          "id": "llm-builder-local-5",
+          "title": "Deep Concepts category",
+          "done": true
+        },
+        {
+          "id": "llm-builder-local-6",
+          "title": "Tone metrics and master concept mapping",
+          "done": true
+        },
+        {
+          "id": "llm-builder-local-7",
+          "title": "LLM_DATASET_ANALYSIS.md documentation",
+          "done": true
+        },
+        {
+          "id": "llm-builder-local-8",
+          "title": "Automated sync with XJournal AI",
+          "done": false
+        },
+        {
+          "id": "llm-builder-local-9",
+          "title": "Version control for corpus updates",
+          "done": false
+        }
+      ],
+      "doneCount": 8,
+      "totalCount": 10
+    },
+    {
+      "id": "ai-toolkit",
+      "name": "AI Toolkit",
+      "emoji": "🧰",
+      "summary": "> Cross-project. Not tied to any single project. A shared library of AI services, APIs, models, and tooling to reference from any project in this vault (CDL PRAC one, XJournal AI, and future ones). Wh",
+      "status": "active",
+      "statusRaw": "active",
+      "deadline": null,
+      "accent": "#7c3aed",
+      "tasks": [],
+      "doneCount": 0,
+      "totalCount": 0
+    }
+  ]
+}

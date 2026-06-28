@@ -104,7 +104,7 @@ function App() {
                   {/* Mobile backdrop */}
                   {sidebarOpen && (
                     <div
-                      className="fixed inset-0 z-40 md:hidden"
+                      className="fixed inset-0 z-40 sm:hidden"
                       style={{ background: 'rgba(0,0,0,0.45)' }}
                       onClick={() => setSidebarOpen(false)}
                     />
@@ -121,7 +121,7 @@ function App() {
                   <div className="flex flex-col flex-1 min-w-0 min-h-0">
                     {/* Mobile top bar */}
                     <div
-                      className="flex md:hidden items-center gap-3 px-4 py-3 shrink-0"
+                      className="flex sm:hidden items-center gap-3 px-4 py-3 shrink-0"
                       style={{
                         borderBottom: '1px solid var(--border)',
                         background: 'var(--bg-sidebar)',

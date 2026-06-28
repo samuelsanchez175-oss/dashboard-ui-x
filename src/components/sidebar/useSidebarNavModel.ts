@@ -12,7 +12,7 @@ import type { CustomZone } from '../../context/CustomZonesContext'
 import { useWebDesignerBookmarks } from '../../context/WebDesignerBookmarksContext'
 import { webDesignerBookmarkNavId } from '../../lib/web-designer-bookmarks'
 import { TOOLS_REGISTRY } from '../../lib/toolsRegistry'
-import { applySidebarNavLayout, type SidebarNavLayoutPersist } from './sidebarNavLayout'
+import { applySidebarNavLayout, applySidebarNavLayoutShowingAll, type SidebarNavLayoutPersist } from './sidebarNavLayout'
 import { NAV_SECTIONS, type NavItem, type NavSection } from './navigation'
 
 export const CUSTOM_ZONES_SECTION_ID = 'custom-zones'
@@ -135,9 +135,11 @@ export function useSidebarNavModel(layout: SidebarNavLayoutPersist): SidebarNavM
 
     const customZonesSection = buildCustomZonesSection(zones)
     const actionsSection = buildSidebarActionsSection()
-    const visibleWithoutHubCount = applySidebarNavLayout(sourceWithoutHubCount, layout)
+    // The Tools Hub is the source of truth: it lists every destination that
+    // exists, even ones removed from the left sidebar. So it counts/shows the
+    // "showing all" projection, not the layout-filtered one.
     const allToolsSectionsWithoutHubCount = [
-      ...visibleWithoutHubCount,
+      ...applySidebarNavLayoutShowingAll(sourceWithoutHubCount, layout),
       ...(customZonesSection ? [customZonesSection] : []),
       actionsSection,
     ]
@@ -145,7 +147,7 @@ export function useSidebarNavModel(layout: SidebarNavLayoutPersist): SidebarNavM
     const sourceSections = withAllToolsBadge(sourceWithoutHubCount)
     const visibleSections = applySidebarNavLayout(sourceSections, layout)
     const allToolsSections = [
-      ...visibleSections,
+      ...applySidebarNavLayoutShowingAll(sourceSections, layout),
       ...(customZonesSection ? [customZonesSection] : []),
       actionsSection,
     ]

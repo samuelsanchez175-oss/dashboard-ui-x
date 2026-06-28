@@ -17,7 +17,7 @@ import { promisify } from 'node:util'
 type Next = () => void
 
 const execAsync = promisify(exec)
-const VAULT_DIR = '/Users/samuel/Documents/OB CLAUDE vault'
+const VAULT_DIR = process.env.VAULT_DIR || '/Users/samuel/dev/OB CLAUDE vault'
 
 async function readJsonBody(req: IncomingMessage): Promise<any> {
   return new Promise((resolve, reject) => {
@@ -364,6 +364,14 @@ export function attachDashboardBff(
     // POST /api/local/brief/build
     if (pathName === '/api/local/brief/build' && method === 'POST') {
       const cmd = `python3 "${VAULT_DIR}/📊 dashboard-ui/build.py"`
+      const outcome = await runCommand(cmd)
+      jsonRes(res, outcome.ok ? 200 : 500, outcome)
+      return
+    }
+
+    // POST /api/local/projects/build — rebuild public/data/projects.json from the vault
+    if (pathName === '/api/local/projects/build' && method === 'POST') {
+      const cmd = `VAULT_DIR="${VAULT_DIR}" node "${repoRoot}/scripts/build-projects.mjs"`
       const outcome = await runCommand(cmd)
       jsonRes(res, outcome.ok ? 200 : 500, outcome)
       return

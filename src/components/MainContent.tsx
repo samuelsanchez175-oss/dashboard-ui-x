@@ -12,6 +12,7 @@ import ToolsArrangementPadPage from '../zones/tools/ToolsArrangementPadPage'
 import ToolsSampleSlicerPage from '../zones/tools/ToolsSampleSlicerPage'
 import ToolsStemSplitterPage from '../zones/tools/ToolsStemSplitterPage'
 import ToolsAppIconStudioPage from '../zones/tools/ToolsAppIconStudioPage'
+import ToolsDeviceMockupPage from '../zones/tools/ToolsDeviceMockupPage'
 import HarmonyStackZone from '../zones/harmony/HarmonyStackZone'
 import CpwZone from '../zones/cpw/CpwZone'
 import { parseWebDesignerBookmarkNavId } from '../lib/web-designer-bookmarks'
@@ -98,6 +99,9 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
       break
     case 'tools-app-icon':
       body = <ToolsAppIconStudioPage onNavigate={onNavigate} />
+      break
+    case 'tools-device-mockup':
+      body = <ToolsDeviceMockupPage onNavigate={onNavigate} />
       break
     case 'agent-farm':
       body = <AgentFarm />

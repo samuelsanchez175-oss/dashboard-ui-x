@@ -1,10 +1,11 @@
-import { ArrowLeft, Crop, Loader2, Upload } from 'lucide-react'
+import { ArrowLeft, Crop, Layers, Loader2, Upload } from 'lucide-react'
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 
 import Button from '../../components/ui/Button'
 import ZoneHeader from '../../components/ZoneHeader'
 import { encodeMonoPcm16Wav, triggerDownload } from '../../lib/pcm-wav'
 import StudioToolsHeader from './StudioToolsHeader'
+import { splitStemsFromBuffer, zipStore, type Stem } from './youtube-clip-tools'
 
 interface ToolsSampleSlicerPageProps {
   onNavigate: (routeId: string) => void
@@ -20,6 +21,11 @@ export default function ToolsSampleSlicerPage({ onNavigate }: ToolsSampleSlicerP
   const [loading, setLoading] = useState(false)
   const [trim0, setTrim0] = useState(0)
   const [trim1, setTrim1] = useState(1)
+
+  // Auto-stem output (runs on drop)
+  const [stems, setStems] = useState<Stem[] | null>(null)
+  const [stemming, setStemming] = useState(false)
+  const [stemError, setStemError] = useState<string | null>(null)
 
   /** Active drag tail — avoids stale closures on first move */
   const dragRef = useRef<DragMode>('none')
@@ -55,6 +61,42 @@ export default function ToolsSampleSlicerPage({ onNavigate }: ToolsSampleSlicerP
       setLoading(false)
     }
   }, [])
+
+  // Split into stems the moment a file is decoded.
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- reset + kick off the stem split when a new file decodes */
+    if (!buffer) {
+      setStems(null)
+      setStemError(null)
+      return
+    }
+    let cancelled = false
+    setStemming(true)
+    setStems(null)
+    setStemError(null)
+    /* eslint-enable react-hooks/set-state-in-effect */
+    void (async () => {
+      await new Promise(r => setTimeout(r, 30)) // let the "Splitting…" state paint
+      try {
+        const out = await splitStemsFromBuffer(buffer, fileName || 'sample', { drums: true })
+        if (!cancelled) setStems(out)
+      } catch {
+        if (!cancelled) setStemError('Could not split this file into stems.')
+      } finally {
+        if (!cancelled) setStemming(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-run when a new file is decoded
+  }, [buffer])
+
+  const downloadAllStems = useCallback(async () => {
+    if (!stems || stems.length === 0) return
+    const zip = await zipStore(stems.map(s => ({ name: s.fileName, blob: s.blob })))
+    triggerDownload(zip, `${fileName || 'sample'} - stems.zip`)
+  }, [stems, fileName])
 
   const peaks = useMemo(() => {
     if (!buffer) return []
@@ -243,6 +285,57 @@ export default function ToolsSampleSlicerPage({ onNavigate }: ToolsSampleSlicerP
               }}
             />
           </label>
+
+          {buffer && (
+            <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                  <Layers className="size-4 text-amber-500" strokeWidth={2} /> Stems
+                </h2>
+                {stemming && (
+                  <span className="mono flex items-center gap-1.5 text-xs text-slate-400">
+                    <Loader2 className="size-3.5 animate-spin" /> Splitting…
+                  </span>
+                )}
+              </div>
+
+              {stemError ? (
+                <p className="text-sm text-rose-600">{stemError}</p>
+              ) : stems ? (
+                <>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {stems.map(s => (
+                      <div
+                        key={s.id}
+                        className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3 py-2"
+                      >
+                        <div className="min-w-0">
+                          <div className="text-sm font-medium text-slate-700">{s.label}</div>
+                          <div className="text-[11px] leading-snug text-slate-400">{s.hint}</div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => triggerDownload(s.blob, s.fileName)}
+                          className="shrink-0 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 transition hover:border-amber-400 hover:text-amber-600"
+                        >
+                          WAV
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <Button variant="primary" size="sm" onClick={() => void downloadAllStems()} className="mt-4">
+                    Download all stems (.zip)
+                  </Button>
+                  <p className="mt-2 text-[11px] leading-snug text-slate-400">
+                    Split via harmonic/percussive separation + frequency bands — a fast approximation, not surgical AI
+                    isolation.
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm text-slate-400">Splitting into stems…</p>
+              )}
+            </div>
+          )}
 
           {buffer ? (
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

@@ -5,9 +5,9 @@ import {
   Globe,
   Headphones,
   Images,
+  FolderKanban,
   KeyRound,
   LayoutGrid,
-  Music,
   Paintbrush,
   Piano,
   Rss,
@@ -102,8 +102,8 @@ export const NAV_SECTIONS: NavSection[] = [
   },
   {
     id:    'cpw',
-    title: 'CPW',
-    items: [{ id: 'cpw-projects', label: 'Projects', icon: Music }],
+    title: 'PROJECTS',
+    items: [{ id: 'cpw-projects', label: 'All projects', icon: FolderKanban }],
   },
   {
     id:    'pulse',

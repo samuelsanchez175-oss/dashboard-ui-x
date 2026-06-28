@@ -283,8 +283,15 @@ export default function DailyBriefZone() {
   const [copiedFile, setCopiedFile] = useState<string | null>(null)
   const copyTimer = useRef<number | undefined>(undefined)
 
-  // Local Dev Controls State
-  const [isLocalHost, setIsLocalHost] = useState(false)
+  // Local Dev Controls State — vault scripts only exist on the host Mac.
+  const [isLocalHost] = useState<boolean>(() => {
+    try {
+      const h = window.location.hostname
+      return h === 'localhost' || h === '127.0.0.1' || h.endsWith('.localhost')
+    } catch {
+      return false
+    }
+  })
   const [workflowSearch, setWorkflowSearch] = useState('')
   const [runningAction, setRunningAction] = useState<string | null>(null)
   const [actionLogs, setActionLogs] = useState<string>('')
@@ -303,14 +310,6 @@ export default function DailyBriefZone() {
   const [viewingFile, setViewingFile] = useState<{ path: string; title: string } | null>(null)
   const [viewingFileContent, setViewingFileContent] = useState<string>('')
   const [viewingFileLoading, setViewingFileLoading] = useState(false)
-
-  useEffect(() => {
-    setIsLocalHost(
-      window.location.hostname === 'localhost' ||
-      window.location.hostname === '127.0.0.1' ||
-      window.location.hostname.endsWith('.localhost')
-    )
-  }, [])
 
   const runLocalAction = async (action: 'generate' | 'ingest' | 'build') => {
     const url = action === 'generate' 
@@ -333,8 +332,8 @@ export default function DailyBriefZone() {
       } else {
         setActionLogs(`[ERROR] ${json.error || 'Failed'}:\n${json.stderr || ''}\n${json.stdout || ''}`)
       }
-    } catch (err: any) {
-      setActionLogs(`[NETWORK ERROR] ${err.message}`)
+    } catch (err: unknown) {
+      setActionLogs(`[NETWORK ERROR] ${err instanceof Error ? err.message : String(err)}`)
     } finally {
       setRunningAction(null)
     }
@@ -352,8 +351,8 @@ export default function DailyBriefZone() {
       } else {
         setActionLogs(`[ERROR] Failed to load logs: ${json.message || 'Unknown error'}`)
       }
-    } catch (err: any) {
-      setActionLogs(`[NETWORK ERROR] ${err.message}`)
+    } catch (err: unknown) {
+      setActionLogs(`[NETWORK ERROR] ${err instanceof Error ? err.message : String(err)}`)
     }
   }
 
@@ -383,8 +382,8 @@ export default function DailyBriefZone() {
       } else {
         setHandoffStatusMsg(`Error: ${json.message || 'Write failed'}`)
       }
-    } catch (err: any) {
-      setHandoffStatusMsg(`Network error: ${err.message}`)
+    } catch (err: unknown) {
+      setHandoffStatusMsg(`Network error: ${err instanceof Error ? err.message : String(err)}`)
     } finally {
       setHandoffSubmitting(false)
     }
@@ -403,8 +402,8 @@ export default function DailyBriefZone() {
         const json = await res.json()
         setViewingFileContent(`Error loading file: ${json.message || 'Not found'}`)
       }
-    } catch (err: any) {
-      setViewingFileContent(`Network error: ${err.message}`)
+    } catch (err: unknown) {
+      setViewingFileContent(`Network error: ${err instanceof Error ? err.message : String(err)}`)
     } finally {
       setViewingFileLoading(false)
     }
@@ -439,6 +438,37 @@ export default function DailyBriefZone() {
     return () => window.clearTimeout(copyTimer.current)
   }, [load])
 
+  /**
+   * The Refresh button. On the vault Mac (localhost) it re-runs the pipeline —
+   * regenerate the brief from the vault, rebuild the dashboard snapshot — then
+   * reloads the page data. Off-localhost (e.g. Vercel) it just re-fetches.
+   */
+  const deepRefresh = useCallback(async () => {
+    if (!isLocalHost) {
+      await load()
+      return
+    }
+    setLoading(true)
+    setShowLogConsole(true)
+    setActiveLogType('action')
+    setActionLogs('① Regenerating the daily brief from the vault…')
+    try {
+      const g = await fetch('/api/local/brief/generate', { method: 'POST' })
+        .then(r => r.json())
+        .catch(() => ({ ok: false }))
+      const gMsg = g?.ok ? '✓ brief regenerated' : '⚠ brief regen skipped/failed'
+      setActionLogs(`${gMsg}\n② Rebuilding the dashboard snapshot…`)
+      const b = await fetch('/api/local/brief/build', { method: 'POST' })
+        .then(r => r.json())
+        .catch(() => ({ ok: false }))
+      const bMsg = b?.ok ? '✓ snapshot rebuilt' : '⚠ snapshot rebuild skipped/failed'
+      setActionLogs(`${gMsg}\n${bMsg}\n③ Reloading…`)
+    } catch (err) {
+      setActionLogs(`[ERROR] ${err instanceof Error ? err.message : 'refresh failed'}`)
+    }
+    await load()
+  }, [isLocalHost, load])
+
   const dismissNotif = () => {
     setNotifDismissed(true)
     try {
@@ -453,60 +483,26 @@ export default function DailyBriefZone() {
     if (data) lsSetJson(DISMISS_PREFIX + data.date, next, DISMISS_PREFIX)
   }
 
-  const dismissTool = (name: string) =>
-    updateDismissed({ ...dismissed, tools: [...dismissed.tools, name] })
-  const dismissHandoff = (name: string) =>
+  /** Best-effort write to the vault so a dismissal is "saved as seen" there too (localhost only). */
+  const saveSeenToVault = (endpoint: string, body: unknown) => {
+    if (!isLocalHost) return
+    void fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }).catch(() => { /* vault write is local-only; off-localhost it just stays a local dismiss */ })
+  }
+
+  const dismissTool = (name: string) => {
+    updateDismissed({ ...dismissed, tools: [...dismissed.tools, name] }) // hide for today, immediately
+    saveSeenToVault('/api/local/vault/dismiss-tool', { path: name, familiar: true }) // mark seen in the vault
+  }
+  const dismissHandoff = (name: string) => {
     updateDismissed({ ...dismissed, handoffs: [...dismissed.handoffs, name] })
+    saveSeenToVault('/api/local/vault/resolve-handoff', { path: `🤝 Handoffs/${name}.md` })
+  }
   const restoreTools = () => updateDismissed({ ...dismissed, tools: [] })
   const restoreHandoffs = () => updateDismissed({ ...dismissed, handoffs: [] })
-
-  const [actionInProgress, setActionInProgress] = useState<string | null>(null)
-
-  const permanentlyDismissTool = async (name: string) => {
-    setActionInProgress(name)
-    try {
-      const res = await fetch('/api/local/vault/dismiss-tool', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path: name, familiar: true })
-      })
-      const json = await res.json()
-      if (json.ok) {
-        await load()
-      } else {
-        alert('Failed to permanently dismiss: ' + (json.message || 'Unknown error'))
-      }
-    } catch (err: any) {
-      alert('Network error: ' + err.message)
-    } finally {
-      setActionInProgress(null)
-    }
-  }
-
-  const resolveHandoff = async (relPath: string) => {
-    setActionInProgress(relPath)
-    try {
-      const res = await fetch('/api/local/vault/resolve-handoff', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path: relPath })
-      })
-      const json = await res.json()
-      if (json.ok) {
-        await load()
-      } else {
-        alert('Failed to resolve handoff: ' + (json.message || 'Unknown error'))
-      }
-    } catch (err: any) {
-      alert('Network error: ' + err.message)
-    } finally {
-      setActionInProgress(null)
-    }
-  }
-
-  const handleResolveHandoff = async (name: string) => {
-    await resolveHandoff(`🤝 Handoffs/${name}.md`)
-  }
 
   const togglePlan = (title: string) => {
     const next = planDone.includes(title)
@@ -570,9 +566,10 @@ export default function DailyBriefZone() {
           actions={
             <Button
               variant="secondary"
-              onClick={() => void load()}
+              onClick={() => void deepRefresh()}
               disabled={loading}
               leading={<RefreshCw className={`size-4 ${loading ? 'animate-spin' : ''}`} aria-hidden />}
+              title={isLocalHost ? 'Re-run the vault brief scripts, then reload' : 'Reload the latest brief snapshot'}
             >
               Refresh
             </Button>
@@ -940,19 +937,6 @@ export default function DailyBriefZone() {
                           >
                             <X className="size-3.5" aria-hidden />
                           </button>
-                          {isLocalHost && (
-                            <button
-                              type="button"
-                              title="Mark as Familiar (Permanent vault update)"
-                              aria-label={`Mark ${t.name} as familiar`}
-                              disabled={actionInProgress === t.name}
-                              onClick={() => void permanentlyDismissTool(t.name)}
-                              className="rounded-md p-1.5 hover:[background:var(--bg-muted)] hover:text-emerald-600 transition-colors"
-                              style={{ color: 'var(--text-3)' }}
-                            >
-                              <Check className="size-3.5" aria-hidden />
-                            </button>
-                          )}
                         </div>
                       </li>
                     ))
@@ -999,19 +983,6 @@ export default function DailyBriefZone() {
                           >
                             <X className="size-3.5" aria-hidden />
                           </button>
-                          {isLocalHost && (
-                            <button
-                              type="button"
-                              title="Resolve handoff (Permanent vault update)"
-                              aria-label={`Resolve ${h.name}`}
-                              disabled={actionInProgress === h.name}
-                              onClick={() => void handleResolveHandoff(h.name)}
-                              className="rounded-md p-1.5 hover:[background:var(--bg-muted)] hover:text-emerald-600 transition-colors"
-                              style={{ color: 'var(--text-3)' }}
-                            >
-                              <Check className="size-3.5" aria-hidden />
-                            </button>
-                          )}
                         </div>
                       </li>
                     ))

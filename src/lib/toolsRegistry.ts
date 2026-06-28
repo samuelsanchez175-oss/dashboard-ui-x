@@ -10,6 +10,7 @@ import {
   MonitorPlay,
   Music4,
   Radio,
+  Smartphone,
   Timer,
   WholeWord,
 } from 'lucide-react'
@@ -77,11 +78,11 @@ export const TOOLS_REGISTRY: ToolDef[] = [
   {
     id:          'tools-key-finder',
     routeId:     'tools-key-finder',
-    label:       'Key & BPM finder',
-    longLabel:   'Key & BPM Finder',
+    label:       'Key & STEM',
+    longLabel:   'Key & STEM',
     icon:        Radio,
     category:    'audio',
-    description: 'Detect musical key, tempo, and Camelot code.',
+    description: 'Find key, BPM, and scale, and split into downloadable stems — in one drop.',
     family:      'detection',
     dock: {
       pinTab: 'analysis',
@@ -181,6 +182,15 @@ export const TOOLS_REGISTRY: ToolDef[] = [
     icon:        AppWindow,
     category:    'utility',
     description: 'Align any image to a 1024×1024 App Store Connect icon and export PNG.',
+  },
+  {
+    id:          'tools-device-mockup',
+    routeId:     'tools-device-mockup',
+    label:       'iPhone mockup',
+    longLabel:   'iPhone 17 Mockup',
+    icon:        Smartphone,
+    category:    'utility',
+    description: 'Drop a screenshot into a clean iPhone 17 frame and export a transparent PNG.',
   },
 ]
 

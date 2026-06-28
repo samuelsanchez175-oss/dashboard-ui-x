@@ -4,6 +4,8 @@ const STORAGE_KEY = 'sx-dashboard-sidebar-nav-layout-v1'
 /** Prior branding; read once to migrate saved layout into {@link STORAGE_KEY}. */
 const LEGACY_STORAGE_KEY = 'game-studio-sidebar-nav-layout-v1'
 export const SIDEBAR_NAV_LAYOUT_EVENT = 'sx-dashboard-sidebar-nav-layout-change'
+/** drag-and-drop payload type: a nav item id dragged from the Tools Hub onto the sidebar. */
+export const SIDEBAR_NAV_DND_MIME = 'application/x-sx-nav-item'
 
 export interface SidebarNavLayoutPersist {
   version:           1
@@ -152,6 +154,32 @@ export function applySidebarNavLayout(sourceSections: NavSection[], layout: Side
   return out
 }
 
+/**
+ * Every section + item in saved order, keeping hidden sections AND hidden items.
+ * The Tools Hub is the source of truth — it shows everything that exists, even
+ * tools the user has removed from the left sidebar (those just appear as
+ * “off sidebar” and can be dragged back).
+ */
+export function applySidebarNavLayoutShowingAll(
+  sourceSections: NavSection[],
+  layout: SidebarNavLayoutPersist,
+): NavSection[] {
+  const byId = new Map(sourceSections.map(s => [s.id, s] as const))
+  const order = orderedSectionIds(sourceSections, layout)
+  const out: NavSection[] = []
+  for (const id of order) {
+    const sec = byId.get(id)
+    if (!sec) continue
+    const items: NavItem[] = []
+    for (const itemId of orderedItemIds(sec, layout)) {
+      const item = sec.items.find(i => i.id === itemId)
+      if (item) items.push(item)
+    }
+    out.push({ ...sec, items })
+  }
+  return out
+}
+
 /** Section with items for edit mode (includes items even when section is “hidden” from normal nav). */
 export function sectionForEdit(sec: NavSection, layout: SidebarNavLayoutPersist): NavSection {
   const idOrder = orderedItemIds(sec, layout)
@@ -227,6 +255,36 @@ export function toggleSectionCollapsed(layout: SidebarNavLayoutPersist, sectionI
 export function hideNavItem(layout: SidebarNavLayoutPersist, itemId: string): SidebarNavLayoutPersist {
   if (layout.hiddenItemIds.includes(itemId)) return layout
   return { ...layout, hiddenItemIds: [...layout.hiddenItemIds, itemId] }
+}
+
+/** Whether an item is currently shown on the sidebar (not item-hidden and not in a hidden section). */
+export function isNavItemOnSidebar(
+  layout: SidebarNavLayoutPersist,
+  sectionId: string,
+  itemId: string,
+): boolean {
+  return !layout.hiddenItemIds.includes(itemId) && !layout.hiddenSectionIds.includes(sectionId)
+}
+
+/**
+ * Put a tool back on the sidebar (un-hide it). If its whole section was hidden,
+ * the section is restored too — that's the only way to surface the item again.
+ * Used when a tile is dragged from the Tools Hub onto the sidebar.
+ */
+export function restoreNavItemToSidebar(
+  layout: SidebarNavLayoutPersist,
+  sourceSections: NavSection[],
+  itemId: string,
+): SidebarNavLayoutPersist {
+  let next = layout
+  if (next.hiddenItemIds.includes(itemId)) {
+    next = { ...next, hiddenItemIds: next.hiddenItemIds.filter(id => id !== itemId) }
+  }
+  const sectionId = sourceSections.find(s => s.items.some(i => i.id === itemId))?.id ?? null
+  if (sectionId && next.hiddenSectionIds.includes(sectionId)) {
+    next = { ...next, hiddenSectionIds: next.hiddenSectionIds.filter(id => id !== sectionId) }
+  }
+  return next
 }
 
 export function resetSidebarNavLayout(): SidebarNavLayoutPersist {

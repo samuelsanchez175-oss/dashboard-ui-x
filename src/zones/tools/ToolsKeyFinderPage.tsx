@@ -1,4 +1,4 @@
-import { ArrowLeft, ExternalLink, Loader2, Radio, Trash2, Upload } from 'lucide-react'
+import { ArrowLeft, Download, ExternalLink, Layers, Loader2, Radio, Trash2, Upload } from 'lucide-react'
 import { useCallback, useEffect, useId, useMemo, useState, type ChangeEvent, type CSSProperties } from 'react'
 
 import type { MixClipMeta } from '../mixing/mixing-audio-idb'
@@ -12,6 +12,8 @@ import {
 } from './key-finder-history'
 import StudioToolsHeader from './StudioToolsHeader'
 import { filenameToWhoSampledQueries, openWhoSampledSearch } from '../../lib/whosampled-search'
+import { triggerDownload } from '../../lib/pcm-wav'
+import { splitStems, zipStore, type Stem } from './youtube-clip-tools'
 
 interface ToolsKeyFinderPageProps {
   onNavigate: (routeId: string) => void
@@ -129,11 +131,16 @@ export default function ToolsKeyFinderPage({ onNavigate }: ToolsKeyFinderPagePro
   const [history,  setHistory]  = useState<KeyFinderHistoryEntry[]>(() => loadKeyFinderHistory())
   /** Inbound clip relayed from another tool (Audio grabber, Recent clips tray). */
   const [inboundNotice, setInboundNotice] = useState<string | null>(null)
+  // Stem split — runs alongside key/BPM on every dropped file.
+  const [stems, setStems] = useState<Stem[] | null>(null)
+  const [stemming, setStemming] = useState(false)
+  const [stemError, setStemError] = useState<string | null>(null)
 
   const historyAscending = useMemo(() => [...history].sort((a, b) => a.analyzedAt - b.analyzedAt), [history])
 
   const runFile = useCallback(async (file: File) => {
     setBusy(true); setError(null); setFileName(file.name); setMeta(null)
+    setStems(null); setStemError(null); setStemming(true)
     try {
       const { analyzeMixClipBlob } = await import('../mixing/mixing-audio-analysis')
       const m = await analyzeMixClipBlob(file)
@@ -148,7 +155,20 @@ export default function ToolsKeyFinderPage({ onNavigate }: ToolsKeyFinderPagePro
       dispatchFileDownload({ blob: file, name: file.name, source: 'Key finder' })
     } catch { setError('Could not decode that file. Try WAV or MP3.')
     } finally { setBusy(false) }
+
+    // Stems run after key/BPM so a stem failure never blocks the analysis above.
+    try {
+      const out = await splitStems(file, file.name.replace(/\.[^.]+$/, ''), { drums: true })
+      setStems(out)
+    } catch { setStemError('Could not split this file into stems.')
+    } finally { setStemming(false) }
   }, [])
+
+  const downloadAllStems = useCallback(async () => {
+    if (!stems || stems.length === 0) return
+    const zip = await zipStore(stems.map(s => ({ name: s.fileName, blob: s.blob })))
+    triggerDownload(zip, `${(fileName ?? 'audio').replace(/\.[^.]+$/, '')} - stems.zip`)
+  }, [stems, fileName])
 
   // Receive a clip handed off from the Mixing Audio Grabber (or any other
   // sender that writes the agreed `inbound-clip-<routeId>` sessionStorage key).
@@ -200,7 +220,7 @@ export default function ToolsKeyFinderPage({ onNavigate }: ToolsKeyFinderPagePro
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden" style={{ background: 'var(--bg-canvas)' }}>
       <StudioToolsHeader
         toolId="tools-key-finder"
-        crumbs={[{ label: 'Workspace' }, { label: 'Tools' }, { label: 'Key & BPM finder', emphasis: true }]}
+        crumbs={[{ label: 'Workspace' }, { label: 'Tools' }, { label: 'Key & STEM', emphasis: true }]}
         leftExtra={
           <button
             type="button"
@@ -218,9 +238,9 @@ export default function ToolsKeyFinderPage({ onNavigate }: ToolsKeyFinderPagePro
         <div className="mx-auto w-full max-w-3xl">
           <ZoneHeader
             eyebrow="ANALYSIS"
-            title="Key & BPM finder"
+            title="Key & STEM"
             icon={Radio}
-            description="Offline-first decode using embedded tags when present, plus local tempo + chromagram key estimation."
+            description="Drop a file once — it finds the key, BPM, and scale, and splits it into downloadable stems. All in your browser."
             className="mb-8"
           />
 
@@ -301,6 +321,84 @@ export default function ToolsKeyFinderPage({ onNavigate }: ToolsKeyFinderPagePro
                 {meta.rapKeyTip}
               </div>
               {fileName ? <WhoSampledPanel fileName={fileName} labelStyle={label} /> : null}
+            </div>
+          )}
+
+          {/* Stems — runs on every dropped file */}
+          {(stemming || stems || stemError) && (
+            <div className="mt-6 space-y-4 rounded-2xl p-6" style={card}>
+              <div className="flex items-center justify-between">
+                <h2 className="flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--text-1)' }}>
+                  <Layers className="size-4" style={{ color: 'var(--accent)' }} strokeWidth={2} aria-hidden /> Stems
+                </h2>
+                {stemming && (
+                  <span className="mono inline-flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-3)' }}>
+                    <Loader2 className="size-3.5 animate-spin" aria-hidden /> Splitting…
+                  </span>
+                )}
+              </div>
+
+              {stemError ? (
+                <p className="text-sm" style={{ color: 'var(--bad)' }}>{stemError}</p>
+              ) : stems ? (
+                <>
+                  <div className="overflow-x-auto rounded-xl" style={{ border: '1px solid var(--border-soft)' }}>
+                    <table className="w-full border-collapse text-left text-sm">
+                      <thead>
+                        <tr>
+                          <th className="px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-4)', borderBottom: '1px solid var(--border-soft)' }}>Stem</th>
+                          <th className="px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-4)', borderBottom: '1px solid var(--border-soft)' }}>What it is</th>
+                          <th className="px-4 py-2.5 text-right text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-4)', borderBottom: '1px solid var(--border-soft)' }}>File</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {stems.map(s => (
+                          <tr
+                            key={s.id}
+                            className="transition-colors"
+                            onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-card-soft)')}
+                            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                          >
+                            <td className="px-4 py-3 align-top font-medium" style={{ color: 'var(--text-1)', borderTop: '1px solid var(--border-soft)' }}>{s.label}</td>
+                            <td className="px-4 py-3 align-top text-[12px] leading-snug" style={{ color: 'var(--text-3)', borderTop: '1px solid var(--border-soft)' }}>{s.hint}</td>
+                            <td className="px-4 py-3 align-top text-right" style={{ borderTop: '1px solid var(--border-soft)' }}>
+                              <button
+                                type="button"
+                                onClick={() => triggerDownload(s.blob, s.fileName)}
+                                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition"
+                                style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-2)' }}
+                              >
+                                <Download className="size-3.5" strokeWidth={2} aria-hidden /> WAV
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <td colSpan={2} className="px-4 py-3 text-[12px]" style={{ color: 'var(--text-4)', borderTop: '1px solid var(--border)' }}>
+                            {stems.length} stems · approximate split
+                          </td>
+                          <td className="px-4 py-3 text-right" style={{ borderTop: '1px solid var(--border)' }}>
+                            <button
+                              type="button"
+                              onClick={() => void downloadAllStems()}
+                              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition"
+                              style={{ background: 'var(--accent)', color: 'var(--accent-contrast, #fff)' }}
+                            >
+                              <Download className="size-3.5" strokeWidth={2.2} aria-hidden /> All (.zip)
+                            </button>
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                  <p className="text-[11px] leading-snug" style={{ color: 'var(--text-4)' }}>
+                    Split via harmonic/percussive separation + frequency bands — a fast approximation, not surgical AI
+                    isolation.
+                  </p>
+                </>
+              ) : null}
             </div>
           )}
 

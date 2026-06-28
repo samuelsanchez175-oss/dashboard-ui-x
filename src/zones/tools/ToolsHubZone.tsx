@@ -1,10 +1,17 @@
-import { ChevronRight, Search, Wrench, X } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { ChevronRight, PanelLeftOpen, Search, Wrench, X } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import StudioToolsHeader from './StudioToolsHeader'
 import HeroBand from '../../components/HeroBand'
 import ZoneHeader from '../../components/ZoneHeader'
-import { loadSidebarNavLayout, SIDEBAR_NAV_LAYOUT_EVENT } from '../../components/sidebar/sidebarNavLayout'
+import {
+  isNavItemOnSidebar,
+  loadSidebarNavLayout,
+  restoreNavItemToSidebar,
+  saveSidebarNavLayout,
+  SIDEBAR_NAV_DND_MIME,
+  SIDEBAR_NAV_LAYOUT_EVENT,
+} from '../../components/sidebar/sidebarNavLayout'
 import { useSidebarNavModel } from '../../components/sidebar/useSidebarNavModel'
 import type { NavItem, NavSection } from '../../components/sidebar/navigation'
 import {
@@ -42,11 +49,17 @@ function ToolRow({
   sectionTitle,
   onNavigate,
   toneIndex,
+  onSidebar,
+  onRestore,
 }: {
   item: NavItem
   sectionTitle: string
   onNavigate: (routeId: string) => void
   toneIndex: number
+  /** Whether this tool is currently shown on the left sidebar. */
+  onSidebar: boolean
+  /** Put a removed tool back on the sidebar (the no-drag path). */
+  onRestore: (id: string) => void
 }) {
   const Icon = item.icon
   const tones = [
@@ -60,48 +73,76 @@ function ToolRow({
   const tone = tones[toneIndex % tones.length]
 
   return (
-    <button
-      type="button"
-      onClick={() => onNavigate(item.id)}
-      className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition hover:-translate-y-px"
-      style={{
-        background: 'var(--bg-card)',
-        border:     '1px solid var(--border)',
-        boxShadow:  'var(--shadow-sm)',
-      }}
-      onMouseEnter={e => {
-        e.currentTarget.style.borderColor = 'var(--border-strong)'
-        e.currentTarget.style.background = 'linear-gradient(to right, var(--bg-hover), color-mix(in oklab, var(--accent) 8%, var(--bg-hover)))'
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.borderColor = 'var(--border)'
-        e.currentTarget.style.background = 'var(--bg-card)'
-      }}
-    >
-      <span
-        className="grid size-9 shrink-0 place-items-center rounded-lg"
-        style={{ background: tone.bg, color: tone.fg, border: `1px solid ${tone.border}` }}
+    <div className="relative">
+      <button
+        type="button"
+        draggable
+        onDragStart={e => {
+          e.dataTransfer.setData(SIDEBAR_NAV_DND_MIME, item.id)
+          e.dataTransfer.setData('text/plain', item.label)
+          e.dataTransfer.effectAllowed = 'copyMove'
+        }}
+        onClick={() => onNavigate(item.id)}
+        title={onSidebar ? 'Open · drag onto the sidebar' : 'Drag onto the sidebar to add it back'}
+        className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition hover:-translate-y-px"
+        style={{
+          background: 'var(--bg-card)',
+          border:     onSidebar
+            ? '1px solid var(--border)'
+            : '1px dashed color-mix(in oklab, var(--accent) 55%, var(--border))',
+          boxShadow:  'var(--shadow-sm)',
+          cursor:     'grab',
+        }}
+        onMouseEnter={e => {
+          if (onSidebar) e.currentTarget.style.borderColor = 'var(--border-strong)'
+          e.currentTarget.style.background = 'linear-gradient(to right, var(--bg-hover), color-mix(in oklab, var(--accent) 8%, var(--bg-hover)))'
+        }}
+        onMouseLeave={e => {
+          if (onSidebar) e.currentTarget.style.borderColor = 'var(--border)'
+          e.currentTarget.style.background = 'var(--bg-card)'
+        }}
       >
-        <Icon className="size-[17px]" strokeWidth={2} aria-hidden />
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-semibold tracking-tight" style={{ color: 'var(--text-1)' }}>
-          {item.label}
-        </span>
-        <span className="mono block truncate text-[10px] uppercase tracking-wide" style={{ color: 'var(--text-4)' }}>
-          {sectionTitle} · {item.id}
-        </span>
-      </span>
-      {item.badge != null && (
         <span
-          className={`mono rounded-full px-2 py-0.5 text-[10px] font-semibold ${item.badgeClass ?? ''}`}
-          style={item.badgeClass ? undefined : { background: 'var(--bg-muted)', color: 'var(--text-3)' }}
+          className="grid size-9 shrink-0 place-items-center rounded-lg"
+          style={{ background: tone.bg, color: tone.fg, border: `1px solid ${tone.border}` }}
         >
-          {item.badge}
+          <Icon className="size-[17px]" strokeWidth={2} aria-hidden />
         </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-sm font-semibold tracking-tight" style={{ color: 'var(--text-1)' }}>
+            {item.label}
+          </span>
+          <span
+            className="mono block truncate text-[10px] uppercase tracking-wide"
+            style={{ color: onSidebar ? 'var(--text-4)' : 'var(--accent)' }}
+          >
+            {onSidebar ? `${sectionTitle} · ${item.id}` : 'Not on sidebar · drag to add'}
+          </span>
+        </span>
+        {item.badge != null && (
+          <span
+            className={`mono rounded-full px-2 py-0.5 text-[10px] font-semibold ${item.badgeClass ?? ''}`}
+            style={item.badgeClass ? undefined : { background: 'var(--bg-muted)', color: 'var(--text-3)' }}
+          >
+            {item.badge}
+          </span>
+        )}
+        <ChevronRight className="size-4 shrink-0 transition group-hover:translate-x-0.5" style={{ color: 'var(--text-4)' }} aria-hidden />
+      </button>
+      {!onSidebar && (
+        <button
+          type="button"
+          onClick={() => onRestore(item.id)}
+          className="absolute -right-2 -top-2 z-[1] flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold leading-none shadow-sm transition-transform hover:scale-105"
+          style={{ background: 'var(--accent)', color: 'var(--accent-on, #fff)', border: '1.5px solid var(--bg-canvas)' }}
+          title="Add this tool back to the left sidebar"
+          aria-label={`Add ${item.label} to the sidebar`}
+        >
+          <PanelLeftOpen size={11} strokeWidth={2.2} aria-hidden />
+          Add
+        </button>
       )}
-      <ChevronRight className="size-4 shrink-0 transition group-hover:translate-x-0.5" style={{ color: 'var(--text-4)' }} aria-hidden />
-    </button>
+    </div>
   )
 }
 
@@ -109,10 +150,14 @@ function NavSectionCard({
   section,
   sectionIndex,
   onNavigate,
+  isOnSidebar,
+  onRestore,
 }: {
   section: NavSection
   sectionIndex: number
   onNavigate: (routeId: string) => void
+  isOnSidebar: (sectionId: string, itemId: string) => boolean
+  onRestore: (id: string) => void
 }) {
   return (
     <section
@@ -147,6 +192,8 @@ function NavSectionCard({
             sectionTitle={section.title}
             onNavigate={onNavigate}
             toneIndex={sectionIndex + itemIndex}
+            onSidebar={isOnSidebar(section.id, item.id)}
+            onRestore={onRestore}
           />
         ))}
       </div>
@@ -176,6 +223,31 @@ export default function ToolsHubZone({ onNavigate }: ToolsHubZoneProps) {
   )
   const filteredCount = useMemo(() => countItems(sections), [sections])
 
+  const isOnSidebar = useCallback(
+    (sectionId: string, itemId: string) => isNavItemOnSidebar(layout, sectionId, itemId),
+    [layout],
+  )
+
+  // Put a removed tool back on the sidebar. Writing + dispatching the layout
+  // event keeps the sidebar (which listens) in sync without a reload.
+  const restoreToSidebar = useCallback(
+    (itemId: string) => {
+      const next = restoreNavItemToSidebar(loadSidebarNavLayout(), allToolsSections, itemId)
+      saveSidebarNavLayout(next)
+      setLayout(next)
+    },
+    [allToolsSections],
+  )
+
+  const offSidebarCount = useMemo(
+    () =>
+      allToolsSections.reduce(
+        (n, s) => n + s.items.filter(i => !isNavItemOnSidebar(layout, s.id, i.id)).length,
+        0,
+      ),
+    [allToolsSections, layout],
+  )
+
   return (
     <div
       className="flex min-h-0 flex-1 flex-col overflow-hidden"
@@ -187,11 +259,11 @@ export default function ToolsHubZone({ onNavigate }: ToolsHubZoneProps) {
         <HeroBand gradient={TOOLS_HUB_HERO_GRADIENT}>
           <div className="mx-auto max-w-[1280px] px-[var(--pad-card)] py-8">
             <ZoneHeader
-              eyebrow="SIDEBAR MIRROR"
-              title="All tools, one alternate entry point."
+              eyebrow="TOOLS · SOURCE OF TRUTH"
+              title="Every tool lives here."
               icon={Wrench}
               scale="hero"
-              description="Everything visible in the left rail is grouped here with the same route IDs, including starred Web Designer pages, custom zones, and pinned actions."
+              description="This hub always lists every destination — including tools you removed from the left sidebar. Drag any tile onto the sidebar, or press Add, to put it back."
               actions={
                 <div
                   className="relative overflow-hidden rounded-2xl px-5 py-4"
@@ -259,6 +331,16 @@ export default function ToolsHubZone({ onNavigate }: ToolsHubZoneProps) {
             <span className="mono rounded-full px-3 py-2 text-[10px] font-semibold uppercase tracking-wide" style={{ background: 'var(--bg-muted)', color: 'var(--text-4)' }}>
               {filteredCount} shown
             </span>
+            {offSidebarCount > 0 && (
+              <span
+                className="mono inline-flex items-center gap-1 rounded-full px-3 py-2 text-[10px] font-semibold uppercase tracking-wide"
+                style={{ background: 'color-mix(in oklab, var(--accent) 14%, transparent)', color: 'var(--accent)' }}
+                title="Tools removed from the left sidebar. Drag a tile onto the sidebar, or press Add, to put it back."
+              >
+                <PanelLeftOpen size={11} strokeWidth={2.2} aria-hidden />
+                {offSidebarCount} off sidebar
+              </span>
+            )}
           </div>
 
           {sections.length === 0 ? (
@@ -282,6 +364,8 @@ export default function ToolsHubZone({ onNavigate }: ToolsHubZoneProps) {
                   section={section}
                   sectionIndex={sectionIndex}
                   onNavigate={onNavigate}
+                  isOnSidebar={isOnSidebar}
+                  onRestore={restoreToSidebar}
                 />
               ))}
             </div>

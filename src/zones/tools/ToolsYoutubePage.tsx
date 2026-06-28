@@ -1,9 +1,10 @@
-import { ArrowLeft, Loader2 } from 'lucide-react'
+import { ArrowLeft, ChevronLeft, ChevronRight, ClipboardPaste, KeyRound, Layers, Loader2, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { addDownloadedFile, getFileById, subscribeFiles } from '../../components/files-dock/files-store'
+import { addDownloadedFile, subscribeFiles, type StoredFile } from '../../components/files-dock/files-store'
 import { fetchWithKeys } from '../../lib/api-keys'
 import StudioToolsHeader from './StudioToolsHeader'
+import { analyzeClipKey, splitStems, zipStore, type KeyInfo, type Stem } from './youtube-clip-tools'
 
 interface ToolsYoutubePageProps {
   onNavigate: (routeId: string) => void
@@ -19,6 +20,10 @@ const PALETTE = {
   amber: '#F5A623',
   amberGlow: 'rgba(245, 166, 35, 0.15)',
 } as const
+
+/** Keep the last N grabbed clips reachable in the preview history. */
+const HISTORY_LIMIT = 10
+const DOWNLOAD_COUNT_KEY = 'yt:download-count'
 
 type Ripple = { id: number; x: number; y: number; size: number }
 type Status = 'IDLE' | 'DOWNLOADING' | 'COMPLETE' | 'ERROR'
@@ -44,8 +49,28 @@ export default function ToolsYoutubePage({ onNavigate }: ToolsYoutubePageProps) 
   const [url, setUrl] = useState('')
   const [status, setStatus] = useState<Status>('IDLE')
   const [error, setError] = useState<string | null>(null)
-  const [lastClip, setLastClip] = useState<{ title: string; dockId: string; videoId: string; sizeKb: number } | null>(null)
-  const [dockCount, setDockCount] = useState(0)
+  // Persistent download history (newest first), pulled from the dock store.
+  const [history, setHistory] = useState<StoredFile[]>([])
+  const [historyIndex, setHistoryIndex] = useState(0)
+  const [duration, setDuration] = useState<number | null>(null)
+  const [downloadCount, setDownloadCount] = useState<number>(() => {
+    try {
+      return Math.max(0, parseInt(localStorage.getItem(DOWNLOAD_COUNT_KEY) ?? '0', 10) || 0)
+    } catch {
+      return 0
+    }
+  })
+
+  // KEY · BPM · scale popup (runs in place on the grabbed clip)
+  const [keyOpen, setKeyOpen] = useState(false)
+  const [keyLoading, setKeyLoading] = useState(false)
+  const [keyInfo, setKeyInfo] = useState<KeyInfo | null>(null)
+  const [keyError, setKeyError] = useState<string | null>(null)
+  // STEM OUT popup
+  const [stemsOpen, setStemsOpen] = useState(false)
+  const [stemsLoading, setStemsLoading] = useState(false)
+  const [stems, setStems] = useState<Stem[] | null>(null)
+  const [stemsError, setStemsError] = useState<string | null>(null)
 
   /** Object URL for the most recent clip — used by the inline <audio> player. */
   const [clipObjectUrl, setClipObjectUrl] = useState<string | null>(null)
@@ -57,8 +82,65 @@ export default function ToolsYoutubePage({ onNavigate }: ToolsYoutubePageProps) 
   const rippleIdRef = useRef(0)
   const [ripples, setRipples] = useState<Ripple[]>([])
 
-  // Total clips count comes straight from the global FilesDock store.
-  useEffect(() => subscribeFiles(list => setDockCount(list.length)), [])
+  // Keep the download history synced from the dock store (persists across reloads).
+  useEffect(
+    () =>
+      subscribeFiles(list => {
+        const grabs = list
+          .filter(f => f.source === 'YouTube grab')
+          .sort((a, b) => b.addedAt - a.addedAt)
+          .slice(0, HISTORY_LIMIT)
+        setHistory(grabs)
+      }),
+    [],
+  )
+
+  /** Active clip (history is newest-first); index clamped so a shrunk history can't dangle. */
+  const clampedIndex = history.length ? Math.min(historyIndex, history.length - 1) : 0
+  const current = history[clampedIndex] ?? null
+  const lastClip = useMemo(
+    () =>
+      current
+        ? { title: current.name.replace(/\.mp3$/i, ''), dockId: current.id, sizeKb: Math.round(current.size / 1024) }
+        : null,
+    [current],
+  )
+
+  // The inline player's object URL follows the active clip (created/revoked per clip).
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- sync the player's object URL + reset to the active clip */
+    if (!current) {
+      setClipObjectUrl(null)
+      setDuration(null)
+      return
+    }
+    const objUrl = URL.createObjectURL(current.blob)
+    setClipObjectUrl(objUrl)
+    setDuration(null)
+    setPreviewTime(0)
+    setPlayingPreview(false)
+    return () => URL.revokeObjectURL(objUrl)
+    /* eslint-enable react-hooks/set-state-in-effect */
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- key on clip id; blob is stable per id
+  }, [current?.id])
+
+  const goOlder = useCallback(
+    () => setHistoryIndex(Math.min(history.length - 1, clampedIndex + 1)),
+    [history.length, clampedIndex],
+  )
+  const goNewer = useCallback(() => setHistoryIndex(Math.max(0, clampedIndex - 1)), [clampedIndex])
+
+  const pasteUrl = useCallback(async () => {
+    try {
+      const text = await navigator.clipboard.readText()
+      if (text) {
+        setUrl(text.trim())
+        setError(null)
+      }
+    } catch {
+      setError('Clipboard blocked — press ⌘V / Ctrl+V in the field instead.')
+    }
+  }, [])
 
   const spawnRipple = useCallback((x: number, y: number, size: number) => {
     const id = rippleIdRef.current++
@@ -113,24 +195,20 @@ export default function ToolsYoutubePage({ onNavigate }: ToolsYoutubePageProps) 
 
         const blob = await res.blob()
         const safeName = `${title}.mp3`
-        const row = await addDownloadedFile({
+        await addDownloadedFile({
           blob,
           name: safeName,
           source: 'YouTube grab',
           lane: 'downloads',
         })
 
-        setLastClip({
-          title,
-          dockId: row.id,
-          videoId,
-          sizeKb: Math.round(blob.size / 1024),
-        })
-        // Keep an object URL alive for the inline player + the local Download
-        // button. Replace any prior URL (free its handle) so we don't leak.
-        setClipObjectUrl(prev => {
-          if (prev) URL.revokeObjectURL(prev)
-          return URL.createObjectURL(blob)
+        // Newest clip becomes active; the dock subscription refreshes history,
+        // and the object-URL effect spins up the preview player.
+        setHistoryIndex(0)
+        setDownloadCount(c => {
+          const n = c + 1
+          try { localStorage.setItem(DOWNLOAD_COUNT_KEY, String(n)) } catch { /* ignore quota */ }
+          return n
         })
         setStatus('COMPLETE')
         setUrl('')
@@ -146,37 +224,14 @@ export default function ToolsYoutubePage({ onNavigate }: ToolsYoutubePageProps) 
     setUrl('')
     setError(null)
     setStatus('IDLE')
-    setLastClip(null)
-    // Tear down the inline player and free its object URL.
     if (audioElRef.current) {
       audioElRef.current.pause()
       audioElRef.current.currentTime = 0
     }
     setPlayingPreview(false)
-    setClipObjectUrl(prev => {
-      if (prev) URL.revokeObjectURL(prev)
-      return null
-    })
-  }, [])
-
-  // Free the object URL on unmount so we don't leak across page navigations.
-  useEffect(() => {
-    return () => {
-      if (clipObjectUrl) URL.revokeObjectURL(clipObjectUrl)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const togglePreviewPlay = useCallback(async () => {
-    if (!clipObjectUrl && lastClip) {
-      // Late path: dock item exists but we lost the in-memory URL (e.g. after
-      // a hot-reload). Recreate it from the dock store.
-      const stored = await getFileById(lastClip.dockId)
-      if (stored) {
-        setClipObjectUrl(URL.createObjectURL(stored.blob))
-      }
-      return
-    }
     const el = audioElRef.current
     if (!el) return
     if (el.paused) {
@@ -190,7 +245,7 @@ export default function ToolsYoutubePage({ onNavigate }: ToolsYoutubePageProps) 
       el.pause()
       setPlayingPreview(false)
     }
-  }, [clipObjectUrl, lastClip])
+  }, [])
 
   const downloadLocal = useCallback(() => {
     if (!clipObjectUrl || !lastClip) return
@@ -201,6 +256,69 @@ export default function ToolsYoutubePage({ onNavigate }: ToolsYoutubePageProps) 
     a.click()
     a.remove()
   }, [clipObjectUrl, lastClip])
+
+  /** The active clip's blob (kept in memory by the dock store) for analysis. */
+  const getClipBlob = useCallback(async (): Promise<Blob | null> => current?.blob ?? null, [current])
+
+  const runKey = useCallback(async () => {
+    if (!lastClip || keyLoading) return
+    setKeyOpen(true)
+    setKeyError(null)
+    setKeyInfo(null)
+    setKeyLoading(true)
+    await new Promise(r => setTimeout(r, 30)) // let the popup paint before heavy work
+    try {
+      const blob = await getClipBlob()
+      if (!blob) {
+        setKeyError('Clip not found in the dock — grab it again.')
+        return
+      }
+      setKeyInfo(await analyzeClipKey(blob))
+    } catch {
+      setKeyError('Could not read the key for this clip.')
+    } finally {
+      setKeyLoading(false)
+    }
+  }, [lastClip, keyLoading, getClipBlob])
+
+  const runStems = useCallback(async () => {
+    if (!lastClip || stemsLoading) return
+    setStemsOpen(true)
+    setStemsError(null)
+    setStems(null)
+    setStemsLoading(true)
+    await new Promise(r => setTimeout(r, 30))
+    try {
+      const blob = await getClipBlob()
+      if (!blob) {
+        setStemsError('Clip not found in the dock — grab it again.')
+        return
+      }
+      setStems(await splitStems(blob, lastClip.title))
+    } catch {
+      setStemsError('Could not split this clip into stems.')
+    } finally {
+      setStemsLoading(false)
+    }
+  }, [lastClip, stemsLoading, getClipBlob])
+
+  const downloadBlob = useCallback((blob: Blob, name: string) => {
+    const href = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = href
+    a.download = name
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    window.setTimeout(() => URL.revokeObjectURL(href), 1000)
+  }, [])
+
+  const downloadAllStems = useCallback(async () => {
+    if (!stems || stems.length === 0) return
+    const zip = await zipStore(stems.map(s => ({ name: s.fileName, blob: s.blob })))
+    const base = (lastClip?.title ?? 'clip').replace(/[/\\?%*:|"<>]/g, '_').slice(0, 60) || 'clip'
+    downloadBlob(zip, `${base} - stems.zip`)
+  }, [stems, lastClip, downloadBlob])
 
   /** Friendly elapsed/total time string for the inline player. */
   const inlinePlayerState = useMemo(() => {
@@ -222,8 +340,10 @@ export default function ToolsYoutubePage({ onNavigate }: ToolsYoutubePageProps) 
           ? '#ef4444'
           : PALETTE.textMuted
 
-  const heroLabel = status === 'COMPLETE' && lastClip ? lastClip.title : 'YT → MP3'
+  const heroLabel = lastClip ? lastClip.title : 'YT → MP3'
   const urlValid = /^https?:\/\/(www\.|m\.)?(youtube\.com|youtu\.be)\//i.test(url.trim())
+  /** Central control flips to a play/pause + scrubber once a clip is loaded and the input is clear. */
+  const transportMode = !!current && !urlValid && status !== 'DOWNLOADING'
 
   return (
     <div
@@ -265,12 +385,12 @@ export default function ToolsYoutubePage({ onNavigate }: ToolsYoutubePageProps) 
               className="flex items-center justify-between px-6 py-4"
               style={{ background: PALETTE.surface }}
             >
-              <PillButton label="UTIL.10" decorative />
+              <PillButton label="MP3" decorative />
               <div
                 className="text-[10px] uppercase tracking-[0.2em]"
                 style={{ color: PALETTE.textMuted, fontFamily: "'DM Mono', monospace" }}
               >
-                YT_GRAB
+                YouTube downloader
               </div>
               <PillButton label="RESET" onClick={reset} />
             </header>
@@ -367,10 +487,10 @@ export default function ToolsYoutubePage({ onNavigate }: ToolsYoutubePageProps) 
                 className="grid"
                 style={{ gridTemplateColumns: '1fr 1fr', gap: '1px', background: PALETTE.line }}
               >
-                <StatCell label="DOCK ITEMS" value={String(dockCount).padStart(2, '0')} />
+                <StatCell label="DOWNLOADS" value={String(downloadCount).padStart(2, '0')} />
                 <StatCell
-                  label="LAST CLIP SIZE"
-                  value={lastClip ? `${lastClip.sizeKb.toLocaleString()} KB` : '—'}
+                  label="LENGTH"
+                  value={duration != null ? inlinePlayerState.fmt(duration) : '—'}
                 />
               </div>
               <div
@@ -391,60 +511,104 @@ export default function ToolsYoutubePage({ onNavigate }: ToolsYoutubePageProps) 
               className="flex items-center justify-center px-6 py-4"
               style={{ background: PALETTE.surface }}
             >
-              <input
-                type="url"
-                inputMode="url"
-                spellCheck={false}
-                placeholder="HTTPS://WWW.YOUTUBE.COM/WATCH?V=…"
-                value={url}
-                onChange={e => setUrl(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter' && urlValid && status !== 'DOWNLOADING') {
-                    e.preventDefault()
-                    void startDownload()
-                  }
-                }}
-                className="w-full max-w-[clamp(280px,70vw,720px)] rounded-none px-3 py-2 text-center text-[11px] uppercase tracking-[0.12em] outline-none"
-                style={{
-                  background: 'transparent',
-                  border: `1px solid ${urlValid ? PALETTE.amber : PALETTE.line}`,
-                  color: PALETTE.textMain,
-                  fontFamily: "'DM Mono', monospace",
-                }}
-                aria-label="YouTube video URL"
-                disabled={status === 'DOWNLOADING'}
-              />
+              <div className="flex w-full max-w-[clamp(280px,70vw,720px)] items-stretch gap-2">
+                <input
+                  type="url"
+                  inputMode="url"
+                  spellCheck={false}
+                  placeholder="PASTE A YOUTUBE LINK HERE"
+                  value={url}
+                  onChange={e => setUrl(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && urlValid && status !== 'DOWNLOADING') {
+                      e.preventDefault()
+                      void startDownload()
+                    }
+                  }}
+                  className="min-w-0 flex-1 rounded-none px-3 py-2 text-center text-[11px] uppercase tracking-[0.12em] outline-none placeholder:text-[color:rgba(245,166,35,0.55)]"
+                  style={{
+                    background: 'rgba(245,166,35,0.07)',
+                    border: `1.5px solid ${PALETTE.amber}`,
+                    color: PALETTE.textMain,
+                    fontFamily: "'DM Mono', monospace",
+                    boxShadow: url ? 'none' : `0 0 0 1px ${PALETTE.amber}, 0 0 16px ${PALETTE.amberGlow}`,
+                  }}
+                  aria-label="YouTube video URL"
+                  disabled={status === 'DOWNLOADING'}
+                />
+                <button
+                  type="button"
+                  onClick={() => void pasteUrl()}
+                  disabled={status === 'DOWNLOADING'}
+                  className="flex shrink-0 items-center gap-1.5 px-3 py-2 text-[10px] uppercase tracking-[0.12em] transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                  style={{ border: `1.5px solid ${PALETTE.amber}`, color: PALETTE.amber, background: 'transparent', fontFamily: "'DM Mono', monospace" }}
+                  aria-label="Paste link from clipboard"
+                  title="Paste link from clipboard"
+                >
+                  <ClipboardPaste size={13} strokeWidth={2} />
+                  PASTE
+                </button>
+              </div>
             </section>
 
-            {/* ── Big circular Start button ── */}
+            {/* ── Central control: GRAB to download, or transport once a clip is loaded ── */}
             <section
-              className="flex items-center justify-center p-6"
+              className="flex items-center justify-center gap-4 p-6"
               style={{ background: PALETTE.surface }}
             >
+              {transportMode && (
+                <TransportArrow dir="prev" disabled={clampedIndex >= history.length - 1} onClick={goOlder} />
+              )}
+
               <button
                 ref={tapButtonRef}
                 type="button"
                 onMouseDown={e => {
-                  if (!urlValid || status === 'DOWNLOADING') return
+                  if (transportMode || !urlValid || status === 'DOWNLOADING') return
                   void startDownload({ clientX: e.clientX, clientY: e.clientY })
                 }}
                 onTouchStart={e => {
-                  if (!urlValid || status === 'DOWNLOADING') return
+                  if (transportMode || !urlValid || status === 'DOWNLOADING') return
                   if (e.touches.length === 0) return
                   e.preventDefault()
                   const t = e.touches[0]!
                   void startDownload({ clientX: t.clientX, clientY: t.clientY })
                 }}
-                disabled={!urlValid || status === 'DOWNLOADING'}
-                className="relative flex aspect-square w-full max-w-[clamp(200px,24vw,280px)] items-center justify-center overflow-hidden rounded-full transition-transform duration-100 active:scale-[0.97] disabled:cursor-not-allowed"
+                onClick={() => {
+                  if (transportMode) void togglePreviewPlay()
+                }}
+                disabled={!transportMode && (!urlValid || status === 'DOWNLOADING')}
+                className="relative flex aspect-square w-full max-w-[clamp(180px,22vw,260px)] items-center justify-center overflow-hidden rounded-full transition-transform duration-100 active:scale-[0.97] disabled:cursor-not-allowed"
                 style={{
                   background: 'transparent',
-                  border: `1px solid ${status === 'DOWNLOADING' ? PALETTE.amber : urlValid ? PALETTE.textMain : PALETTE.line}`,
-                  cursor: urlValid && status !== 'DOWNLOADING' ? 'pointer' : 'not-allowed',
-                  opacity: !urlValid && status !== 'DOWNLOADING' ? 0.55 : 1,
+                  border: `1px solid ${
+                    status === 'DOWNLOADING' ? PALETTE.amber : transportMode ? PALETTE.line : urlValid ? PALETTE.textMain : PALETTE.line
+                  }`,
+                  cursor: transportMode || (urlValid && status !== 'DOWNLOADING') ? 'pointer' : 'not-allowed',
+                  opacity: !transportMode && !urlValid && status !== 'DOWNLOADING' ? 0.55 : 1,
                 }}
-                aria-label="Start download"
+                aria-label={transportMode ? (playingPreview ? 'Pause' : 'Play') : 'Start download'}
               >
+                {/* Scrubber ring (transport mode) — fills as the clip plays. */}
+                {transportMode && (
+                  <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" aria-hidden>
+                    <circle cx="50" cy="50" r="48" fill="none" stroke={PALETTE.line} strokeWidth="1.5" />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="48"
+                      fill="none"
+                      stroke={PALETTE.amber}
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeDasharray={2 * Math.PI * 48}
+                      strokeDashoffset={2 * Math.PI * 48 * (1 - (duration ? Math.min(1, previewTime / duration) : 0))}
+                      transform="rotate(-90 50 50)"
+                      style={{ transition: 'stroke-dashoffset 0.2s linear' }}
+                    />
+                  </svg>
+                )}
+
                 <span
                   className="pointer-events-none absolute inset-0 rounded-full transition-opacity duration-200"
                   style={{
@@ -468,12 +632,27 @@ export default function ToolsYoutubePage({ onNavigate }: ToolsYoutubePageProps) 
                     aria-hidden
                   />
                 ))}
-                <span
-                  className="pointer-events-none flex select-none flex-col items-center gap-3"
-                  aria-hidden
-                >
+                <span className="pointer-events-none flex select-none flex-col items-center gap-2" aria-hidden>
                   {status === 'DOWNLOADING' ? (
                     <Loader2 className="size-10 animate-spin" style={{ color: PALETTE.amber }} />
+                  ) : transportMode ? (
+                    playingPreview ? (
+                      <span className="flex gap-[5px]">
+                        <span style={{ width: 6, height: 30, background: PALETTE.amber, display: 'block' }} />
+                        <span style={{ width: 6, height: 30, background: PALETTE.amber, display: 'block' }} />
+                      </span>
+                    ) : (
+                      <span
+                        style={{
+                          width: 0,
+                          height: 0,
+                          borderTop: '18px solid transparent',
+                          borderBottom: '18px solid transparent',
+                          borderLeft: `28px solid ${PALETTE.amber}`,
+                          marginLeft: '6px',
+                        }}
+                      />
+                    )
                   ) : (
                     <span
                       className="block"
@@ -490,15 +669,23 @@ export default function ToolsYoutubePage({ onNavigate }: ToolsYoutubePageProps) 
                   <span
                     style={{
                       fontFamily: "'DM Mono', monospace",
-                      fontSize: '0.95rem',
-                      letterSpacing: '0.25em',
-                      color: status === 'DOWNLOADING' ? PALETTE.amber : urlValid ? PALETTE.textMain : PALETTE.textMuted,
+                      fontSize: transportMode ? '0.72rem' : '0.95rem',
+                      letterSpacing: '0.2em',
+                      color: status === 'DOWNLOADING' ? PALETTE.amber : transportMode ? PALETTE.textMuted : urlValid ? PALETTE.textMain : PALETTE.textMuted,
                     }}
                   >
-                    {status === 'DOWNLOADING' ? 'FETCHING' : 'GRAB'}
+                    {status === 'DOWNLOADING'
+                      ? 'FETCHING'
+                      : transportMode
+                        ? `${inlinePlayerState.fmt(previewTime)} / ${inlinePlayerState.fmt(duration ?? 0)}`
+                        : 'GRAB'}
                   </span>
                 </span>
               </button>
+
+              {transportMode && (
+                <TransportArrow dir="next" disabled={clampedIndex <= 0} onClick={goNewer} />
+              )}
             </section>
 
             {/* ── Inline player + local download (only when a clip exists) ── */}
@@ -511,7 +698,7 @@ export default function ToolsYoutubePage({ onNavigate }: ToolsYoutubePageProps) 
                   className="flex items-center justify-between text-[10px] uppercase tracking-[0.15em]"
                   style={{ color: PALETTE.textMuted }}
                 >
-                  <span>PREVIEW</span>
+                  <span>PREVIEW {history.length > 0 ? `${clampedIndex + 1}/${history.length}` : ''}</span>
                   <span
                     className="truncate"
                     style={{ fontFamily: "'DM Mono', monospace", maxWidth: '60%' }}
@@ -564,6 +751,8 @@ export default function ToolsYoutubePage({ onNavigate }: ToolsYoutubePageProps) 
                     onPause={() => setPlayingPreview(false)}
                     onPlay={() => setPlayingPreview(true)}
                     onTimeUpdate={e => setPreviewTime(e.currentTarget.currentTime)}
+                    onLoadedMetadata={e => setDuration(Number.isFinite(e.currentTarget.duration) ? e.currentTarget.duration : null)}
+                    onDurationChange={e => setDuration(Number.isFinite(e.currentTarget.duration) ? e.currentTarget.duration : null)}
                     controls
                     preload="metadata"
                     className="flex-1"
@@ -598,7 +787,7 @@ export default function ToolsYoutubePage({ onNavigate }: ToolsYoutubePageProps) 
                   className="text-[9px] uppercase tracking-[0.1em]"
                   style={{ color: PALETTE.textMuted, fontFamily: "'DM Mono', monospace" }}
                 >
-                  {inlinePlayerState.fmt(previewTime)} ·{' '}
+                  {inlinePlayerState.fmt(previewTime)} / {inlinePlayerState.fmt(duration ?? 0)} ·{' '}
                   {lastClip.sizeKb.toLocaleString()} KB
                 </span>
               </section>
@@ -627,7 +816,7 @@ export default function ToolsYoutubePage({ onNavigate }: ToolsYoutubePageProps) 
               <div style={{ background: PALETTE.surface }} />
             )}
 
-            {/* ── Send-to controls (enabled when a clip exists) ── */}
+            {/* ── Clip actions — run on the grabbed clip (enabled once it exists) ── */}
             <section
               className="grid"
               style={{ gridTemplateColumns: '1fr 1fr 1fr', gap: '1px', background: PALETTE.line }}
@@ -640,18 +829,18 @@ export default function ToolsYoutubePage({ onNavigate }: ToolsYoutubePageProps) 
                 label="SEND TO CHORDS"
               />
               <ControlButton
-                active={false}
+                active={keyOpen}
                 disabled={!lastClip}
-                onClick={() => lastClip && sendClipToRoute('tools-key-finder', lastClip.dockId)}
-                icon={<SendGlyph color={lastClip ? PALETTE.textMain : PALETTE.textMuted} />}
-                label="SEND TO KEY"
+                onClick={() => void runKey()}
+                icon={<KeyRound size={12} strokeWidth={2} style={{ color: lastClip ? (keyOpen ? PALETTE.amber : PALETTE.textMain) : PALETTE.textMuted }} />}
+                label="GET KEY"
               />
               <ControlButton
-                active={false}
+                active={stemsOpen}
                 disabled={!lastClip}
-                onClick={() => lastClip && sendClipToRoute('tools-stem-splitter', lastClip.dockId)}
-                icon={<SendGlyph color={lastClip ? PALETTE.textMain : PALETTE.textMuted} />}
-                label="SEND TO STEMS"
+                onClick={() => void runStems()}
+                icon={<Layers size={12} strokeWidth={2} style={{ color: lastClip ? (stemsOpen ? PALETTE.amber : PALETTE.textMain) : PALETTE.textMuted }} />}
+                label="STEM OUT"
               />
             </section>
 
@@ -672,11 +861,45 @@ export default function ToolsYoutubePage({ onNavigate }: ToolsYoutubePageProps) 
           </div>
         </div>
       </div>
+
+      <KeyModal
+        open={keyOpen}
+        loading={keyLoading}
+        info={keyInfo}
+        error={keyError}
+        onClose={() => setKeyOpen(false)}
+      />
+      <StemsModal
+        open={stemsOpen}
+        loading={stemsLoading}
+        stems={stems}
+        error={stemsError}
+        onDownload={downloadBlob}
+        onDownloadAll={() => void downloadAllStems()}
+        onClose={() => setStemsOpen(false)}
+      />
     </div>
   )
 }
 
 /* ── GRAY2020 sub-components ─────────────────────────────────────────────────── */
+
+function TransportArrow({ dir, disabled, onClick }: { dir: 'prev' | 'next'; disabled: boolean; onClick: () => void }) {
+  const Icon = dir === 'prev' ? ChevronLeft : ChevronRight
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-30"
+      style={{ border: `1px solid ${PALETTE.line}`, color: PALETTE.textMain, background: 'transparent' }}
+      aria-label={dir === 'prev' ? 'Older download' : 'Newer download'}
+      title={dir === 'prev' ? 'Older download' : 'Newer download'}
+    >
+      <Icon size={18} />
+    </button>
+  )
+}
 
 function PillButton({
   label,
@@ -858,5 +1081,210 @@ function SendGlyph({ color }: { color: string }) {
         }}
       />
     </span>
+  )
+}
+
+/* ── Clip-action popups (KEY / STEM OUT) ─────────────────────────────────────── */
+
+function Overlay({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.62)' }}
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        className="w-full max-w-md"
+        style={{ background: PALETTE.surface, border: `1px solid ${PALETTE.line}` }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div
+          className="flex items-center justify-between px-5 py-3"
+          style={{ borderBottom: `1px solid ${PALETTE.line}` }}
+        >
+          <span
+            className="text-[11px] uppercase tracking-[0.2em]"
+            style={{ color: PALETTE.textMain, fontFamily: "'DM Mono', monospace" }}
+          >
+            {title}
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-7 w-7 items-center justify-center transition-colors"
+            style={{ color: PALETTE.textMuted }}
+            aria-label="Close"
+          >
+            <X size={14} />
+          </button>
+        </div>
+        <div className="px-5 py-4">{children}</div>
+      </div>
+    </div>
+  )
+}
+
+function LoadingRow({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-3 py-6" style={{ color: PALETTE.textMuted }}>
+      <Loader2 className="size-5 animate-spin" style={{ color: PALETTE.amber }} />
+      <span className="text-[12px] uppercase tracking-[0.15em]" style={{ fontFamily: "'DM Mono', monospace" }}>
+        {label}
+      </span>
+    </div>
+  )
+}
+
+function ErrorRow({ text }: { text: string }) {
+  return (
+    <div className="py-4 text-[12px]" style={{ color: '#ef4444', fontFamily: "'DM Mono', monospace" }}>
+      {text}
+    </div>
+  )
+}
+
+function InfoRow({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div className="flex items-center justify-between py-2.5" style={{ borderBottom: `1px solid ${PALETTE.line}` }}>
+      <span className="text-[10px] uppercase tracking-[0.15em]" style={{ color: PALETTE.textMuted }}>
+        {label}
+      </span>
+      <span
+        className="text-[15px] tabular-nums"
+        style={{ color: accent ? PALETTE.amber : PALETTE.textMain, fontFamily: "'DM Mono', monospace" }}
+      >
+        {value}
+      </span>
+    </div>
+  )
+}
+
+function KeyModal({
+  open,
+  loading,
+  info,
+  error,
+  onClose,
+}: {
+  open: boolean
+  loading: boolean
+  info: KeyInfo | null
+  error: string | null
+  onClose: () => void
+}) {
+  if (!open) return null
+  return (
+    <Overlay title="KEY · BPM · SCALE" onClose={onClose}>
+      {loading ? (
+        <LoadingRow label="Reading key & tempo…" />
+      ) : error ? (
+        <ErrorRow text={error} />
+      ) : info ? (
+        <div>
+          <InfoRow label="Key" value={info.key ?? 'Undetected'} accent />
+          <InfoRow label="BPM" value={info.bpm != null ? String(info.bpm) : '—'} accent />
+          <InfoRow label="Camelot" value={info.camelot ?? '—'} />
+          <InfoRow label="Auto-tune scale" value={info.autotune ?? '—'} />
+          <div className="pt-3">
+            <span className="text-[10px] uppercase tracking-[0.15em]" style={{ color: PALETTE.textMuted }}>
+              Scale notes
+            </span>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {info.scale.length ? (
+                info.scale.map(n => (
+                  <span
+                    key={n}
+                    className="px-2 py-1 text-[12px]"
+                    style={{ border: `1px solid ${PALETTE.line}`, color: PALETTE.textMain, fontFamily: "'DM Mono', monospace" }}
+                  >
+                    {n}
+                  </span>
+                ))
+              ) : (
+                <span className="text-[12px]" style={{ color: PALETTE.textMuted }}>
+                  —
+                </span>
+              )}
+            </div>
+          </div>
+          <p className="mt-4 text-[10px] leading-snug" style={{ color: PALETTE.textMuted, fontFamily: "'DM Mono', monospace" }}>
+            {info.key
+              ? <>Set your Auto-Tune key to <span style={{ color: PALETTE.textMain }}>{info.autotune}</span>{info.confidence != null ? ` · ${(info.confidence * 100).toFixed(0)}% confidence` : ''}. Chromagram + tempo estimate.</>
+              : 'Key came back ambiguous (atonal or very percussive). BPM is still shown above.'}
+          </p>
+        </div>
+      ) : null}
+    </Overlay>
+  )
+}
+
+function StemRow({ stem, onDownload }: { stem: Stem; onDownload: () => void }) {
+  return (
+    <div className="flex items-center justify-between gap-3 py-3" style={{ borderBottom: `1px solid ${PALETTE.line}` }}>
+      <div className="min-w-0">
+        <div className="text-[13px]" style={{ color: PALETTE.textMain, fontFamily: "'DM Mono', monospace" }}>
+          {stem.label}
+        </div>
+        <div className="text-[10px] leading-snug" style={{ color: PALETTE.textMuted }}>
+          {stem.hint}
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={onDownload}
+        className="flex shrink-0 items-center gap-1.5 px-3 py-1.5 text-[10px] uppercase tracking-[0.12em] transition-colors"
+        style={{ border: `1px solid ${PALETTE.line}`, color: PALETTE.textMain, fontFamily: "'DM Mono', monospace" }}
+      >
+        <DownloadGlyph color={PALETTE.textMain} /> WAV
+      </button>
+    </div>
+  )
+}
+
+function StemsModal({
+  open,
+  loading,
+  stems,
+  error,
+  onDownload,
+  onDownloadAll,
+  onClose,
+}: {
+  open: boolean
+  loading: boolean
+  stems: Stem[] | null
+  error: string | null
+  onDownload: (blob: Blob, name: string) => void
+  onDownloadAll: () => void
+  onClose: () => void
+}) {
+  if (!open) return null
+  return (
+    <Overlay title="STEM OUT · 4 STEMS" onClose={onClose}>
+      {loading ? (
+        <LoadingRow label="Splitting stems…" />
+      ) : error ? (
+        <ErrorRow text={error} />
+      ) : stems ? (
+        <div>
+          {stems.map(s => (
+            <StemRow key={s.id} stem={s} onDownload={() => onDownload(s.blob, s.fileName)} />
+          ))}
+          <button
+            type="button"
+            onClick={onDownloadAll}
+            className="mt-4 flex w-full items-center justify-center gap-2 py-3 text-[11px] uppercase tracking-[0.2em] transition-colors"
+            style={{ background: PALETTE.amber, color: '#0A0A0C', fontFamily: "'DM Mono', monospace" }}
+          >
+            <DownloadGlyph color="#0A0A0C" /> Download all (.zip)
+          </button>
+          <p className="mt-3 text-[10px] leading-snug" style={{ color: PALETTE.textMuted, fontFamily: "'DM Mono', monospace" }}>
+            Split via harmonic/percussive separation + frequency bands — a fast approximation, not surgical AI isolation.
+          </p>
+        </div>
+      ) : null}
+    </Overlay>
   )
 }
