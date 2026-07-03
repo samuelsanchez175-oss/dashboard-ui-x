@@ -1,37 +1,37 @@
 {
-  "date": "2026-06-13",
+  "date": "2026-07-03",
   "active_project": "XJournal AI",
   "synthesis": [
-    "Model G v4.1 is fully committed across all five phases — punchline axis, corpus fragment filter, LLM-judge rerank, v5 grader de-bias, and multi-bar punchline structures all landed on claude/vigorous-bartik-60e9da by June 11 — but the useModelGv41 toggle remains OFF by default, meaning no real user session has touched the new logic yet. The most important pending handoff is vigorous-bartik-60e9da: the last thing committed was multi-bar punchline framing (b93b60c), and PR #9 (Model G v5 selectable in the UI + per-line feedback deck fixes) is the merge gate blocking any public access to the new tier. A secondary thread opened this week: the nifty-thompson-49c4cf session confirmed that WWDC 2026 formalized video as a CarPlay category in iOS 27, and PhoneSceneDelegate already connected in the Antigravity test binary — the next concrete step there is wiring templateApplicationScene(_:didConnect:to:) with CPPlaybackConfiguration. The single most important action today is opening vigorous-bartik-60e9da, running a quick listening test with useModelGv41 ON in the sim, and merging PR #9 before anything else ships."
+    "XJournal AI is still parked at the same merge gate it hit in mid-June: Model G v4.1 landed in full across all five phases on claude/vigorous-bartik-60e9da (last commit b93b60c, multi-bar punchline structures), but useModelGv41 is still OFF by default, so no real session has exercised the new tier — and PR #9 (Model G v5 selectable in the UI plus the per-line feedback deck fixes) remains the unmerged gate blocking any public access. Running in parallel, the relaxed-saha / UI Dashboard x audit left a worktree of type-checked-clean fixes uncommitted on that same branch — the /api/config/status key-reporting fix, the complete .env.example contract, README port correction (5175), and launch.json — while the Vercel project (samuel-x-dashboard) still has zero server env keys, so everything key-driven currently rides per-browser scratch storage only. The Antigravity CarPlay thread (nifty-thompson, PhoneSceneDelegate now connecting) is a live but secondary side quest. The single highest-leverage move today: open vigorous-bartik-60e9da, flip useModelGv41 ON for a quick sim listening test, and merge PR #9 — then commit the audit worktree so the dashboard stops carrying uncommitted work."
   ],
   "plan": [
     {
-      "title": "Listen test with flag ON",
-      "note": "generate 3–5 verses in sim with `useModelGv41` enabled, score via v5 grader",
-      "priority": "high",
-      "done": false
-    },
-    {
       "title": "Merge PR #9",
-      "note": "Model G v5 selectable + per-line feedback; this is the gate before flipping default",
+      "note": "flip `useModelGv41` ON, run a sim listening test, then merge Model G v5 + per-line feedback",
       "priority": "high",
       "done": false
     },
     {
-      "title": "Flip useModelGv41 default ON",
-      "note": "only after listen test confirms quality delta vs plain v4",
+      "title": "Commit the audit worktree",
+      "note": "review + commit `claude/relaxed-saha-2b85c3` (config/status, `.env.example`, README 5175)",
+      "priority": "high",
+      "done": false
+    },
+    {
+      "title": "Wire prod keys",
+      "note": "create `.env.local` from the new `.env.example`, or add the 12 env vars to Vercel `samuel-x-dashboard`",
       "priority": "med",
       "done": false
     },
     {
-      "title": "Wire Antigravity CarPlay scene",
-      "note": "implement `templateApplicationScene(_:didConnect:to:)` + `CPPlaybackConfiguration` in the Antigravity branch",
+      "title": "Fix brief cadence",
+      "note": "rename/reschedule `com.user.daily-brief` (currently runs weekly Mon 07:00, not daily)",
       "priority": "med",
       "done": false
     },
     {
-      "title": "Audit remaining v4.1 sliders",
-      "note": "Slang density, Imply↔Explain, Rhyme hardness not yet built from controls table",
+      "title": "Build remaining Model G sliders",
+      "note": "Slang/coded-ref density, Rhyme hardness, Verse length into the deck",
       "priority": "low",
       "done": false
     }
@@ -39,50 +39,51 @@
   "tools": [
     {
       "name": "ElevenLabs",
-      "desc": "TTS for XJournal AI audio output; relevant if testing verse playback alongside the v4.1 listen test"
+      "desc": "vocal synthesis to turn Model G lyrics into a listenable demo for the toggle-ON test"
+    },
+    {
+      "name": "Logic Pro",
+      "desc": "arrange and mix the generated bars into an actual track for the listening pass"
     },
     {
       "name": "Gemini Image Generation",
-      "desc": "cheap Google image gen already proven in the ecosystem; useful if Antigravity needs cover art or thumbnail generation"
+      "desc": "cover art and visual assets for XJournal AI output"
     },
     {
-      "name": "Veo",
-      "desc": "Google video gen; directly relevant to Antigravity CarPlay video streaming context"
-    },
-    {
-      "name": "Imagen",
-      "desc": "Google image gen alternative; compare vs Gemini Image Gen for asset quality in app UI"
+      "name": "Make",
+      "desc": "automate the lyric → audio → vault handoff wiring so sessions capture themselves"
     }
   ],
   "tracks": [],
   "handoffs": [
     {
       "name": "2026-06-10-vigorous-bartik-60e9da-ec8dbbb7",
-      "note": "XJournal AI Model G v4.1 punchline work; last commit `b93b60c` (multi-bar punchlines); resume here: merge PR #9, then flip the default flag"
-    },
-    {
-      "name": "2026-06-11-nifty-thompson-49c4cf-fb234921",
-      "note": "Antigravity CarPlay video app; `PhoneSceneDelegate` connected; resume here: implement `templateApplicationScene(_:didConnect:to:)` with `CPPlaybackConfiguration`"
+      "note": "2026-06-10-vigorous-bartik-60e9da-ec8dbbb7 — Model G v4.1 shipped (`b93b60c`); merge PR #9 (v5 selectable + per-line feedback) to unlock the tier."
     },
     {
       "name": "2026-06-11-relaxed-saha-2b85c3-2a48355c",
-      "note": "Multi-project (chord-detector, Polymarket nav); shipped to production, main up-to-date; resume here: Reddit rate-limit caching follow-up"
+      "note": "2026-06-11-relaxed-saha-2b85c3-2a48355c — dashboard shipped to prod (`3378d4e`, rebased on `main`); verify API-key wiring end-to-end."
+    },
+    {
+      "name": "2026-06-10-ui-dashboard-x-audit-bfc6fa8f",
+      "note": "2026-06-10-ui-dashboard-x-audit-bfc6fa8f — uncommitted worktree fixes (config/status, `.env.example`, README 5175); review, commit, and decide the canonical key home."
     }
   ],
   "resurface": [],
   "vault": {
     "name": "OB CLAUDE vault",
-    "brief_file": "🌅 Daily Brief/Briefs/2026-06-13.md",
-    "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%8C%85%20Daily%20Brief/Briefs/2026-06-13",
-    "generated_at": "2026-06-13T20:04:04",
+    "brief_file": "🌅 Daily Brief/Briefs/2026-07-03.md",
+    "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%8C%85%20Daily%20Brief/Briefs/2026-07-03",
+    "generated_at": "2026-07-03T15:39:35",
     "counts": {
-      "briefs": 4,
-      "clippings": 151,
+      "briefs": 5,
+      "clippings": 158,
       "tools": 34,
       "handoffs": 62,
       "tracks": 2
     },
     "recent_briefs": [
+      "2026-07-03",
       "2026-06-13",
       "2026-06-12",
       "2026-06-11",
@@ -162,22 +163,25 @@
     "last_status": "ok",
     "model": "claude-sonnet-4-6",
     "next_run": "07:00 daily",
-    "streak": 4,
+    "streak": 1,
     "chat_ingest": "every 2h",
     "chat_ingest_last": "2026-06-11T10:07"
   },
   "delta": {
-    "vs_date": "2026-06-12",
-    "tools_added": [],
+    "vs_date": "2026-06-13",
+    "tools_added": [
+      "Logic Pro",
+      "Make"
+    ],
     "tools_removed": [
-      "Runway"
+      "Imagen",
+      "Veo"
     ],
     "handoffs_added": [
-      "2026-06-10-vigorous-bartik-60e9da-ec8dbbb7"
+      "2026-06-10-ui-dashboard-x-audit-bfc6fa8f"
     ],
     "handoffs_resolved": [
-      "2026-06-10-upbeat-lumiere-39284e-6679dfdd",
-      "2026-06-11-vigorous-bartik-60e9da-ec8dbbb7"
+      "2026-06-11-nifty-thompson-49c4cf-fb234921"
     ],
     "counts_changed": {
       "briefs": 1
@@ -382,6 +386,22 @@
       ],
       "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Arnis - Real-World Map to Minecraft Generator.md",
       "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Arnis%20-%20Real-World%20Map%20to%20Minecraft%20Generator"
+    },
+    {
+      "name": "Atlas-GIC - Self-Improving AI Trading Agents",
+      "activation_tools": [
+        "GitHub"
+      ],
+      "used_with": [
+        "Claude AI - AI Coding and Content Creation"
+      ],
+      "steps": [
+        "Activation:** Clone the GitHub repo and provision a cheap VM + Anthropic API key; wire in market data feeds (FMP/Finnhub/Polygon/FRED).",
+        "Execution: Run the daily autoresearch loop so the 25+ Atlas-GIC** agents debate, score against real outcomes, and self-rewrite prompts under Darwinian selection.",
+        "Refinement/Output: Track the surviving prompt commits in Git, review the equity curve, and route the CIO's final sized signals to a broker (e.g. Alpaca) or mirror via the hosted atlasagents.co** copy-trading layer."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/Atlas-GIC - Self-Improving AI Trading Agents.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/Atlas-GIC%20-%20Self-Improving%20AI%20Trading%20Agents"
     },
     {
       "name": "Blockade Labs Skybox AI - 360 Scene Generator",
@@ -1803,6 +1823,22 @@
       "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Modo%20-%20Text-to-Hardware%20Prototyping"
     },
     {
+      "name": "Mult.dev - Travel Map & Flight Route Animator",
+      "activation_tools": [
+        "Google Earth Studio - Geographic Map Animator"
+      ],
+      "used_with": [
+        "CapCut"
+      ],
+      "steps": [
+        "Activation:** Open mult.dev and add your start and destination locations to build a route.",
+        "Execution:** Configure the globe style, zoom, labels, and distance counter, then render the animated travel map.",
+        "Refinement/Output:** Export the clip and assemble it into a travel reel or IG story in CapCut (pair with Space Type Generator - 3D Kinetic Text Animation titles)."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Mult.dev - Travel Map & Flight Route Animator.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Mult.dev%20-%20Travel%20Map%20%26%20Flight%20Route%20Animator"
+    },
+    {
       "name": "My Big TOE (Thomas Campbell) - Simulation Theory Exploration",
       "activation_tools": [
         "Mindset"
@@ -1967,6 +2003,22 @@
       "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/NVIDIA%20AI%20ToyBox%20Car%20Explorer%20-%20Interactive%203D%20Car%20Exploration"
     },
     {
+      "name": "NVIDIA API Catalog - Free Hosted AI Model Endpoints",
+      "activation_tools": [
+        "GitHub"
+      ],
+      "used_with": [
+        "Claude Code - Command Line Coding and Automation"
+      ],
+      "steps": [
+        "Activation:** Browse build.nvidia.com, pick a model (e.g. a Gemma or Qwen endpoint), and generate a free API key.",
+        "Execution:** Call the hosted endpoint from Claude Code - Command Line Coding and Automation or any OpenAI-compatible SDK to prototype generation/reasoning features.",
+        "Refinement/Output:** Once validated, either keep using the hosted Free Endpoint or pull the downloadable weights / deploy a NIM microservice for production scale."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/NVIDIA API Catalog - Free Hosted AI Model Endpoints.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/NVIDIA%20API%20Catalog%20-%20Free%20Hosted%20AI%20Model%20Endpoints"
+    },
+    {
       "name": "Obsidian - Knowledge Base Management",
       "activation_tools": [
         "Obsidian"
@@ -2017,6 +2069,22 @@
       ],
       "file": "🧰 AI Toolkit/Imported AI Clippings/Video & Audio/One More Shot AI - Beat-Synced Music Video Generator.md",
       "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Video%20%26%20Audio/One%20More%20Shot%20AI%20-%20Beat-Synced%20Music%20Video%20Generator"
+    },
+    {
+      "name": "Open-Source Web Animation Stack - Motion Graphics & 3D Web",
+      "activation_tools": [
+        "Claude Code - Command Line Coding and Automation"
+      ],
+      "used_with": [
+        "GitHub"
+      ],
+      "steps": [
+        "Activation:** Open a project in Claude Code - Command Line Coding and Automation and pull the relevant repos/skills (GSAP, Motion, ClaudeDesignSkills) from GitHub.",
+        "Execution:** Compose the animation — GSAP for scroll timelines, Motion for micro-interactions, ClaudeDesignSkills for 3D scenes, and Higgsfield/Seedance to generate cinematic motion clips.",
+        "Refinement/Output:** Assemble with the Motion Website Generator into a deployable interactive site, then tune timing and easing for the final cinematic web experience."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Open-Source Web Animation Stack - Motion Graphics & 3D Web.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Open-Source%20Web%20Animation%20Stack%20-%20Motion%20Graphics%20%26%203D%20Web"
     },
     {
       "name": "Peepshow - Video Analysis for LLMs",
@@ -2398,6 +2466,22 @@
       "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Slow%20Roads%20-%20Procedural%203D%20Driving%20Game"
     },
     {
+      "name": "Space Type Generator - 3D Kinetic Text Animation",
+      "activation_tools": [
+        "Canva"
+      ],
+      "used_with": [
+        "CapCut"
+      ],
+      "steps": [
+        "Activation:** Open spacetypegenerator.com and enter your headline or word.",
+        "Execution:** Choose a snap preset and tune the 3D motion, material, and camera until the kinetic type looks right.",
+        "Refinement/Output:** Export the loop as video/GIF and drop it into a reel or story edit (e.g. CapCut) as an animated text overlay."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Space Type Generator - 3D Kinetic Text Animation.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Space%20Type%20Generator%20-%203D%20Kinetic%20Text%20Animation"
+    },
+    {
       "name": "Spline - 3D Website Element Design",
       "activation_tools": [
         "Web Browser"
@@ -2599,6 +2683,22 @@
       ],
       "file": "🧰 AI Toolkit/Imported AI Clippings/Productivity & Study/Thumbnail.ai - YouTube Thumbnail Design.md",
       "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Productivity%20%26%20Study/Thumbnail.ai%20-%20YouTube%20Thumbnail%20Design"
+    },
+    {
+      "name": "Tinkercad - Browser 3D Design, Circuits & Codeblocks",
+      "activation_tools": [
+        "Autodesk Fusion"
+      ],
+      "used_with": [
+        "PrusaSlicer - 3D Print Quality Optimization"
+      ],
+      "steps": [
+        "Activation:** Sign in to tinkercad.com and start a 3D Design or Circuits project (or remix one from the community gallery).",
+        "Execution:** Model the part with drag-and-drop primitives / Codeblocks, or simulate the circuit live to validate the electronics.",
+        "Refinement/Output:** Export the 3D model as STL and prep it for printing in PrusaSlicer - 3D Print Quality Optimization, or save the wiring diagram for the physical build."
+      ],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Tinkercad - Browser 3D Design, Circuits & Codeblocks.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Tinkercad%20-%20Browser%203D%20Design%2C%20Circuits%20%26%20Codeblocks"
     },
     {
       "name": "Tripo AI - 3D Generation Platform",
