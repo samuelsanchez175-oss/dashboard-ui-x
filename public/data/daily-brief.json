@@ -2,18 +2,12 @@
   "date": "2026-07-04",
   "active_project": "CDL",
   "synthesis": [
-    "Happy 4th — today was a productive multi-front sprint. CDL NJ Prep is still in Apple's review queue (submitted Build 2 on July 3 at 4:03 PM with cloudAuthEnabled = false), but today's CDL session made concrete progress: QA debug launch-env hooks were stripped, seedSampleMastery() removed, real Google Sign-In + auth stubs wired in, and all 10 tests confirmed passing. The top CDL blocker now is the .entitlements file — Sign in with Apple + Game Center both fail at runtime without it. While the review verdict sits, delete the dead code (AuthCoordinator.swift, PartsMapPlaceholderView.swift, etc.) to keep any resubmit clean. Separately, the Polymarket Bot had its biggest single-day sprint: Keychain encryption, --dry-run + retry + fee pre-calc, and clob.rs submodule split are all done; Whale Scanner + Copy Trading agent was still running when the session ended — verify it completed and then consolidate the worktree (Tasks 1 and 3 wrote to different locations)."
+    "Happy 4th — today was a dense multi-project sprint across CDL, Polymarket Bot, UI Dashboard, and the vault itself. The CDL NJ Prep session (64 turns) made the most concrete progress: QA debug hooks stripped, seedSampleMastery() removed, real Google Sign-In wired, and all 10 tests confirmed passing — but Build 2 is still in Apple review and the .entitlements file (Sign in with Apple + Game Center) remains the top runtime blocker before any resubmit. The UI Dashboard had its biggest session yet (92 turns): error boundaries added, Playwright config skeleton initiated, and a launchd plist that was already correctly configured daily at 07:00. The most important single thing to do first: check Apple review verdict, then wire the .entitlements so the next CDL build ships clean."
   ],
   "plan": [
     {
       "title": "Check Apple review verdict",
       "note": "open App Store Connect, read CDL NJ Prep Build 2 status",
-      "priority": "high",
-      "done": false
-    },
-    {
-      "title": "Consolidate Polymarket worktree",
-      "note": "Tasks 1 & 3 wrote to different dirs; merge into single worktree before pushing",
       "priority": "high",
       "done": false
     },
@@ -26,12 +20,18 @@
     {
       "title": "Delete CDL dead code",
       "note": "remove `AuthCoordinator.swift`, `PartsMapPlaceholderView.swift`, `ComponentCatalog.swift`, `PlaceholderTab` from binary",
+      "priority": "high",
+      "done": false
+    },
+    {
+      "title": "Consolidate Polymarket worktree",
+      "note": "Tasks 1 & 3 wrote to different dirs; verify Whale Scanner completed, merge into single worktree",
       "priority": "med",
       "done": false
     },
     {
-      "title": "Check Whale Scanner agent",
-      "note": "confirm it completed; review output for `polymarket-cli/src/commands/bot.rs`",
+      "title": "Confirm Playwright + LLM builder",
+      "note": "verify UI Dashboard Playwright run finished; fix stalled chokidar npm install in `watch-corpus.mjs`",
       "priority": "med",
       "done": false
     }
@@ -39,42 +39,42 @@
   "tools": [
     {
       "name": "Github",
-      "desc": "multiple repos active today: CDL PRAC one, polymarket-cli, LLM builder local. Primary coordination point."
+      "desc": "multiple repos active today: CDL PRAC one, polymarket-cli, LLM builder local, dashboard-ui-x. Primary coordination point."
     },
     {
       "name": "Gemini Image Generation",
-      "desc": "xAI credits at zero; Gemini is the live image-gen path for CDL + XJournal."
+      "desc": "live image-gen path for CDL + XJournal (xAI credits at zero)."
     },
     {
-      "name": "Figma",
-      "desc": "if the Apple rejection involves UI polish or App Store screenshot updates."
+      "name": "ElevenLabs",
+      "desc": "XJournal AI audio path; relevant while LLM builder corpus watcher work is in-flight."
     },
     {
       "name": "Make",
-      "desc": "automation for dashboard refresh webhooks and auto-ingest pipeline (fixed today)."
+      "desc": "automation for dashboard refresh webhooks and auto-ingest pipeline."
     },
     {
-      "name": "Obsidian CLI",
-      "desc": "vault-to-LLM integration; useful for piping CDL task list into context for grading/planning."
+      "name": "3D Model Generation",
+      "desc": "text/image-to-3D toolkit; worth revisiting once CDL and Polymarket stabilize."
     }
   ],
   "tracks": [],
   "handoffs": [
     {
       "name": "2026-07-04-jolly-grothendieck-f4b622-50e028f5",
-      "note": "CDL NJ Prep: QA hooks stripped, real auth wired, 10/10 tests passing. Resume: `.entitlements` + dead code deletion before next resubmit."
-    },
-    {
-      "name": "2026-07-04-awesome-nobel-83a843-73577cf2",
-      "note": "Polymarket Bot: Tasks 1–3 done; Whale Scanner + Sniper agents still running. Resume: verify agent output + consolidate worktrees."
+      "note": "CDL NJ Prep: QA hooks stripped, real auth wired, 10/10 tests passing. Resume: wire `.entitlements`, delete dead code before next resubmit."
     },
     {
       "name": "2026-07-04-ui-dashboard-x-8ff53098",
-      "note": "UI Dashboard x: error boundaries added, Playwright config skeleton pending. Resume: confirm Playwright run completed."
+      "note": "UI Dashboard x (92 turns): error boundaries done, Playwright config initiated. Resume: confirm Playwright run completed, wire any remaining zone tests."
     },
     {
       "name": "2026-07-04-llm-builder-local-8caeb299",
-      "note": "LLM builder local: modelg-corpus `watch-corpus.mjs` created, npm install was stalled. Resume: confirm chokidar installed + watch script runs."
+      "note": "LLM builder local: `watch-corpus.mjs` created, npm install (chokidar) was stalled. Resume: confirm install completed + watch script runs."
+    },
+    {
+      "name": "2026-07-04-ui-dashboard-x-e06fadec",
+      "note": "UI Dashboard x (earlier session): `auto_ingest.py` hardcoded path fix in-progress. Resume: verify fix committed and webhook triggers working."
     }
   ],
   "resurface": [
@@ -84,19 +84,19 @@
     },
     {
       "name": "Claude Cookbooks - Front-End Design Patterns",
-      "note": "Anthropic's component recipe library; useful now that the Dashboard UI error-boundary work is stabilizing."
+      "note": "Anthropic's component recipe library; useful now that UI Dashboard error-boundary work is stabilizing."
     }
   ],
   "vault": {
     "name": "OB CLAUDE vault",
     "brief_file": "🌅 Daily Brief/Briefs/2026-07-04.md",
     "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%8C%85%20Daily%20Brief/Briefs/2026-07-04",
-    "generated_at": "2026-07-04T12:57:38",
+    "generated_at": "2026-07-04T13:08:18",
     "counts": {
       "briefs": 6,
       "clippings": 145,
       "tools": 34,
-      "handoffs": 97,
+      "handoffs": 99,
       "tracks": 2
     },
     "recent_briefs": [
@@ -109,74 +109,74 @@
   },
   "ai_sessions": [
     {
-      "title": "2026-06-28-goofy-gagarin-bcf35c-7fb8c9e9",
-      "source": "claude",
-      "project": "XJournal AI",
-      "status": "open",
-      "updated": "2026-06-28",
-      "started_with": "Can you go into Facebook and go pull all of the new 2026 clippings that I have saved and add them to the vault and add all the new tools and transcribe all of the clippings so that",
-      "file": "🤝 Handoffs/2026-06-28-goofy-gagarin-bcf35c-7fb8c9e9.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-06-28-goofy-gagarin-bcf35c-7fb8c9e9",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-06-28-goofy-gagarin-bcf35c-7fb8c9e9.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
-    },
-    {
-      "title": "2026-07-04-ob-claude-vault-771ffc70",
+      "title": "2026-07-04-ob-claude-vault-65d9bde8",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
       "updated": "2026-07-04",
       "started_with": "You are the **Daily Brief synthesizer** for this Obsidian vault. You run head­less once a day. Work autonomously, make the edits, do not ask questions. Be concise and concrete. ## ",
-      "file": "🤝 Handoffs/2026-07-04-ob-claude-vault-771ffc70.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-04-ob-claude-vault-771ffc70",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-04-ob-claude-vault-771ffc70.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+      "file": "🤝 Handoffs/2026-07-04-ob-claude-vault-65d9bde8.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-04-ob-claude-vault-65d9bde8",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-04-ob-claude-vault-65d9bde8.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     },
     {
-      "title": "2026-06-24-sad-shaw-c8083b-8a06eb7d",
+      "title": "2026-07-04-ob-claude-vault-304109b1",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
-      "updated": "2026-06-24",
-      "started_with": "We now have this project live on vercel, but run a local host version within Claude on the right side so we can annotate and edit things.",
-      "file": "🤝 Handoffs/2026-06-24-sad-shaw-c8083b-8a06eb7d.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-06-24-sad-shaw-c8083b-8a06eb7d",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-06-24-sad-shaw-c8083b-8a06eb7d.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+      "updated": "2026-07-04",
+      "started_with": "You are the **Daily Brief synthesizer** for this Obsidian vault. You run head­less once a day. Work autonomously, make the edits, do not ask questions. Be concise and concrete. ## ",
+      "file": "🤝 Handoffs/2026-07-04-ob-claude-vault-304109b1.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-04-ob-claude-vault-304109b1",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-04-ob-claude-vault-304109b1.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     },
     {
-      "title": "2026-06-23-recursing-leavitt-848f8c-ae1d8a43",
+      "title": "2026-07-04-ob-claude-vault-d0a57a6f",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
-      "updated": "2026-06-23",
-      "started_with": "create a new vercel project to host this portfolio. call it harmony stack productions. turn it into a website so i can showcase all of my work at the moment just make this html liv",
-      "file": "🤝 Handoffs/2026-06-23-recursing-leavitt-848f8c-ae1d8a43.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-06-23-recursing-leavitt-848f8c-ae1d8a43",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-06-23-recursing-leavitt-848f8c-ae1d8a43.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+      "updated": "2026-07-04",
+      "started_with": "<scheduled-task name=\"daily-brief-publish\" file=\"/Users/samuel/.claude/scheduled-tasks/daily-brief-publish/SKILL.md\"> This is an automated run of a scheduled task. The user is not ",
+      "file": "🤝 Handoffs/2026-07-04-ob-claude-vault-d0a57a6f.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-04-ob-claude-vault-d0a57a6f",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-04-ob-claude-vault-d0a57a6f.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     },
     {
-      "title": "2026-06-28-practical-golick-3d0ecd-e1ad6aaf",
+      "title": "2026-07-04-ob-claude-vault-6fd27eac",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
-      "updated": "2026-06-28",
-      "started_with": "go on my facebook marketplace and open Messages and I want you to send everyone who reached out to me about my white BMW. I have multiple listings about my white BMW for sale for a",
-      "file": "🤝 Handoffs/2026-06-28-practical-golick-3d0ecd-e1ad6aaf.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-06-28-practical-golick-3d0ecd-e1ad6aaf",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-06-28-practical-golick-3d0ecd-e1ad6aaf.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+      "updated": "2026-07-04",
+      "started_with": "These are some tasks from my obsidian book that has to do with the poly market, bought that we have building. Please look over the obsidian vault and tell me if any of these have b",
+      "file": "🤝 Handoffs/2026-07-04-ob-claude-vault-6fd27eac.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-04-ob-claude-vault-6fd27eac",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-04-ob-claude-vault-6fd27eac.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     },
     {
-      "title": "2026-06-26-modest-kepler-8b0fbf-f1229852",
+      "title": "2026-07-04-llm-builder-local-8caeb299",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
-      "updated": "2026-06-26",
-      "started_with": "update the buttons with the following: import * as React from \"react\"; import { cva, type VariantProps } from \"class-variance-authority\"; import { cn } from \"@/lib/utils\"; // The u",
-      "file": "🤝 Handoffs/2026-06-26-modest-kepler-8b0fbf-f1229852.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-06-26-modest-kepler-8b0fbf-f1229852",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-06-26-modest-kepler-8b0fbf-f1229852.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+      "updated": "2026-07-04",
+      "started_with": "These are some tasks from my obsidian book that has to do with the poly market, bought that we have building. Please look over the obsidian vault and tell me if any of these have b",
+      "file": "🤝 Handoffs/2026-07-04-llm-builder-local-8caeb299.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-04-llm-builder-local-8caeb299",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-04-llm-builder-local-8caeb299.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+    },
+    {
+      "title": "2026-07-04-awesome-nobel-83a843-73577cf2",
+      "source": "claude",
+      "project": "XJournal AI",
+      "status": "open",
+      "updated": "2026-07-04",
+      "started_with": "These are some tasks from my obsidian book that has to do with the poly market, bought that we have building. Please look over the obsidian vault and tell me if any of these have b",
+      "file": "🤝 Handoffs/2026-07-04-awesome-nobel-83a843-73577cf2.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-04-awesome-nobel-83a843-73577cf2",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-04-awesome-nobel-83a843-73577cf2.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     }
   ],
   "pipeline": {
-    "last_run": "2026-07-04 12:54:03",
+    "last_run": "2026-07-04 13:05:23",
     "last_status": "running",
     "model": "claude-sonnet-4-6",
     "next_run": "07:00 daily",
@@ -187,19 +187,17 @@
   "delta": {
     "vs_date": "2026-07-03",
     "tools_added": [
-      "Figma",
-      "Github",
-      "Obsidian CLI"
+      "3D Model Generation",
+      "Github"
     ],
     "tools_removed": [
-      "ElevenLabs",
       "Logic Pro"
     ],
     "handoffs_added": [
-      "2026-07-04-awesome-nobel-83a843-73577cf2",
       "2026-07-04-jolly-grothendieck-f4b622-50e028f5",
       "2026-07-04-llm-builder-local-8caeb299",
-      "2026-07-04-ui-dashboard-x-8ff53098"
+      "2026-07-04-ui-dashboard-x-8ff53098",
+      "2026-07-04-ui-dashboard-x-e06fadec"
     ],
     "handoffs_resolved": [
       "2026-06-10-ui-dashboard-x-audit-bfc6fa8f",
@@ -209,7 +207,7 @@
     "counts_changed": {
       "briefs": 1,
       "clippings": -13,
-      "handoffs": 35
+      "handoffs": 37
     }
   },
   "workflows": [
