@@ -2,76 +2,101 @@
   "date": "2026-07-04",
   "active_project": "CDL",
   "synthesis": [
-    "The live thread is CDL NJ Prep — the iOS app you resubmitted to App Store Connect yesterday (Jul 3, 4:03 PM, \"Ready for Review\"). You were mid-stream on clearing an Apple rejection that cited user-facing bugs and stability issues, and the fix strategy was to ship Build 2 with cloudAuthEnabled = false — hiding the Sign in with Apple / Google buttons entirely — plus updated reviewer notes explaining the change. That build is now sitting in Apple's review queue, so today is a monitor-and-prepare day rather than a build day. The single most important handoff to resume is 2026-07-01-hardcore-jones-57c478-cac19178: check the review verdict first thing. The highest-leverage move: while it's in review, proactively reproduce the exact bug Apple flagged on a supported device (they called out iPad specifically) so that if it bounces again you can turn a fix around in hours, not days."
+    "Happy 4th — the main event is CDL NJ Prep sitting in Apple's review queue since July 3 at 4:03 PM. You shipped Build 2 with cloudAuthEnabled = false after Apple flagged user-facing bugs, and the updated reviewer notes explained the auth buttons were hidden for v1. Today is a watch-and-prepare day: check the verdict first, and if it bounced again, the likeliest culprit is the iPad compatibility issue Apple called out explicitly. The highest-leverage use of a holiday is clearing binary bloat — deleting AuthCoordinator.swift, PartsMapPlaceholderView.swift, and the other dead files listed in the task log makes any resubmission cleaner and faster. The XJournal AI LLM grader (Model G rap-bar scoring, baseline 52.4 NET avg, last touched June 29) is warm enough to context-switch into if review drags past the weekend."
   ],
   "plan": [
     {
-      "title": "Check App Review status",
-      "note": "open App Store Connect, read the verdict on CDL NJ Prep Build 2",
+      "title": "Check Apple review verdict",
+      "note": "open App Store Connect, read CDL NJ Prep Build 2 status",
       "priority": "high",
       "done": false
     },
     {
-      "title": "Reproduce the flagged bug on iPad",
-      "note": "run Build 2 on a supported iPad, confirm the stability issue Apple hit",
+      "title": "iPad regression test",
+      "note": "run Build 2 on an iPad simulator/device, confirm no crash on launch or nav",
       "priority": "high",
       "done": false
     },
     {
-      "title": "Verify auth is fully hidden",
-      "note": "clean-build with `cloudAuthEnabled = false`, confirm no Apple/Google sign-in UI appears",
+      "title": "Delete dead code",
+      "note": "remove `AuthCoordinator.swift`, `PartsMapPlaceholderView.swift`, `ComponentCatalog.swift`, `PlaceholderTab` from binary",
       "priority": "med",
       "done": false
     },
     {
-      "title": "Smoke-test CarPlay connect",
-      "note": "confirm `PhoneSceneDelegate` connects on a device without crashing",
+      "title": "Wire `.entitlements`",
+      "note": "add Sign in with Apple + Game Center capabilities in Xcode, enable on App ID",
       "priority": "med",
       "done": false
     },
     {
-      "title": "Pre-draft reviewer notes",
-      "note": "stage an updated response in case of a second rejection",
+      "title": "XJournal AI grader",
+      "note": "resume Model G v2 grading loop; push past 52.4 NET avg baseline",
       "priority": "low",
       "done": false
     }
   ],
   "tools": [
     {
-      "name": "Github",
-      "desc": "the app lives in `samuelsanchez175-oss/cdl-prac-one` (private); use it to tag Build 2 and track any hotfix branch."
+      "name": "Gemini Image Generation",
+      "desc": "xAI credits are at zero; use Gemini for any in-app image gen work on CDL or XJournal."
     },
     {
-      "name": "_The AI Toolkit is AI/media-focused and has no iOS-specific entries; Xcode + App Store Connect are your real tools for CDL today._",
-      "desc": "_The AI Toolkit is AI/media-focused and has no iOS-specific entries; Xcode + App Store Connect are your real tools for CDL today._"
+      "name": "ElevenLabs",
+      "desc": "if adding audio cues or TTS hints to CDL question flow."
+    },
+    {
+      "name": "Imagen",
+      "desc": "Vertex AI image gen alternative for asset pipeline."
+    },
+    {
+      "name": "Veo",
+      "desc": "Google video model; useful for animated explainers in CDL modules."
+    },
+    {
+      "name": "Runway",
+      "desc": "Gen-3 text-to-video for quick motion assets in app store preview."
     }
   ],
   "tracks": [],
   "handoffs": [
     {
-      "name": "Resume here:",
-      "note": "CDL NJ Prep resubmitted to Apple (Build 2, `cloudAuthEnabled=false`, reviewer notes updated). Awaiting the review verdict; open threads are the device/stability bugs Apple flagged (esp. iPad)."
+      "name": "2026-07-01-hardcore-jones-57c478-cac19178",
+      "note": "CDL NJ Prep resubmission (301 turns); left off at \"Ready for Review\" Jul 3 4:03 PM. Resume here to check verdict."
     },
     {
-      "name": "2026-06-28-cdl-prac-one-45ef4db5",
-      "note": "2026-06-28-cdl-prac-one-45ef4db5 — Pushed the project to a new private GitHub repo (`cdl-prac-one`), `origin/main` tracking with full history."
+      "name": "2026-06-29-relaxed-blackwell-73a824-3fb005c7",
+      "note": "XJournal AI LLM builder; left off with Model G scoring baseline 52.4 NET avg across 40 runs."
     },
     {
-      "name": "2026-06-28-cdl-prac-one-4d23efa1",
-      "note": "2026-06-28-cdl-prac-one-4d23efa1 — Home-screen name set to \"CDL NJ Prep\" (11 chars, fits under the icon), build green, committed `fee748d`."
+      "name": "2026-06-29-amazing-newton-e995a1-2a5acf93",
+      "note": "YT OS 27 player App Store registration (339 turns); App ID + ASC record created, next step is build upload."
+    },
+    {
+      "name": "2026-07-03-ob-claude-vault-d7296ebd",
+      "note": "Multi-project session (55 turns); note that handoff ingestion was lagging pre-June — check `auto_ingest.py` path points to `~/dev` vault."
     }
   ],
-  "resurface": [],
+  "resurface": [
+    {
+      "name": "Atlas-GIC - Self-Improving AI Trading Agents",
+      "note": "self-improving prompt loop via Sharpe ratio loss; interesting parallel to Model G's grader iteration pattern."
+    },
+    {
+      "name": "Magenta RealTime 2 - On-Device Live Music Generation",
+      "note": "on-device audio ML; relevant if XJournal AI adds real-time lyric feedback with audio."
+    }
+  ],
   "vault": {
     "name": "OB CLAUDE vault",
     "brief_file": "🌅 Daily Brief/Briefs/2026-07-04.md",
     "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%8C%85%20Daily%20Brief/Briefs/2026-07-04",
-    "generated_at": "2026-07-04T12:36:08",
+    "generated_at": "2026-07-04T12:52:53",
     "counts": {
       "briefs": 6,
-      "clippings": 158,
+      "clippings": 145,
       "tools": 34,
-      "handoffs": 88,
+      "handoffs": 89,
       "tracks": 2
     },
     "recent_briefs": [
@@ -83,6 +108,17 @@
     ]
   },
   "ai_sessions": [
+    {
+      "title": "Timeline",
+      "source": "claude",
+      "project": "general",
+      "status": "open",
+      "updated": "2026-07-04",
+      "started_with": "",
+      "file": "🤝 Handoffs/Timeline.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/Timeline",
+      "resume_prompt": "Read \"🤝 Handoffs/Timeline.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+    },
     {
       "title": "2026-07-03-ob-claude-vault-d7296ebd",
       "source": "claude",
@@ -137,22 +173,11 @@
       "file": "🤝 Handoffs/2026-07-03-ob-claude-vault-622bfb03.md",
       "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-03-ob-claude-vault-622bfb03",
       "resume_prompt": "Read \"🤝 Handoffs/2026-07-03-ob-claude-vault-622bfb03.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
-    },
-    {
-      "title": "2026-06-29-amazing-newton-e995a1-2a5acf93",
-      "source": "claude",
-      "project": "XJournal AI",
-      "status": "open",
-      "updated": "2026-06-29",
-      "started_with": "Update the YouTube CarPlay app, rename it as well on Xcode, and within the app itself, name the app, YT OS 27 player. Then rebrand the app and let's free factor the layout and how ",
-      "file": "🤝 Handoffs/2026-06-29-amazing-newton-e995a1-2a5acf93.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-06-29-amazing-newton-e995a1-2a5acf93",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-06-29-amazing-newton-e995a1-2a5acf93.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     }
   ],
   "pipeline": {
-    "last_run": "2026-06-13 19:34:08",
-    "last_status": "ok",
+    "last_run": "2026-07-04 12:50:04",
+    "last_status": "running",
     "model": "claude-sonnet-4-6",
     "next_run": "07:00 daily",
     "streak": 2,
@@ -162,19 +187,19 @@
   "delta": {
     "vs_date": "2026-07-03",
     "tools_added": [
-      "Github",
-      "_The AI Toolkit is AI/media-focused and has no iOS-specific entries; Xcode + App Store Connect are your real tools for CDL today._"
+      "Imagen",
+      "Runway",
+      "Veo"
     ],
     "tools_removed": [
-      "ElevenLabs",
-      "Gemini Image Generation",
       "Logic Pro",
       "Make"
     ],
     "handoffs_added": [
-      "2026-06-28-cdl-prac-one-45ef4db5",
-      "2026-06-28-cdl-prac-one-4d23efa1",
-      "Resume here:"
+      "2026-06-29-amazing-newton-e995a1-2a5acf93",
+      "2026-06-29-relaxed-blackwell-73a824-3fb005c7",
+      "2026-07-01-hardcore-jones-57c478-cac19178",
+      "2026-07-03-ob-claude-vault-d7296ebd"
     ],
     "handoffs_resolved": [
       "2026-06-10-ui-dashboard-x-audit-bfc6fa8f",
@@ -183,7 +208,8 @@
     ],
     "counts_changed": {
       "briefs": 1,
-      "handoffs": 26
+      "clippings": -13,
+      "handoffs": 27
     }
   },
   "workflows": [
@@ -213,9 +239,7 @@
         "3D AI Studio - Image & Text to 3D Generator",
         "Blender",
         "Meshy - AI-Powered 3D Asset Generator",
-        "Tripo AI - 3D Generation Platform",
-        "[Meshy - AI-Powered 3D Asset Generator",
-        "[Tripo AI - 3D Generation Platform"
+        "Tripo AI - 3D Generation Platform"
       ],
       "steps": [],
       "file": "🧰 AI Toolkit/3D Model Generation.md",
@@ -369,22 +393,6 @@
       ],
       "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Arnis - Convert Geography to Minecraft World.md",
       "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Arnis%20-%20Convert%20Geography%20to%20Minecraft%20World"
-    },
-    {
-      "name": "Arnis - Real-World Map to Minecraft Generator",
-      "activation_tools": [
-        "Web Browser"
-      ],
-      "used_with": [
-        "Minecraft"
-      ],
-      "steps": [
-        "Activation:** Use Web Browser to select a real-world coordinates bounding box on OpenStreetMap.",
-        "Execution:** Run [Arnis] to fetch building geometry and elevation data and convert it into a Minecraft save folder.",
-        "Refinement/Output:** Load the generated world file into Minecraft to explore and customize the physical representation."
-      ],
-      "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Arnis - Real-World Map to Minecraft Generator.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Arnis%20-%20Real-World%20Map%20to%20Minecraft%20Generator"
     },
     {
       "name": "Atlas-GIC - Self-Improving AI Trading Agents",
@@ -785,40 +793,6 @@
       "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Coolors%20-%20Color%20Palette%20Design"
     },
     {
-      "name": "Coolors - Design Color Palette Design",
-      "activation_tools": [
-        "Web Browser"
-      ],
-      "used_with": [
-        "Figma"
-      ],
-      "steps": [
-        "Use Web Browser to launch the Coolors application.",
-        "Pass the output into Coolors to explore color combinations and check contrast.",
-        "Import the result into Figma to establish your visual design hierarchy."
-      ],
-      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Coolors - Design Color Palette Design.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Coolors%20-%20Design%20Color%20Palette%20Design"
-    },
-    {
-      "name": "Coolors Generator - Custom Color Palette Creation",
-      "activation_tools": [
-        "Web Browser"
-      ],
-      "used_with": [
-        "Coolors - Color Palette Design",
-        "Figma",
-        "Illustrator"
-      ],
-      "steps": [
-        "Use Web Browser to enter a primary brand color hex code.",
-        "Pass the output into Coolors - Color Palette Design Generator to generate complementary color combinations.",
-        "Import the result into Figma or Illustrator to define your digital product design system."
-      ],
-      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Coolors Generator - Custom Color Palette Creation.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Coolors%20Generator%20-%20Custom%20Color%20Palette%20Creation"
-    },
-    {
       "name": "CreativeMode - AI Minecraft Mod Generator",
       "activation_tools": [
         "Web Browser"
@@ -1092,54 +1066,6 @@
       "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Futurepedia%20-%20AI%20Directory%20Discovery"
     },
     {
-      "name": "Futurepedia - AI Tools Aggregation",
-      "activation_tools": [
-        "Web Browser"
-      ],
-      "used_with": [
-        "Claude AI - AI Coding and Content Creation"
-      ],
-      "steps": [
-        "Use Web Browser to explore various AI categories (e.g. video, coding).",
-        "Pass the output into Futurepedia to check tool reviews and details.",
-        "Import the result into Claude AI - AI Coding and Content Creation or your project planner to organize your tech stack."
-      ],
-      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Futurepedia - AI Tools Aggregation.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Futurepedia%20-%20AI%20Tools%20Aggregation"
-    },
-    {
-      "name": "Futurepedia - Discovering Secret AI Tools",
-      "activation_tools": [
-        "Web Browser"
-      ],
-      "used_with": [
-        "Claude AI - AI Coding and Content Creation"
-      ],
-      "steps": [
-        "Use Web Browser to explore new AI releases in the database.",
-        "Pass the output into Futurepedia to read comparative features and test links.",
-        "Import the result into Claude AI - AI Coding and Content Creation or your editor tool to implement the new automation."
-      ],
-      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Futurepedia - Discovering Secret AI Tools.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Futurepedia%20-%20Discovering%20Secret%20AI%20Tools"
-    },
-    {
-      "name": "Futurepedia - Discovering Web Tools",
-      "activation_tools": [
-        "Web Browser"
-      ],
-      "used_with": [
-        "ChatGPT - Conversational AI Assistance"
-      ],
-      "steps": [
-        "Use Web Browser to query the list of utility sites.",
-        "Pass the output into Futurepedia to discover new file converters or automation scripts.",
-        "Import the result into ChatGPT - Conversational AI Assistance or your pipeline editor to optimize daily tasks."
-      ],
-      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Futurepedia - Discovering Web Tools.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Futurepedia%20-%20Discovering%20Web%20Tools"
-    },
-    {
       "name": "Futuretools - AI Tool Discovery",
       "activation_tools": [
         "Web Browser"
@@ -1156,74 +1082,6 @@
       "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Futuretools%20-%20AI%20Tool%20Discovery"
     },
     {
-      "name": "Futuretools - AI Tools Search",
-      "activation_tools": [
-        "Web Browser"
-      ],
-      "used_with": [
-        "ChatGPT - Conversational AI Assistance"
-      ],
-      "steps": [
-        "Use Web Browser to filter tools on the Futuretools dashboard.",
-        "Pass the output into Futuretools to choose the top-rated AI app.",
-        "Import the result into ChatGPT - Conversational AI Assistance to design a productive work pipeline."
-      ],
-      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Futuretools - AI Tools Search.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Futuretools%20-%20AI%20Tools%20Search"
-    },
-    {
-      "name": "Futuretools - Discovering Tech AI Tools",
-      "activation_tools": [
-        "Web Browser"
-      ],
-      "used_with": [
-        "ChatGPT - Conversational AI Assistance",
-        "Claude AI - AI Coding and Content Creation"
-      ],
-      "steps": [
-        "Use Web Browser to search the database under technical categories.",
-        "Pass the output into Futuretools to evaluate ratings and feature lists.",
-        "Import the result into ChatGPT - Conversational AI Assistance or Claude AI - AI Coding and Content Creation to improve code writing speed."
-      ],
-      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Futuretools - Discovering Tech AI Tools.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Futuretools%20-%20Discovering%20Tech%20AI%20Tools"
-    },
-    {
-      "name": "Futuretools - Productivity AI Directory",
-      "activation_tools": [
-        "Web Browser"
-      ],
-      "used_with": [
-        "ChatGPT - Conversational AI Assistance",
-        "Claude AI - AI Coding and Content Creation"
-      ],
-      "steps": [
-        "Use Web Browser to explore the productivity category on the directory.",
-        "Pass the output into Futuretools to identify and compare automation tools.",
-        "Import the result into ChatGPT - Conversational AI Assistance or Claude AI - AI Coding and Content Creation prompts to streamline your daily tasks."
-      ],
-      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Futuretools - Productivity AI Directory.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Futuretools%20-%20Productivity%20AI%20Directory"
-    },
-    {
-      "name": "Futuretools Directory - Productivity Workflows Discovery",
-      "activation_tools": [
-        "Web Browser"
-      ],
-      "used_with": [
-        "ChatGPT - Conversational AI Assistance",
-        "Claude AI - AI Coding and Content Creation",
-        "Futuretools - AI Tools Search"
-      ],
-      "steps": [
-        "Use Web Browser to search the directory categories.",
-        "Pass the output into Futuretools - AI Tools Search Directory to evaluate reviews and tool pages.",
-        "Import the result into ChatGPT - Conversational AI Assistance or Claude AI - AI Coding and Content Creation to run your custom automation."
-      ],
-      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Futuretools Directory - Productivity Workflows Discovery.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Futuretools%20Directory%20-%20Productivity%20Workflows%20Discovery"
-    },
-    {
       "name": "Gambo AI - Text-to-Game Prototyping",
       "activation_tools": [
         "Text Prompt"
@@ -1238,22 +1096,6 @@
       ],
       "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Gambo AI - Text-to-Game Prototyping.md",
       "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Gambo%20AI%20-%20Text-to-Game%20Prototyping"
-    },
-    {
-      "name": "Gamma App - AI Presentation & Webpage Generator",
-      "activation_tools": [
-        "ChatGPT - Conversational AI Assistance"
-      ],
-      "used_with": [
-        "Notion"
-      ],
-      "steps": [
-        "Activation:** Use ChatGPT - Conversational AI Assistance Voice to interview yourself on a topic, and copy the transcribed text or outline.",
-        "Execution:** Paste the transcription into [Gamma App] and choose the theme/format to auto-generate a deck or document.",
-        "Refinement/Output:** Refine layout details using Gamma's editor, then export the finished product to Notion or download as a PDF to share with clients or students."
-      ],
-      "file": "🧰 AI Toolkit/Imported AI Clippings/Video & Audio/Gamma App - AI Presentation & Webpage Generator.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Video%20%26%20Audio/Gamma%20App%20-%20AI%20Presentation%20%26%20Webpage%20Generator"
     },
     {
       "name": "Gamma App - Instant Slide Presentations",
@@ -1275,7 +1117,7 @@
       "name": "Gemini Image Generation",
       "activation_tools": [],
       "used_with": [
-        "Gemini - Web Design Upgrades",
+        "Gemini",
         "GitHub"
       ],
       "steps": [],
@@ -2253,24 +2095,6 @@
       "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Video%20%26%20Audio/Remaker%20AI%20-%20Face%20Swap%20%26%20Outfit%20Changer"
     },
     {
-      "name": "Remaker AI - Video Face Swapping",
-      "activation_tools": [
-        "Video and Photo"
-      ],
-      "used_with": [
-        "DaVinci Resolve",
-        "Premiere Pro",
-        "Remaker AI - Face Swap & Outfit Changer"
-      ],
-      "steps": [
-        "Use Video and Photo inputs to upload your source video and replacement face photo.",
-        "Pass the output into Remaker AI - Face Swap & Outfit Changer AI to execute the face swap processing.",
-        "Import the result into Premiere Pro or DaVinci Resolve to integrate the swap into your video sequence."
-      ],
-      "file": "🧰 AI Toolkit/Imported AI Clippings/Misc Cool Websites/Remaker AI - Video Face Swapping.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Misc%20Cool%20Websites/Remaker%20AI%20-%20Video%20Face%20Swapping"
-    },
-    {
       "name": "Remotion - Programmatic Video Creation",
       "activation_tools": [
         "Terminal",
@@ -2286,24 +2110,6 @@
       ],
       "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/Remotion - Programmatic Video Creation.md",
       "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/Remotion%20-%20Programmatic%20Video%20Creation"
-    },
-    {
-      "name": "Remotion - Programmatic Video Creation",
-      "activation_tools": [
-        "ChatGPT - Conversational AI Assistance",
-        "Claude - Social Media Content Generation"
-      ],
-      "used_with": [
-        "DaVinci Resolve",
-        "VS Code"
-      ],
-      "steps": [
-        "Activation:** Use Claude - Social Media Content Generation or ChatGPT - Conversational AI Assistance to write a video screenplay script and generate the structured JSON/TSX data for the video scenes.",
-        "Execution:** Pass the script data into [Remotion] inside VS Code to compile the video frames using React components and command-line execution tools.",
-        "Refinement/Output:** Render the compiled project into an MP4 file, and upload the final result to host portals or import it into editing software like DaVinci Resolve for further post-production."
-      ],
-      "file": "🧰 AI Toolkit/Imported AI Clippings/Video & Audio/Remotion - Programmatic Video Creation.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Video%20%26%20Audio/Remotion%20-%20Programmatic%20Video%20Creation"
     },
     {
       "name": "RetroArch - Retro Game Emulation Frontend",
