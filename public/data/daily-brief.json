@@ -1,161 +1,153 @@
 {
-  "date": "2026-07-03",
-  "active_project": "XJournal AI",
+  "date": "2026-07-04",
+  "active_project": "CDL",
   "synthesis": [
-    "XJournal AI is still parked at the same merge gate it hit in mid-June: Model G v4.1 landed in full across all five phases on claude/vigorous-bartik-60e9da (last commit b93b60c, multi-bar punchline structures), but useModelGv41 is still OFF by default, so no real session has exercised the new tier — and PR #9 (Model G v5 selectable in the UI plus the per-line feedback deck fixes) remains the unmerged gate blocking any public access. Running in parallel, the relaxed-saha / UI Dashboard x audit left a worktree of type-checked-clean fixes uncommitted on that same branch — the /api/config/status key-reporting fix, the complete .env.example contract, README port correction (5175), and launch.json — while the Vercel project (samuel-x-dashboard) still has zero server env keys, so everything key-driven currently rides per-browser scratch storage only. The Antigravity CarPlay thread (nifty-thompson, PhoneSceneDelegate now connecting) is a live but secondary side quest. The single highest-leverage move today: open vigorous-bartik-60e9da, flip useModelGv41 ON for a quick sim listening test, and merge PR #9 — then commit the audit worktree so the dashboard stops carrying uncommitted work."
+    "The live thread is CDL NJ Prep — the iOS app you resubmitted to App Store Connect yesterday (Jul 3, 4:03 PM, \"Ready for Review\"). You were mid-stream on clearing an Apple rejection that cited user-facing bugs and stability issues, and the fix strategy was to ship Build 2 with cloudAuthEnabled = false — hiding the Sign in with Apple / Google buttons entirely — plus updated reviewer notes explaining the change. That build is now sitting in Apple's review queue, so today is a monitor-and-prepare day rather than a build day. The single most important handoff to resume is 2026-07-01-hardcore-jones-57c478-cac19178: check the review verdict first thing. The highest-leverage move: while it's in review, proactively reproduce the exact bug Apple flagged on a supported device (they called out iPad specifically) so that if it bounces again you can turn a fix around in hours, not days."
   ],
   "plan": [
     {
-      "title": "Merge PR #9",
-      "note": "flip `useModelGv41` ON, run a sim listening test, then merge Model G v5 + per-line feedback",
+      "title": "Check App Review status",
+      "note": "open App Store Connect, read the verdict on CDL NJ Prep Build 2",
       "priority": "high",
       "done": false
     },
     {
-      "title": "Commit the audit worktree",
-      "note": "review + commit `claude/relaxed-saha-2b85c3` (config/status, `.env.example`, README 5175)",
+      "title": "Reproduce the flagged bug on iPad",
+      "note": "run Build 2 on a supported iPad, confirm the stability issue Apple hit",
       "priority": "high",
       "done": false
     },
     {
-      "title": "Wire prod keys",
-      "note": "create `.env.local` from the new `.env.example`, or add the 12 env vars to Vercel `samuel-x-dashboard`",
+      "title": "Verify auth is fully hidden",
+      "note": "clean-build with `cloudAuthEnabled = false`, confirm no Apple/Google sign-in UI appears",
       "priority": "med",
       "done": false
     },
     {
-      "title": "Fix brief cadence",
-      "note": "rename/reschedule `com.user.daily-brief` (currently runs weekly Mon 07:00, not daily)",
+      "title": "Smoke-test CarPlay connect",
+      "note": "confirm `PhoneSceneDelegate` connects on a device without crashing",
       "priority": "med",
       "done": false
     },
     {
-      "title": "Build remaining Model G sliders",
-      "note": "Slang/coded-ref density, Rhyme hardness, Verse length into the deck",
+      "title": "Pre-draft reviewer notes",
+      "note": "stage an updated response in case of a second rejection",
       "priority": "low",
       "done": false
     }
   ],
   "tools": [
     {
-      "name": "ElevenLabs",
-      "desc": "vocal synthesis to turn Model G lyrics into a listenable demo for the toggle-ON test"
+      "name": "Github",
+      "desc": "the app lives in `samuelsanchez175-oss/cdl-prac-one` (private); use it to tag Build 2 and track any hotfix branch."
     },
     {
-      "name": "Logic Pro",
-      "desc": "arrange and mix the generated bars into an actual track for the listening pass"
-    },
-    {
-      "name": "Gemini Image Generation",
-      "desc": "cover art and visual assets for XJournal AI output"
-    },
-    {
-      "name": "Make",
-      "desc": "automate the lyric → audio → vault handoff wiring so sessions capture themselves"
+      "name": "_The AI Toolkit is AI/media-focused and has no iOS-specific entries; Xcode + App Store Connect are your real tools for CDL today._",
+      "desc": "_The AI Toolkit is AI/media-focused and has no iOS-specific entries; Xcode + App Store Connect are your real tools for CDL today._"
     }
   ],
   "tracks": [],
   "handoffs": [
     {
-      "name": "2026-06-10-vigorous-bartik-60e9da-ec8dbbb7",
-      "note": "2026-06-10-vigorous-bartik-60e9da-ec8dbbb7 — Model G v4.1 shipped (`b93b60c`); merge PR #9 (v5 selectable + per-line feedback) to unlock the tier."
+      "name": "Resume here:",
+      "note": "CDL NJ Prep resubmitted to Apple (Build 2, `cloudAuthEnabled=false`, reviewer notes updated). Awaiting the review verdict; open threads are the device/stability bugs Apple flagged (esp. iPad)."
     },
     {
-      "name": "2026-06-11-relaxed-saha-2b85c3-2a48355c",
-      "note": "2026-06-11-relaxed-saha-2b85c3-2a48355c — dashboard shipped to prod (`3378d4e`, rebased on `main`); verify API-key wiring end-to-end."
+      "name": "2026-06-28-cdl-prac-one-45ef4db5",
+      "note": "2026-06-28-cdl-prac-one-45ef4db5 — Pushed the project to a new private GitHub repo (`cdl-prac-one`), `origin/main` tracking with full history."
     },
     {
-      "name": "2026-06-10-ui-dashboard-x-audit-bfc6fa8f",
-      "note": "2026-06-10-ui-dashboard-x-audit-bfc6fa8f — uncommitted worktree fixes (config/status, `.env.example`, README 5175); review, commit, and decide the canonical key home."
+      "name": "2026-06-28-cdl-prac-one-4d23efa1",
+      "note": "2026-06-28-cdl-prac-one-4d23efa1 — Home-screen name set to \"CDL NJ Prep\" (11 chars, fits under the icon), build green, committed `fee748d`."
     }
   ],
   "resurface": [],
   "vault": {
     "name": "OB CLAUDE vault",
-    "brief_file": "🌅 Daily Brief/Briefs/2026-07-03.md",
-    "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%8C%85%20Daily%20Brief/Briefs/2026-07-03",
-    "generated_at": "2026-07-03T15:39:35",
+    "brief_file": "🌅 Daily Brief/Briefs/2026-07-04.md",
+    "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%8C%85%20Daily%20Brief/Briefs/2026-07-04",
+    "generated_at": "2026-07-04T12:36:08",
     "counts": {
-      "briefs": 5,
+      "briefs": 6,
       "clippings": 158,
       "tools": 34,
-      "handoffs": 62,
+      "handoffs": 88,
       "tracks": 2
     },
     "recent_briefs": [
+      "2026-07-04",
       "2026-07-03",
       "2026-06-13",
       "2026-06-12",
-      "2026-06-11",
-      "2026-06-10"
+      "2026-06-11"
     ]
   },
   "ai_sessions": [
     {
-      "title": "test-project (2026-06-11)",
-      "source": "test",
-      "project": "test-project",
-      "status": "open",
-      "updated": "2026-06-11",
-      "started_with": "",
-      "file": "🤝 Handoffs/Handoff — test-project (2026-06-11).md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/Handoff%20%E2%80%94%20test-project%20%282026-06-11%29",
-      "resume_prompt": "Read \"🤝 Handoffs/Handoff — test-project (2026-06-11).md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
-    },
-    {
-      "title": "2026-06-10-vigorous-bartik-60e9da-ec8dbbb7",
+      "title": "2026-07-03-ob-claude-vault-d7296ebd",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
-      "updated": "2026-06-11",
-      "started_with": "so now that Model gv4 is present and model GL v1 is present. i recently gave a prompt to gemini to write me some lyrics and i was honestly impressed by gemini And that's kind of th",
-      "file": "🤝 Handoffs/2026-06-10-vigorous-bartik-60e9da-ec8dbbb7.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-06-10-vigorous-bartik-60e9da-ec8dbbb7",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-06-10-vigorous-bartik-60e9da-ec8dbbb7.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+      "updated": "2026-07-03",
+      "started_with": "<scheduled-task name=\"daily-brief-publish\" file=\"/Users/samuel/.claude/scheduled-tasks/daily-brief-publish/SKILL.md\"> This is an automated run of a scheduled task. The user is not ",
+      "file": "🤝 Handoffs/2026-07-03-ob-claude-vault-d7296ebd.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-03-ob-claude-vault-d7296ebd",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-03-ob-claude-vault-d7296ebd.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     },
     {
-      "title": "2026-06-10-ob-claude-vault-a8172dca",
+      "title": "2026-07-04-ob-claude-vault-d0a57a6f",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
-      "updated": "2026-06-11",
-      "started_with": "📂 Obsidian Daily Brief Master & Workflow Architecture Handoff Project Overview: The goal is to architect a centralized, automated knowledge management dashboard inside Obsidian, al",
-      "file": "🤝 Handoffs/2026-06-10-ob-claude-vault-a8172dca.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-06-10-ob-claude-vault-a8172dca",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-06-10-ob-claude-vault-a8172dca.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+      "updated": "2026-07-04",
+      "started_with": "<scheduled-task name=\"daily-brief-publish\" file=\"/Users/samuel/.claude/scheduled-tasks/daily-brief-publish/SKILL.md\"> This is an automated run of a scheduled task. The user is not ",
+      "file": "🤝 Handoffs/2026-07-04-ob-claude-vault-d0a57a6f.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-04-ob-claude-vault-d0a57a6f",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-04-ob-claude-vault-d0a57a6f.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     },
     {
-      "title": "2026-06-10-upbeat-lumiere-39284e-6679dfdd",
+      "title": "2026-07-01-hardcore-jones-57c478-cac19178",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
-      "updated": "2026-06-11",
-      "started_with": "Can we get the poly market bought running already? Let me know what else you need? I saw before that people are loading the dashboard inside of the browser and from there interacti",
-      "file": "🤝 Handoffs/2026-06-10-upbeat-lumiere-39284e-6679dfdd.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-06-10-upbeat-lumiere-39284e-6679dfdd",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-06-10-upbeat-lumiere-39284e-6679dfdd.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+      "updated": "2026-07-03",
+      "started_with": "please correct these errors in the following text as we are trying to get the app approved to be posted to apple connect Hello, Thank you for your resubmission. Upon further review",
+      "file": "🤝 Handoffs/2026-07-01-hardcore-jones-57c478-cac19178.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-01-hardcore-jones-57c478-cac19178",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-01-hardcore-jones-57c478-cac19178.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     },
     {
-      "title": "2026-06-11-relaxed-saha-2b85c3-2a48355c",
+      "title": "2026-06-29-relaxed-blackwell-73a824-3fb005c7",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
-      "updated": "2026-06-11",
-      "started_with": "using the fable V Can you look at the project and see if there's anything that we need to improve or work on either visual or wiring system? I wanna make sure all of my API keys ar",
-      "file": "🤝 Handoffs/2026-06-11-relaxed-saha-2b85c3-2a48355c.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-06-11-relaxed-saha-2b85c3-2a48355c",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-06-11-relaxed-saha-2b85c3-2a48355c.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+      "updated": "2026-06-29",
+      "started_with": "@\"/Users/samuel/Downloads/handoff jun 28th dataset.md\" can you add the 54 artist lyrics to the LLM builder i have in obsidian? can you make sure it is formatted correctly?",
+      "file": "🤝 Handoffs/2026-06-29-relaxed-blackwell-73a824-3fb005c7.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-06-29-relaxed-blackwell-73a824-3fb005c7",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-06-29-relaxed-blackwell-73a824-3fb005c7.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     },
     {
-      "title": "2026-06-11-nifty-thompson-49c4cf-fb234921",
+      "title": "2026-07-03-ob-claude-vault-622bfb03",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
-      "updated": "2026-06-11",
-      "started_with": "In this video, Apple announced that they have the ability to now play video on the car display. Can you please create an app that uses YouTube for video playback? If, if possible, ",
-      "file": "🤝 Handoffs/2026-06-11-nifty-thompson-49c4cf-fb234921.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-06-11-nifty-thompson-49c4cf-fb234921",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-06-11-nifty-thompson-49c4cf-fb234921.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+      "updated": "2026-07-03",
+      "started_with": "<scheduled-task name=\"daily-brief-publish\" file=\"/Users/samuel/.claude/scheduled-tasks/daily-brief-publish/SKILL.md\"> This is an automated run of a scheduled task. The user is not ",
+      "file": "🤝 Handoffs/2026-07-03-ob-claude-vault-622bfb03.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-03-ob-claude-vault-622bfb03",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-03-ob-claude-vault-622bfb03.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+    },
+    {
+      "title": "2026-06-29-amazing-newton-e995a1-2a5acf93",
+      "source": "claude",
+      "project": "XJournal AI",
+      "status": "open",
+      "updated": "2026-06-29",
+      "started_with": "Update the YouTube CarPlay app, rename it as well on Xcode, and within the app itself, name the app, YT OS 27 player. Then rebrand the app and let's free factor the layout and how ",
+      "file": "🤝 Handoffs/2026-06-29-amazing-newton-e995a1-2a5acf93.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-06-29-amazing-newton-e995a1-2a5acf93",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-06-29-amazing-newton-e995a1-2a5acf93.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     }
   ],
   "pipeline": {
@@ -163,28 +155,35 @@
     "last_status": "ok",
     "model": "claude-sonnet-4-6",
     "next_run": "07:00 daily",
-    "streak": 1,
+    "streak": 2,
     "chat_ingest": "every 2h",
     "chat_ingest_last": "2026-06-11T10:07"
   },
   "delta": {
-    "vs_date": "2026-06-13",
+    "vs_date": "2026-07-03",
     "tools_added": [
+      "Github",
+      "_The AI Toolkit is AI/media-focused and has no iOS-specific entries; Xcode + App Store Connect are your real tools for CDL today._"
+    ],
+    "tools_removed": [
+      "ElevenLabs",
+      "Gemini Image Generation",
       "Logic Pro",
       "Make"
     ],
-    "tools_removed": [
-      "Imagen",
-      "Veo"
-    ],
     "handoffs_added": [
-      "2026-06-10-ui-dashboard-x-audit-bfc6fa8f"
+      "2026-06-28-cdl-prac-one-45ef4db5",
+      "2026-06-28-cdl-prac-one-4d23efa1",
+      "Resume here:"
     ],
     "handoffs_resolved": [
-      "2026-06-11-nifty-thompson-49c4cf-fb234921"
+      "2026-06-10-ui-dashboard-x-audit-bfc6fa8f",
+      "2026-06-10-vigorous-bartik-60e9da-ec8dbbb7",
+      "2026-06-11-relaxed-saha-2b85c3-2a48355c"
     ],
     "counts_changed": {
-      "briefs": 1
+      "briefs": 1,
+      "handoffs": 26
     }
   },
   "workflows": [
