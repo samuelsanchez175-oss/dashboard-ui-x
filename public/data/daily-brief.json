@@ -2,15 +2,9 @@
   "date": "2026-07-04",
   "active_project": "CDL",
   "synthesis": [
-    "Happy 4th — today was the heaviest multi-project day yet, with real shipped work across CDL, Polymarket Bot, LLM builder, and the UI Dashboard. CDL NJ Prep is in the cleanest state it's been: QA debug hooks stripped, seedSampleMastery() removed, real Google Sign-In wired, and all 10 tests passing — the sole blocker before a clean resubmit is wiring the .entitlements file (Sign in with Apple + Game Center) and deleting three dead-code files. The Polymarket CLI had the biggest session (74 turns): 12 hardening fixes shipped (retry logic, reqwest::Client reuse, connection pooling), but Whale Scanner + Copy Trading (P2) remain open, and there's a consolidation issue — Task 1 landed in the worktree while Task 3 landed in main; that split needs resolving before P2 work begins. LLM builder watch-corpus.mjs is now implemented with chokidar and initial build logic. First priority: check the Apple review verdict for CDL Build 2, then consolidate the Polymarket worktree before opening P2."
+    "Happy 4th — today was the heaviest multi-project day yet, with shipped work across CDL, Polymarket Bot, LLM builder, and the UI Dashboard. CDL NJ Prep is in the cleanest state it's been: QA debug hooks stripped, seedSampleMastery() removed, real Google Sign-In wired, and all 10 tests passing — the sole blocker before a clean resubmit is wiring the .entitlements file (Sign in with Apple + Game Center) and deleting three dead-code files. The Polymarket CLI had the biggest session (74 turns, 12 hardening fixes: retry logic, reqwest::Client reuse, connection pooling), but Whale Scanner + Copy Trading (P2) remain open and there's a branch-consolidation issue (Task 1 in worktree, Task 3 in main) that must be resolved first. The UI Dashboard is in a strong state: refresh and automation console buttons now work end-to-end, incremental ingest cache is verified (run 2 shows unchanged=50, new=0), and all three AI generation routes are implemented. First priority today: wire the CDL .entitlements file, then consolidate the Polymarket worktree before opening P2."
   ],
   "plan": [
-    {
-      "title": "Check Apple review verdict",
-      "note": "open App Store Connect, read CDL NJ Prep Build 2 status",
-      "priority": "high",
-      "done": false
-    },
     {
       "title": "Wire `.entitlements`",
       "note": "add Sign in with Apple + Game Center capabilities in Xcode, enable on App ID in ASC",
@@ -18,8 +12,14 @@
       "done": false
     },
     {
+      "title": "Check Apple review verdict",
+      "note": "open App Store Connect, read CDL NJ Prep Build 2 status",
+      "priority": "high",
+      "done": false
+    },
+    {
       "title": "Consolidate Polymarket worktree",
-      "note": "merge Task 1 (worktree) + Task 3 (main) into one branch before starting P2 (Whale Scanner)",
+      "note": "merge Task 1 (worktree) + Task 3 (main) into one branch before starting Whale Scanner (P2)",
       "priority": "high",
       "done": false
     },
@@ -30,8 +30,8 @@
       "done": false
     },
     {
-      "title": "Fix 3D Model Generation.md wikilinks",
-      "note": "repair malformed triple-bracket wikilinks in the frontmatter `used_with` array",
+      "title": "Verify Dashboard ingest live",
+      "note": "open dashboard, hit Refresh, confirm brief updates in UI without manual trigger",
       "priority": "low",
       "done": false
     }
@@ -39,23 +39,23 @@
   "tools": [
     {
       "name": "Gemini Image Generation",
-      "desc": "live image-gen path for CDL + XJournal; wikilinks just fixed, app icon PNG export still pending."
+      "desc": "active image-gen path for CDL app icon + XJournal; xAI key has 0 credits so Gemini is the live fallback."
     },
     {
       "name": "3D Model Generation",
-      "desc": "text/image-to-3D toolkit; wikilinks still broken — fix before next use."
+      "desc": "text/image-to-3D toolkit; CDL has a deferred 3D flippable badges task pending a provisioned Meshy key."
     },
     {
       "name": "Github",
       "desc": "multiple repos active today: CDL PRAC one, polymarket-cli (awesome-nobel worktree), LLM builder, dashboard-ui-x."
     },
     {
-      "name": "ElevenLabs",
-      "desc": "XJournal AI audio path; relevant while LLM builder corpus watcher is now live."
-    },
-    {
       "name": "Make",
       "desc": "automation for dashboard refresh webhooks and auto-ingest pipeline."
+    },
+    {
+      "name": "ElevenLabs",
+      "desc": "XJournal AI audio path; relevant while LLM builder corpus watcher is now live with chokidar."
     }
   ],
   "tracks": [],
@@ -69,12 +69,12 @@
       "note": "Polymarket CLI: 12 hardening fixes shipped. Resume: consolidate worktree vs main split, then open Whale Scanner + Copy Trading (P2)."
     },
     {
-      "name": "2026-07-04-llm-builder-local-8caeb299",
-      "note": "LLM builder: `watch-corpus.mjs` + chokidar watch script implemented. Resume: verify npm install of chokidar completed, confirm watch loop running."
+      "name": "2026-07-04-ui-dashboard-x-e06fadec",
+      "note": "UI Dashboard (81 turns): refresh + automation console buttons working, ingest cache verified, all AI gen routes live. Resume: confirm CPW/Projects zone rendering from vault snapshot."
     },
     {
-      "name": "2026-07-04-ui-dashboard-x-8ff53098",
-      "note": "UI Dashboard (92 turns): error boundaries done, Playwright config initiated. Resume: confirm Playwright run completed, wire remaining zone tests."
+      "name": "2026-07-04-llm-builder-local-8caeb299",
+      "note": "LLM builder: `watch-corpus.mjs` + chokidar watch script implemented. Resume: verify chokidar npm install completed, confirm watch loop running."
     }
   ],
   "resurface": [
@@ -91,7 +91,7 @@
     "name": "OB CLAUDE vault",
     "brief_file": "🌅 Daily Brief/Briefs/2026-07-04.md",
     "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%8C%85%20Daily%20Brief/Briefs/2026-07-04",
-    "generated_at": "2026-07-04T13:13:27",
+    "generated_at": "2026-07-04T13:15:40",
     "counts": {
       "briefs": 6,
       "clippings": 145,
@@ -177,7 +177,7 @@
   ],
   "pipeline": {
     "last_run": "2026-07-04 13:12:13",
-    "last_status": "running",
+    "last_status": "ok",
     "model": "claude-sonnet-4-6",
     "next_run": "07:00 daily",
     "streak": 2,
@@ -197,7 +197,7 @@
       "2026-07-04-awesome-nobel-83a843-73577cf2",
       "2026-07-04-jolly-grothendieck-f4b622-50e028f5",
       "2026-07-04-llm-builder-local-8caeb299",
-      "2026-07-04-ui-dashboard-x-8ff53098"
+      "2026-07-04-ui-dashboard-x-e06fadec"
     ],
     "handoffs_resolved": [
       "2026-06-10-ui-dashboard-x-audit-bfc6fa8f",
