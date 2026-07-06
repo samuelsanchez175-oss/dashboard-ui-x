@@ -1,213 +1,202 @@
 {
-  "date": "2026-07-04",
-  "active_project": "CDL",
+  "date": "2026-07-06",
+  "active_project": "AI Toolkit",
   "synthesis": [
-    "Happy 4th — today was the heaviest multi-project day yet, with shipped work across CDL, Polymarket Bot, LLM builder, and the UI Dashboard. CDL NJ Prep is in the cleanest state it's been: QA debug hooks stripped, seedSampleMastery() removed, real Google Sign-In wired, and all 10 tests passing — the sole blocker before a clean resubmit is wiring the .entitlements file (Sign in with Apple + Game Center) and deleting three dead-code files. The Polymarket CLI had the biggest session (74 turns, 12 hardening fixes: retry logic, reqwest::Client reuse, connection pooling), but Whale Scanner + Copy Trading (P2) remain open and there's a branch-consolidation issue (Task 1 in worktree, Task 3 in main) that must be resolved first. The UI Dashboard is in a strong state: refresh and automation console buttons now work end-to-end, incremental ingest cache is verified (run 2 shows unchanged=50, new=0), and all three AI generation routes are implemented. First priority today: wire the CDL .entitlements file, then consolidate the Polymarket worktree before opening P2."
+    "Today's lens is AI Toolkit — the tooling and automation layer, not a product feature. The last few days of activity center on two things: reorganizing the UI Dashboard x tools page (making it more concise, adding per-tool quick actions, and drag-and-drop file inputs on the tabs) and wiring up this vault's daily-brief automation. The single most important thread to resume is the dashboard reorg handoff from 2026-07-04 — you dug in and flagged \"an important mismatch\" before the session closed, and that flag is still unaddressed. Clear that mismatch first, because it likely gates the quick-actions and drag-drop work behind it. The recommended concrete action: reopen the UI Dashboard x reorg handoff, confirm exactly what the mismatch was, and decide the fix before touching more UI. Everything else (quick actions, file-drop wiring) is downstream of that decision."
   ],
   "plan": [
     {
-      "title": "Wire `.entitlements`",
-      "note": "add Sign in with Apple + Game Center capabilities in Xcode, enable on App ID in ASC",
+      "title": "Resolve the flagged dashboard mismatch",
+      "note": "reopen 07-04 reorg handoff, pin down the mismatch, pick a fix",
       "priority": "high",
       "done": false
     },
     {
-      "title": "Check Apple review verdict",
-      "note": "open App Store Connect, read CDL NJ Prep Build 2 status",
+      "title": "Wire drag-drop file input on tool tabs",
+      "note": "dropping a file starts that tool",
       "priority": "high",
       "done": false
     },
     {
-      "title": "Consolidate Polymarket worktree",
-      "note": "merge Task 1 (worktree) + Task 3 (main) into one branch before starting Whale Scanner (P2)",
-      "priority": "high",
-      "done": false
-    },
-    {
-      "title": "Delete CDL dead code",
-      "note": "remove `AuthCoordinator.swift`, `PartsMapPlaceholderView.swift`, `ComponentCatalog.swift` from binary",
+      "title": "Add quick-action buttons under each tool card",
+      "note": "one concise action per tool",
       "priority": "med",
       "done": false
     },
     {
-      "title": "Verify Dashboard ingest live",
-      "note": "open dashboard, hit Refresh, confirm brief updates in UI without manual trigger",
+      "title": "Verify daily-brief automation end-to-end",
+      "note": "confirm today's snapshot published to live site",
+      "priority": "med",
+      "done": false
+    },
+    {
+      "title": "Replace example/template tracks",
+      "note": "sync one real track or remove the stubs",
       "priority": "low",
       "done": false
     }
   ],
   "tools": [
     {
-      "name": "Gemini Image Generation",
-      "desc": "active image-gen path for CDL app icon + XJournal; xAI key has 0 credits so Gemini is the live fallback."
-    },
-    {
-      "name": "3D Model Generation",
-      "desc": "text/image-to-3D toolkit; CDL has a deferred 3D flippable badges task pending a provisioned Meshy key."
+      "name": "Obsidian",
+      "desc": "the vault itself; where these briefs and handoffs live."
     },
     {
       "name": "Github",
-      "desc": "multiple repos active today: CDL PRAC one, polymarket-cli (awesome-nobel worktree), LLM builder, dashboard-ui-x."
+      "desc": "the dashboard-ui-x repo; every snapshot publish lands here."
+    },
+    {
+      "name": "VS Code",
+      "desc": "editing the dashboard reorg and file-drop wiring."
+    },
+    {
+      "name": "Figma",
+      "desc": "designing the tightened tool-page layout and quick-action affordances."
     },
     {
       "name": "Make",
-      "desc": "automation for dashboard refresh webhooks and auto-ingest pipeline."
-    },
-    {
-      "name": "ElevenLabs",
-      "desc": "XJournal AI audio path; relevant while LLM builder corpus watcher is now live with chokidar."
+      "desc": "automation glue if you want the file-drop triggers to fan out."
     }
   ],
   "tracks": [],
   "handoffs": [
     {
-      "name": "2026-07-04-jolly-grothendieck-f4b622-50e028f5",
-      "note": "CDL NJ Prep: QA hooks stripped, real auth wired, 10/10 tests passing. Resume: wire `.entitlements`, delete dead code before next resubmit."
+      "name": "resume here:",
+      "note": "tool-page reorg; you flagged \"an important mismatch\" — verify and fix before adding quick actions / drag-drop."
     },
     {
-      "name": "2026-07-04-awesome-nobel-83a843-73577cf2",
-      "note": "Polymarket CLI: 12 hardening fixes shipped. Resume: consolidate worktree vs main split, then open Whale Scanner + Copy Trading (P2)."
+      "name": "2026-07-04-ui-dashboard-x-8ff53098",
+      "note": "2026-07-04-ui-dashboard-x-8ff53098 — dashboard tools tab work, still open."
     },
     {
-      "name": "2026-07-04-ui-dashboard-x-e06fadec",
-      "note": "UI Dashboard (81 turns): refresh + automation console buttons working, ingest cache verified, all AI gen routes live. Resume: confirm CPW/Projects zone rendering from vault snapshot."
-    },
-    {
-      "name": "2026-07-04-llm-builder-local-8caeb299",
-      "note": "LLM builder: `watch-corpus.mjs` + chokidar watch script implemented. Resume: verify chokidar npm install completed, confirm watch loop running."
+      "name": "2026-07-06-ob-claude-vault-66e3c2f0",
+      "note": "2026-07-06-ob-claude-vault-66e3c2f0 — prior daily-brief run timed out mid-synthesis; superseded by today's run."
     }
   ],
-  "resurface": [
-    {
-      "name": "Atlas-GIC - Self-Improving AI Trading Agents",
-      "note": "self-improving prompt loop via Sharpe ratio loss; direct parallel to Polymarket Whale Scanner copy-trading logic now in P2."
-    },
-    {
-      "name": "NVIDIA API Catalog - Free Hosted AI Model Endpoints",
-      "note": "free hosted endpoints; relevant now that LLM builder corpus watcher is live and model selection is next."
-    }
-  ],
+  "resurface": [],
   "vault": {
     "name": "OB CLAUDE vault",
-    "brief_file": "🌅 Daily Brief/Briefs/2026-07-04.md",
-    "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%8C%85%20Daily%20Brief/Briefs/2026-07-04",
-    "generated_at": "2026-07-04T13:15:40",
+    "brief_file": "🌅 Daily Brief/Briefs/2026-07-06.md",
+    "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%8C%85%20Daily%20Brief/Briefs/2026-07-06",
+    "generated_at": "2026-07-06T18:57:41",
     "counts": {
-      "briefs": 6,
+      "briefs": 7,
       "clippings": 145,
       "tools": 34,
-      "handoffs": 101,
+      "handoffs": 105,
       "tracks": 2
     },
     "recent_briefs": [
+      "2026-07-06",
       "2026-07-04",
       "2026-07-03",
       "2026-06-13",
-      "2026-06-12",
-      "2026-06-11"
+      "2026-06-12"
     ]
   },
   "ai_sessions": [
     {
-      "title": "2026-07-04-ob-claude-vault-5c6e3f3f",
+      "title": "2026-07-06-ob-claude-vault-66e3c2f0",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
-      "updated": "2026-07-04",
+      "updated": "2026-07-06",
       "started_with": "You are the **Daily Brief synthesizer** for this Obsidian vault. You run head­less once a day. Work autonomously, make the edits, do not ask questions. Be concise and concrete. ## ",
-      "file": "🤝 Handoffs/2026-07-04-ob-claude-vault-5c6e3f3f.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-04-ob-claude-vault-5c6e3f3f",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-04-ob-claude-vault-5c6e3f3f.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+      "file": "🤝 Handoffs/2026-07-06-ob-claude-vault-66e3c2f0.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-06-ob-claude-vault-66e3c2f0",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-06-ob-claude-vault-66e3c2f0.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     },
     {
-      "title": "2026-07-04-ob-claude-vault-f5856ae5",
+      "title": "2026-07-06-ob-claude-vault-d5fd9805",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
-      "updated": "2026-07-04",
-      "started_with": "You are the **Daily Brief synthesizer** for this Obsidian vault. You run head­less once a day. Work autonomously, make the edits, do not ask questions. Be concise and concrete. ## ",
-      "file": "🤝 Handoffs/2026-07-04-ob-claude-vault-f5856ae5.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-04-ob-claude-vault-f5856ae5",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-04-ob-claude-vault-f5856ae5.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
-    },
-    {
-      "title": "2026-07-04-ob-claude-vault-d0a57a6f",
-      "source": "claude",
-      "project": "XJournal AI",
-      "status": "open",
-      "updated": "2026-07-04",
+      "updated": "2026-07-06",
       "started_with": "<scheduled-task name=\"daily-brief-publish\" file=\"/Users/samuel/.claude/scheduled-tasks/daily-brief-publish/SKILL.md\"> This is an automated run of a scheduled task. The user is not ",
-      "file": "🤝 Handoffs/2026-07-04-ob-claude-vault-d0a57a6f.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-04-ob-claude-vault-d0a57a6f",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-04-ob-claude-vault-d0a57a6f.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+      "file": "🤝 Handoffs/2026-07-06-ob-claude-vault-d5fd9805.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-06-ob-claude-vault-d5fd9805",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-06-ob-claude-vault-d5fd9805.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     },
     {
       "title": "2026-07-04-ob-claude-vault-6fd27eac",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
-      "updated": "2026-07-04",
+      "updated": "2026-07-06",
       "started_with": "These are some tasks from my obsidian book that has to do with the poly market, bought that we have building. Please look over the obsidian vault and tell me if any of these have b",
       "file": "🤝 Handoffs/2026-07-04-ob-claude-vault-6fd27eac.md",
       "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-04-ob-claude-vault-6fd27eac",
       "resume_prompt": "Read \"🤝 Handoffs/2026-07-04-ob-claude-vault-6fd27eac.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     },
     {
-      "title": "2026-07-04-ui-dashboard-x-e06fadec",
+      "title": "2026-07-04-awesome-nobel-83a843-73577cf2",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
-      "updated": "2026-07-04",
-      "started_with": "Can you make sure that the refresh and the automation console buttons actually work and send the correct trigger or web hook so that way it pulls the data for the daily brief?",
-      "file": "🤝 Handoffs/2026-07-04-ui-dashboard-x-e06fadec.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-04-ui-dashboard-x-e06fadec",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-04-ui-dashboard-x-e06fadec.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+      "updated": "2026-07-06",
+      "started_with": "These are some tasks from my obsidian book that has to do with the poly market, bought that we have building. Please look over the obsidian vault and tell me if any of these have b",
+      "file": "🤝 Handoffs/2026-07-04-awesome-nobel-83a843-73577cf2.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-04-awesome-nobel-83a843-73577cf2",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-04-awesome-nobel-83a843-73577cf2.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     },
     {
-      "title": "2026-07-04-jolly-grothendieck-f4b622-50e028f5",
+      "title": "2026-07-04-ui-dashboard-x-90dd75ee",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
-      "updated": "2026-07-04",
-      "started_with": "Complete the task that I provided below and tell me which are more important. Before you commit any of these, please explain to me which each of these are, and then I will tell you",
-      "file": "🤝 Handoffs/2026-07-04-jolly-grothendieck-f4b622-50e028f5.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-04-jolly-grothendieck-f4b622-50e028f5",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-04-jolly-grothendieck-f4b622-50e028f5.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+      "updated": "2026-07-06",
+      "started_with": "can you help me with the following: can you help me reorganize the following tools, can you make it more concise and easy to use this page, can you add small quick actions under ea",
+      "file": "🤝 Handoffs/2026-07-04-ui-dashboard-x-90dd75ee.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-04-ui-dashboard-x-90dd75ee",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-04-ui-dashboard-x-90dd75ee.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+    },
+    {
+      "title": "2026-07-04-ui-dashboard-x-8ff53098",
+      "source": "claude",
+      "project": "XJournal AI",
+      "status": "open",
+      "updated": "2026-07-06",
+      "started_with": "Before completing these tasks for me, please explain to me what these are and tell me if they have been accomplished already, as these are tasks from our obsidian vault. # 1. Fix l",
+      "file": "🤝 Handoffs/2026-07-04-ui-dashboard-x-8ff53098.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-04-ui-dashboard-x-8ff53098",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-04-ui-dashboard-x-8ff53098.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     }
   ],
   "pipeline": {
-    "last_run": "2026-07-04 13:12:13",
-    "last_status": "ok",
+    "last_run": "2026-07-06 07:15:43",
+    "last_status": "running",
     "model": "claude-sonnet-4-6",
     "next_run": "07:00 daily",
-    "streak": 2,
+    "streak": 1,
     "chat_ingest": "every 2h",
-    "chat_ingest_last": "2026-07-04T13:11"
+    "chat_ingest_last": "2026-07-06T18:54"
   },
   "delta": {
-    "vs_date": "2026-07-03",
+    "vs_date": "2026-07-04",
     "tools_added": [
-      "3D Model Generation",
-      "Github"
+      "Figma",
+      "Obsidian",
+      "VS Code"
     ],
     "tools_removed": [
-      "Logic Pro"
+      "3D Model Generation",
+      "ElevenLabs",
+      "Gemini Image Generation"
     ],
     "handoffs_added": [
+      "2026-07-04-ui-dashboard-x-8ff53098",
+      "2026-07-06-ob-claude-vault-66e3c2f0",
+      "resume here:"
+    ],
+    "handoffs_resolved": [
       "2026-07-04-awesome-nobel-83a843-73577cf2",
       "2026-07-04-jolly-grothendieck-f4b622-50e028f5",
       "2026-07-04-llm-builder-local-8caeb299",
       "2026-07-04-ui-dashboard-x-e06fadec"
     ],
-    "handoffs_resolved": [
-      "2026-06-10-ui-dashboard-x-audit-bfc6fa8f",
-      "2026-06-10-vigorous-bartik-60e9da-ec8dbbb7",
-      "2026-06-11-relaxed-saha-2b85c3-2a48355c"
-    ],
     "counts_changed": {
       "briefs": 1,
-      "clippings": -13,
-      "handoffs": 39
+      "handoffs": 4
     }
   },
   "workflows": [
