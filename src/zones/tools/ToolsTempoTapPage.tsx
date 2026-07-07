@@ -265,7 +265,7 @@ export default function ToolsTempoTapPage({ onNavigate }: ToolsTempoTapPageProps
   const confidenceColor = confidence === 'HIGH' ? PALETTE.amber : confidence === 'MED' ? PALETTE.textMain : PALETTE.textMuted
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden" style={{ background: 'var(--bg-canvas)', color: 'var(--text-1)' }}>
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-canvas text-t1">
       <StudioToolsHeader
         toolId="tools-tempo-tap"
         crumbs={[{ label: 'Workspace' }, { label: 'Tools' }, { label: 'Tempo Tap', emphasis: true }]}

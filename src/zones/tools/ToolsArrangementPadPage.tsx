@@ -92,8 +92,7 @@ export default function ToolsArrangementPadPage({ onNavigate }: ToolsArrangement
 
   return (
     <div
-      className="flex min-h-0 flex-1 flex-col overflow-hidden"
-      style={{ background: 'var(--bg-canvas)', color: 'var(--text-1)' }}
+      className="flex min-h-0 flex-1 flex-col overflow-hidden bg-canvas text-t1"
     >
       <StudioToolsHeader
         toolId="tools-arrangement-pad"

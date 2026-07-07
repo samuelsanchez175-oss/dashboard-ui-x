@@ -160,8 +160,7 @@ export default function ToolsMetronomeExportPage({ onNavigate }: ToolsMetronomeE
 
   return (
     <div
-      className="flex min-h-0 flex-1 flex-col overflow-hidden"
-      style={{ background: 'var(--bg-canvas)', color: 'var(--text-1)' }}
+      className="flex min-h-0 flex-1 flex-col overflow-hidden bg-canvas text-t1"
     >
       <StudioToolsHeader
         toolId="tools-metronome-export"
@@ -184,13 +183,12 @@ export default function ToolsMetronomeExportPage({ onNavigate }: ToolsMetronomeE
             eyebrow="UTILITY"
             title="Metronome / click export"
             icon={Drum}
-            description={<>Preview clicks in real time and export a WAV (or MIDI) click track capped at roughly 30 seconds. Accents repeat every <span className="font-medium" style={{ color: 'var(--text-2)' }}>N</span> beats — default matches beats per measure.</>}
+            description={<>Preview clicks in real time and export a WAV (or MIDI) click track capped at roughly 30 seconds. Accents repeat every <span className="font-medium text-t2">N</span> beats — default matches beats per measure.</>}
             className="mb-8"
           />
 
           <div
-            className="space-y-5 rounded-2xl p-8"
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}
+            className="space-y-5 rounded-2xl p-8 bg-card border border-border shadow-[var(--shadow-sm)]"
           >
             <label className="block">
               <span className="mono text-[11px] uppercase tracking-wide text-slate-500">BPM ({BPM_MIN}–{BPM_MAX})</span>
@@ -262,8 +260,7 @@ export default function ToolsMetronomeExportPage({ onNavigate }: ToolsMetronomeE
             </label>
 
             <div
-              className="flex flex-wrap gap-2 pt-6"
-              style={{ borderTop: '1px solid var(--border-soft)' }}
+              className="flex flex-wrap gap-2 pt-6 border-t border-border-soft"
             >
               <Button
                 variant={previewOn ? 'destructive' : 'primary'}

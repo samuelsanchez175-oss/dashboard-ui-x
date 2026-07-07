@@ -170,69 +170,60 @@ function ServicesTab() {
     <div className="fade-in space-y-8">
       {/* Hero */}
       <div>
-        <p className="mono text-[10px] mb-2" style={{ color: 'var(--text-4)', letterSpacing: '0.12em' }}>
+        <p className="mono text-[10px] mb-2 text-t4 tracking-[0.12em]">
           HARMONY STACK · WEB DESIGN SERVICES
         </p>
-        <h2 className="text-[22px] font-semibold tracking-tight" style={{ color: 'var(--text-1)' }}>
+        <h2 className="text-[22px] font-semibold tracking-tight text-t1">
           Service Packages
         </h2>
-        <p className="mt-1 text-[13px]" style={{ color: 'var(--text-3)' }}>
+        <p className="mt-1 text-[13px] text-t3">
           Fixed-scope deliverables. No hidden fees. Delivered on time.
         </p>
       </div>
 
       {/* Package cards */}
-      <div className="grid gap-[var(--grid-gap)]" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(var(--tile-min), 1fr))' }}>
+      <div className="grid gap-[var(--grid-gap)] grid-cols-[repeat(auto-fit,minmax(var(--tile-min),1fr))]">
         {PACKAGES.map(pkg => (
           <div
             key={pkg.id}
-            className="zone-card flex flex-col gap-[var(--grid-gap)] relative overflow-hidden"
-            style={pkg.highlight ? {
-              borderColor: 'var(--accent)',
-              boxShadow: '0 0 0 1px var(--accent), var(--shadow-md)',
-            } : {}}
+            className={`zone-card flex flex-col gap-[var(--grid-gap)] relative overflow-hidden ${
+              pkg.highlight ? 'border-accent shadow-[0_0_0_1px_var(--accent),var(--shadow-md)]' : ''
+            }`}
           >
             {pkg.highlight && (
-              <div
-                className="absolute top-0 right-0 mono text-[9px] font-bold px-3 py-1 rounded-bl-lg"
-                style={{ background: 'var(--accent)', color: 'white', letterSpacing: '0.1em' }}
-              >
+              <div className="absolute top-0 right-0 mono text-[9px] font-bold px-3 py-1 rounded-bl-lg bg-accent text-white tracking-[0.1em]">
                 MOST POPULAR
               </div>
             )}
 
             <div>
-              <p className="text-[12px] font-semibold mb-1" style={{ color: pkg.highlight ? 'var(--accent-fg)' : 'var(--text-3)' }}>
+              <p className={`text-[12px] font-semibold mb-1 ${pkg.highlight ? 'text-accent-fg' : 'text-t3'}`}>
                 {pkg.name}
               </p>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-[28px] font-bold tracking-tight" style={{ color: 'var(--text-1)' }}>
+                <span className="text-[28px] font-bold tracking-tight text-t1">
                   {pkg.price}
                 </span>
-                <span className="text-[11px]" style={{ color: 'var(--text-4)' }}>{pkg.period}</span>
+                <span className="text-[11px] text-t4">{pkg.period}</span>
               </div>
-              <p className="mt-1 text-[12px]" style={{ color: 'var(--text-3)' }}>{pkg.tagline}</p>
+              <p className="mt-1 text-[12px] text-t3">{pkg.tagline}</p>
             </div>
 
             <ul className="space-y-2 flex-1">
               {pkg.features.map(f => (
-                <li key={f} className="flex items-start gap-2 text-[12px]" style={{ color: 'var(--text-2)' }}>
-                  <Check size={13} className="mt-0.5 shrink-0" style={{ color: 'var(--good)' }} />
+                <li key={f} className="flex items-start gap-2 text-[12px] text-t2">
+                  <Check size={13} className="mt-0.5 shrink-0 text-good" />
                   {f}
                 </li>
               ))}
             </ul>
 
             <button
-              className="w-full rounded-lg py-2.5 text-[12px] font-semibold transition-all"
-              style={pkg.highlight ? {
-                background: 'var(--accent)',
-                color: 'white',
-              } : {
-                background: 'var(--bg-muted)',
-                color: 'var(--text-2)',
-                border: '1px solid var(--border)',
-              }}
+              className={`w-full rounded-lg py-2.5 text-[12px] font-semibold transition-all ${
+                pkg.highlight
+                  ? 'bg-accent text-white'
+                  : 'bg-muted text-t2 border border-border'
+              }`}
             >
               {pkg.highlight ? 'Book this package' : 'Select'}
             </button>
@@ -242,8 +233,7 @@ function ServicesTab() {
 
       {/* Stats strip */}
       <div
-        className="grid gap-[var(--grid-gap)] rounded-xl p-5"
-        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))' }}
+        className="grid gap-[var(--grid-gap)] rounded-xl p-5 bg-card border border-border grid-cols-[repeat(auto-fit,minmax(120px,1fr))]"
       >
         {[
           { icon: Globe,      label: 'Sites delivered',   value: '12' },
@@ -252,9 +242,9 @@ function ServicesTab() {
           { icon: TrendingUp, label: 'Client retention',  value: '87%' },
         ].map(({ icon: Icon, label, value }) => (
           <div key={label} className="text-center">
-            <Icon size={16} className="mx-auto mb-1.5" style={{ color: 'var(--text-4)' }} />
-            <p className="text-[18px] font-bold" style={{ color: 'var(--text-1)' }}>{value}</p>
-            <p className="mono text-[9px] mt-0.5" style={{ color: 'var(--text-4)', letterSpacing: '0.08em' }}>{label.toUpperCase()}</p>
+            <Icon size={16} className="mx-auto mb-1.5 text-t4" />
+            <p className="text-[18px] font-bold text-t1">{value}</p>
+            <p className="mono text-[9px] mt-0.5 text-t4 tracking-[0.08em]">{label.toUpperCase()}</p>
           </div>
         ))}
       </div>
@@ -263,35 +253,29 @@ function ServicesTab() {
       <div className="zone-card overflow-hidden" style={{ padding: 0 }}>
         <button
           onClick={() => setAddonsOpen(v => !v)}
-          className="w-full flex items-center justify-between px-5 py-4 transition-colors"
-          style={{ color: 'var(--text-1)' }}
+          className="w-full flex items-center justify-between px-5 py-4 transition-colors text-t1"
         >
           <div className="flex items-center gap-2">
-            <Zap size={14} style={{ color: 'var(--accent)' }} />
+            <Zap size={14} className="text-accent" />
             <span className="text-[13px] font-semibold">Add-ons</span>
-            <span className="mono text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'var(--accent-soft)', color: 'var(--accent-fg)' }}>
+            <span className="mono text-[10px] px-1.5 py-0.5 rounded bg-accent-soft text-accent-fg">
               {ADDONS.length}
             </span>
           </div>
           <ChevronDown
             size={15}
-            style={{
-              color: 'var(--text-3)',
-              transform: addonsOpen ? 'rotate(180deg)' : 'none',
-              transition: 'transform 0.2s ease',
-            }}
+            className={`text-t3 transition-transform duration-200 ${addonsOpen ? 'rotate-180' : ''}`}
           />
         </button>
         {addonsOpen && (
-          <div className="grid gap-2 px-5 pb-5 fade-in" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(var(--tile-min), 1fr))' }}>
+          <div className="grid gap-2 px-5 pb-5 fade-in grid-cols-[repeat(auto-fill,minmax(var(--tile-min),1fr))]">
             {ADDONS.map(a => (
               <div
                 key={a.label}
-                className="flex items-center justify-between rounded-lg px-[var(--pad-row)] py-[var(--pad-row)]"
-                style={{ background: 'var(--bg-muted)', border: '1px solid var(--border-soft)' }}
+                className="flex items-center justify-between rounded-lg px-[var(--pad-row)] py-[var(--pad-row)] bg-muted border border-border-soft"
               >
-                <span className="text-[12px]" style={{ color: 'var(--text-2)' }}>{a.label}</span>
-                <span className="mono text-[11px] font-semibold" style={{ color: 'var(--accent-fg)' }}>{a.price}</span>
+                <span className="text-[12px] text-t2">{a.label}</span>
+                <span className="mono text-[11px] font-semibold text-accent-fg">{a.price}</span>
               </div>
             ))}
           </div>
@@ -404,8 +388,7 @@ function ProjectsTab() {
     return (
       <li
         key={task.id}
-        className="flex flex-col gap-2 rounded-lg px-[var(--pad-row)] py-[var(--pad-row)] sm:flex-row sm:items-center sm:gap-3"
-        style={{ background: 'var(--bg-muted)', border: '1px solid var(--border-soft)' }}
+        className="flex flex-col gap-2 rounded-lg px-[var(--pad-row)] py-[var(--pad-row)] sm:flex-row sm:items-center sm:gap-3 bg-muted border border-border-soft"
       >
         <div className="flex flex-1 min-w-0 items-start gap-2">
           <div
@@ -417,22 +400,14 @@ function ProjectsTab() {
           </div>
           <div className="min-w-0 flex-1">
             <p
-              className="text-[13px] font-medium break-words"
-              style={{
-                color: 'var(--text-1)',
-                textDecoration: task.status === 'done' ? 'line-through' : 'none',
-              }}
+              className={`text-[13px] font-medium break-words text-t1 ${task.status === 'done' ? 'line-through' : 'no-underline'}`}
             >
               {task.title}
             </p>
             <div className="mt-1 flex flex-wrap items-center gap-2">
               {task.due && (
                 <span
-                  className="mono flex items-center gap-1 rounded px-2 py-0.5 text-[10px]"
-                  style={{
-                    background: overdue ? 'var(--bad-soft)' : 'var(--bg-card)',
-                    color: overdue ? 'var(--bad)' : 'var(--text-4)',
-                  }}
+                  className={`mono flex items-center gap-1 rounded px-2 py-0.5 text-[10px] ${overdue ? 'bg-bad-soft text-bad' : 'bg-card text-t4'}`}
                 >
                   <Clock size={9} />
                   {new Date(task.due).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
@@ -459,16 +434,14 @@ function ProjectsTab() {
               <button
                 type="button"
                 onClick={() => setTaskStatus(task.id, 'done')}
-                className="rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition-colors"
-                style={{ background: 'var(--good-soft)', color: 'var(--good)' }}
+                className="rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition-colors bg-good-soft text-good"
               >
                 Done
               </button>
               <button
                 type="button"
                 onClick={() => void runBuildPrompt(task)}
-                className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition-colors"
-                style={{ background: 'var(--accent-soft)', color: 'var(--accent-fg)' }}
+                className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition-colors bg-accent-soft text-accent-fg"
               >
                 <Sparkles size={12} />
                 Build a prompt
@@ -479,8 +452,7 @@ function ProjectsTab() {
             <button
               type="button"
               onClick={() => setTaskStatus(task.id, 'todo')}
-              className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-colors"
-              style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-2)' }}
+              className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-colors bg-card border border-border text-t2"
             >
               <RotateCcw size={12} />
               Restore
@@ -489,8 +461,7 @@ function ProjectsTab() {
           <button
             type="button"
             onClick={() => removeTask(task.id)}
-            className="rounded-lg p-1.5 transition-colors"
-            style={{ color: 'var(--text-4)' }}
+            className="rounded-lg p-1.5 transition-colors text-t4"
             title="Delete task"
             aria-label="Delete task"
           >
@@ -505,18 +476,17 @@ function ProjectsTab() {
     <div className="fade-in space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-[var(--grid-gap)]">
         <div className="min-w-0 flex-1">
-          <h2 className="text-[22px] font-semibold tracking-tight" style={{ color: 'var(--text-1)' }}>
+          <h2 className="text-[22px] font-semibold tracking-tight text-t1">
             Client Projects
           </h2>
-          <p className="mt-1 text-[13px]" style={{ color: 'var(--text-3)' }}>
+          <p className="mt-1 text-[13px] text-t3">
             Track deliverables across all active Harmony Stack clients.
           </p>
         </div>
         <div className="flex w-full max-w-[min(100%,320px)] flex-col items-stretch gap-1 sm:w-auto sm:items-end">
           <label
             htmlFor={harmonyKeyInputId}
-            className="mono text-[9px] font-semibold uppercase tracking-wider sm:self-end"
-            style={{ color: 'var(--text-4)' }}
+            className="mono text-[9px] font-semibold uppercase tracking-wider sm:self-end text-t4"
           >
             HARMONY_CLIENT_PROJECTS_AI_KEY
           </label>
@@ -533,16 +503,12 @@ function ProjectsTab() {
                 setApiKey(HARMONY_CLIENT_PROJECTS_AI_KEY, v)
               }}
               placeholder="Optional; falls back to GEMINI"
-              className="mono min-w-0 flex-1 rounded-lg px-2 py-1.5 text-[11px]"
-              style={{ background: 'var(--bg-input)', border: '1px solid var(--border)', color: 'var(--text-1)', outline: 'none' }}
-              onFocus={e => (e.target.style.borderColor = 'var(--accent)')}
-              onBlur={e => (e.target.style.borderColor = 'var(--border)')}
+              className="mono min-w-0 flex-1 rounded-lg px-2 py-1.5 text-[11px] bg-input border border-border text-t1 outline-none focus:border-accent"
             />
             <button
               type="button"
               onClick={() => setShowHarmonyAiKey(v => !v)}
-              className="shrink-0 rounded-lg p-1.5 transition-colors"
-              style={{ color: 'var(--text-3)', border: '1px solid var(--border)', background: 'var(--bg-card)' }}
+              className="shrink-0 rounded-lg p-1.5 transition-colors text-t3 border border-border bg-card"
               aria-label={showHarmonyAiKey ? 'Hide API key' : 'Show API key'}
             >
               {showHarmonyAiKey ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -553,7 +519,7 @@ function ProjectsTab() {
 
       <div className="zone-card flex flex-wrap gap-3 items-end">
         <div className="flex-1 min-w-[160px]">
-          <label className="block mb-1 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-4)' }}>
+          <label className="block mb-1 text-[10px] font-semibold uppercase tracking-wider text-t4">
             Task
           </label>
           <input
@@ -561,50 +527,42 @@ function ProjectsTab() {
             onChange={e => setNewTitle(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && addTask()}
             placeholder="New task…"
-            className="w-full rounded-lg px-3 py-2 text-[12px]"
-            style={{ background: 'var(--bg-input)', border: '1px solid var(--border)', color: 'var(--text-1)', outline: 'none' }}
-            onFocus={e => (e.target.style.borderColor = 'var(--accent)')}
-            onBlur={e => (e.target.style.borderColor = 'var(--border)')}
+            className="w-full rounded-lg px-3 py-2 text-[12px] bg-input border border-border text-t1 outline-none focus:border-accent"
           />
         </div>
         <div className="min-w-[130px]">
-          <label className="block mb-1 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-4)' }}>
+          <label className="block mb-1 text-[10px] font-semibold uppercase tracking-wider text-t4">
             Client
           </label>
           <input
             value={newClient}
             onChange={e => setNewClient(e.target.value)}
             placeholder="Client name"
-            className="w-full rounded-lg px-3 py-2 text-[12px]"
-            style={{ background: 'var(--bg-input)', border: '1px solid var(--border)', color: 'var(--text-1)', outline: 'none' }}
-            onFocus={e => (e.target.style.borderColor = 'var(--accent)')}
-            onBlur={e => (e.target.style.borderColor = 'var(--border)')}
+            className="w-full rounded-lg px-3 py-2 text-[12px] bg-input border border-border text-t1 outline-none focus:border-accent"
           />
         </div>
         <div className="min-w-[130px]">
-          <label className="block mb-1 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-4)' }}>
+          <label className="block mb-1 text-[10px] font-semibold uppercase tracking-wider text-t4">
             Due date
           </label>
           <input
             type="date"
             value={newDue}
             onChange={e => setNewDue(e.target.value)}
-            className="w-full rounded-lg px-3 py-2 text-[12px]"
-            style={{ background: 'var(--bg-input)', border: '1px solid var(--border)', color: 'var(--text-1)', outline: 'none' }}
+            className="w-full rounded-lg px-3 py-2 text-[12px] bg-input border border-border text-t1 outline-none"
           />
         </div>
         <button
           onClick={addTask}
           disabled={!newTitle.trim()}
-          className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-[12px] font-semibold text-white transition-all"
-          style={{ background: newTitle.trim() ? 'var(--accent)' : 'var(--bg-muted)', color: newTitle.trim() ? 'white' : 'var(--text-4)', cursor: newTitle.trim() ? 'pointer' : 'not-allowed' }}
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-[12px] font-semibold transition-all ${newTitle.trim() ? 'bg-accent text-white cursor-pointer' : 'bg-muted text-t4 cursor-not-allowed'}`}
         >
           <Plus size={13} /> Add
         </button>
       </div>
 
       {tasks.length === 0 ? (
-        <div className="zone-card py-10 text-center" style={{ color: 'var(--text-4)' }}>
+        <div className="zone-card py-10 text-center text-t4">
           <Circle size={24} className="mx-auto mb-3 opacity-30" />
           <p className="text-[13px]">No tasks yet. Add one above.</p>
         </div>
@@ -615,12 +573,12 @@ function ProjectsTab() {
             const done = clientTasks.filter(t => t.status === 'done')
             return (
               <section key={client} className="zone-card space-y-5" style={{ padding: 'var(--pad-card)' }}>
-                <h3 className="text-[15px] font-semibold tracking-tight" style={{ color: 'var(--text-1)' }}>{client}</h3>
+                <h3 className="text-[15px] font-semibold tracking-tight text-t1">{client}</h3>
 
                 <div>
-                  <p className="mono mb-2 text-[10px] font-semibold tracking-widest" style={{ color: 'var(--text-4)' }}>TO DO</p>
+                  <p className="mono mb-2 text-[10px] font-semibold tracking-widest text-t4">TO DO</p>
                   {todo.length === 0 ? (
-                    <p className="text-[12px]" style={{ color: 'var(--text-4)' }}>No open tasks for this client.</p>
+                    <p className="text-[12px] text-t4">No open tasks for this client.</p>
                   ) : (
                     <ul className="space-y-2">
                       {todo.map(task => renderTaskRow(task, 'todo'))}
@@ -629,9 +587,9 @@ function ProjectsTab() {
                 </div>
 
                 <div>
-                  <p className="mono mb-2 text-[10px] font-semibold tracking-widest" style={{ color: 'var(--text-4)' }}>DONE</p>
+                  <p className="mono mb-2 text-[10px] font-semibold tracking-widest text-t4">DONE</p>
                   {done.length === 0 ? (
-                    <p className="text-[12px]" style={{ color: 'var(--text-4)' }}>Nothing completed yet.</p>
+                    <p className="text-[12px] text-t4">Nothing completed yet.</p>
                   ) : (
                     <ul className="space-y-2">
                       {done.map(task => renderTaskRow(task, 'done'))}
@@ -646,8 +604,7 @@ function ProjectsTab() {
 
       {promptModal && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-          style={{ background: 'rgba(0,0,0,0.45)' }}
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/45"
           role="presentation"
           onClick={e => {
             if (e.target === e.currentTarget && !promptModal.loading) setPromptModal(null)
@@ -662,37 +619,35 @@ function ProjectsTab() {
           >
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p id="harmony-prompt-modal-title" className="text-[14px] font-semibold" style={{ color: 'var(--text-1)' }}>
+                <p id="harmony-prompt-modal-title" className="text-[14px] font-semibold text-t1">
                   Generated prompt
                 </p>
-                <p className="mt-0.5 truncate text-[11px]" style={{ color: 'var(--text-4)' }}>{promptModal.taskTitle}</p>
+                <p className="mt-0.5 truncate text-[11px] text-t4">{promptModal.taskTitle}</p>
               </div>
               <button
                 type="button"
                 disabled={promptModal.loading}
                 onClick={() => setPromptModal(null)}
-                className="shrink-0 rounded p-1 transition-colors"
-                style={{ color: 'var(--text-3)' }}
+                className="shrink-0 rounded p-1 transition-colors text-t3"
                 aria-label="Close"
               >
                 <X size={18} />
               </button>
             </div>
             <div
-              className="mono min-h-[120px] flex-1 overflow-y-auto whitespace-pre-wrap rounded-lg p-3 text-[12px] leading-relaxed"
-              style={{ background: 'var(--bg-muted)', border: '1px solid var(--border-soft)', color: 'var(--text-2)' }}
+              className="mono min-h-[120px] flex-1 overflow-y-auto whitespace-pre-wrap rounded-lg p-3 text-[12px] leading-relaxed bg-muted border border-border-soft text-t2"
             >
               {promptModal.loading && (
-                <span className="inline-flex items-center gap-2" style={{ color: 'var(--text-4)' }}>
+                <span className="inline-flex items-center gap-2 text-t4">
                   <Loader2 size={14} className="animate-spin" aria-hidden />
                   Generating…
                 </span>
               )}
               {promptModal.error && (
-                <span style={{ color: 'var(--bad)' }}>{promptModal.error}</span>
+                <span className="text-bad">{promptModal.error}</span>
               )}
               {!promptModal.loading && !promptModal.error && (
-                promptModal.text || <span style={{ color: 'var(--text-4)' }}>(empty response)</span>
+                promptModal.text || <span className="text-t4">(empty response)</span>
               )}
             </div>
             <div className="flex flex-wrap justify-end gap-2">
@@ -700,12 +655,7 @@ function ProjectsTab() {
                 type="button"
                 disabled={!promptModal.text || promptModal.loading}
                 onClick={() => void copyModalText()}
-                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-[12px] font-semibold transition-colors"
-                style={{
-                  background: promptModal.text && !promptModal.loading ? 'var(--accent)' : 'var(--bg-muted)',
-                  color: promptModal.text && !promptModal.loading ? 'white' : 'var(--text-4)',
-                  cursor: promptModal.text && !promptModal.loading ? 'pointer' : 'not-allowed',
-                }}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-[12px] font-semibold transition-colors ${promptModal.text && !promptModal.loading ? 'bg-accent text-white cursor-pointer' : 'bg-muted text-t4 cursor-not-allowed'}`}
               >
                 <Copy size={13} />
                 {copyFlash ? 'Copied' : 'Copy'}
@@ -714,8 +664,7 @@ function ProjectsTab() {
                 type="button"
                 disabled={promptModal.loading}
                 onClick={() => setPromptModal(null)}
-                className="rounded-lg border px-3 py-2 text-[12px] font-medium transition-colors"
-                style={{ borderColor: 'var(--border)', color: 'var(--text-2)', background: 'var(--bg-card)' }}
+                className="rounded-lg border px-3 py-2 text-[12px] font-medium transition-colors border-border text-t2 bg-card"
               >
                 Close
               </button>
@@ -793,14 +742,14 @@ export default function HarmonyStackZone({ defaultTab = 'services' }: { defaultT
       {/* Topbar */}
       <header className="zone-topbar">
         <div className="flex items-center gap-3">
-          <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ background: 'var(--accent)', color: 'white' }}>
+          <div className="w-6 h-6 rounded-md flex items-center justify-center bg-accent text-white">
             <Globe size={12} />
           </div>
-          <span className="text-[13px] font-semibold" style={{ color: 'var(--text-1)' }}>Harmony Stack</span>
+          <span className="text-[13px] font-semibold text-t1">Harmony Stack</span>
           <span className="inline-flex shrink-0 items-center self-center">
             <UpdateDot zoneId="harmony-services" className="h-2 w-2" />
           </span>
-          <span className="mono text-[10px] px-2 py-0.5 rounded" style={{ background: 'var(--good-soft)', color: 'var(--good)' }}>
+          <span className="mono text-[10px] px-2 py-0.5 rounded bg-good-soft text-good">
             ● ACTIVE
           </span>
         </div>
@@ -811,8 +760,7 @@ export default function HarmonyStackZone({ defaultTab = 'services' }: { defaultT
         role="tablist"
         aria-label="Harmony Stack sections"
         onKeyDown={handleTabListKeyDown}
-        className="flex px-8 pt-6 gap-1"
-        style={{ borderBottom: '1px solid var(--border)' }}
+        className="flex px-8 pt-6 gap-1 border-b border-border"
       >
         {HARMONY_TAB_ORDER.map(t => {
           const isActive = t === tab
@@ -826,12 +774,7 @@ export default function HarmonyStackZone({ defaultTab = 'services' }: { defaultT
               aria-controls={panelIds[t]}
               tabIndex={isActive ? 0 : -1}
               onClick={() => setTab(t)}
-              className="px-4 py-2 text-[13px] font-medium transition-all rounded-t-lg"
-              style={{
-                color:       isActive ? 'var(--accent-fg)' : 'var(--text-3)',
-                borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
-                marginBottom: -1,
-              }}
+              className={`px-4 py-2 text-[13px] font-medium transition-all rounded-t-lg -mb-px border-b-2 ${isActive ? 'text-accent-fg border-accent' : 'text-t3 border-transparent'}`}
             >
               {tabLabel(t)}
             </button>
