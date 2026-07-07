@@ -555,15 +555,8 @@ function ProbeFixHint({ message, storageKey }: { message: string; storageKey: st
   const guidance = explainProbeError(message, storageKey)
   if (!guidance) return null
   return (
-    <div
-      className="mt-1.5 rounded-md border px-2 py-1.5 text-[10px] leading-snug"
-      style={{
-        borderColor: 'color-mix(in oklab, var(--bad) 25%, var(--border))',
-        background: 'color-mix(in oklab, var(--bad) 6%, var(--bg-card))',
-        color: 'var(--text-2)',
-      }}
-    >
-      <p className="font-semibold" style={{ color: 'var(--text-1)' }}>
+    <div className="mt-1.5 rounded-md border px-2 py-1.5 text-[10px] leading-snug border-[color-mix(in_oklab,var(--bad)_25%,var(--border))] bg-[color-mix(in_oklab,var(--bad)_6%,var(--bg-card))] text-t2">
+      <p className="font-semibold text-t1">
         {guidance.headline}
       </p>
       <p className="mt-0.5">{guidance.body}</p>
@@ -575,12 +568,7 @@ function ProbeFixHint({ message, storageKey }: { message: string; storageKey: st
                 href={link.href}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 font-medium"
-                style={{
-                  borderColor: 'var(--border-strong)',
-                  background: 'var(--bg-card)',
-                  color: 'var(--accent)',
-                }}
+                className="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 font-medium border-border-strong bg-card text-accent"
               >
                 <ExternalLink className="size-2.5" aria-hidden />
                 {link.label}
@@ -674,15 +662,9 @@ function ModelEnvCard({
   }
 
   return (
-    <article
-      className="overflow-hidden rounded-lg border"
-      style={{ borderColor: 'var(--border)', background: 'var(--bg-card)' }}
-    >
+    <article className="overflow-hidden rounded-lg border border-border bg-card">
       {/* Header strip: logo, card title, env-var summary */}
-      <header
-        className="flex items-start justify-between gap-3 border-b px-3 py-2.5 md:px-4"
-        style={{ borderColor: 'var(--border-soft)', background: 'var(--bg-card-soft)' }}
-      >
+      <header className="flex items-start justify-between gap-3 border-b px-3 py-2.5 md:px-4 border-border-soft bg-card-soft">
         <div className="flex min-w-0 items-start gap-2.5">
           <LogoCell logoSrc={logoSrc} label={cardTitle} />
           <div className="min-w-0">
@@ -698,8 +680,7 @@ function ModelEnvCard({
               )}
             </h3>
             <p
-              className="mono mt-0.5 font-mono text-[10px] leading-tight md:text-[11px]"
-              style={{ color: 'var(--text-3)' }}
+              className="mono mt-0.5 font-mono text-[10px] leading-tight md:text-[11px] text-t3"
             >
               {isGrouped
                 ? `${entries.length} fields · ${entries.map(e => e.storageKey).join(' · ')}`
@@ -714,22 +695,14 @@ function ModelEnvCard({
             users see ALL features the card lights up, not just one. */}
         {allPowers.length > 0 && (
           <div>
-            <p
-              className="mb-1 text-[9px] font-semibold uppercase tracking-wider"
-              style={{ color: 'var(--text-3)' }}
-            >
+            <p className="mb-1 text-[9px] font-semibold uppercase tracking-wider text-t3">
               Powers
             </p>
             <div className="flex flex-wrap gap-1">
               {allPowers.map(p => (
                 <span
                   key={p}
-                  className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium leading-tight md:text-[11px]"
-                  style={{
-                    background: 'var(--accent-soft)',
-                    color: 'var(--accent-fg)',
-                    border: '1px solid color-mix(in oklab, var(--accent) 28%, var(--border))',
-                  }}
+                  className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium leading-tight md:text-[11px] bg-accent-soft text-accent-fg border border-[color-mix(in_oklab,var(--accent)_28%,var(--border))]"
                 >
                   {p}
                 </span>
@@ -741,17 +714,14 @@ function ModelEnvCard({
         {/* One-line purpose — pulled from the PRIMARY (first) entry. For
             grouped cards this should be a meta description of the whole
             card ("one Google Cloud key covers everything", etc). */}
-        <p className="text-[11px] leading-relaxed md:text-[12px]" style={{ color: 'var(--text-2)' }}>
+        <p className="text-[11px] leading-relaxed md:text-[12px] text-t2">
           {primary.oneLinePurpose}
         </p>
 
         {/* Harmony-override live hint (only when this card includes the
             Harmony override entry) */}
         {harmonyHint && (
-          <p
-            className="text-[10px] leading-snug md:text-[11px]"
-            style={{ color: 'var(--accent-fg)' }}
-          >
+          <p className="text-[10px] leading-snug md:text-[11px] text-accent-fg">
             {harmonyHint}
           </p>
         )}
@@ -779,22 +749,18 @@ function ModelEnvCard({
 
         {/* Source resolution note (shared key / fallback chain explanation) */}
         {primary.sourceResolutionNote && (
-          <p className="text-[10px] leading-snug" style={{ color: 'var(--text-3)' }}>
+          <p className="text-[10px] leading-snug text-t3">
             {primary.sourceResolutionNote}
           </p>
         )}
 
         {/* Footer row: Where-used toggle (technical detail) + Get-key links */}
-        <div
-          className="flex flex-wrap items-center justify-between gap-2 border-t pt-2.5"
-          style={{ borderColor: 'var(--border-soft)' }}
-        >
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-2.5 border-border-soft">
           {allUsedIn.length > 0 ? (
             <button
               type="button"
               onClick={onToggleExpand}
-              className="inline-flex items-center gap-0.5 text-[10px] font-medium md:text-[11px]"
-              style={{ color: 'var(--accent)' }}
+              className="inline-flex items-center gap-0.5 text-[10px] font-medium md:text-[11px] text-accent"
               aria-expanded={expanded}
             >
               {expanded ? <ChevronDown className="size-3" aria-hidden /> : <ChevronRight className="size-3" aria-hidden />}
@@ -808,10 +774,7 @@ function ModelEnvCard({
 
         {/* Expanded technical "where used" list (aggregated across the group) */}
         {expanded && allUsedIn.length > 0 && (
-          <ul
-            className="list-disc space-y-0.5 pl-4 text-[10px] leading-snug md:text-[11px]"
-            style={{ color: 'var(--text-3)' }}
-          >
+          <ul className="list-disc space-y-0.5 pl-4 text-[10px] leading-snug md:text-[11px] text-t3">
             {allUsedIn.map(line => (
               <li key={line}>{line}</li>
             ))}
@@ -870,8 +833,7 @@ function ModelEnvFieldRow({
         <div className="flex items-center justify-between gap-2">
           <label
             htmlFor={`env-input-${entry.id}`}
-            className="text-[11px] font-medium md:text-[12px]"
-            style={{ color: 'var(--text-2)' }}
+            className="text-[11px] font-medium md:text-[12px] text-t2"
           >
             {fieldLabel}
             {entry.optional && (
@@ -889,17 +851,17 @@ function ModelEnvFieldRow({
 
       {/* Input + Test button (or the appropriate fallback rendering) */}
       {entry.inputKind === 'none' ? (
-        <p className="text-[11px]" style={{ color: 'var(--text-3)' }}>
+        <p className="text-[11px] text-t3">
           Informational — no value to set here.
         </p>
       ) : !entry.supportsLocalScratch ? (
-        <p className="text-[11px] leading-snug" style={{ color: 'var(--text-3)' }}>
+        <p className="text-[11px] leading-snug text-t3">
           Server <code className={chipCls}>.env.local</code> only — not sent as{' '}
           <code className={chipCls}>x-user-key-*</code>.
         </p>
       ) : (
         <div className="flex flex-wrap items-stretch gap-2">
-          <label className="relative block min-w-0 flex-1" style={{ minWidth: '12rem' }}>
+          <label className="relative block flex-1 min-w-[12rem]">
             <span className="sr-only">{entry.storageKey}</span>
             <input
               id={`env-input-${entry.id}`}
@@ -919,8 +881,7 @@ function ModelEnvFieldRow({
               <button
                 type="button"
                 onClick={onReveal}
-                className="absolute inset-y-0 right-0 grid w-9 place-items-center"
-                style={{ color: 'var(--text-3)' }}
+                className="absolute inset-y-0 right-0 grid w-9 place-items-center text-t3"
                 aria-label={reveal ? 'Hide' : 'Show'}
               >
                 {reveal ? <EyeOff className="size-3.5" aria-hidden /> : <Eye className="size-3.5" aria-hidden />}
@@ -932,8 +893,7 @@ function ModelEnvFieldRow({
               type="button"
               onClick={onProbe}
               disabled={probing}
-              className="inline-flex shrink-0 items-center gap-1 rounded-md border px-3 py-2 text-[11px] font-semibold disabled:opacity-50 md:text-[12px]"
-              style={{ background: 'var(--bg-card-soft)', borderColor: 'var(--border)', color: 'var(--text-1)' }}
+              className="inline-flex shrink-0 items-center gap-1 rounded-md border px-3 py-2 text-[11px] font-semibold disabled:opacity-50 md:text-[12px] bg-card-soft border-border text-t1"
             >
               {probing ? <Loader2 className="size-3.5 animate-spin" aria-hidden /> : <Zap className="size-3.5" aria-hidden />}
               Test
@@ -954,9 +914,8 @@ function ModelEnvFieldRow({
       {probe && entry.supportsLocalScratch && entry.inputKind !== 'none' && (
         <div>
           <p
-            className="text-[10px] md:text-[11px]"
+            className={`text-[10px] md:text-[11px] ${probe.ok ? 'text-good' : 'text-bad'}`}
             role="status"
-            style={{ color: probe.ok ? 'var(--good)' : 'var(--bad)' }}
           >
             {probe.ok ? (
               <>
@@ -984,20 +943,17 @@ function ModelEnvFieldRow({
  */
 function ViteMetaCard({ row }: { row: MergedDocRow }) {
   return (
-    <article
-      className="rounded-lg border px-3 py-2.5 md:px-4"
-      style={{ borderColor: 'var(--border-soft)', background: 'var(--bg-muted)' }}
-    >
+    <article className="rounded-lg border px-3 py-2.5 md:px-4 border-border-soft bg-muted">
       <div className="flex items-start gap-2.5">
         <LogoCell logoSrc={DOCUMENTED_ENV_LOGOS['VITE_*']} label="Vite" />
         <div className="min-w-0">
-          <p className="mono font-mono text-[11px] font-semibold md:text-[12px]" style={{ color: 'var(--text-1)' }}>
+          <p className="mono font-mono text-[11px] font-semibold md:text-[12px] text-t1">
             {row.envKey}
           </p>
-          <p className="mt-0.5 text-[10px] leading-snug md:text-[11px]" style={{ color: 'var(--text-3)' }}>
+          <p className="mt-0.5 text-[10px] leading-snug md:text-[11px] text-t3">
             {row.description}
           </p>
-          <p className="mt-1 text-[10px] leading-snug md:text-[11px]" style={{ color: 'var(--text-3)' }}>
+          <p className="mt-1 text-[10px] leading-snug md:text-[11px] text-t3">
             Informational — client bundle only exposes <code className={chipCls}>VITE_*</code>{' '}
             names present at dev-server start.
           </p>
@@ -1029,18 +985,18 @@ function CustomEnvRow({
     hasLocal && envSet ? 'BOTH' : hasLocal ? 'LOCAL' : envSet ? 'ENV' : 'NONE'
 
   return (
-    <tr className="border-b align-top" style={{ borderColor: 'var(--border-soft)' }}>
+    <tr className="border-b align-top border-border-soft">
       <td className="px-2 py-2 md:px-3">
         <div className="flex gap-2">
           <LogoCell logoSrc={logoSrc} />
           <div className="min-w-0">
             <p className="mono font-mono text-[10px] md:text-[11px]">{row.envKey}</p>
-            <span className="mt-0.5 inline-block rounded px-1 py-0 text-[9px] font-semibold uppercase" style={{ background: 'var(--accent-soft)', color: 'var(--accent-fg)' }}>Custom</span>
+            <span className="mt-0.5 inline-block rounded px-1 py-0 text-[9px] font-semibold uppercase bg-accent-soft text-accent-fg">Custom</span>
           </div>
         </div>
       </td>
       <td className="px-2 py-2 text-[var(--text-3)] md:px-3">Custom</td>
-      <td className="max-w-[14rem] px-2 py-2 text-[10px] leading-snug md:px-3 md:text-[11px]" style={{ color: 'var(--text-2)' }}>
+      <td className="max-w-[14rem] px-2 py-2 text-[10px] leading-snug md:px-3 md:text-[11px] text-t2">
         {row.description}
       </td>
       <td className="px-2 py-2 md:px-3"><SourceBadge source={source} /></td>
@@ -1057,14 +1013,14 @@ function CustomEnvRow({
             className={`w-full rounded-md px-2 py-1.5 pr-8 font-mono text-[10px] outline-none md:text-[11px] ${inputCls}`}
           />
           {row.inputKind === 'secret' && (
-            <button type="button" onClick={onReveal} className="absolute inset-y-0 right-0 grid w-8 place-items-center" style={{ color: 'var(--text-3)' }} aria-label={reveal ? 'Hide' : 'Show'}>
+            <button type="button" onClick={onReveal} className="absolute inset-y-0 right-0 grid w-8 place-items-center text-t3" aria-label={reveal ? 'Hide' : 'Show'}>
               {reveal ? <EyeOff className="size-3" aria-hidden /> : <Eye className="size-3" aria-hidden />}
             </button>
           )}
         </label>
         {probe && (
           <>
-            <p className="mt-1 text-[9px]" role="status" style={{ color: probe.ok ? 'var(--good)' : 'var(--bad)' }}>
+            <p className={`mt-1 text-[9px] ${probe.ok ? 'text-good' : 'text-bad'}`} role="status">
               {probe.ok ? `OK ${probe.ms} ms` : probe.message}
             </p>
             {!probe.ok ? <ProbeFixHint message={probe.message} storageKey={row.envKey} /> : null}
@@ -1074,11 +1030,11 @@ function CustomEnvRow({
       <td className="px-2 py-2 text-right md:px-3">
         <div className="inline-flex gap-1">
           {canProbe && (
-            <button type="button" onClick={onProbe} disabled={probing} className="rounded-md border px-2 py-1 text-[10px] font-semibold" style={{ borderColor: 'var(--border)', background: 'var(--bg-card-soft)' }}>
+            <button type="button" onClick={onProbe} disabled={probing} className="rounded-md border px-2 py-1 text-[10px] font-semibold border-border bg-card-soft">
               {probing ? <Loader2 className="size-3 animate-spin" /> : <Zap className="size-3" />}
             </button>
           )}
-          <button type="button" onClick={onRemove} className="rounded-md border p-1.5" style={{ borderColor: 'var(--border)', color: 'var(--text-3)' }} aria-label="Remove">
+          <button type="button" onClick={onRemove} className="rounded-md border p-1.5 border-border text-t3" aria-label="Remove">
             <Trash2 className="size-3.5" aria-hidden />
           </button>
         </div>
@@ -1089,7 +1045,7 @@ function CustomEnvRow({
 
 function RetrievalLinksList({ links }: { links: readonly DevSettingsRetrievalLink[] | undefined }) {
   if (!links?.length) {
-    return <span className="text-[10px] tabular-nums md:text-[11px]" style={{ color: 'var(--text-4)' }}>—</span>
+    return <span className="text-[10px] tabular-nums md:text-[11px] text-t4">—</span>
   }
   return (
     <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
@@ -1099,8 +1055,7 @@ function RetrievalLinksList({ links }: { links: readonly DevSettingsRetrievalLin
             href={link.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[10px] font-medium underline decoration-dotted underline-offset-2 md:text-[11px]"
-            style={{ color: 'var(--accent)' }}
+            className="text-[10px] font-medium underline decoration-dotted underline-offset-2 md:text-[11px] text-accent"
           >
             {link.label}
           </a>
@@ -1113,14 +1068,13 @@ function RetrievalLinksList({ links }: { links: readonly DevSettingsRetrievalLin
 function LogoCell({ logoSrc, label }: { logoSrc?: string; label?: string }) {
   return logoSrc ? (
     <span
-      className="relative mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md p-1 md:h-8 md:w-8"
-      style={{ background: 'var(--bg-card)', boxShadow: '0 0 0 1px var(--border)' }}
+      className="relative mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md p-1 md:h-8 md:w-8 bg-card shadow-[0_0_0_1px_var(--border)]"
       aria-hidden={!label}
     >
       <img src={logoSrc} alt={label ?? ''} className="max-h-full max-w-full object-contain" loading="lazy" decoding="async" />
     </span>
   ) : (
-    <span className="relative mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md md:h-8 md:w-8" style={{ background: 'var(--bg-card-soft)', boxShadow: '0 0 0 1px var(--border)' }} aria-hidden>
+    <span className="relative mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md md:h-8 md:w-8 bg-card-soft shadow-[0_0_0_1px_var(--border)]" aria-hidden>
       <KeyRound className="size-3.5 text-[var(--text-4)]" />
     </span>
   )
