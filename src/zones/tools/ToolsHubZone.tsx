@@ -106,11 +106,10 @@ function ToolRow({
 
   return (
     <div
-      className="relative"
+      className={`relative ${eligible || over ? 'outline outline-2 outline-offset-2 outline-[var(--accent)] rounded-[14px]' : ''}`}
       onDragOver={e => { if (accepts && isFileDrag(e)) { e.preventDefault(); setOver(true) } }}
       onDragLeave={() => setOver(false)}
       onDrop={onFileDrop}
-      style={eligible || over ? { outline: '2px solid var(--accent)', outlineOffset: 2, borderRadius: 14 } : undefined}
     >
       <button
         type="button"
@@ -147,25 +146,23 @@ function ToolRow({
           <Icon className="size-[17px]" strokeWidth={2} aria-hidden />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-semibold tracking-tight" style={{ color: 'var(--text-1)' }}>
+          <span className="block truncate text-sm font-semibold tracking-tight text-t1">
             {item.label}
           </span>
           <span
-            className="mono block truncate text-[10px] uppercase tracking-wide"
-            style={{ color: onSidebar ? 'var(--text-4)' : 'var(--accent)' }}
+            className={`mono block truncate text-[10px] uppercase tracking-wide ${onSidebar ? 'text-t4' : 'text-accent'}`}
           >
             {eligible ? 'Drop file to run' : onSidebar ? `${sectionTitle} · ${item.id}` : 'Not on sidebar · drag to add'}
           </span>
         </span>
         {item.badge != null && (
           <span
-            className={`mono rounded-full px-2 py-0.5 text-[10px] font-semibold ${item.badgeClass ?? ''}`}
-            style={item.badgeClass ? undefined : { background: 'var(--bg-muted)', color: 'var(--text-3)' }}
+            className={`mono rounded-full px-2 py-0.5 text-[10px] font-semibold ${item.badgeClass ?? 'bg-muted text-t3'}`}
           >
             {item.badge}
           </span>
         )}
-        <ChevronRight className="size-4 shrink-0 transition group-hover:translate-x-0.5" style={{ color: 'var(--text-4)' }} aria-hidden />
+        <ChevronRight className="size-4 shrink-0 transition group-hover:translate-x-0.5 text-t4" aria-hidden />
       </button>
 
       {tool?.quickActions && tool.quickActions.length > 0 && (
@@ -179,14 +176,13 @@ function ToolRow({
                 if (qa.id === 'upload') fileInputRef.current?.click()
                 else onNavigate(item.id)
               }}
-              className="rounded-md px-2 py-1 text-[11px] font-medium transition"
-              style={{ background: 'var(--bg-hover)', color: 'var(--text-2)', border: '1px solid var(--border)' }}
+              className="rounded-md px-2 py-1 text-[11px] font-medium transition bg-hover text-t2 border border-border"
             >
               {qa.label}
             </button>
           ))}
           {accepts && (
-            <span className="mono text-[10px] uppercase tracking-wide" style={{ color: 'var(--text-4)' }}>or drop a file</span>
+            <span className="mono text-[10px] uppercase tracking-wide text-t4">or drop a file</span>
           )}
         </div>
       )}
@@ -199,8 +195,7 @@ function ToolRow({
         <button
           type="button"
           onClick={() => onRestore(item.id)}
-          className="absolute -right-2 -top-2 z-[1] flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold leading-none shadow-sm transition-transform hover:scale-105"
-          style={{ background: 'var(--accent)', color: 'var(--accent-on, #fff)', border: '1.5px solid var(--bg-canvas)' }}
+          className="absolute -right-2 -top-2 z-[1] flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold leading-none shadow-sm transition-transform hover:scale-105 bg-accent text-[var(--accent-on,#fff)] border-[1.5px] border-canvas"
           title="Add this tool back to the left sidebar"
           aria-label={`Add ${item.label} to the sidebar`}
         >
@@ -231,25 +226,19 @@ function NavSectionCard({
 }) {
   return (
     <section
-      className="rounded-2xl p-4"
-      style={{
-        background: 'var(--bg-muted)',
-        border:     '1px solid var(--border)',
-        borderTop:  '1px solid color-mix(in oklab, var(--accent) 24%, var(--border))',
-      }}
+      className="rounded-2xl p-4 bg-muted border border-border border-t-[color-mix(in_oklab,var(--accent)_24%,var(--border))]"
     >
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
-          <h2 className="mono text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-3)' }}>
+          <h2 className="mono text-[11px] font-semibold uppercase tracking-[0.16em] text-t3">
             {section.title}
           </h2>
-          <div className="mt-1 text-xs" style={{ color: 'var(--text-4)' }}>
+          <div className="mt-1 text-xs text-t4">
             {section.items.length} {section.items.length === 1 ? 'destination' : 'destinations'}
           </div>
         </div>
         <span
-          className="mono rounded-full px-2 py-1 text-[10px] font-semibold"
-          style={{ background: 'var(--bg-card)', color: 'var(--text-4)', border: '1px solid var(--border)' }}
+          className="mono rounded-full px-2 py-1 text-[10px] font-semibold bg-card text-t4 border border-border"
         >
           {section.items.length}
         </span>
@@ -323,8 +312,7 @@ export default function ToolsHubZone({ onNavigate }: ToolsHubZoneProps) {
 
   return (
     <div
-      className="flex min-h-0 flex-1 flex-col overflow-hidden"
-      style={{ background: 'var(--bg-canvas)', color: 'var(--text-1)' }}
+      className="flex min-h-0 flex-1 flex-col overflow-hidden bg-canvas text-t1"
     >
       <StudioToolsHeader crumbs={[{ label: 'Workspace' }, { label: 'Tools', emphasis: true }]} />
 
@@ -339,26 +327,20 @@ export default function ToolsHubZone({ onNavigate }: ToolsHubZoneProps) {
               description="This hub always lists every destination — including tools you removed from the left sidebar. Drag any tile onto the sidebar, or press Add, to put it back."
               actions={
                 <div
-                  className="relative overflow-hidden rounded-2xl px-5 py-4"
-                  style={{
-                    background: 'var(--bg-card)',
-                    border:     '1px solid var(--border-soft)',
-                    boxShadow:  'var(--shadow-sm)',
-                  }}
+                  className="relative overflow-hidden rounded-2xl px-5 py-4 bg-card border border-border-soft shadow-[var(--shadow-sm)]"
                 >
                   <span
                     aria-hidden
-                    className="absolute bottom-3 left-0 top-3 w-px rounded-full"
-                    style={{ background: 'var(--accent)' }}
+                    className="absolute bottom-3 left-0 top-3 w-px rounded-full bg-accent"
                   />
-                  <div className="mono text-[10px] uppercase tracking-wide" style={{ color: 'var(--text-4)' }}>
+                  <div className="mono text-[10px] uppercase tracking-wide text-t4">
                     Current index
                   </div>
                   <div className="mt-1 flex items-baseline gap-2">
-                    <span className="mono text-3xl font-semibold tracking-tight" style={{ color: 'var(--text-1)' }}>
+                    <span className="mono text-3xl font-semibold tracking-tight text-t1">
                       {allToolsItemCount}
                     </span>
-                    <span className="text-xs" style={{ color: 'var(--text-3)' }}>reachable destinations</span>
+                    <span className="text-xs text-t3">reachable destinations</span>
                   </div>
                 </div>
               }
@@ -369,31 +351,26 @@ export default function ToolsHubZone({ onNavigate }: ToolsHubZoneProps) {
 
           <div className="mb-5 flex flex-wrap items-center gap-3">
             <div
-              className="flex min-w-[220px] max-w-[380px] flex-1 items-center gap-2 rounded-[10px] px-3 py-2 transition-shadow"
-              style={{
-                background: 'var(--bg-card)',
-                border:     '1px solid var(--border)',
-                boxShadow:  isSearchFocused
-                  ? 'var(--shadow-sm), 0 0 0 2px color-mix(in oklab, var(--accent) 30%, transparent)'
-                  : 'var(--shadow-sm)',
-              }}
+              className={`flex min-w-[220px] max-w-[380px] flex-1 items-center gap-2 rounded-[10px] px-3 py-2 transition-shadow bg-card border border-border ${
+                isSearchFocused
+                  ? 'shadow-[var(--shadow-sm),0_0_0_2px_color-mix(in_oklab,var(--accent)_30%,transparent)]'
+                  : 'shadow-[var(--shadow-sm)]'
+              }`}
             >
-              <Search className="size-[15px] shrink-0" style={{ color: 'var(--text-4)' }} strokeWidth={2} aria-hidden />
+              <Search className="size-[15px] shrink-0 text-t4" strokeWidth={2} aria-hidden />
               <input
                 type="search"
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 placeholder="Search tools, zones, sections..."
-                className="min-w-0 flex-1 bg-transparent text-[13px] outline-none"
-                style={{ color: 'var(--text-1)' }}
+                className="min-w-0 flex-1 bg-transparent text-[13px] outline-none text-t1"
                 onFocus={() => setIsSearchFocused(true)}
                 onBlur={() => setIsSearchFocused(false)}
               />
               {query && (
                 <button
                   type="button"
-                  className="shrink-0 p-0.5 transition"
-                  style={{ color: 'var(--text-4)' }}
+                  className="shrink-0 p-0.5 transition text-t4"
                   onClick={() => setQuery('')}
                   aria-label="Clear search"
                 >
@@ -401,13 +378,12 @@ export default function ToolsHubZone({ onNavigate }: ToolsHubZoneProps) {
                 </button>
               )}
             </div>
-            <span className="mono rounded-full px-3 py-2 text-[10px] font-semibold uppercase tracking-wide" style={{ background: 'var(--bg-muted)', color: 'var(--text-4)' }}>
+            <span className="mono rounded-full px-3 py-2 text-[10px] font-semibold uppercase tracking-wide bg-muted text-t4">
               {filteredCount} shown
             </span>
             {offSidebarCount > 0 && (
               <span
-                className="mono inline-flex items-center gap-1 rounded-full px-3 py-2 text-[10px] font-semibold uppercase tracking-wide"
-                style={{ background: 'color-mix(in oklab, var(--accent) 14%, transparent)', color: 'var(--accent)' }}
+                className="mono inline-flex items-center gap-1 rounded-full px-3 py-2 text-[10px] font-semibold uppercase tracking-wide bg-[color-mix(in_oklab,var(--accent)_14%,transparent)] text-accent"
                 title="Tools removed from the left sidebar. Drag a tile onto the sidebar, or press Add, to put it back."
               >
                 <PanelLeftOpen size={11} strokeWidth={2.2} aria-hidden />
@@ -418,14 +394,13 @@ export default function ToolsHubZone({ onNavigate }: ToolsHubZoneProps) {
 
           {sections.length === 0 ? (
             <div
-              className="rounded-2xl py-16 text-center"
-              style={{ border: '1px dashed var(--border-strong)' }}
+              className="rounded-2xl py-16 text-center border border-dashed border-border-strong"
             >
-              <Search className="mx-auto mb-3 size-7" style={{ color: 'var(--text-4)' }} strokeWidth={1.5} aria-hidden />
-              <div className="mb-1 text-sm font-medium" style={{ color: 'var(--text-2)' }}>
+              <Search className="mx-auto mb-3 size-7 text-t4" strokeWidth={1.5} aria-hidden />
+              <div className="mb-1 text-sm font-medium text-t2">
                 No destinations match &quot;{query}&quot;
               </div>
-              <div className="text-xs" style={{ color: 'var(--text-3)' }}>
+              <div className="text-xs text-t3">
                 Try a section name, tool name, custom zone, or route ID.
               </div>
             </div>

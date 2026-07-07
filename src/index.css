@@ -6,6 +6,59 @@
   --font-mono: 'DM Mono', monospace;
 }
 
+/*
+ * Design-system colour tokens for Tailwind utilities. `inline` makes the
+ * generated utilities emit `var(--bg-app)` etc. directly, so `bg-app`,
+ * `text-t1`, `border-border` resolve through the same runtime variables that
+ * flip between the `:root` (light) and `[data-theme="dark"]` blocks below —
+ * i.e. the utility classes theme-switch exactly like the inline styles they
+ * replace. Migration mapping (inline style → class):
+ *   background: var(--bg-X)          → bg-X            (--bg-app → bg-app)
+ *   color:      var(--text-N)        → text-tN         (--text-1 → text-t1)
+ *   borderColor:var(--border*)       → border-border*  (--border → border-border)
+ *   border: 1px solid var(--border)  → border border-border
+ *   *: var(--accent|good|warn|bad*)  → {bg,text,border}-{accent|good|warn|bad}*
+ */
+@theme inline {
+  /* Backgrounds */
+  --color-app:            var(--bg-app);
+  --color-sidebar:        var(--bg-sidebar);
+  --color-canvas:         var(--bg-canvas);
+  --color-card:           var(--bg-card);
+  --color-card-soft:      var(--bg-card-soft);
+  --color-cockpit:        var(--bg-cockpit);
+  --color-cockpit-strong: var(--bg-cockpit-strong);
+  --color-hover:          var(--bg-hover);
+  --color-muted:          var(--bg-muted);
+  --color-input:          var(--bg-input);
+
+  /* Borders */
+  --color-border:         var(--border);
+  --color-border-soft:    var(--border-soft);
+  --color-border-strong:  var(--border-strong);
+
+  /* Text */
+  --color-t1: var(--text-1);
+  --color-t2: var(--text-2);
+  --color-t3: var(--text-3);
+  --color-t4: var(--text-4);
+
+  /* Accent */
+  --color-accent:        var(--accent);
+  --color-accent-hover:  var(--accent-hover);
+  --color-accent-soft:   var(--accent-soft);
+  --color-accent-soft-2: var(--accent-soft-2);
+  --color-accent-fg:     var(--accent-fg);
+
+  /* Status */
+  --color-good:      var(--good);
+  --color-good-soft: var(--good-soft);
+  --color-warn:      var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-bad:       var(--bad);
+  --color-bad-soft:  var(--bad-soft);
+}
+
 /* ── Design system CSS variables ─────────────────────────────────────────── */
 :root {
   /* Backgrounds */

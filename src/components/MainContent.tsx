@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, type ReactNode } from 'react'
+import { ZoneErrorBoundary } from './ZoneErrorBoundary'
 import MixingZone from '../zones/mixing/MixingZone'
 import MixingAudioGrabPage from '../zones/mixing/MixingAudioGrabPage'
 import ToolsHubZone from '../zones/tools/ToolsHubZone'
@@ -198,9 +199,13 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
   return (
     <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
       <ConnectionPill activeRouteId={routeId} onNavigate={onNavigate} />
-      <Suspense fallback={<LoadingState label="Loading…" />}>
-        {body}
-      </Suspense>
+      {/* key={routeId} remounts the boundary on navigation so a crashed zone
+          doesn't leave the next zone stuck on the previous error screen. */}
+      <ZoneErrorBoundary key={routeId} zoneName={resolveRouteTitle(routeId)}>
+        <Suspense fallback={<LoadingState label="Loading…" />}>
+          {body}
+        </Suspense>
+      </ZoneErrorBoundary>
     </div>
   )
 }

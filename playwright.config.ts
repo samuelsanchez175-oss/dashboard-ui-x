@@ -9,6 +9,20 @@ export default defineConfig({
   retries: 1,
   forbidOnly: Boolean(process.env.CI),
   reporter: [['list']],
+  /**
+   * Full-page visual diffs of live dashboard zones carry irreducible jitter
+   * (sub-pixel AA, gradient/canvas rendering) that measures a steady 1–2% of
+   * pixels run-to-run even with `document.fonts.ready` awaited and animations
+   * disabled. `threshold` (per-pixel colour) filters trivial AA; the 3%
+   * `maxDiffPixelRatio` clears that noise floor with margin while still
+   * catching a real regression (>~39k meaningfully-changed pixels at 1440×900).
+   */
+  expect: {
+    toHaveScreenshot: {
+      threshold: 0.2,
+      maxDiffPixelRatio: 0.03,
+    },
+  },
   use: {
     baseURL: DEV_ORIGIN,
     screenshot: 'only-on-failure',

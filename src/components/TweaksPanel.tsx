@@ -14,20 +14,16 @@ function SegControl<T extends string>({
   value, options, onChange,
 }: { value: T; options: { id: T; label: string }[]; onChange: (v: T) => void }) {
   return (
-    <div
-      className="flex rounded-lg p-0.5 gap-0.5"
-      style={{ background: 'var(--bg-muted)' }}
-    >
+    <div className="flex rounded-lg p-0.5 gap-0.5 bg-muted">
       {options.map(o => (
         <button
           key={o.id}
           onClick={() => onChange(o.id)}
-          className="flex-1 rounded-md py-1.5 text-[11px] font-medium capitalize transition-all duration-150"
-          style={{
-            background: value === o.id ? 'var(--bg-card)' : 'transparent',
-            color:      value === o.id ? 'var(--text-1)'  : 'var(--text-3)',
-            boxShadow:  value === o.id ? '0 1px 3px rgba(0,0,0,0.10)' : 'none',
-          }}
+          className={`flex-1 rounded-md py-1.5 text-[11px] font-medium capitalize transition-all duration-150 ${
+            value === o.id
+              ? 'bg-card text-t1 shadow-[0_1px_3px_rgba(0,0,0,0.10)]'
+              : 'bg-transparent text-t3 shadow-none'
+          }`}
         >
           {o.label}
         </button>
@@ -55,37 +51,21 @@ export default function TweaksPanel() {
   return (
     <div
       ref={rootRef}
-      className="fixed bottom-4 right-4 z-[9000] flex flex-col items-end gap-2"
-      style={{ pointerEvents: 'none' }}
+      className="fixed bottom-4 right-4 z-[9000] flex flex-col items-end gap-2 pointer-events-none"
     >
       {/* Panel */}
       {open && (
         <div
-          className="w-[236px] rounded-2xl overflow-hidden fade-in"
-          style={{
-            pointerEvents: 'auto',
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border)',
-            boxShadow: '0 16px 48px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08)',
-          }}
+          className="w-[236px] rounded-2xl overflow-hidden fade-in pointer-events-auto bg-card border border-border shadow-[0_16px_48px_rgba(0,0,0,0.18),0_2px_8px_rgba(0,0,0,0.08)]"
         >
           {/* Header */}
-          <div
-            className="flex items-center justify-between px-4 py-2.5"
-            style={{ borderBottom: '1px solid var(--border)' }}
-          >
-            <span
-              className="text-[11px] font-semibold uppercase tracking-widest"
-              style={{ color: 'var(--text-4)', fontFamily: "'DM Mono', monospace" }}
-            >
+          <div className="flex items-center justify-between px-4 py-2.5 border-b border-border">
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-t4 font-mono">
               Tweaks
             </span>
             <button
               onClick={() => setOpen(false)}
-              className="flex items-center justify-center w-5 h-5 rounded-md transition-colors"
-              style={{ color: 'var(--text-4)' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-1)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-4)')}
+              className="flex items-center justify-center w-5 h-5 rounded-md transition-colors text-t4 hover:text-t1"
             >
               <X size={11} />
             </button>
@@ -94,10 +74,7 @@ export default function TweaksPanel() {
           <div className="px-4 pt-3 pb-4 space-y-4">
             {/* Theme */}
             <div>
-              <p
-                className="text-[10px] font-semibold uppercase tracking-wider mb-2"
-                style={{ color: 'var(--text-4)', fontFamily: "'DM Mono', monospace" }}
-              >
+              <p className="text-[10px] font-semibold uppercase tracking-wider mb-2 text-t4 font-mono">
                 Theme
               </p>
               <SegControl<Theme>
@@ -109,10 +86,7 @@ export default function TweaksPanel() {
 
             {/* Accent */}
             <div>
-              <p
-                className="text-[10px] font-semibold uppercase tracking-wider mb-2"
-                style={{ color: 'var(--text-4)', fontFamily: "'DM Mono', monospace" }}
-              >
+              <p className="text-[10px] font-semibold uppercase tracking-wider mb-2 text-t4 font-mono">
                 Accent
               </p>
               <div className="grid grid-cols-4 gap-2">
@@ -136,8 +110,7 @@ export default function TweaksPanel() {
                       <Check
                         size={12}
                         strokeWidth={2.5}
-                        className="absolute inset-0 m-auto"
-                        style={{ color: '#fff', filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))' }}
+                        className="absolute inset-0 m-auto text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]"
                       />
                     )}
                   </button>
@@ -147,8 +120,7 @@ export default function TweaksPanel() {
                 {ACCENTS.map(({ id, label }) => (
                   <p
                     key={id}
-                    className="text-center text-[9px]"
-                    style={{ color: accent === id ? 'var(--text-2)' : 'var(--text-4)' }}
+                    className={`text-center text-[9px] ${accent === id ? 'text-t2' : 'text-t4'}`}
                   >
                     {label}
                   </p>
@@ -158,10 +130,7 @@ export default function TweaksPanel() {
 
             {/* Density */}
             <div>
-              <p
-                className="text-[10px] font-semibold uppercase tracking-wider mb-2"
-                style={{ color: 'var(--text-4)', fontFamily: "'DM Mono', monospace" }}
-              >
+              <p className="text-[10px] font-semibold uppercase tracking-wider mb-2 text-t4 font-mono">
                 Density
               </p>
               <SegControl<Density>

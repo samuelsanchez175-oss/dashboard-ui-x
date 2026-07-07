@@ -13,14 +13,25 @@ const SIDEBAR_LAYOUT_LEGACY_KEY = 'game-studio-sidebar-nav-layout-v1'
 
 type ThemeMode = 'light' | 'dark'
 
-function seedForVisualRun(theme: ThemeMode) {
-  return () => {
-    localStorage.removeItem(SIDEBAR_LAYOUT_KEY)
-    localStorage.removeItem(SIDEBAR_LAYOUT_LEGACY_KEY)
-    localStorage.setItem(THEME_STORAGE_KEY, theme)
-    localStorage.setItem('ui-accent', 'purple')
-    localStorage.setItem('ui-density', 'comfy')
-  }
+interface SeedConfig {
+  theme:     ThemeMode
+  themeKey:  string
+  layoutKey: string
+  legacyKey: string
+}
+
+/**
+ * Runs in the browser via `addInitScript`. It must be a pure function of its
+ * single `seed` argument — Playwright serializes the function body and re-runs
+ * it in page context, so any reference to module-scope constants (the KEY
+ * consts, `theme`) would be `undefined` there and silently no-op the seeding.
+ */
+function seedForVisualRun(seed: SeedConfig) {
+  localStorage.removeItem(seed.layoutKey)
+  localStorage.removeItem(seed.legacyKey)
+  localStorage.setItem(seed.themeKey, seed.theme)
+  localStorage.setItem('ui-accent', 'purple')
+  localStorage.setItem('ui-density', 'comfy')
 }
 
 async function gotoHome(page: Page, theme: ThemeMode) {
@@ -30,20 +41,25 @@ async function gotoHome(page: Page, theme: ThemeMode) {
 }
 
 /**
- * Logical route ids requested for baselines → sidebar primary label (regex where badges alter a11y name).
- * `production` and `agent-farm` both land on the PRODUCTION → Agent Farm item (same `agent-farm` route id).
+ * Logical route ids requested for baselines → sidebar primary label.
+ * Patterns are anchored at the start and case-sensitive: nav items are
+ * title-case ("Mixing") while section headers are upper-case ("MIXING"), so
+ * `/^Mixing/` targets the item without matching the header. Unanchored at the
+ * end so trailing badge text ("… 2 new updates", counts) does not break the
+ * match. Labels verified against the live sidebar a11y tree.
+ * `production` and `agent-farm` both land on the PRODUCTION → Agent farm item.
  */
 const ZONE_CASES: ReadonlyArray<{ slug: string; navPattern: RegExp }> = [
-  { slug: 'production', navPattern: /Agent Farm/ },
-  { slug: 'mixing', navPattern: /Mix board/ },
-  { slug: 'pulse', navPattern: /AI digest/ },
-  { slug: 'tools-hub', navPattern: /All tools/ },
-  { slug: 'tools-key-finder', navPattern: /Key & BPM finder/ },
-  { slug: 'harmony-stack', navPattern: /Services & Pricing/ },
-  { slug: 'cpw', navPattern: /^Projects$/ },
-  { slug: 'agent-farm', navPattern: /Agent Farm/ },
-  { slug: 'web-designer', navPattern: /Designer browser/ },
-  { slug: 'dev-settings', navPattern: /Settings & API/ },
+  { slug: 'production', navPattern: /^Agent farm/ },
+  { slug: 'mixing', navPattern: /^Mixing/ },
+  { slug: 'pulse', navPattern: /^Pulse digest/ },
+  { slug: 'tools-hub', navPattern: /^Tools hub/ },
+  { slug: 'tools-key-finder', navPattern: /^Key & STEM/ },
+  { slug: 'harmony-stack', navPattern: /^Harmony services/ },
+  { slug: 'cpw', navPattern: /^All projects/ },
+  { slug: 'agent-farm', navPattern: /^Agent farm/ },
+  { slug: 'web-designer', navPattern: /^Web designer/ },
+  { slug: 'dev-settings', navPattern: /^Dev settings/ },
 ]
 
 async function openZoneFromSidebar(page: Page, navPattern: RegExp) {
@@ -57,9 +73,17 @@ for (const { slug, navPattern } of ZONE_CASES) {
   test.describe(`${slug}`, () => {
     for (const theme of ['light', 'dark'] as const) {
       test(`${theme}`, async ({ page }) => {
-        await page.addInitScript(seedForVisualRun(theme))
+        await page.addInitScript(seedForVisualRun, {
+          theme,
+          themeKey:  THEME_STORAGE_KEY,
+          layoutKey: SIDEBAR_LAYOUT_KEY,
+          legacyKey: SIDEBAR_LAYOUT_LEGACY_KEY,
+        })
         await gotoHome(page, theme)
         await openZoneFromSidebar(page, navPattern)
+        // Web fonts must finish loading, else text is captured mid font-swap
+        // and produces non-deterministic sub-pixel diffs across runs.
+        await page.evaluate(() => document.fonts.ready)
         await expect(page).toHaveScreenshot(`${slug}-${theme}.png`, {
           fullPage: true,
           animations: 'disabled',

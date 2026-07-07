@@ -1,5 +1,5 @@
 import { ArrowLeft, Download, ExternalLink, Layers, Loader2, Radio, Trash2, Upload } from 'lucide-react'
-import { useCallback, useEffect, useId, useMemo, useState, type ChangeEvent, type CSSProperties } from 'react'
+import { useCallback, useEffect, useId, useMemo, useState, type ChangeEvent } from 'react'
 
 import type { MixClipMeta } from '../mixing/mixing-audio-idb'
 import { dispatchFileDownload, getFileById, receiveDockOrFileDrop } from '../../components/files-dock/files-store'
@@ -24,7 +24,7 @@ function SourceLabel({ source }: { source: MixClipMeta['source'] }) {
     tags: 'Embedded tags', estimated: 'Estimated', hybrid: 'Hybrid',
     tunebat: 'Manual paste', chromagram: 'Chromagram',
   }
-  return <span className="mono text-[11px]" style={{ color: 'var(--text-3)' }}>{map[source] ?? source}</span>
+  return <span className="mono text-[11px] text-t3">{map[source] ?? source}</span>
 }
 
 function hasKeyAndBpm(m: MixClipMeta): boolean {
@@ -32,29 +32,20 @@ function hasKeyAndBpm(m: MixClipMeta): boolean {
     && m.bpm != null && Number.isFinite(m.bpm) && m.bpm > 0
 }
 
-function WhoSampledPanel({
-  fileName,
-  labelStyle,
-}: {
-  fileName: string
-  labelStyle: CSSProperties
-}) {
+function WhoSampledPanel({ fileName }: { fileName: string }) {
   const { primary, simplified } = useMemo(() => filenameToWhoSampledQueries(fileName), [fileName])
   const showBoth = simplified !== primary && simplified.length > 0
 
   const btnClass =
-    'inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition'
+    'inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition bg-card border border-border text-t1 shadow-[var(--shadow-sm)]'
 
   return (
-    <div
-      className="space-y-3 rounded-xl p-4"
-      style={{ background: 'var(--bg-muted)', border: '1px solid var(--border-soft)' }}
-    >
+    <div className="space-y-3 rounded-xl p-4 bg-muted border border-border-soft">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="mono text-[10px] uppercase tracking-wide" style={labelStyle}>
+        <span className="mono text-[10px] uppercase tracking-wide text-t4 font-mono">
           WhoSampled
         </span>
-        <span className="text-[11px]" style={{ color: 'var(--text-3)' }}>
+        <span className="text-[11px] text-t3">
           Sample / cover / remix lookups on whosampled.com (new tab).
         </span>
       </div>
@@ -62,12 +53,6 @@ function WhoSampledPanel({
         <button
           type="button"
           className={btnClass}
-          style={{
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border)',
-            color: 'var(--text-1)',
-            boxShadow: 'var(--shadow-sm)',
-          }}
           onClick={() => openWhoSampledSearch(primary)}
         >
           <ExternalLink className="size-3.5 shrink-0" aria-hidden />
@@ -77,12 +62,6 @@ function WhoSampledPanel({
           <button
             type="button"
             className={btnClass}
-            style={{
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border)',
-              color: 'var(--text-1)',
-              boxShadow: 'var(--shadow-sm)',
-            }}
             onClick={() => openWhoSampledSearch(simplified)}
           >
             <ExternalLink className="size-3.5 shrink-0" aria-hidden />
@@ -90,7 +69,7 @@ function WhoSampledPanel({
           </button>
         ) : null}
       </div>
-      <p className="mono text-[10px] leading-relaxed break-all" style={{ color: 'var(--text-4)' }}>
+      <p className="mono text-[10px] leading-relaxed break-all text-t4">
         Full: “{primary}”
         {showBoth ? (
           <>
@@ -99,7 +78,7 @@ function WhoSampledPanel({
           </>
         ) : null}
       </p>
-      <p className="text-[11px] leading-relaxed" style={{ color: 'var(--text-3)' }}>
+      <p className="text-[11px] leading-relaxed text-t3">
         Instrumentals and unofficial uploads may not appear. WhoSampled has no public API here — we only pass your filename as their search query.
       </p>
     </div>
@@ -112,8 +91,7 @@ function HistoryWhoSampledLink({ fileName }: { fileName: string }) {
   return (
     <button
       type="button"
-      className="mono mt-2 inline-flex items-center gap-1 text-[10px] font-medium underline-offset-2 hover:underline"
-      style={{ color: 'var(--accent)' }}
+      className="mono mt-2 inline-flex items-center gap-1 text-[10px] font-medium underline-offset-2 hover:underline text-accent"
       onClick={() => openWhoSampledSearch(q)}
     >
       <ExternalLink className="size-3 shrink-0" aria-hidden />
@@ -214,13 +192,11 @@ export default function ToolsKeyFinderPage({ onNavigate }: ToolsKeyFinderPagePro
     })()
   }, [runFile])
 
-  const card: React.CSSProperties = {
-    background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)',
-  }
-  const label: React.CSSProperties = { color: 'var(--text-4)', fontFamily: "'DM Mono', monospace" }
+  const cardCls  = 'bg-card border border-border shadow-[var(--shadow-sm)]'
+  const labelCls = 'text-t4 font-mono'
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden" style={{ background: 'var(--bg-canvas)' }}>
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-canvas">
       <StudioToolsHeader
         toolId="tools-key-finder"
         crumbs={[{ label: 'Workspace' }, { label: 'Tools' }, { label: 'Key & STEM', emphasis: true }]}
@@ -228,8 +204,7 @@ export default function ToolsKeyFinderPage({ onNavigate }: ToolsKeyFinderPagePro
           <button
             type="button"
             onClick={() => onNavigate('tools-hub')}
-            className="mr-2 rounded-lg p-2 transition"
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-2)', boxShadow: 'var(--shadow-sm)' }}
+            className="mr-2 rounded-lg p-2 transition bg-card border border-border text-t2 shadow-[var(--shadow-sm)]"
             aria-label="Back to Tools Hub"
           >
             <ArrowLeft className="size-4" strokeWidth={2} />
@@ -253,36 +228,24 @@ export default function ToolsKeyFinderPage({ onNavigate }: ToolsKeyFinderPagePro
             <div
               onDragOver={e => e.preventDefault()}
               onDrop={onDrop}
-              className="flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-6 py-14 text-center transition"
-              style={{
-                background:   'var(--bg-card)',
-                borderColor:  'var(--border-strong)',
-                boxShadow:    'var(--shadow-sm)',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border-strong)')}
+              className="flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-6 py-14 text-center transition bg-card border-border-strong shadow-[var(--shadow-sm)] hover:border-[var(--accent)]"
             >
               {busy
-                ? <Loader2 className="size-8 animate-spin" style={{ color: 'var(--accent)' }} aria-hidden />
-                : <Upload className="size-8" style={{ color: 'var(--text-4)' }} strokeWidth={1.5} aria-hidden />
+                ? <Loader2 className="size-8 animate-spin text-accent" aria-hidden />
+                : <Upload className="size-8 text-t4" strokeWidth={1.5} aria-hidden />
               }
               <div>
-                <span className="text-sm font-medium" style={{ color: 'var(--text-1)' }}>
+                <span className="text-sm font-medium text-t1">
                   {busy ? 'Analyzing…' : 'Drop audio here or click to browse'}
                 </span>
-                <p className="mt-1 text-xs" style={{ color: 'var(--text-3)' }}>MP3, WAV, M4A, FLAC — processed in your browser.</p>
+                <p className="mt-1 text-xs text-t3">MP3, WAV, M4A, FLAC — processed in your browser.</p>
               </div>
             </div>
           </label>
 
           {inboundNotice && (
             <p
-              className="mt-4 inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium"
-              style={{
-                background: 'var(--accent-soft)',
-                border: '1px solid var(--border)',
-                color: 'var(--accent-fg)',
-              }}
+              className="mt-4 inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium bg-accent-soft border border-border text-accent-fg"
               role="status"
             >
               {inboundNotice}
@@ -290,86 +253,74 @@ export default function ToolsKeyFinderPage({ onNavigate }: ToolsKeyFinderPagePro
           )}
 
           {error && (
-            <p className="mt-4 text-sm" role="alert" style={{ color: 'var(--bad)' }}>{error}</p>
+            <p className="mt-4 text-sm text-bad" role="alert">{error}</p>
           )}
 
           {/* Result */}
           {meta && (
-            <div className="mt-8 space-y-4 rounded-2xl p-6" style={card}>
-              <div
-                className="flex flex-wrap items-center justify-between gap-2 pb-4"
-                style={{ borderBottom: '1px solid var(--border)' }}
-              >
-                <div className="text-sm font-medium" style={{ color: 'var(--text-1)' }}>{fileName ?? 'Clip'}</div>
+            <div className={`mt-8 space-y-4 rounded-2xl p-6 ${cardCls}`}>
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-border">
+                <div className="text-sm font-medium text-t1">{fileName ?? 'Clip'}</div>
                 <SourceLabel source={meta.source} />
               </div>
               <dl className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <dt className="mono text-[10px] uppercase tracking-wide" style={label}>Key</dt>
-                  <dd className="mt-1 text-lg font-semibold" style={{ color: 'var(--text-1)' }}>{meta.key ?? '—'}</dd>
+                  <dt className={`mono text-[10px] uppercase tracking-wide ${labelCls}`}>Key</dt>
+                  <dd className="mt-1 text-lg font-semibold text-t1">{meta.key ?? '—'}</dd>
                 </div>
                 <div>
-                  <dt className="mono text-[10px] uppercase tracking-wide" style={label}>BPM</dt>
-                  <dd className="mt-1 text-lg font-semibold" style={{ color: 'var(--text-1)' }}>{meta.bpm ?? '—'}</dd>
+                  <dt className={`mono text-[10px] uppercase tracking-wide ${labelCls}`}>BPM</dt>
+                  <dd className="mt-1 text-lg font-semibold text-t1">{meta.bpm ?? '—'}</dd>
                 </div>
                 <div className="sm:col-span-2">
-                  <dt className="mono text-[10px] uppercase tracking-wide" style={label}>Scale hint</dt>
-                  <dd className="mt-1 text-sm" style={{ color: 'var(--text-2)' }}>{meta.scale ?? '—'}</dd>
+                  <dt className={`mono text-[10px] uppercase tracking-wide ${labelCls}`}>Scale hint</dt>
+                  <dd className="mt-1 text-sm text-t2">{meta.scale ?? '—'}</dd>
                 </div>
               </dl>
-              <div
-                className="rounded-xl p-4 text-sm leading-relaxed"
-                style={{ background: 'var(--bg-muted)', color: 'var(--text-2)' }}
-              >
+              <div className="rounded-xl p-4 text-sm leading-relaxed bg-muted text-t2">
                 {meta.rapKeyTip}
               </div>
-              {fileName ? <WhoSampledPanel fileName={fileName} labelStyle={label} /> : null}
+              {fileName ? <WhoSampledPanel fileName={fileName} /> : null}
             </div>
           )}
 
           {/* Stems — runs on every dropped file */}
           {(stemming || stems || stemError) && (
-            <div className="mt-6 space-y-4 rounded-2xl p-6" style={card}>
+            <div className={`mt-6 space-y-4 rounded-2xl p-6 ${cardCls}`}>
               <div className="flex items-center justify-between">
-                <h2 className="flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--text-1)' }}>
-                  <Layers className="size-4" style={{ color: 'var(--accent)' }} strokeWidth={2} aria-hidden /> Stems
+                <h2 className="flex items-center gap-2 text-sm font-semibold text-t1">
+                  <Layers className="size-4 text-accent" strokeWidth={2} aria-hidden /> Stems
                 </h2>
                 {stemming && (
-                  <span className="mono inline-flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-3)' }}>
+                  <span className="mono inline-flex items-center gap-1.5 text-xs text-t3">
                     <Loader2 className="size-3.5 animate-spin" aria-hidden /> Splitting…
                   </span>
                 )}
               </div>
 
               {stemError ? (
-                <p className="text-sm" style={{ color: 'var(--bad)' }}>{stemError}</p>
+                <p className="text-sm text-bad">{stemError}</p>
               ) : stems ? (
                 <>
-                  <div className="overflow-x-auto rounded-xl" style={{ border: '1px solid var(--border-soft)' }}>
+                  <div className="overflow-x-auto rounded-xl border border-border-soft">
                     <table className="w-full border-collapse text-left text-sm">
                       <thead>
                         <tr>
-                          <th className="px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-4)', borderBottom: '1px solid var(--border-soft)' }}>Stem</th>
-                          <th className="px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-4)', borderBottom: '1px solid var(--border-soft)' }}>What it is</th>
-                          <th className="px-4 py-2.5 text-right text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-4)', borderBottom: '1px solid var(--border-soft)' }}>File</th>
+                          <th className="px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wide text-t4 border-b border-border-soft">Stem</th>
+                          <th className="px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wide text-t4 border-b border-border-soft">What it is</th>
+                          <th className="px-4 py-2.5 text-right text-[10px] font-semibold uppercase tracking-wide text-t4 border-b border-border-soft">File</th>
                         </tr>
                       </thead>
                       <tbody>
                         {stems.map(s => (
-                          <tr
-                            key={s.id}
-                            className="transition-colors"
-                            onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-card-soft)')}
-                            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                          >
-                            <td className="px-4 py-3 align-top font-medium" style={{ color: 'var(--text-1)', borderTop: '1px solid var(--border-soft)' }}>{s.label}</td>
-                            <td className="px-4 py-3 align-top text-[12px] leading-snug" style={{ color: 'var(--text-3)', borderTop: '1px solid var(--border-soft)' }}>{s.hint}</td>
-                            <td className="px-4 py-3 align-top text-right" style={{ borderTop: '1px solid var(--border-soft)' }}>
+                          <tr key={s.id} className="transition-colors hover:bg-card-soft">
+                            <td className="px-4 py-3 align-top font-medium text-t1 border-t border-border-soft">{s.label}</td>
+                            <td className="px-4 py-3 align-top text-[12px] leading-snug text-t3 border-t border-border-soft">{s.hint}</td>
+                            <td className="px-4 py-3 align-top text-right border-t border-border-soft">
                               <button
                                 type="button"
                                 onClick={() => triggerDownload(s.blob, s.fileName)}
-                                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition"
-                                style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-2)' }}
+                                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition bg-card border border-border text-t2"
                               >
                                 <Download className="size-3.5" strokeWidth={2} aria-hidden /> WAV
                               </button>
@@ -379,15 +330,14 @@ export default function ToolsKeyFinderPage({ onNavigate }: ToolsKeyFinderPagePro
                       </tbody>
                       <tfoot>
                         <tr>
-                          <td colSpan={2} className="px-4 py-3 text-[12px]" style={{ color: 'var(--text-4)', borderTop: '1px solid var(--border)' }}>
+                          <td colSpan={2} className="px-4 py-3 text-[12px] text-t4 border-t border-border">
                             {stems.length} stems · approximate split
                           </td>
-                          <td className="px-4 py-3 text-right" style={{ borderTop: '1px solid var(--border)' }}>
+                          <td className="px-4 py-3 text-right border-t border-border">
                             <button
                               type="button"
                               onClick={() => void downloadAllStems()}
-                              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition"
-                              style={{ background: 'var(--accent)', color: 'var(--accent-contrast, #fff)' }}
+                              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition bg-accent text-[var(--accent-contrast,#fff)]"
                             >
                               <Download className="size-3.5" strokeWidth={2.2} aria-hidden /> All (.zip)
                             </button>
@@ -396,7 +346,7 @@ export default function ToolsKeyFinderPage({ onNavigate }: ToolsKeyFinderPagePro
                       </tfoot>
                     </table>
                   </div>
-                  <p className="text-[11px] leading-snug" style={{ color: 'var(--text-4)' }}>
+                  <p className="text-[11px] leading-snug text-t4">
                     Split via harmonic/percussive separation + frequency bands — a fast approximation, not surgical AI
                     isolation.
                   </p>
@@ -409,10 +359,10 @@ export default function ToolsKeyFinderPage({ onNavigate }: ToolsKeyFinderPagePro
           <section className="mt-10" aria-labelledby="key-finder-recent-heading">
             <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
               <div>
-                <h2 id="key-finder-recent-heading" className="text-sm font-semibold" style={{ color: 'var(--text-1)' }}>
+                <h2 id="key-finder-recent-heading" className="text-sm font-semibold text-t1">
                   Recently analyzed
                 </h2>
-                <p className="mt-0.5 text-xs" style={{ color: 'var(--text-3)' }}>
+                <p className="mt-0.5 text-xs text-t3">
                   Oldest at the top — only files where both key and BPM were detected are saved locally.
                 </p>
               </div>
@@ -420,8 +370,7 @@ export default function ToolsKeyFinderPage({ onNavigate }: ToolsKeyFinderPagePro
                 <button
                   type="button"
                   onClick={() => { clearKeyFinderHistory(); setHistory([]) }}
-                  className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition"
-                  style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-2)', boxShadow: 'var(--shadow-sm)' }}
+                  className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition bg-card border border-border text-t2 shadow-[var(--shadow-sm)]"
                 >
                   <Trash2 className="size-3.5 shrink-0" aria-hidden />
                   Clear history
@@ -430,54 +379,45 @@ export default function ToolsKeyFinderPage({ onNavigate }: ToolsKeyFinderPagePro
             </div>
 
             {historyAscending.length === 0 ? (
-              <div
-                className="rounded-2xl border-dashed px-5 py-8 text-center text-sm"
-                style={{ background: 'var(--bg-card)', border: '1px dashed var(--border)', color: 'var(--text-3)' }}
-              >
+              <div className="rounded-2xl border-dashed px-5 py-8 text-center text-sm bg-card border border-dashed border-border text-t3">
                 No saved runs yet. When both key and BPM resolve for a file, it appears here.
               </div>
             ) : (
-              <ol className="space-y-2 rounded-2xl p-3" style={card}>
+              <ol className={`space-y-2 rounded-2xl p-3 ${cardCls}`}>
                 {historyAscending.map((row, index) => (
                   <li
                     key={row.id}
-                    className="rounded-xl px-4 py-3 transition"
-                    style={{ background: 'var(--bg-card-soft)', border: '1px solid var(--border-soft)' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'var(--bg-card-soft)')}
+                    className="rounded-xl px-4 py-3 transition bg-card-soft border border-border-soft hover:bg-hover"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="mono text-[10px] font-medium uppercase tracking-wide" style={{ color: 'var(--text-4)' }}>
+                          <span className="mono text-[10px] font-medium uppercase tracking-wide text-t4">
                             #{index + 1}
                           </span>
-                          <span className="truncate text-sm font-medium" style={{ color: 'var(--text-1)' }} title={row.fileName}>
+                          <span className="truncate text-sm font-medium text-t1" title={row.fileName}>
                             {row.fileName}
                           </span>
                         </div>
-                        <p className="mt-1 text-[11px]" style={{ color: 'var(--text-3)' }}>
+                        <p className="mt-1 text-[11px] text-t3">
                           {new Date(row.analyzedAt).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
                         </p>
                         <HistoryWhoSampledLink fileName={row.fileName} />
                       </div>
                       <SourceLabel source={row.source} />
                     </div>
-                    <dl
-                      className="mt-3 grid gap-3 pt-3 sm:grid-cols-3"
-                      style={{ borderTop: '1px solid var(--border-soft)' }}
-                    >
+                    <dl className="mt-3 grid gap-3 pt-3 sm:grid-cols-3 border-t border-border-soft">
                       <div>
-                        <dt className="mono text-[10px] uppercase tracking-wide" style={label}>Key</dt>
-                        <dd className="mt-0.5 text-base font-semibold tabular-nums" style={{ color: 'var(--text-1)' }}>{row.key}</dd>
+                        <dt className={`mono text-[10px] uppercase tracking-wide ${labelCls}`}>Key</dt>
+                        <dd className="mt-0.5 text-base font-semibold tabular-nums text-t1">{row.key}</dd>
                       </div>
                       <div>
-                        <dt className="mono text-[10px] uppercase tracking-wide" style={label}>BPM</dt>
-                        <dd className="mt-0.5 text-base font-semibold tabular-nums" style={{ color: 'var(--text-1)' }}>{row.bpm}</dd>
+                        <dt className={`mono text-[10px] uppercase tracking-wide ${labelCls}`}>BPM</dt>
+                        <dd className="mt-0.5 text-base font-semibold tabular-nums text-t1">{row.bpm}</dd>
                       </div>
                       <div>
-                        <dt className="mono text-[10px] uppercase tracking-wide" style={label}>Scale hint</dt>
-                        <dd className="mt-0.5 truncate text-sm" style={{ color: 'var(--text-2)' }} title={row.scale ?? undefined}>
+                        <dt className={`mono text-[10px] uppercase tracking-wide ${labelCls}`}>Scale hint</dt>
+                        <dd className="mt-0.5 truncate text-sm text-t2" title={row.scale ?? undefined}>
                           {row.scale ?? '—'}
                         </dd>
                       </div>

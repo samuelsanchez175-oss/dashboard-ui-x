@@ -166,20 +166,15 @@ export default function ConnectionPill({ activeRouteId, onNavigate }: Connection
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
-            className="max-h-[min(90vh,640px)] w-full max-w-lg overflow-y-auto rounded-2xl border p-5 shadow-2xl"
-            style={{
-              background: 'var(--bg-elevated, var(--bg-canvas))',
-              borderColor: 'var(--border-muted, rgba(255,255,255,0.12))',
-              color: 'var(--text-1)',
-            }}
+            className="max-h-[min(90vh,640px)] w-full max-w-lg overflow-y-auto rounded-2xl border p-5 shadow-2xl bg-[var(--bg-elevated,var(--bg-canvas))] border-[var(--border-muted,rgba(255,255,255,0.12))] text-t1"
             onMouseDown={e => e.stopPropagation()}
           >
             <h2 id={titleId} className="text-sm font-semibold tracking-tight">
               Quick integration keys
             </h2>
-            <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--text-3)' }}>
+            <p className="mt-1 text-xs leading-relaxed text-t3">
               Values are saved to the same scratch store as{' '}
-              <span className="font-medium" style={{ color: 'var(--text-2)' }}>
+              <span className="font-medium text-t2">
                 Settings &amp; API keys
               </span>{' '}
               and sent on <code className="rounded px-1 text-[10px]">/api/*</code> as{' '}
@@ -190,7 +185,7 @@ export default function ConnectionPill({ activeRouteId, onNavigate }: Connection
               {QUICK_KEYS.map(row => {
                 const highlight = state.quickKeysHighlight === 'gemini' && row.envKey === 'GEMINI_API_KEY'
                 const commonLabel = (
-                  <label className="block text-[11px] font-medium uppercase tracking-wide" style={{ color: 'var(--text-2)' }}>
+                  <label className="block text-[11px] font-medium uppercase tracking-wide text-t2">
                     {row.label}
                   </label>
                 )
@@ -207,10 +202,9 @@ export default function ConnectionPill({ activeRouteId, onNavigate }: Connection
                         rows={3}
                         autoComplete="off"
                         spellCheck={false}
-                        className="mt-1 w-full resize-y rounded-lg border bg-black/20 px-2.5 py-2 font-mono text-xs outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50"
-                        style={{ borderColor: 'var(--border-muted, rgba(255,255,255,0.12))', color: 'var(--text-1)' }}
+                        className="mt-1 w-full resize-y rounded-lg border bg-black/20 px-2.5 py-2 font-mono text-xs outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 border-[var(--border-muted,rgba(255,255,255,0.12))] text-t1"
                       />
-                      <p className="mt-0.5 text-[10px]" style={{ color: 'var(--text-4)' }}>
+                      <p className="mt-0.5 text-[10px] text-t4">
                         {row.helper}
                       </p>
                     </div>
@@ -236,10 +230,9 @@ export default function ConnectionPill({ activeRouteId, onNavigate }: Connection
                       onChange={e => setVal(e.target.value)}
                       autoComplete="off"
                       spellCheck={false}
-                      className="mt-1 w-full rounded-lg border bg-black/20 px-2.5 py-2 font-mono text-xs outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50"
-                      style={{ borderColor: 'var(--border-muted, rgba(255,255,255,0.12))', color: 'var(--text-1)' }}
+                      className="mt-1 w-full rounded-lg border bg-black/20 px-2.5 py-2 font-mono text-xs outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 border-[var(--border-muted,rgba(255,255,255,0.12))] text-t1"
                     />
-                    <p className="mt-0.5 text-[10px]" style={{ color: 'var(--text-4)' }}>
+                    <p className="mt-0.5 text-[10px] text-t4">
                       {row.helper}
                     </p>
                   </div>
@@ -252,8 +245,7 @@ export default function ConnectionPill({ activeRouteId, onNavigate }: Connection
                 type="button"
                 disabled={saveBusy}
                 onClick={() => void saveQuickKeys()}
-                className="rounded-lg px-3 py-2 text-xs font-semibold text-white transition disabled:opacity-50"
-                style={{ background: 'var(--accent, #c27803)' }}
+                className="rounded-lg px-3 py-2 text-xs font-semibold text-white transition disabled:opacity-50 bg-accent"
               >
                 {saveBusy ? 'Saving…' : 'Save'}
               </button>
@@ -261,8 +253,7 @@ export default function ConnectionPill({ activeRouteId, onNavigate }: Connection
                 type="button"
                 disabled={saveBusy}
                 onClick={() => setModalOpen(false)}
-                className="rounded-lg border px-3 py-2 text-xs font-medium transition hover:bg-white/5 disabled:opacity-50"
-                style={{ borderColor: 'var(--border-muted, rgba(255,255,255,0.12))', color: 'var(--text-2)' }}
+                className="rounded-lg border px-3 py-2 text-xs font-medium transition hover:bg-white/5 disabled:opacity-50 border-[var(--border-muted,rgba(255,255,255,0.12))] text-t2"
               >
                 Cancel
               </button>
@@ -270,8 +261,7 @@ export default function ConnectionPill({ activeRouteId, onNavigate }: Connection
                 type="button"
                 disabled={saveBusy}
                 onClick={goSettings}
-                className="ml-auto text-xs font-medium underline decoration-dotted underline-offset-2"
-                style={{ color: 'var(--accent)' }}
+                className="ml-auto text-xs font-medium underline decoration-dotted underline-offset-2 text-accent"
               >
                 Open full settings
               </button>

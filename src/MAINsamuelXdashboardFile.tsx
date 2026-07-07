@@ -101,13 +101,12 @@ function App() {
             <MockDataProvider>
               <TeslaFleetMockSyncBridge />
               <UiChromeProvider>
-                <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg-app)' }}>
+                <div className="flex h-screen overflow-hidden bg-app">
 
                   {/* Mobile backdrop */}
                   {sidebarOpen && (
                     <div
-                      className="fixed inset-0 z-40 sm:hidden"
-                      style={{ background: 'rgba(0,0,0,0.45)' }}
+                      className="fixed inset-0 z-40 sm:hidden bg-black/45"
                       onClick={() => setSidebarOpen(false)}
                     />
                   )}
@@ -123,22 +122,16 @@ function App() {
                   <div className="flex flex-col flex-1 min-w-0 min-h-0">
                     {/* Mobile top bar */}
                     <div
-                      className="flex sm:hidden items-center gap-3 px-4 py-3 shrink-0"
-                      style={{
-                        borderBottom: '1px solid var(--border)',
-                        background: 'var(--bg-sidebar)',
-                      }}
+                      className="flex sm:hidden items-center gap-3 px-4 py-3 shrink-0 border-b border-border bg-sidebar"
                     >
                       <button
                         onClick={() => setSidebarOpen(true)}
-                        className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors"
-                        style={{ color: 'var(--text-2)', background: 'var(--bg-hover)' }}
+                        className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors text-t2 bg-hover"
                       >
                         <Menu size={16} />
                       </button>
                       <span
-                        className="text-[14px] font-semibold tracking-tight"
-                        style={{ color: 'var(--text-1)' }}
+                        className="text-[14px] font-semibold tracking-tight text-t1"
                       >
                         Samuel x Dashboard
                       </span>

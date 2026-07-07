@@ -316,8 +316,7 @@ export default function ToolsDeviceMockupPage({ onNavigate }: ToolsDeviceMockupP
 
   return (
     <div
-      className="flex min-h-0 flex-1 flex-col overflow-hidden"
-      style={{ background: 'var(--bg-canvas)', color: 'var(--text-1)' }}
+      className="flex min-h-0 flex-1 flex-col overflow-hidden bg-canvas text-t1"
     >
       <StudioToolsHeader
         toolId="tools-device-mockup"
@@ -326,8 +325,7 @@ export default function ToolsDeviceMockupPage({ onNavigate }: ToolsDeviceMockupP
           <button
             type="button"
             onClick={() => onNavigate('tools-hub')}
-            className="mr-1 grid size-8 place-items-center rounded-lg transition"
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-3)' }}
+            className="mr-1 grid size-8 place-items-center rounded-lg transition bg-card border border-border text-t3"
             aria-label="Back to Tools"
           >
             <ArrowLeft className="size-4" strokeWidth={2} />
@@ -338,10 +336,10 @@ export default function ToolsDeviceMockupPage({ onNavigate }: ToolsDeviceMockupP
       <div className="flex-1 overflow-auto">
         <div className="mx-auto w-full max-w-5xl px-6 py-8">
           <header className="mb-6">
-            <h1 className="text-xl font-semibold tracking-tight" style={{ color: 'var(--text-1)' }}>
+            <h1 className="text-xl font-semibold tracking-tight text-t1">
               iPhone 17 mockup
             </h1>
-            <p className="mt-1 text-sm leading-snug" style={{ color: 'var(--text-3)' }}>
+            <p className="mt-1 text-sm leading-snug text-t3">
               Drop a screenshot and it’s placed inside a clean iPhone 17 frame so it looks like it’s running on the
               device. Export a transparent PNG to drop onto any background.
             </p>
@@ -373,27 +371,22 @@ export default function ToolsDeviceMockupPage({ onNavigate }: ToolsDeviceMockupP
                     onPointerMove={onPointerMove}
                     onPointerUp={onPointerUp}
                     onPointerCancel={onPointerUp}
-                    className="h-full w-auto max-w-full select-none"
-                    style={{ cursor: draggable ? 'grab' : 'default', touchAction: 'none' }}
+                    className={`h-full w-auto max-w-full select-none touch-none ${draggable ? 'cursor-grab' : 'cursor-default'}`}
                     aria-label="iPhone mockup preview — drag to reposition the screenshot"
                   />
                 ) : (
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex h-full w-full flex-col items-center justify-center gap-3 rounded-xl p-6 text-center"
-                    style={{ background: 'transparent', color: 'var(--text-3)' }}
+                    className="flex h-full w-full flex-col items-center justify-center gap-3 rounded-xl p-6 text-center bg-transparent text-t3"
                   >
-                    <span
-                      className="grid size-12 place-items-center rounded-xl"
-                      style={{ background: 'var(--bg-hover)', border: '1px solid var(--border-soft)' }}
-                    >
-                      <ImageUp className="size-6" strokeWidth={1.6} style={{ color: 'var(--text-2)' }} />
+                    <span className="grid size-12 place-items-center rounded-xl bg-hover border border-border-soft">
+                      <ImageUp className="size-6 text-t2" strokeWidth={1.6} />
                     </span>
-                    <span className="text-sm font-medium" style={{ color: 'var(--text-1)' }}>
+                    <span className="text-sm font-medium text-t1">
                       Drop a screenshot to place it in the iPhone
                     </span>
-                    <span className="text-xs leading-snug" style={{ color: 'var(--text-4)' }}>
+                    <span className="text-xs leading-snug text-t4">
                       or click to choose a file · PNG, JPG, or WebP
                     </span>
                   </button>
@@ -401,11 +394,11 @@ export default function ToolsDeviceMockupPage({ onNavigate }: ToolsDeviceMockupP
               </div>
 
               <div className="mt-2 flex items-center justify-between px-1">
-                <span className="text-xs" style={{ color: 'var(--text-4)' }}>
+                <span className="text-xs text-t4">
                   {img ? 'Drag the screenshot to line it up' : 'iPhone 17 · 19.5 : 9 screen'}
                 </span>
                 {fileName && (
-                  <span className="max-w-[55%] truncate text-xs" style={{ color: 'var(--text-3)' }} title={fileName}>
+                  <span className="max-w-[55%] truncate text-xs text-t3" title={fileName}>
                     {fileName}
                   </span>
                 )}
@@ -421,8 +414,8 @@ export default function ToolsDeviceMockupPage({ onNavigate }: ToolsDeviceMockupP
                   <SegButton active={fit === 'contain'} onClick={() => onFitChange('contain')} label="Fit whole image" />
                 </div>
                 <Hint>
-                  <strong style={{ color: 'var(--text-2)', fontWeight: 600 }}>Fill the screen</strong> crops the edges so
-                  the screenshot fills edge to edge. <strong style={{ color: 'var(--text-2)', fontWeight: 600 }}>Fit
+                  <strong className="text-t2 font-semibold">Fill the screen</strong> crops the edges so
+                  the screenshot fills edge to edge. <strong className="text-t2 font-semibold">Fit
                   whole image</strong> shows all of it and pads the rest with black. A real phone screenshot fills
                   perfectly.
                 </Hint>
@@ -439,14 +432,10 @@ export default function ToolsDeviceMockupPage({ onNavigate }: ToolsDeviceMockupP
                     value={zoom}
                     disabled={!img}
                     onChange={e => onZoomChange(Number(e.target.value))}
-                    className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full disabled:cursor-not-allowed disabled:opacity-50"
-                    style={{ accentColor: 'var(--accent)', background: 'var(--border)' }}
+                    className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full disabled:cursor-not-allowed disabled:opacity-50 accent-[var(--accent)] bg-border"
                     aria-label="Zoom"
                   />
-                  <span
-                    className="w-12 text-right text-xs tabular-nums"
-                    style={{ color: 'var(--text-2)', fontFamily: "'DM Mono', monospace" }}
-                  >
+                  <span className="w-12 text-right text-xs tabular-nums text-t2 font-mono">
                     {zoom.toFixed(2)}×
                   </span>
                 </div>
@@ -473,7 +462,7 @@ export default function ToolsDeviceMockupPage({ onNavigate }: ToolsDeviceMockupP
                       title={f.name}
                     />
                   ))}
-                  <span className="ml-1 text-xs" style={{ color: 'var(--text-3)' }}>
+                  <span className="ml-1 text-xs text-t3">
                     {frame.name}
                   </span>
                 </div>
@@ -503,8 +492,7 @@ export default function ToolsDeviceMockupPage({ onNavigate }: ToolsDeviceMockupP
                     )
                   })}
                   <label
-                    className="flex size-7 cursor-pointer items-center justify-center overflow-hidden rounded-full"
-                    style={{ border: '1px dashed var(--border-strong)' }}
+                    className="flex size-7 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-dashed border-border-strong"
                     title="Pick a custom background colour"
                   >
                     <input
@@ -525,8 +513,7 @@ export default function ToolsDeviceMockupPage({ onNavigate }: ToolsDeviceMockupP
                   type="button"
                   onClick={recenter}
                   disabled={!img}
-                  className="inline-flex w-fit items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-40"
-                  style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-2)' }}
+                  className="inline-flex w-fit items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-40 bg-card border border-border text-t2"
                 >
                   <Crosshair className="size-3.5" strokeWidth={2} />
                   Recenter &amp; reset zoom
@@ -539,14 +526,13 @@ export default function ToolsDeviceMockupPage({ onNavigate }: ToolsDeviceMockupP
                   type="button"
                   onClick={download}
                   disabled={!img}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-40"
-                  style={{ background: 'var(--accent)', color: 'var(--accent-contrast, #fff)' }}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 bg-accent text-[var(--accent-contrast,#fff)]"
                 >
                   <Download className="size-4" strokeWidth={2.2} />
                   Download mockup PNG
                 </button>
                 <div className="flex items-center justify-between gap-2 px-1">
-                  <span className="text-xs leading-snug" style={{ color: 'var(--text-4)' }}>
+                  <span className="text-xs leading-snug text-t4">
                     {img
                       ? bg === 'transparent'
                         ? 'Transparent PNG — drops onto any background.'
@@ -557,8 +543,7 @@ export default function ToolsDeviceMockupPage({ onNavigate }: ToolsDeviceMockupP
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="shrink-0 text-xs font-medium underline-offset-2 hover:underline"
-                      style={{ color: 'var(--text-3)' }}
+                      className="shrink-0 text-xs font-medium underline-offset-2 hover:underline text-t3"
                     >
                       Replace image
                     </button>
@@ -569,14 +554,7 @@ export default function ToolsDeviceMockupPage({ onNavigate }: ToolsDeviceMockupP
           </div>
 
           {error && (
-            <div
-              className="mt-5 rounded-xl px-4 py-3 text-sm"
-              style={{
-                background: 'var(--danger-soft, color-mix(in oklab, var(--danger) 12%, transparent))',
-                border: '1px solid color-mix(in oklab, var(--danger) 35%, transparent)',
-                color: 'var(--danger)',
-              }}
-            >
+            <div className="mt-5 rounded-xl px-4 py-3 text-sm bg-[var(--danger-soft,color-mix(in_oklab,var(--danger)_12%,transparent))] border border-[color-mix(in_oklab,var(--danger)_35%,transparent)] text-[var(--danger)]">
               {error}
             </div>
           )}
@@ -602,7 +580,7 @@ export default function ToolsDeviceMockupPage({ onNavigate }: ToolsDeviceMockupP
 function Section({ label, children }: { label: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-2">
-      <span className="text-xs font-medium uppercase tracking-wide" style={{ color: 'var(--text-4)' }}>
+      <span className="text-xs font-medium uppercase tracking-wide text-t4">
         {label}
       </span>
       {children}
@@ -612,7 +590,7 @@ function Section({ label, children }: { label: string; children: ReactNode }) {
 
 function Hint({ children }: { children: ReactNode }) {
   return (
-    <p className="text-xs leading-snug" style={{ color: 'var(--text-3)' }}>
+    <p className="text-xs leading-snug text-t3">
       {children}
     </p>
   )
@@ -624,12 +602,11 @@ function SegButton({ active, onClick, label }: { active: boolean; onClick: () =>
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className="rounded-lg px-3 py-2 text-sm font-medium transition"
-      style={{
-        background: active ? 'color-mix(in oklab, var(--accent) 14%, transparent)' : 'var(--bg-card)',
-        border: `1px solid ${active ? 'var(--accent)' : 'var(--border)'}`,
-        color: active ? 'var(--accent)' : 'var(--text-2)',
-      }}
+      className={`rounded-lg px-3 py-2 text-sm font-medium transition border ${
+        active
+          ? 'bg-[color-mix(in_oklab,var(--accent)_14%,transparent)] border-accent text-accent'
+          : 'bg-card border-border text-t2'
+      }`}
     >
       {label}
     </button>
