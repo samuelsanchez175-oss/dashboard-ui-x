@@ -123,8 +123,10 @@ export default function ToolsStemSplitterPage({ onNavigate }: ToolsStemSplitterP
       const body = await renderFiltered(buffer, 'lowpass', crossoverHz)
       const bright = await renderFiltered(buffer, 'highpass', crossoverHz)
 
-      triggerDownload(bufferToMonoWav(body), `${name}_body_crossover_lp.wav`)
-      triggerDownload(bufferToMonoWav(bright), `${name}_brightness_crossover_hp.wav`)
+      triggerDownload(bufferToMonoWav(body), `${name}_body_crossover_lp.wav`,
+        { sourceTool: 'tools-stem-splitter', outputType: 'stems', tags: ['stems', 'body'] })
+      triggerDownload(bufferToMonoWav(bright), `${name}_brightness_crossover_hp.wav`,
+        { sourceTool: 'tools-stem-splitter', outputType: 'stems', tags: ['stems', 'brightness'] })
     } finally {
       setProcessing(false)
     }
@@ -169,7 +171,8 @@ export default function ToolsStemSplitterPage({ onNavigate }: ToolsStemSplitterP
       for (let i = 0; i < urls.length; i++) {
         const sr = await fetch(urls[i]!)
         const blob = await sr.blob()
-        triggerDownload(blob, `${name}_remote_stem_${i + 1}.wav`)
+        triggerDownload(blob, `${name}_remote_stem_${i + 1}.wav`,
+          { sourceTool: 'tools-stem-splitter', outputType: 'stems', tags: ['stems', `stem-${i + 1}`, 'remote'] })
       }
     } catch {
       console.warn('[stem-service] Stub request failed; check URL, JSON shape (see ToolsStemSplitter comments), or CORS.')
