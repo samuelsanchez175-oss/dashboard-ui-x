@@ -1,7 +1,7 @@
-import { ChevronRight, PanelLeftOpen, Search, Wrench, X } from 'lucide-react'
+import { ChevronRight, PanelLeftOpen, Search, Wrench, X, Zap } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { getToolById, toolAcceptsMime } from '../../lib/toolsRegistry'
+import { getToolById, toolAcceptsMime, fileInputTools } from '../../lib/toolsRegistry'
 import { startDropRun } from '../../lib/tool-drop-run'
 import { useGlobalDrag } from '../../hooks/useGlobalDrag'
 import StudioToolsHeader from './StudioToolsHeader'
@@ -45,6 +45,34 @@ function filteredNavSections(sections: NavSection[], query: string): NavSection[
 
 function countItems(sections: NavSection[]): number {
   return sections.reduce((sum, section) => sum + section.items.length, 0)
+}
+
+/**
+ * Capability sub-grouping for the flat TOOLS section — groups the destinations
+ * by what they *do* rather than one long list. Unmapped items (e.g. the hub
+ * itself) fall into "More".
+ */
+const CAP_GROUPS: { id: string; title: string }[] = [
+  { id: 'audio',   title: 'Audio & Music' },
+  { id: 'media',   title: 'Media' },
+  { id: 'design',  title: 'Design & Export' },
+  { id: 'utility', title: 'Utility' },
+  { id: 'more',    title: 'More' },
+]
+const HUB_GROUP: Record<string, string> = {
+  'tools-key-finder': 'audio', 'tools-chord-detector': 'audio', 'tools-note-detector-2': 'audio',
+  'tools-stem-splitter': 'audio', 'tools-sample-slicer': 'audio', 'tools-tempo-tap': 'audio',
+  'tools-metronome-export': 'audio',
+  'tools-youtube-downloader': 'media',
+  'tools-app-icon': 'design', 'tools-device-mockup': 'design',
+  'tools-phonetics-inspector': 'utility', 'tools-session-timer': 'utility', 'tools-arrangement-pad': 'utility',
+}
+const hubGroupOf = (id: string): string => HUB_GROUP[id] ?? 'more'
+
+function groupToolsByCapability(items: NavItem[]): { id: string; title: string; items: NavItem[] }[] {
+  return CAP_GROUPS
+    .map(g => ({ ...g, items: items.filter(it => hubGroupOf(it.id) === g.id) }))
+    .filter(g => g.items.length > 0)
 }
 
 function ToolRow({
@@ -254,21 +282,48 @@ function NavSectionCard({
           {section.items.length}
         </span>
       </div>
-      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-        {section.items.map((item, itemIndex) => (
-          <ToolRow
-            key={item.id}
-            item={item}
-            sectionTitle={section.title}
-            onNavigate={onNavigate}
-            toneIndex={sectionIndex + itemIndex}
-            onSidebar={isOnSidebar(section.id, item.id)}
-            onRestore={onRestore}
-            dragging={dragging}
-            dragMime={dragMime}
-          />
-        ))}
-      </div>
+      {section.id === 'tools' ? (
+        <div className="space-y-4">
+          {groupToolsByCapability(section.items).map((g, gi) => (
+            <div key={g.id}>
+              <div className="mb-2 mono text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--text-4)' }}>
+                {g.title}
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                {g.items.map((item, itemIndex) => (
+                  <ToolRow
+                    key={item.id}
+                    item={item}
+                    sectionTitle={section.title}
+                    onNavigate={onNavigate}
+                    toneIndex={gi * 3 + itemIndex}
+                    onSidebar={isOnSidebar(section.id, item.id)}
+                    onRestore={onRestore}
+                    dragging={dragging}
+                    dragMime={dragMime}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+          {section.items.map((item, itemIndex) => (
+            <ToolRow
+              key={item.id}
+              item={item}
+              sectionTitle={section.title}
+              onNavigate={onNavigate}
+              toneIndex={sectionIndex + itemIndex}
+              onSidebar={isOnSidebar(section.id, item.id)}
+              onRestore={onRestore}
+              dragging={dragging}
+              dragMime={dragMime}
+            />
+          ))}
+        </div>
+      )}
     </section>
   )
 }
@@ -295,6 +350,14 @@ export default function ToolsHubZone({ onNavigate }: ToolsHubZoneProps) {
     [allToolsSections, query],
   )
   const filteredCount = useMemo(() => countItems(sections), [sections])
+
+  // Fast-lane: the drop-capable tools, pinned at the top for quick drag-and-drop.
+  const dropTools = useMemo<NavItem[]>(() => {
+    const q = query.trim().toLowerCase()
+    return fileInputTools()
+      .map(t => ({ id: t.id, label: t.label, icon: t.icon, badge: t.badge }))
+      .filter(it => !q || `${it.label} ${it.id}`.toLowerCase().includes(q))
+  }, [query])
 
   const isOnSidebar = useCallback(
     (sectionId: string, itemId: string) => isNavItemOnSidebar(layout, sectionId, itemId),
@@ -416,22 +479,43 @@ export default function ToolsHubZone({ onNavigate }: ToolsHubZoneProps) {
             )}
           </div>
 
-          {sections.length === 0 ? (
-            <div
-              className="rounded-2xl py-16 text-center"
-              style={{ border: '1px dashed var(--border-strong)' }}
-            >
-              <Search className="mx-auto mb-3 size-7" style={{ color: 'var(--text-4)' }} strokeWidth={1.5} aria-hidden />
-              <div className="mb-1 text-sm font-medium" style={{ color: 'var(--text-2)' }}>
-                No destinations match &quot;{query}&quot;
-              </div>
-              <div className="text-xs" style={{ color: 'var(--text-3)' }}>
-                Try a section name, tool name, custom zone, or route ID.
-              </div>
-            </div>
-          ) : (
-            <div className="grid gap-[var(--grid-gap)]">
-              {sections.map((section, sectionIndex) => (
+          <div className="grid gap-[var(--grid-gap)]">
+            {/* Fast-lane: drop-ready tools pinned at the top */}
+            {dropTools.length > 0 && (
+              <section
+                className="rounded-2xl p-4"
+                style={{
+                  border:     '1px solid color-mix(in oklab, var(--accent) 40%, var(--border))',
+                  background: 'color-mix(in oklab, var(--accent) 6%, var(--bg-muted))',
+                }}
+              >
+                <div className="mb-3 flex items-center gap-2">
+                  <Zap className="size-4" style={{ color: 'var(--accent)' }} strokeWidth={2} aria-hidden />
+                  <h2 className="mono text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--accent)' }}>
+                    Drop-ready tools
+                  </h2>
+                  <span className="text-xs" style={{ color: 'var(--text-4)' }}>drag a file onto any of these to run it</span>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                  {dropTools.map((item, i) => (
+                    <ToolRow
+                      key={item.id}
+                      item={item}
+                      sectionTitle="Drop-ready"
+                      onNavigate={onNavigate}
+                      toneIndex={i}
+                      onSidebar
+                      onRestore={() => {}}
+                      dragging={dragging}
+                      dragMime={dragMime}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {sections.length > 0 ? (
+              sections.map((section, sectionIndex) => (
                 <NavSectionCard
                   key={section.id}
                   section={section}
@@ -442,9 +526,22 @@ export default function ToolsHubZone({ onNavigate }: ToolsHubZoneProps) {
                   dragging={dragging}
                   dragMime={dragMime}
                 />
-              ))}
-            </div>
-          )}
+              ))
+            ) : dropTools.length === 0 ? (
+              <div
+                className="rounded-2xl py-16 text-center"
+                style={{ border: '1px dashed var(--border-strong)' }}
+              >
+                <Search className="mx-auto mb-3 size-7" style={{ color: 'var(--text-4)' }} strokeWidth={1.5} aria-hidden />
+                <div className="mb-1 text-sm font-medium" style={{ color: 'var(--text-2)' }}>
+                  No destinations match &quot;{query}&quot;
+                </div>
+                <div className="text-xs" style={{ color: 'var(--text-3)' }}>
+                  Try a section name, tool name, custom zone, or route ID.
+                </div>
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
     </div>
