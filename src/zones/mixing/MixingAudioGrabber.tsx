@@ -36,7 +36,10 @@ function triggerFileDownload(blob: Blob, filename: string) {
 async function pushMp3ToDock(blob: Blob, filename: string): Promise<string | null> {
   const safeName = filename.endsWith('.mp3') ? filename : `${filename}.mp3`
   try {
-    const row = await addDownloadedFile({ blob, name: safeName, source: 'YouTube grab', lane: 'downloads' })
+    const row = await addDownloadedFile({
+      blob, name: safeName, source: 'YouTube grab', lane: 'downloads',
+      sourceTool: 'tools-youtube-downloader', outputType: 'yt-download', tags: ['youtube', 'mp3'],
+    })
     return row.id
   } catch {
     return null
@@ -93,6 +96,8 @@ async function fetchYoutubeThumbnail(videoId: string, title: string): Promise<vo
         blob,
         name:   `${safeTitle}.jpg`,
         source: 'YouTube thumbnail',
+        sourceTool: 'tools-youtube-downloader',
+        outputType: 'thumbnail',
       })
       return
     } catch {

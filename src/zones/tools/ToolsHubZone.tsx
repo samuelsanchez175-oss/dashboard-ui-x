@@ -1,6 +1,9 @@
 import { ChevronRight, PanelLeftOpen, Search, Wrench, X } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import { getToolById, toolAcceptsMime } from '../../lib/toolsRegistry'
+import { startDropRun } from '../../lib/tool-drop-run'
+import { useGlobalDrag } from '../../hooks/useGlobalDrag'
 import StudioToolsHeader from './StudioToolsHeader'
 import HeroBand from '../../components/HeroBand'
 import ZoneHeader from '../../components/ZoneHeader'
@@ -51,6 +54,8 @@ function ToolRow({
   toneIndex,
   onSidebar,
   onRestore,
+  dragging,
+  dragMime,
 }: {
   item: NavItem
   sectionTitle: string
@@ -60,8 +65,35 @@ function ToolRow({
   onSidebar: boolean
   /** Put a removed tool back on the sidebar (the no-drag path). */
   onRestore: (id: string) => void
+  /** True while an OS file is being dragged over the window. */
+  dragging: boolean
+  /** Mime of the dragged file (for drop-target eligibility). */
+  dragMime: string
 }) {
   const Icon = item.icon
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [over, setOver] = useState(false)
+
+  // Map this nav item back to its tool def (undefined for zones/non-tools).
+  const tool = getToolById(item.id)
+  const accepts = tool?.accepts
+  const eligible = dragging && !!tool && toolAcceptsMime(tool, dragMime || 'application/octet-stream')
+
+  const isFileDrag = (e: React.DragEvent) => Array.from(e.dataTransfer.types).includes('Files')
+
+  const onFileDrop = (e: React.DragEvent) => {
+    if (!tool || !accepts || !isFileDrag(e)) return // ignore the tile→sidebar nav drag
+    e.preventDefault(); e.stopPropagation(); setOver(false)
+    const f = e.dataTransfer.files?.[0]
+    if (f && toolAcceptsMime(tool, f.type || 'application/octet-stream')) void startDropRun(tool, f)
+  }
+  const onPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]
+    if (f && tool) void startDropRun(tool, f)
+    e.target.value = ''
+  }
+  const acceptAttr = accepts?.[0] === 'image/' ? 'image/*' : accepts?.[0] === 'audio/' ? 'audio/*' : undefined
+
   const tones = [
     TONE_DARK.red,
     TONE_DARK.violet,
@@ -73,7 +105,13 @@ function ToolRow({
   const tone = tones[toneIndex % tones.length]
 
   return (
-    <div className="relative">
+    <div
+      className="relative"
+      onDragOver={e => { if (accepts && isFileDrag(e)) { e.preventDefault(); setOver(true) } }}
+      onDragLeave={() => setOver(false)}
+      onDrop={onFileDrop}
+      style={eligible || over ? { outline: '2px solid var(--accent)', outlineOffset: 2, borderRadius: 14 } : undefined}
+    >
       <button
         type="button"
         draggable
@@ -116,7 +154,7 @@ function ToolRow({
             className="mono block truncate text-[10px] uppercase tracking-wide"
             style={{ color: onSidebar ? 'var(--text-4)' : 'var(--accent)' }}
           >
-            {onSidebar ? `${sectionTitle} · ${item.id}` : 'Not on sidebar · drag to add'}
+            {eligible ? 'Drop file to run' : onSidebar ? `${sectionTitle} · ${item.id}` : 'Not on sidebar · drag to add'}
           </span>
         </span>
         {item.badge != null && (
@@ -129,6 +167,34 @@ function ToolRow({
         )}
         <ChevronRight className="size-4 shrink-0 transition group-hover:translate-x-0.5" style={{ color: 'var(--text-4)' }} aria-hidden />
       </button>
+
+      {tool?.quickActions && tool.quickActions.length > 0 && (
+        <div className="mt-1.5 flex flex-wrap items-center gap-1.5 pl-1">
+          {tool.quickActions.map(qa => (
+            <button
+              key={qa.id}
+              type="button"
+              onClick={e => {
+                e.stopPropagation()
+                if (qa.id === 'upload') fileInputRef.current?.click()
+                else onNavigate(item.id)
+              }}
+              className="rounded-md px-2 py-1 text-[11px] font-medium transition"
+              style={{ background: 'var(--bg-hover)', color: 'var(--text-2)', border: '1px solid var(--border)' }}
+            >
+              {qa.label}
+            </button>
+          ))}
+          {accepts && (
+            <span className="mono text-[10px] uppercase tracking-wide" style={{ color: 'var(--text-4)' }}>or drop a file</span>
+          )}
+        </div>
+      )}
+
+      {accepts && (
+        <input ref={fileInputRef} type="file" hidden accept={acceptAttr} onChange={onPick} />
+      )}
+
       {!onSidebar && (
         <button
           type="button"
@@ -152,12 +218,16 @@ function NavSectionCard({
   onNavigate,
   isOnSidebar,
   onRestore,
+  dragging,
+  dragMime,
 }: {
   section: NavSection
   sectionIndex: number
   onNavigate: (routeId: string) => void
   isOnSidebar: (sectionId: string, itemId: string) => boolean
   onRestore: (id: string) => void
+  dragging: boolean
+  dragMime: string
 }) {
   return (
     <section
@@ -194,6 +264,8 @@ function NavSectionCard({
             toneIndex={sectionIndex + itemIndex}
             onSidebar={isOnSidebar(section.id, item.id)}
             onRestore={onRestore}
+            dragging={dragging}
+            dragMime={dragMime}
           />
         ))}
       </div>
@@ -206,6 +278,7 @@ export default function ToolsHubZone({ onNavigate }: ToolsHubZoneProps) {
   const [query, setQuery]   = useState('')
   const [isSearchFocused, setIsSearchFocused] = useState(false)
   const { allToolsSections, allToolsItemCount } = useSidebarNavModel(layout)
+  const { dragging, mime: dragMime } = useGlobalDrag()
 
   useEffect(() => {
     const refreshLayout = () => setLayout(loadSidebarNavLayout())
@@ -366,6 +439,8 @@ export default function ToolsHubZone({ onNavigate }: ToolsHubZoneProps) {
                   onNavigate={onNavigate}
                   isOnSidebar={isOnSidebar}
                   onRestore={restoreToSidebar}
+                  dragging={dragging}
+                  dragMime={dragMime}
                 />
               ))}
             </div>

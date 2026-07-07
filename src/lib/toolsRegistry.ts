@@ -58,6 +58,15 @@ export interface ToolDef {
    * (e.g. all `'audio'` tools accept inbound clips from the grabber).
    */
   family?: ToolFamily
+  /**
+   * Mime prefixes this tool accepts as a dropped / uploaded file (e.g.
+   * `['audio/']`, `['image/']`, or `['*']` for any). Omit for tools that take
+   * no file input (URL-based or interactive). Drives drop-to-run eligibility
+   * on hub tiles and sidebar tabs.
+   */
+  accepts?: string[]
+  /** Small action buttons rendered under the tile in the Tools Hub. */
+  quickActions?: { id: string; label: string }[]
 }
 
 export const TOOLS_REGISTRY: ToolDef[] = [
@@ -70,6 +79,7 @@ export const TOOLS_REGISTRY: ToolDef[] = [
     category:    'utility',
     description: 'Pull audio from any YouTube link as MP3.',
     family:      'audio',
+    quickActions: [{ id: 'open', label: 'Paste URL' }],
     dock: {
       pinTab:       'downloads',
       openOnLaunch: true,
@@ -84,6 +94,8 @@ export const TOOLS_REGISTRY: ToolDef[] = [
     category:    'audio',
     description: 'Find key, BPM, and scale, and split into downloadable stems — in one drop.',
     family:      'detection',
+    accepts:     ['audio/'],
+    quickActions: [{ id: 'upload', label: 'Upload audio' }],
     dock: {
       pinTab: 'analysis',
     },
@@ -98,6 +110,8 @@ export const TOOLS_REGISTRY: ToolDef[] = [
     description: 'Transcribe chord progression from audio.',
     badge:       'Beta',
     family:      'detection',
+    accepts:     ['audio/'],
+    quickActions: [{ id: 'upload', label: 'Upload audio' }],
   },
   {
     /* Docker-backed sibling of Chord Detector — Demucs stem separation +
@@ -113,6 +127,8 @@ export const TOOLS_REGISTRY: ToolDef[] = [
     description: 'Demucs-split audio → per-stem MIDI (local Docker service).',
     badge:       'Beta',
     family:      'detection',
+    accepts:     ['audio/'],
+    quickActions: [{ id: 'upload', label: 'Upload audio' }],
   },
   {
     id:          'tools-tempo-tap',
@@ -163,6 +179,8 @@ export const TOOLS_REGISTRY: ToolDef[] = [
     icon:        Crop,
     category:    'audio',
     description: 'Waveform trim handles and export selection as WAV.',
+    accepts:     ['audio/'],
+    quickActions: [{ id: 'upload', label: 'Upload audio' }],
   },
   {
     id:          'tools-stem-splitter',
@@ -173,6 +191,8 @@ export const TOOLS_REGISTRY: ToolDef[] = [
     description: 'Crossover “brightness vs body” split — not ML isolation.',
     badge:       'Beta',
     family:      'detection',
+    accepts:     ['audio/'],
+    quickActions: [{ id: 'upload', label: 'Upload audio' }],
   },
   {
     id:          'tools-app-icon',
@@ -182,6 +202,8 @@ export const TOOLS_REGISTRY: ToolDef[] = [
     icon:        AppWindow,
     category:    'utility',
     description: 'Align any image to a 1024×1024 App Store Connect icon and export PNG.',
+    accepts:     ['image/'],
+    quickActions: [{ id: 'upload', label: 'Upload image' }],
   },
   {
     id:          'tools-device-mockup',
@@ -191,12 +213,24 @@ export const TOOLS_REGISTRY: ToolDef[] = [
     icon:        Smartphone,
     category:    'utility',
     description: 'Drop a screenshot into a clean iPhone 17 frame and export a transparent PNG.',
+    accepts:     ['image/'],
+    quickActions: [{ id: 'upload', label: 'Upload image' }],
   },
 ]
 
 export function getToolById(id: string): ToolDef | undefined {
   return TOOLS_REGISTRY.find(t => t.id === id)
 }
+
+/** Does this tool accept a file of the given mime type as drop/upload input? */
+export function toolAcceptsMime(tool: ToolDef, mime: string): boolean {
+  if (!tool.accepts || tool.accepts.length === 0) return false
+  return tool.accepts.some(a => a === '*' || mime.startsWith(a))
+}
+
+/** Tools that accept a file input (drop-to-run eligible). */
+export const fileInputTools = (): ToolDef[] =>
+  TOOLS_REGISTRY.filter(t => t.accepts && t.accepts.length > 0)
 
 export function getToolLabel(id: string): string | undefined {
   const t = getToolById(id)
