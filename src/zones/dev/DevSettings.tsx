@@ -4,7 +4,7 @@
  * for precedence vs `.env.local`.
  */
 
-import { Fragment, useCallback, useEffect, useId, useMemo, useState, type CSSProperties } from 'react'
+import { Fragment, useCallback, useEffect, useId, useMemo, useState } from 'react'
 import {
   CheckCircle2,
   ChevronDown,
@@ -218,7 +218,7 @@ export default function DevSettings({ onNavigate }: DevSettingsProps) {
   }, [loadLocal])
 
   return (
-    <div className="flex-1 overflow-auto" style={{ background: 'var(--bg-canvas)', color: 'var(--text-1)' }}>
+    <div className="flex-1 overflow-auto bg-canvas text-t1">
       <div className={`${CONTAINERS.hub} space-y-8 py-6 md:py-8`}>
 
         <ZoneHeader
@@ -226,9 +226,9 @@ export default function DevSettings({ onNavigate }: DevSettingsProps) {
           icon={KeyRound}
           description={
             <>
-              Scratch values live in <code style={chipStyle()}>localStorage</code> and ride on <code style={chipStyle()}>/api/*</code> as{' '}
-              <code style={chipStyle()}>x-user-key-*</code> when supported — the dev BFF prefers them over <code style={chipStyle()}>.env.local</code>.{' '}
-              <a href="#settings-key-resolution" className="font-medium underline decoration-dotted underline-offset-2" style={{ color: 'var(--accent)' }}>
+              Scratch values live in <code className={chipCls}>localStorage</code> and ride on <code className={chipCls}>/api/*</code> as{' '}
+              <code className={chipCls}>x-user-key-*</code> when supported — the dev BFF prefers them over <code className={chipCls}>.env.local</code>.{' '}
+              <a href="#settings-key-resolution" className="font-medium underline decoration-dotted underline-offset-2 text-accent">
                 How resolution works
               </a>
               {onNavigate && (
@@ -237,8 +237,7 @@ export default function DevSettings({ onNavigate }: DevSettingsProps) {
                   <button
                     type="button"
                     onClick={() => onNavigate('dev-diagnostics')}
-                    className="font-medium underline decoration-dotted underline-offset-2"
-                    style={{ color: 'var(--accent)' }}
+                    className="font-medium underline decoration-dotted underline-offset-2 text-accent"
                   >
                     Diagnostics
                   </button>
@@ -250,44 +249,42 @@ export default function DevSettings({ onNavigate }: DevSettingsProps) {
 
         <section
           id="settings-key-resolution"
-          className="space-y-2 rounded-lg border p-4"
-          style={{ background: 'var(--accent-soft)', borderColor: 'color-mix(in oklab, var(--accent) 22%, var(--border))' }}
+          className="space-y-2 rounded-lg border p-4 bg-accent-soft border-[color-mix(in_oklab,var(--accent)_22%,var(--border))]"
           aria-labelledby={`${baseId}-resolve`}
         >
-          <h2 id={`${baseId}-resolve`} className="flex items-center gap-2 text-xs font-semibold md:text-sm" style={{ color: 'var(--accent-fg)' }}>
+          <h2 id={`${baseId}-resolve`} className="flex items-center gap-2 text-xs font-semibold md:text-sm text-accent-fg">
             <Lock className="size-3.5 shrink-0 md:size-4" aria-hidden />
             Key resolution (single source)
           </h2>
-          <ul className="list-disc space-y-0.5 pl-4 text-[11px] leading-snug md:text-xs" style={{ color: 'var(--text-2)' }}>
-            <li>Non-empty scratch wins for keys the BFF reads via <code style={chipStyle()}>pickKey</code> (see each row&apos;s Source note).</li>
-            <li><strong>ENV</strong> = set in server <code style={chipStyle()}>.env.local</code>; <strong>LOCAL</strong> = scratch only; <strong>BOTH</strong> = scratch wins.</li>
-            <li><strong>Test</strong> hits the mapped route with <code style={chipStyle()}>fetchWithKeys</code> (same headers as the rest of the app).</li>
-            <li>Scratch is not encrypted — dev-only. Rows marked &quot;server <code style={chipStyle()}>.env</code> only&quot; ignore browser headers.</li>
+          <ul className="list-disc space-y-0.5 pl-4 text-[11px] leading-snug md:text-xs text-t2">
+            <li>Non-empty scratch wins for keys the BFF reads via <code className={chipCls}>pickKey</code> (see each row&apos;s Source note).</li>
+            <li><strong>ENV</strong> = set in server <code className={chipCls}>.env.local</code>; <strong>LOCAL</strong> = scratch only; <strong>BOTH</strong> = scratch wins.</li>
+            <li><strong>Test</strong> hits the mapped route with <code className={chipCls}>fetchWithKeys</code> (same headers as the rest of the app).</li>
+            <li>Scratch is not encrypted — dev-only. Rows marked &quot;server <code className={chipCls}>.env</code> only&quot; ignore browser headers.</li>
           </ul>
         </section>
 
         <section aria-labelledby={`${baseId}-doc`} id="settings-api-keys">
           <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-            <h2 id={`${baseId}-doc`} className="flex items-center gap-2 text-xs font-semibold md:text-sm" style={{ color: 'var(--text-1)' }}>
-              <Server className="size-3.5 shrink-0 md:size-4" style={{ color: 'var(--text-3)' }} aria-hidden />
+            <h2 id={`${baseId}-doc`} className="flex items-center gap-2 text-xs font-semibold md:text-sm text-t1">
+              <Server className="size-3.5 shrink-0 md:size-4 text-t3" aria-hidden />
               Integration keys
             </h2>
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
                 onClick={() => setAddOpen(true)}
-                className="inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-semibold transition md:text-xs"
-                style={{ background: 'var(--accent-soft)', border: '1px solid color-mix(in oklab, var(--accent) 28%, var(--border))', color: 'var(--accent-fg)' }}
+                className="inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-semibold transition md:text-xs bg-accent-soft border border-[color-mix(in_oklab,var(--accent)_28%,var(--border))] text-accent-fg"
               >
                 <Plus className="size-3 shrink-0" aria-hidden />
                 Add variable / OAuth
               </button>
-              {copyHint && <span className="text-[11px]" role="status" style={{ color: 'var(--good)' }}>{copyHint}</span>}
+              {copyHint && <span className="text-[11px] text-good" role="status">{copyHint}</span>}
               <button
                 type="button"
                 onClick={() => void copyEnvSnippet()}
-                className="inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-medium transition md:text-xs"
-                style={{ ...SURFACES.cardStyle, color: 'var(--text-1)' }}
+                className="inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-medium transition md:text-xs text-t1"
+                style={SURFACES.cardStyle}
               >
                 <ClipboardCopy className="size-3 shrink-0" aria-hidden />
                 Copy .env lines
@@ -339,10 +336,7 @@ export default function DevSettings({ onNavigate }: DevSettingsProps) {
 
               return (
                 <section key={section.id} className="flex flex-col gap-2.5">
-                  <h2
-                    className="text-[10px] font-semibold uppercase tracking-[0.15em]"
-                    style={{ color: 'var(--text-3)' }}
-                  >
+                  <h2 className="text-[10px] font-semibold uppercase tracking-[0.15em] text-t3">
                     {section.title}
                   </h2>
                   <div className="grid gap-3 lg:grid-cols-2">
@@ -384,11 +378,8 @@ export default function DevSettings({ onNavigate }: DevSettingsProps) {
           </div>
 
           {(customOnlyGroups.length > 0) && (
-            <div className="mt-6 overflow-hidden rounded-lg border" style={{ borderColor: 'var(--border)', background: 'var(--bg-card)' }}>
-              <div
-                className="border-b px-3 py-2 text-[11px] font-semibold uppercase tracking-wide md:px-4 md:text-xs"
-                style={{ background: 'var(--bg-muted)', borderColor: 'var(--border)', color: 'var(--text-2)' }}
-              >
+            <div className="mt-6 overflow-hidden rounded-lg border border-border bg-card">
+              <div className="border-b px-3 py-2 text-[11px] font-semibold uppercase tracking-wide md:px-4 md:text-xs bg-muted border-border text-t2">
                 Custom &amp; OAuth
               </div>
               <div className="overflow-x-auto">
@@ -405,8 +396,8 @@ export default function DevSettings({ onNavigate }: DevSettingsProps) {
                     <col style={{ width: '13rem' }} /> {/* Local value */}
                     <col style={{ width: '6rem' }} />  {/* Actions */}
                   </colgroup>
-                  <thead style={{ color: 'var(--text-3)' }}>
-                    <tr className="border-b" style={{ borderColor: 'var(--border-soft)' }}>
+                  <thead className="text-t3">
+                    <tr className="border-b border-border-soft">
                       <th className="px-2 py-2 font-medium md:px-3">Key(s)</th>
                       <th className="px-2 py-2 font-medium md:px-3">Role</th>
                       <th className="px-2 py-2 font-medium md:px-3">Notes</th>
@@ -439,14 +430,10 @@ export default function DevSettings({ onNavigate }: DevSettingsProps) {
                       }
                       return (
                         <Fragment key={`oauth-${group.pairId}`}>
-                          <tr style={{ borderBottom: '1px solid var(--border-soft)' }}>
+                          <tr className="border-b border-border-soft">
                             <td
                               colSpan={6}
-                              className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wide md:px-3"
-                              style={{
-                                background: 'color-mix(in oklab, var(--accent-soft) 88%, transparent)',
-                                color: 'var(--accent-fg)',
-                              }}
+                              className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wide md:px-3 bg-[color-mix(in_oklab,var(--accent-soft)_88%,transparent)] text-accent-fg"
                             >
                               OAuth · {group.label}
                             </td>
@@ -490,34 +477,33 @@ export default function DevSettings({ onNavigate }: DevSettingsProps) {
         </section>
 
         <section aria-labelledby={`${baseId}-vite`}>
-          <h2 id={`${baseId}-vite`} className="mb-2 flex items-center gap-2 text-xs font-semibold md:text-sm" style={{ color: 'var(--text-1)' }}>
-            <Info className="size-3.5 shrink-0 md:size-4" style={{ color: 'var(--text-3)' }} aria-hidden />
-            <code style={chipStyle()}>import.meta.env</code>
-            <span className="font-normal" style={{ color: 'var(--text-3)' }}>(dev snapshot)</span>
+          <h2 id={`${baseId}-vite`} className="mb-2 flex items-center gap-2 text-xs font-semibold md:text-sm text-t1">
+            <Info className="size-3.5 shrink-0 md:size-4 text-t3" aria-hidden />
+            <code className={chipCls}>import.meta.env</code>
+            <span className="font-normal text-t3">(dev snapshot)</span>
           </h2>
-          <p className="mb-2 text-[11px] md:text-xs" style={{ color: 'var(--text-3)' }}>
-            Masked snapshot; add <code style={chipStyle()}>VITE_*</code> to <code style={chipStyle()}>.env.local</code> and restart dev.
+          <p className="mb-2 text-[11px] md:text-xs text-t3">
+            Masked snapshot; add <code className={chipCls}>VITE_*</code> to <code className={chipCls}>.env.local</code> and restart dev.
           </p>
           <ul className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
             {viteSnapshot.map(({ key, display }) => (
               <li
                 key={key}
-                className="flex items-center justify-between rounded-md border px-2 py-1.5 text-[11px] md:text-xs"
-                style={{ background: 'var(--bg-card-soft)', borderColor: 'var(--border-soft)' }}
+                className="flex items-center justify-between rounded-md border px-2 py-1.5 text-[11px] md:text-xs bg-card-soft border-border-soft"
               >
-                <span className="mono truncate font-mono" style={{ color: 'var(--text-2)' }}>{key}</span>
-                <span className="ml-2 shrink-0 tabular-nums" style={{ color: 'var(--text-1)' }}>{display}</span>
+                <span className="mono truncate font-mono text-t2">{key}</span>
+                <span className="ml-2 shrink-0 tabular-nums text-t1">{display}</span>
               </li>
             ))}
           </ul>
         </section>
 
         <section aria-labelledby={`${baseId}-content`}>
-          <h2 id={`${baseId}-content`} className="mb-2 text-xs font-semibold md:text-sm" style={{ color: 'var(--text-1)' }}>
+          <h2 id={`${baseId}-content`} className="mb-2 text-xs font-semibold md:text-sm text-t1">
             Local content previews
           </h2>
-          <p className="mb-2 text-[11px] md:text-xs" style={{ color: 'var(--text-3)' }}>
-            <code style={chipStyle()}>content/prompts</code> / <code style={chipStyle()}>content/presets</code> via <code style={chipStyle()}>/api/local/file?path=…</code>
+          <p className="mb-2 text-[11px] md:text-xs text-t3">
+            <code className={chipCls}>content/prompts</code> / <code className={chipCls}>content/presets</code> via <code className={chipCls}>/api/local/file?path=…</code>
           </p>
           <div className="grid gap-3 md:grid-cols-2">
             {[
@@ -526,11 +512,10 @@ export default function DevSettings({ onNavigate }: DevSettingsProps) {
             ].map(p => (
               <div
                 key={p.title}
-                className="rounded-lg border p-3"
-                style={{ background: 'var(--bg-card-soft)', borderColor: 'var(--border)' }}
+                className="rounded-lg border p-3 bg-card-soft border-border"
               >
-                <p className="mb-1.5 text-[11px] font-medium md:text-xs" style={{ color: 'var(--text-3)' }}>{p.title}</p>
-                <pre className="max-h-40 overflow-auto font-mono text-[10px] md:text-[11px]" style={{ color: 'var(--text-2)', whiteSpace: 'pre-wrap' }}>
+                <p className="mb-1.5 text-[11px] font-medium md:text-xs text-t3">{p.title}</p>
+                <pre className="max-h-40 overflow-auto font-mono text-[10px] md:text-[11px] whitespace-pre-wrap text-t2">
                   {p.body || '—'}
                 </pre>
               </div>
@@ -539,10 +524,10 @@ export default function DevSettings({ onNavigate }: DevSettingsProps) {
         </section>
 
         <section aria-labelledby={`${baseId}-vault`}>
-          <h2 id={`${baseId}-vault`} className="mb-2 text-xs font-semibold md:text-sm" style={{ color: 'var(--text-1)' }}>
+          <h2 id={`${baseId}-vault`} className="mb-2 text-xs font-semibold md:text-sm text-t1">
             Secure vault (browser)
           </h2>
-          <div className="overflow-hidden rounded-lg border" style={{ background: 'var(--bg-card-soft)', borderColor: 'var(--border)' }}>
+          <div className="overflow-hidden rounded-lg border bg-card-soft border-border">
             <SecureVault />
           </div>
         </section>
@@ -909,8 +894,8 @@ function ModelEnvFieldRow({
         </p>
       ) : !entry.supportsLocalScratch ? (
         <p className="text-[11px] leading-snug" style={{ color: 'var(--text-3)' }}>
-          Server <code style={chipStyle()}>.env.local</code> only — not sent as{' '}
-          <code style={chipStyle()}>x-user-key-*</code>.
+          Server <code className={chipCls}>.env.local</code> only — not sent as{' '}
+          <code className={chipCls}>x-user-key-*</code>.
         </p>
       ) : (
         <div className="flex flex-wrap items-stretch gap-2">
@@ -928,8 +913,7 @@ function ModelEnvFieldRow({
                   ? `Paste ${fieldLabel}…`
                   : `Enter ${fieldLabel.toLowerCase()}…`
               }
-              className="w-full rounded-md px-2.5 py-2 pr-9 font-mono text-[11px] outline-none md:text-[12px]"
-              style={inputStyle()}
+              className={`w-full rounded-md px-2.5 py-2 pr-9 font-mono text-[11px] outline-none md:text-[12px] ${inputCls}`}
             />
             {entry.inputKind === 'secret' && (
               <button
@@ -1014,7 +998,7 @@ function ViteMetaCard({ row }: { row: MergedDocRow }) {
             {row.description}
           </p>
           <p className="mt-1 text-[10px] leading-snug md:text-[11px]" style={{ color: 'var(--text-3)' }}>
-            Informational — client bundle only exposes <code style={chipStyle()}>VITE_*</code>{' '}
+            Informational — client bundle only exposes <code className={chipCls}>VITE_*</code>{' '}
             names present at dev-server start.
           </p>
         </div>
@@ -1070,8 +1054,7 @@ function CustomEnvRow({
             autoComplete="off"
             spellCheck={false}
             placeholder={row.inputKind === 'secret' ? 'Paste…' : '…'}
-            className="w-full rounded-md px-2 py-1.5 pr-8 font-mono text-[10px] outline-none md:text-[11px]"
-            style={inputStyle()}
+            className={`w-full rounded-md px-2 py-1.5 pr-8 font-mono text-[10px] outline-none md:text-[11px] ${inputCls}`}
           />
           {row.inputKind === 'secret' && (
             <button type="button" onClick={onReveal} className="absolute inset-y-0 right-0 grid w-8 place-items-center" style={{ color: 'var(--text-3)' }} aria-label={reveal ? 'Hide' : 'Show'}>
@@ -1162,21 +1145,7 @@ function SourceBadge({ source }: { source: 'BOTH' | 'LOCAL' | 'ENV' | 'NONE' }) 
   )
 }
 
-function chipStyle(): CSSProperties {
-  return {
-    fontFamily: "'DM Mono', monospace",
-    fontSize: 10,
-    padding: '0 4px',
-    borderRadius: 3,
-    background: 'var(--bg-muted)',
-    color: 'var(--text-2)',
-  }
-}
-
-function inputStyle(): CSSProperties {
-  return {
-    background: 'var(--bg-input)',
-    border: '1px solid var(--border)',
-    color: 'var(--text-1)',
-  }
-}
+/** Inline `<code>` chip styling (was `chipStyle()`), now a Tailwind class string. */
+const chipCls = 'font-mono text-[10px] px-1 py-0 rounded-[3px] bg-muted text-t2'
+/** Text/secret input styling (was `inputStyle()`). */
+const inputCls = 'bg-input border border-border text-t1'
