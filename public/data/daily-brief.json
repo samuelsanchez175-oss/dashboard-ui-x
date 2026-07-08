@@ -1,37 +1,37 @@
 {
-  "date": "2026-07-07",
+  "date": "2026-07-08",
   "active_project": "CDL",
   "synthesis": [
-    "CDL NJ Prep is code-complete for v1 — the last engineering work (the 1b585a8 CI-guardrail fix that surfaced 38 default-less @Model properties, plus the quiz haptics) landed clean on 2026-07-04 with Debug and Release BUILD SUCCEEDED. What's left between you and submission is no longer code: it's four ship chores — the app-icon truck art (the icon is still a green book, Image-1024 (2).png), a hosted Privacy Policy / Terms with a URL in App Store Connect, ASC-side Game Center setup (enable the capability on the App ID + create the cdl_total_xp leaderboard so the already-wired submitLeaderboardScore goes live), and a device QA pass for the things the Simulator can't test (notifications, CoreMotion tilt-shine, streak-freeze/badge flows). The single most valuable move today is the app icon: it's a hard rejection trigger, it's pure artwork with zero code risk, and Gemini image gen is already your designated path since the xAI account is out of credits. Regenerate a 1024² opaque truck mark, drop it in, and you've cleared the most visible blocker on the board."
+    "CDL NJ Prep is functionally done — all v1 features shipped and every code blocker resolved in the 2026-07-04 batch (1b585a8, a53ea2b, 77a0809, f0e7e7d). What stands between this app and App Store submission is four non-code ship chores: the app icon (still a green book — the most visible hard-rejection trigger), Privacy Policy / Terms hosting with the URL entered in App Store Connect, ASC-side Game Center setup (enable the capability + create the cdl_total_xp leaderboard), and a device QA pass for what the Simulator cannot exercise (notifications, CoreMotion tilt-shine, streak-freeze, badge flows). The most recent session also touched CDL job-search threads, but the CDL app submission path is the engineering priority. Today's single most important move is generating the truck icon via Gemini — pure artwork, zero code risk, and Gemini is the confirmed path since xAI has $0 credits."
   ],
   "plan": [
     {
-      "title": "Regenerate the app icon",
-      "note": "Gemini a 1024² opaque truck mark, save as `Image-1024 (2).png`",
+      "title": "Generate app icon",
+      "note": "prompt Gemini for a 1024² opaque truck mark, drop into `AppIcon.appiconset/Image-1024 (2).png`",
       "priority": "high",
       "done": false
     },
     {
-      "title": "Host Privacy Policy + Terms",
-      "note": "publish both, link on onboarding + Settings, paste URL into ASC",
+      "title": "Host Privacy Policy",
+      "note": "draft / generate Privacy Policy + Terms, host (GitHub Pages or equivalent), enter URL in App Store Connect",
       "priority": "high",
       "done": false
     },
     {
       "title": "ASC Game Center setup",
-      "note": "enable capability on App ID + create `cdl_total_xp` leaderboard",
+      "note": "enable Game Center capability on the App ID in ASC + create `cdl_total_xp` leaderboard",
       "priority": "high",
       "done": false
     },
     {
       "title": "Device QA pass",
-      "note": "verify notifications fire, tilt-shine, streak-freeze + badge flows on real hardware",
+      "note": "install on real device: test daily 7pm + Sat 10am notifications, CoreMotion tilt-shine, streak-freeze consumption, badge earn flows",
       "priority": "med",
       "done": false
     },
     {
-      "title": "Strip QA launch hooks",
-      "note": "remove `CDL_*` env hooks + `seedSampleMastery` before ship",
+      "title": "Strip QA debug hooks",
+      "note": "remove `CDL_THEME` / `CDL_TAB` / `CDL_OPEN` / `CDL_SEED` / `CDL_GALLERY` launch hooks + `seedSampleMastery` before final ship build",
       "priority": "low",
       "done": false
     }
@@ -39,69 +39,86 @@
   "tools": [
     {
       "name": "Gemini Image Generation",
-      "desc": "your image path while xAI has 0 credits; use it to mint the 1024² truck icon today."
+      "desc": "designated path for the 1024² truck icon (xAI out of credits; Gemini 2.5 Flash confirmed working)"
     },
     {
       "name": "3D Model Generation",
-      "desc": "on deck for the future 3D flippable badges + license (needs a provisioned Meshy key)."
+      "desc": "reference for post-ship badge 3D (Meshy → USDZ); provision a Pro key when ready"
     },
     {
-      "name": "Photoshop",
-      "desc": "clean up / export the generated icon at exact 1024² opaque before dropping it in the asset catalog."
-    },
-    {
-      "name": "Github",
-      "desc": "commit the icon + any hook cleanup; the tree still has uncommitted Phase 16 hero art on `main`."
+      "name": "Imagen",
+      "desc": "Vertex AI image gen fallback if Gemini quality needs a second pass on the icon"
     }
   ],
   "tracks": [],
   "handoffs": [
     {
-      "name": "2026-07-07-ob-claude-vault-c71d9547",
-      "note": "2026-07-07-ob-claude-vault-c71d9547 — vault/daily-brief session (tags CDL); last turn hit a ConnectionRefused, no CDL code touched — nothing to resume here."
+      "name": "2026-07-08-ob-claude-vault-2ec24603",
+      "note": "417-turn session (2026-07-08); included CDL job-application research alongside vault work — resume if job-search threads need follow-through"
     },
     {
-      "name": "2026-07-06-ob-claude-vault-d5fd9805",
-      "note": "2026-07-06-ob-claude-vault-d5fd9805 — 31-turn daily-brief automation thread (tags CDL); confirmed the brief publishes to both Obsidian + the dashboard. Automation-only, not app work."
-    }
-  ],
-  "resurface": [
+      "name": "2026-07-04-ui-dashboard-x-8ff53098",
+      "note": "605-turn dashboard-ui session (updated 2026-07-08); branch `task3-4-tokens-and-visual-tests` active with style= cleanup; Playwright config skeleton still pending"
+    },
     {
-      "name": "v1_Scope_Deferred_Auth_and_Score",
-      "note": "v1_Scope_Deferred_Auth_and_Score — the moment real auth ships, the 5.1.1(v) account-deletion requirement (Supabase Edge Function) re-opens; keep it in view before flipping `cloudAuthEnabled`."
+      "name": "2026-07-07-ob-claude-vault-0c90caee",
+      "note": "25-turn daily brief run (2026-07-07); automation confirmed running"
     }
   ],
+  "resurface": [],
   "vault": {
     "name": "OB CLAUDE vault",
-    "brief_file": "🌅 Daily Brief/Briefs/2026-07-07.md",
-    "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%8C%85%20Daily%20Brief/Briefs/2026-07-07",
-    "generated_at": "2026-07-07T18:34:38",
+    "brief_file": "🌅 Daily Brief/Briefs/2026-07-08.md",
+    "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%8C%85%20Daily%20Brief/Briefs/2026-07-08",
+    "generated_at": "2026-07-08T07:02:38",
     "counts": {
-      "briefs": 8,
+      "briefs": 9,
       "clippings": 145,
       "tools": 34,
-      "handoffs": 111,
+      "handoffs": 114,
       "tracks": 2
     },
     "recent_briefs": [
+      "2026-07-08",
       "2026-07-07",
       "2026-07-06",
       "2026-07-04",
-      "2026-07-03",
-      "2026-06-13"
+      "2026-07-03"
     ]
   },
   "ai_sessions": [
     {
-      "title": "2026-07-07-ob-claude-vault-c71d9547",
+      "title": "2026-07-08-facebook-clippings-obsidian-c78c4e-4d480d2f",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
-      "updated": "2026-07-07",
-      "started_with": "You are the **Daily Brief synthesizer** for this Obsidian vault. You run head­less once a day. Work autonomously, make the edits, do not ask questions. Be concise and concrete. ## ",
-      "file": "🤝 Handoffs/2026-07-07-ob-claude-vault-c71d9547.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-07-ob-claude-vault-c71d9547",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-07-ob-claude-vault-c71d9547.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+      "updated": "2026-07-08",
+      "started_with": "can you go to facebook and save the new clippings to the ob cluade vault and make sure its formatted similar to how they are formatted currently in the vault",
+      "file": "🤝 Handoffs/2026-07-08-facebook-clippings-obsidian-c78c4e-4d480d2f.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-08-facebook-clippings-obsidian-c78c4e-4d480d2f",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-08-facebook-clippings-obsidian-c78c4e-4d480d2f.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+    },
+    {
+      "title": "2026-07-07-ob-claude-vault-f430d75e",
+      "source": "claude",
+      "project": "XJournal AI",
+      "status": "open",
+      "updated": "2026-07-08",
+      "started_with": "how can i make money using cluade?",
+      "file": "🤝 Handoffs/2026-07-07-ob-claude-vault-f430d75e.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-07-ob-claude-vault-f430d75e",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-07-ob-claude-vault-f430d75e.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+    },
+    {
+      "title": "2026-07-08-ob-claude-vault-2ec24603",
+      "source": "claude",
+      "project": "XJournal AI",
+      "status": "open",
+      "updated": "2026-07-08",
+      "started_with": "can you apply to jobs for me on indeed on my behave ? im looking to apply for jobs in luxury for host and sales person and anything logistics and im also looking to apply for CDL t",
+      "file": "🤝 Handoffs/2026-07-08-ob-claude-vault-2ec24603.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-08-ob-claude-vault-2ec24603",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-08-ob-claude-vault-2ec24603.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     },
     {
       "title": "2026-07-07-fervent-colden-eaa939-d62a2e51",
@@ -115,17 +132,6 @@
       "resume_prompt": "Read \"🤝 Handoffs/2026-07-07-fervent-colden-eaa939-d62a2e51.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     },
     {
-      "title": "2026-07-06-ob-claude-vault-d5fd9805",
-      "source": "claude",
-      "project": "XJournal AI",
-      "status": "open",
-      "updated": "2026-07-07",
-      "started_with": "<scheduled-task name=\"daily-brief-publish\" file=\"/Users/samuel/.claude/scheduled-tasks/daily-brief-publish/SKILL.md\"> This is an automated run of a scheduled task. The user is not ",
-      "file": "🤝 Handoffs/2026-07-06-ob-claude-vault-d5fd9805.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-06-ob-claude-vault-d5fd9805",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-06-ob-claude-vault-d5fd9805.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
-    },
-    {
       "title": "2026-07-07-ob-claude-vault-0c90caee",
       "source": "claude",
       "project": "XJournal AI",
@@ -137,62 +143,47 @@
       "resume_prompt": "Read \"🤝 Handoffs/2026-07-07-ob-claude-vault-0c90caee.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     },
     {
-      "title": "2026-07-04-ob-claude-vault-6fd27eac",
+      "title": "2026-07-07-ui-dashboard-x-01b4f42b",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
       "updated": "2026-07-07",
-      "started_with": "These are some tasks from my obsidian book that has to do with the poly market, bought that we have building. Please look over the obsidian vault and tell me if any of these have b",
-      "file": "🤝 Handoffs/2026-07-04-ob-claude-vault-6fd27eac.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-04-ob-claude-vault-6fd27eac",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-04-ob-claude-vault-6fd27eac.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
-    },
-    {
-      "title": "2026-07-06-ui-dashboard-x-6c9c814c",
-      "source": "claude",
-      "project": "XJournal AI",
-      "status": "open",
-      "updated": "2026-07-07",
-      "started_with": "Can you look over my LinkedIn account and tell me what I should change or make better? How can I show up on more results with the current skill sets that I have in developing UI, r",
-      "file": "🤝 Handoffs/2026-07-06-ui-dashboard-x-6c9c814c.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-06-ui-dashboard-x-6c9c814c",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-06-ui-dashboard-x-6c9c814c.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+      "started_with": "<scheduled-task name=\"weekly-linkedin-post-draft\" file=\"/Users/samuel/.claude/scheduled-tasks/weekly-linkedin-post-draft/SKILL.md\"> This is an automated run of a scheduled task. Th",
+      "file": "🤝 Handoffs/2026-07-07-ui-dashboard-x-01b4f42b.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-07-ui-dashboard-x-01b4f42b",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-07-ui-dashboard-x-01b4f42b.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     }
   ],
   "pipeline": {
-    "last_run": "2026-07-07 07:07:20",
+    "last_run": "2026-07-08 07:00:05",
     "last_status": "running",
     "model": "claude-sonnet-4-6",
     "next_run": "07:00 daily",
-    "streak": 2,
+    "streak": 3,
     "chat_ingest": "every 2h",
-    "chat_ingest_last": "2026-07-07T11:09"
+    "chat_ingest_last": "2026-07-08T06:39"
   },
   "delta": {
-    "vs_date": "2026-07-06",
+    "vs_date": "2026-07-07",
     "tools_added": [
-      "3D Model Generation",
-      "Gemini Image Generation",
-      "Photoshop"
+      "Imagen"
     ],
     "tools_removed": [
-      "Figma",
-      "Make",
-      "Obsidian",
-      "VS Code"
+      "Github",
+      "Photoshop"
     ],
     "handoffs_added": [
+      "2026-07-04-ui-dashboard-x-8ff53098",
+      "2026-07-07-ob-claude-vault-0c90caee",
+      "2026-07-08-ob-claude-vault-2ec24603"
+    ],
+    "handoffs_resolved": [
       "2026-07-06-ob-claude-vault-d5fd9805",
       "2026-07-07-ob-claude-vault-c71d9547"
     ],
-    "handoffs_resolved": [
-      "2026-07-04-ui-dashboard-x-8ff53098",
-      "2026-07-06-ob-claude-vault-66e3c2f0",
-      "resume here:"
-    ],
     "counts_changed": {
       "briefs": 1,
-      "handoffs": 6
+      "handoffs": 3
     }
   },
   "workflows": [
