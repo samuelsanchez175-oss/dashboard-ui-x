@@ -441,19 +441,20 @@ export default function CpwZone() {
     })
   }, [baseDone])
 
-  const projects = useMemo(() => {
-    const mapped = (payload?.projects ?? []).map(p => ({
-      ...p,
-      tasks: p.tasks.map((t, i): Task => {
-        const id = taskKey(p.id, t, i)
-        // Union: the generator's stamp (durable) OR a task that appeared during this
-        // session's Refresh (covers snapshots produced before isNew existed).
-        return { ...t, id, done: overrides[id] ?? t.done, isNew: t.isNew || newTaskIds.has(id) }
-      }),
-    }))
-    // Apply the user's saved card order; new projects append, deleted ones drop.
-    return mergeProjectOrder(mapped, orderIds)
-  }, [payload, overrides, newTaskIds, orderIds])
+  // File-order view models (stable regardless of card reordering). The vault-note
+  // mirror below consumes this so dragging cards never rewrites the note's order.
+  const mappedProjects = useMemo(() => (payload?.projects ?? []).map(p => ({
+    ...p,
+    tasks: p.tasks.map((t, i): Task => {
+      const id = taskKey(p.id, t, i)
+      // Union: the generator's stamp (durable) OR a task that appeared during this
+      // session's Refresh (covers snapshots produced before isNew existed).
+      return { ...t, id, done: overrides[id] ?? t.done, isNew: t.isNew || newTaskIds.has(id) }
+    }),
+  })), [payload, overrides, newTaskIds])
+
+  // Display order: apply the user's saved card order; new projects append, deleted ones drop.
+  const projects = useMemo(() => mergeProjectOrder(mappedProjects, orderIds), [mappedProjects, orderIds])
 
   const handleCardDragStart = useCallback((id: string) => {
     cardDragRef.current = id
@@ -489,13 +490,13 @@ export default function CpwZone() {
   // Mirror check-off state into the vault note via the local BFF (no-ops on Vercel,
   // where the route is absent — those check-offs reach the vault through the cloud sync).
   useEffect(() => {
-    if (!projects.length) return
+    if (!mappedProjects.length) return
     const id = window.setTimeout(() => {
       void fetch('/api/local/projects/checkoff', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          projects: projects.map(p => ({
+          projects: mappedProjects.map(p => ({
             name:  p.name,
             emoji: p.emoji,
             tasks: p.tasks.map(t => ({ title: t.title, done: t.done, owner: t.owner })),
@@ -504,7 +505,7 @@ export default function CpwZone() {
       }).catch(() => { /* route absent (production) */ })
     }, 800)
     return () => window.clearTimeout(id)
-  }, [projects])
+  }, [mappedProjects])
 
   const presentStatuses = useMemo(
     () => (['all', ...Object.keys(STATUS_CONFIG)] as Array<ProjStatus | 'all'>)
