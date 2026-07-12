@@ -1,6 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import UpdateDot from '../../components/ui/UpdateDot'
+import {
+  loadProjectOrder, saveProjectOrder, clearProjectOrder, mergeProjectOrder, moveIdBefore,
+} from '../../lib/cpwProjectOrder'
 import { fetchCheckoffs, upsertCheckoff } from '../../lib/checkoffStore'
 import {
   Bot, Check, ChevronRight, Circle, Copy, FolderKanban, ListTodo, RefreshCw, UserRound, X,
@@ -112,7 +115,16 @@ function Progress({ done, total, accent }: { done: number; total: number; accent
 }
 
 /* ── Project card ──────────────────────────────────────────────────────────────── */
-function ProjectCard({ project, active, onClick }: { project: EnrichedProject; active: boolean; onClick: () => void }) {
+function ProjectCard({ project, active, onClick, draggable, dragging, onDragStart, onDragEnd, onDropBefore }: {
+  project: EnrichedProject
+  active: boolean
+  onClick: () => void
+  draggable?: boolean
+  dragging?: boolean
+  onDragStart?: () => void
+  onDragEnd?: () => void
+  onDropBefore?: () => void
+}) {
   const done = project.tasks.filter(t => t.done).length
   const agentOpen = project.tasks.filter(t => !t.done && t.owner === 'agent').length
   const humanOpen = project.tasks.filter(t => !t.done && t.owner === 'human').length
@@ -120,8 +132,13 @@ function ProjectCard({ project, active, onClick }: { project: EnrichedProject; a
   return (
     <button
       onClick={onClick}
+      draggable={draggable}
+      onDragStart={e => { e.dataTransfer.effectAllowed = 'move'; onDragStart?.() }}
+      onDragEnd={onDragEnd}
+      onDragOver={e => { if (draggable) { e.preventDefault(); e.dataTransfer.dropEffect = 'move' } }}
+      onDrop={e => { if (draggable) { e.preventDefault(); e.stopPropagation(); onDropBefore?.() } }}
       className="zone-card text-left w-full transition-all hover:shadow-md flex flex-col gap-4"
-      style={{ borderColor: active ? project.accent : 'var(--border)' }}
+      style={{ borderColor: active ? project.accent : 'var(--border)', opacity: dragging ? 0.5 : 1, cursor: draggable ? 'grab' : undefined }}
       onMouseEnter={e => (e.currentTarget.style.borderColor = project.accent)}
       onMouseLeave={e => (e.currentTarget.style.borderColor = active ? project.accent : 'var(--border)')}
     >
@@ -320,6 +337,9 @@ export default function CpwZone() {
   const [progress, setProgress]     = useState<string | null>(null)
   const [activeId, setActiveId]     = useState<string | null>(null)
   const [filter, setFilter]         = useState<ProjStatus | 'all'>('all')
+  const [orderIds, setOrderIds]     = useState<string[]>(() => loadProjectOrder())
+  const [draggingId, setDraggingId] = useState<string | null>(null)
+  const cardDragRef                 = useRef<string | null>(null)
 
   const fetchData = useCallback(async (): Promise<ProjectsPayload | null> => {
     try {
@@ -421,15 +441,44 @@ export default function CpwZone() {
     })
   }, [baseDone])
 
-  const projects = useMemo(() => (payload?.projects ?? []).map(p => ({
-    ...p,
-    tasks: p.tasks.map((t, i): Task => {
-      const id = taskKey(p.id, t, i)
-      // Union: the generator's stamp (durable) OR a task that appeared during this
-      // session's Refresh (covers snapshots produced before isNew existed).
-      return { ...t, id, done: overrides[id] ?? t.done, isNew: t.isNew || newTaskIds.has(id) }
-    }),
-  })), [payload, overrides, newTaskIds])
+  const projects = useMemo(() => {
+    const mapped = (payload?.projects ?? []).map(p => ({
+      ...p,
+      tasks: p.tasks.map((t, i): Task => {
+        const id = taskKey(p.id, t, i)
+        // Union: the generator's stamp (durable) OR a task that appeared during this
+        // session's Refresh (covers snapshots produced before isNew existed).
+        return { ...t, id, done: overrides[id] ?? t.done, isNew: t.isNew || newTaskIds.has(id) }
+      }),
+    }))
+    // Apply the user's saved card order; new projects append, deleted ones drop.
+    return mergeProjectOrder(mapped, orderIds)
+  }, [payload, overrides, newTaskIds, orderIds])
+
+  const handleCardDragStart = useCallback((id: string) => {
+    cardDragRef.current = id
+    setDraggingId(id)
+  }, [])
+
+  const handleCardDragEnd = useCallback(() => {
+    cardDragRef.current = null
+    setDraggingId(null)
+  }, [])
+
+  const handleCardDropBefore = useCallback((beforeId: string | null) => {
+    const dragId = cardDragRef.current
+    cardDragRef.current = null
+    setDraggingId(null)
+    if (!dragId || dragId === beforeId) return
+    const next = moveIdBefore(projects.map(p => p.id), dragId, beforeId)
+    setOrderIds(next)
+    saveProjectOrder(next)
+  }, [projects])
+
+  const handleResetOrder = useCallback(() => {
+    clearProjectOrder()
+    setOrderIds([])
+  }, [])
 
   /** How many open tasks are flagged new right now — drives the header pill. */
   const newCount = useMemo(
@@ -526,7 +575,17 @@ export default function CpwZone() {
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap items-center gap-1.5">
+                {orderIds.length > 0 && (
+                  <button
+                    onClick={handleResetOrder}
+                    className="mono text-[10px] px-2.5 py-1 rounded-full transition-all"
+                    style={{ background: 'var(--bg-muted)', color: 'var(--text-3)', border: '1px solid var(--border)' }}
+                    title="Restore the default project order"
+                  >
+                    Reset order
+                  </button>
+                )}
                 {presentStatuses.map(s => {
                   const active = filter === s
                   const color = s === 'all' ? 'var(--accent)' : STATUS_CONFIG[s].color
@@ -548,9 +607,24 @@ export default function CpwZone() {
                 <p className="text-[13px]" style={{ color: 'var(--text-2)' }}>{error}</p>
               </div>
             ) : (
-              <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
+              <div
+                className="grid gap-4"
+                style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}
+                onDragOver={e => { if (draggingId) e.preventDefault() }}
+                onDrop={e => { if (draggingId) { e.preventDefault(); handleCardDropBefore(null) } }}
+              >
                 {filtered.map(p => (
-                  <ProjectCard key={p.id} project={p} active={p.id === activeId} onClick={() => setActiveId(p.id === activeId ? null : p.id)} />
+                  <ProjectCard
+                    key={p.id}
+                    project={p}
+                    active={p.id === activeId}
+                    onClick={() => setActiveId(p.id === activeId ? null : p.id)}
+                    draggable
+                    dragging={draggingId === p.id}
+                    onDragStart={() => handleCardDragStart(p.id)}
+                    onDragEnd={handleCardDragEnd}
+                    onDropBefore={() => handleCardDropBefore(p.id)}
+                  />
                 ))}
               </div>
             )}
