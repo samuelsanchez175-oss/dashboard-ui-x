@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type PointerEvent as ReactPointerEvent } from 'react'
-import { Moon, Plus, Sun, X } from 'lucide-react'
+import { Moon, Pencil, Plus, Sun, X } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
 import SidebarBrand from './SidebarBrand'
 import NavSectionGroup from './NavSectionGroup'
@@ -451,6 +451,25 @@ export default function Sidebar({ onRouteChange, activeRouteId, mobileOpen, onMo
           <Plus size={13} />
           New Zone
         </button>
+
+        {!layoutEditMode && (
+          <button
+            type="button"
+            onClick={enterLayoutEdit}
+            className="flex items-center justify-center rounded-lg p-2 transition-all"
+            style={{
+              background: 'var(--bg-hover)',
+              color:      'var(--text-3)',
+              border:     '1px solid var(--border)',
+            }}
+            title="Edit sidebar layout — reorder or remove items"
+            aria-label="Edit sidebar layout"
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-1)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-3)')}
+          >
+            <Pencil size={13} />
+          </button>
+        )}
 
         <button
           type="button"
