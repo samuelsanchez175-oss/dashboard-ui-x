@@ -11,13 +11,112 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import { handleMixingYoutubeAudioPost } from './mixing-youtube-audio'
 import { tryHandleTeslaFleetRoutes } from './tesla-fleet-bff'
 import { tryHandlePolymarketRoutes } from './polymarket-bff'
-import { exec } from 'node:child_process'
+import { exec, spawn } from 'node:child_process'
 import { promisify } from 'node:util'
 
 type Next = () => void
 
 const execAsync = promisify(exec)
 const VAULT_DIR = process.env.VAULT_DIR || '/Users/samuel/dev/OB CLAUDE vault'
+
+/* ── Long-running vault jobs: fire-and-forget + polled ───────────────────────────
+ * Both the Opus projects audit (one LLM call per project) and the daily-brief synthesis
+ * run for minutes. Awaiting either inside its POST blows past any sane HTTP timeout and
+ * leaves the zone's Refresh button spinning, so each POST *starts* the job and returns,
+ * and the zone polls a /status route until it settles. */
+type JobState = {
+  running: boolean
+  startedAt: string | null
+  finishedAt: string | null
+  ok: boolean | null
+  error: string | null
+  tail: string
+}
+const newJob = (): JobState => ({
+  running: false, startedAt: null, finishedAt: null, ok: null, error: null, tail: '',
+})
+const projectsAudit = newJob()
+const briefRun = newJob()
+const JOB_MAX_MS = 15 * 60_000
+
+/**
+ * Is the Claude Code CLI login still valid?
+ *
+ * The audit shells out to `claude -p`, which authenticates from the Keychain. That
+ * token can expire with no refresh token, and every call then returns 401 — so check
+ * the expiry offline and tell the user plainly instead of spawning a doomed run.
+ *
+ * FAIL-SAFE: an unreadable/absent/unparseable credential returns ok — we must never
+ * block a run we cannot prove would fail.
+ */
+async function claudeLoginState(): Promise<{ ok: boolean; message?: string }> {
+  try {
+    const { stdout } = await execAsync('security find-generic-password -s "Claude Code-credentials" -w')
+    const parsed = JSON.parse(stdout.trim())
+    const oauth = parsed.claudeAiOauth ?? parsed
+    const expiresAt = oauth?.expiresAt
+    if (typeof expiresAt !== 'number') return { ok: true }
+    if (expiresAt <= Date.now()) {
+      const hrs = ((Date.now() - expiresAt) / 3_600_000).toFixed(1)
+      return {
+        ok: false,
+        message: `Claude Code login expired ${hrs}h ago. Run \`claude\` in a terminal and complete /login, then hit Refresh again.`,
+      }
+    }
+    return { ok: true }
+  } catch {
+    return { ok: true }
+  }
+}
+
+/**
+ * Spawn a vault job in the background, recording its outcome in `job`.
+ * `describeExit` turns a non-zero exit code into something a human can act on.
+ */
+function startJob(
+  job: JobState,
+  file: string,
+  args: string[],
+  opts: { cwd: string; env?: NodeJS.ProcessEnv; label: string; describeExit?: (code: number, tail: string) => string },
+) {
+  job.running = true
+  job.startedAt = new Date().toISOString()
+  job.finishedAt = null
+  job.ok = null
+  job.error = null
+  job.tail = ''
+
+  const child = spawn(file, args, { cwd: opts.cwd, env: { ...process.env, VAULT_DIR, ...opts.env } })
+  const append = (chunk: unknown) => { job.tail = (job.tail + String(chunk)).slice(-8000) }
+  child.stdout.on('data', append)
+  child.stderr.on('data', append)
+
+  const killer = setTimeout(() => {
+    child.kill('SIGKILL')
+    job.error = `${opts.label} exceeded ${JOB_MAX_MS / 60_000} min and was killed`
+  }, JOB_MAX_MS)
+
+  const settle = (ok: boolean, error: string | null) => {
+    clearTimeout(killer)
+    job.running = false
+    job.ok = ok
+    job.finishedAt = new Date().toISOString()
+    if (error && !job.error) job.error = error
+  }
+  child.on('error', err => settle(false, err.message))
+  child.on('close', code => {
+    if (code === 0) return settle(true, null)
+    const described = opts.describeExit?.(code ?? -1, job.tail)
+    settle(false, described ?? `${opts.label} exited ${code}: ${job.tail.slice(-400)}`)
+  })
+}
+
+/** Shared exit-code vocabulary with the vault scripts: 78 = needs a human, 75 = transient. */
+const describeVaultExit = (what: string) => (code: number, tail: string) => {
+  if (code === 78) return 'Claude Code login expired. Run `claude` in a terminal and complete /login, then hit Refresh again.'
+  if (code === 75) return `${what} could not finish (offline or a partial run) — the previous snapshot was kept.`
+  return `${what} exited ${code}: ${tail.slice(-400)}`
+}
 
 async function readJsonBody(req: IncomingMessage): Promise<any> {
   return new Promise((resolve, reject) => {
@@ -38,7 +137,9 @@ async function readJsonBody(req: IncomingMessage): Promise<any> {
 
 async function runCommand(cmd: string): Promise<{ ok: boolean; stdout: string; stderr: string; error?: string }> {
   try {
-    const { stdout, stderr } = await execAsync(cmd)
+    // Vault scripts are chatty and slow. Node's defaults (no timeout, 1 MB stdout) turn a
+    // long run into either a hung request or an ERR_CHILD_PROCESS_STDIO_MAXBUFFER throw.
+    const { stdout, stderr } = await execAsync(cmd, { timeout: 600_000, maxBuffer: 20 * 1024 * 1024 })
     return { ok: true, stdout, stderr }
   } catch (err: any) {
     return { ok: false, stdout: err.stdout || '', stderr: err.stderr || '', error: err.message }
@@ -345,11 +446,49 @@ export function attachDashboardBff(
       return
     }
 
-    // POST /api/local/brief/generate
+    // POST /api/local/brief/generate — kick off the vault brief synthesis.
+    //
+    // Returns immediately; poll GET /api/local/brief/status. Awaiting it used to hold the
+    // request open for the whole `claude -p` run, which is why Refresh sat spinning.
     if (pathName === '/api/local/brief/generate' && method === 'POST') {
-      const cmd = `bash "${VAULT_DIR}/⚙️ automation/daily-brief/run_brief.sh"`
-      const outcome = await runCommand(cmd)
-      jsonRes(res, outcome.ok ? 200 : 500, outcome)
+      if (briefRun.running) {
+        jsonRes(res, 200, { status: 'already_running', startedAt: briefRun.startedAt })
+        return
+      }
+      const auth = await claudeLoginState()
+      if (!auth.ok) {
+        jsonRes(res, 200, { status: 'blocked', reason: 'login_expired', message: auth.message })
+        return
+      }
+      // PUBLISH=0: a dashboard click must only rewrite the LOCAL snapshot. Without it
+      // run_brief.sh defaults to PUBLISH=1 and would git commit + push main from a button
+      // press, deploying to Vercel. Only the 07:00 launchd cron is allowed to publish.
+      startJob(briefRun, 'bash', [`${VAULT_DIR}/⚙️ automation/daily-brief/run_brief.sh`], {
+        cwd: VAULT_DIR,
+        env: { PUBLISH: '0' },
+        label: 'daily brief',
+        describeExit: describeVaultExit('The daily brief'),
+      })
+      jsonRes(res, 202, { status: 'started', startedAt: briefRun.startedAt })
+      return
+    }
+
+    // GET /api/local/brief/status — progress of the synthesis started above.
+    if (pathName === '/api/local/brief/status' && method === 'GET') {
+      let briefDate: string | null = null
+      try {
+        const raw = await fs.readFile(path.join(repoRoot, 'public', 'data', 'daily-brief.json'), 'utf-8')
+        briefDate = JSON.parse(raw).date ?? null
+      } catch { /* no snapshot yet */ }
+      jsonRes(res, 200, {
+        running: briefRun.running,
+        ok: briefRun.ok,
+        error: briefRun.error,
+        startedAt: briefRun.startedAt,
+        finishedAt: briefRun.finishedAt,
+        tail: briefRun.tail.slice(-600),
+        briefDate,
+      })
       return
     }
 
@@ -369,16 +508,54 @@ export function attachDashboardBff(
       return
     }
 
-    // POST /api/local/projects/build — re-audit projects.json from the vault.
-    // Prefers the keyed Opus re-audit when ANTHROPIC_API_KEY is set; otherwise the raw
-    // checkbox builder (which bails out if the file is already an Opus audit).
+    // POST /api/local/projects/build — kick off a re-audit of projects.json from the vault.
+    //
+    // Returns immediately; poll GET /api/local/projects/status for completion. The raw
+    // checkbox builder is deliberately NOT used: it bails out the moment projects.json is
+    // an AI audit, which is why Refresh used to be a silent no-op.
     if (pathName === '/api/local/projects/build' && method === 'POST') {
-      const script = process.env.ANTHROPIC_API_KEY
+      if (projectsAudit.running) {
+        jsonRes(res, 200, { status: 'already_running', startedAt: projectsAudit.startedAt })
+        return
+      }
+      // build-projects-ai.mjs talks to the API directly; build-projects-claude.mjs shells
+      // out to `claude`, so only the latter depends on an unexpired CLI login.
+      const keyed = Boolean(process.env.ANTHROPIC_API_KEY)
+      if (!keyed) {
+        const auth = await claudeLoginState()
+        if (!auth.ok) {
+          jsonRes(res, 200, { status: 'blocked', reason: 'login_expired', message: auth.message })
+          return
+        }
+      }
+      const script = keyed
         ? `${repoRoot}/scripts/build-projects-ai.mjs`
-        : `${repoRoot}/scripts/build-projects.mjs`
-      const cmd = `VAULT_DIR="${VAULT_DIR}" node "${script}"`
-      const outcome = await runCommand(cmd)
-      jsonRes(res, outcome.ok ? 200 : 500, outcome)
+        : `${repoRoot}/scripts/build-projects-claude.mjs`
+      startJob(projectsAudit, 'node', [script], {
+        cwd: repoRoot,
+        label: 'projects audit',
+        describeExit: describeVaultExit('The projects audit'),
+      })
+      jsonRes(res, 202, { status: 'started', script: path.basename(script), startedAt: projectsAudit.startedAt })
+      return
+    }
+
+    // GET /api/local/projects/status — progress of the re-audit started above.
+    if (pathName === '/api/local/projects/status' && method === 'GET') {
+      let generatedAt: string | null = null
+      try {
+        const raw = await fs.readFile(path.join(repoRoot, 'public', 'data', 'projects.json'), 'utf-8')
+        generatedAt = JSON.parse(raw).generatedAt ?? null
+      } catch { /* no snapshot yet */ }
+      jsonRes(res, 200, {
+        running: projectsAudit.running,
+        ok: projectsAudit.ok,
+        error: projectsAudit.error,
+        startedAt: projectsAudit.startedAt,
+        finishedAt: projectsAudit.finishedAt,
+        tail: projectsAudit.tail.slice(-600),
+        generatedAt,
+      })
       return
     }
 
@@ -583,13 +760,16 @@ export function attachDashboardBff(
         const updatedContent = updateFrontmatter(content, updates)
         await fs.writeFile(fullPath, updatedContent, 'utf-8')
 
-        // Trigger brief regeneration (which builds and pushes the snap automatically)
-        const briefCmd = `bash "${VAULT_DIR}/⚙️ automation/daily-brief/run_brief.sh"`
-        const outcome = await runCommand(briefCmd)
+        // Re-sync the snapshot from the vault so the dismissed tool disappears.
+        //
+        // This used to run the full run_brief.sh: a multi-minute `claude -p` synthesis that
+        // also git-pushed main (PUBLISH defaults to 1), from a "dismiss tool" click. The
+        // frontmatter write above IS the state change; build.py just re-reads the vault.
+        const outcome = await runCommand(`python3 "${VAULT_DIR}/📊 dashboard-ui/build.py"`)
 
         jsonRes(res, 200, {
           ok: true,
-          message: 'Tool dismissed and daily brief regenerated.',
+          message: 'Tool dismissed and dashboard snapshot rebuilt.',
           brief: outcome
         })
       } catch (err: any) {

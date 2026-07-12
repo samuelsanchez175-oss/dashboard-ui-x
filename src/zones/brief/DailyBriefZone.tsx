@@ -326,7 +326,23 @@ export default function DailyBriefZone() {
     try {
       const res = await fetch(url, { method: 'POST' })
       const json = await res.json()
-      if (res.ok && json.ok) {
+
+      // /brief/generate is fire-and-forget: it answers {status} rather than {ok,stdout}.
+      if (json.status === 'blocked') {
+        setActionLogs(`[BLOCKED] ${json.message ?? 'This action is blocked.'}`)
+      } else if (json.status === 'started' || json.status === 'already_running') {
+        setActionLogs('Running brief synthesis… this takes a couple of minutes.')
+        let settled: any = null
+        for (let i = 0; i < 300; i++) {
+          await new Promise(r => setTimeout(r, 3000))
+          const s = await fetch('/api/local/brief/status').then(r => r.json()).catch(() => null)
+          if (!s) break
+          if (!s.running) { settled = s; break }
+          setActionLogs(`Running brief synthesis… (${(i + 1) * 3}s)`)
+        }
+        if (settled?.ok === false) setActionLogs(`[ERROR] ${settled.error ?? 'Brief synthesis failed.'}`)
+        else { setActionLogs(`[SUCCESS]\n${settled?.tail ?? ''}`); void load() }
+      } else if (res.ok && json.ok) {
         setActionLogs(`[SUCCESS] Output:\n${json.stdout || ''}\n${json.stderr || ''}`)
         void load()
       } else {
@@ -443,6 +459,13 @@ export default function DailyBriefZone() {
    * regenerate the brief from the vault, rebuild the dashboard snapshot — then
    * reloads the page data. Off-localhost (e.g. Vercel) it just re-fetches.
    */
+  /**
+   * Regenerate the brief from the vault, then reload the snapshot.
+   *
+   * The synthesis is a `claude -p` run lasting minutes, so /generate only STARTS it and
+   * we poll /status. It reports a real reason on failure — an expired Claude login used
+   * to surface as a bare "⚠ brief regen skipped/failed".
+   */
   const deepRefresh = useCallback(async () => {
     if (!isLocalHost) {
       await load()
@@ -455,14 +478,36 @@ export default function DailyBriefZone() {
     try {
       const g = await fetch('/api/local/brief/generate', { method: 'POST' })
         .then(r => r.json())
-        .catch(() => ({ ok: false }))
-      const gMsg = g?.ok ? '✓ brief regenerated' : '⚠ brief regen skipped/failed'
-      setActionLogs(`${gMsg}\n② Rebuilding the dashboard snapshot…`)
-      const b = await fetch('/api/local/brief/build', { method: 'POST' })
-        .then(r => r.json())
-        .catch(() => ({ ok: false }))
-      const bMsg = b?.ok ? '✓ snapshot rebuilt' : '⚠ snapshot rebuild skipped/failed'
-      setActionLogs(`${gMsg}\n${bMsg}\n③ Reloading…`)
+        .catch(() => null)
+
+      if (g?.status === 'blocked') {
+        setActionLogs(`⚠ ${g.message ?? 'Brief regeneration is blocked.'}`)
+        await load()
+        return
+      }
+      if (g?.status === 'started' || g?.status === 'already_running') {
+        let settled: any = null
+        for (let i = 0; i < 300; i++) {
+          await new Promise(r => setTimeout(r, 3000))
+          const s = await fetch('/api/local/brief/status').then(r => r.json()).catch(() => null)
+          if (!s) break
+          if (!s.running) { settled = s; break }
+          setActionLogs(`① Regenerating the daily brief from the vault… (${(i + 1) * 3}s)`)
+        }
+        if (settled && settled.ok === false) {
+          setActionLogs(`⚠ ${settled.error ?? 'Brief regeneration failed.'}`)
+          await load()
+          return
+        }
+        // run_brief.sh already ran build.py, so the snapshot on disk is current.
+        setActionLogs('✓ brief regenerated\n✓ snapshot rebuilt\n② Reloading…')
+      } else {
+        // No local route (deployed build) — just resync the snapshot from the vault.
+        const b = await fetch('/api/local/brief/build', { method: 'POST' })
+          .then(r => r.json())
+          .catch(() => ({ ok: false }))
+        setActionLogs(b?.ok ? '✓ snapshot rebuilt\n② Reloading…' : '⚠ snapshot rebuild skipped/failed')
+      }
     } catch (err) {
       setActionLogs(`[ERROR] ${err instanceof Error ? err.message : 'refresh failed'}`)
     }

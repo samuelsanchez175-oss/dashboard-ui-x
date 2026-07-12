@@ -1,121 +1,128 @@
 {
-  "generatedAt": "2026-06-28T12:00:00Z",
+  "generatedAt": "2026-07-10T05:00:12.801Z",
   "source": "opus-doc-audit",
-  "note": "Completion reconciled by Claude Opus reading each project's vault docs (not raw checkboxes). owner=agent tasks carry a paste-ready command.",
-  "count": 14,
+  "note": "Completion reconciled by Claude reading each project's vault docs (not raw checkboxes). owner=agent tasks carry a paste-ready command. Task ids are title-derived and stable across re-audits; isNew marks tasks this audit surfaced for the first time.",
+  "model": "claude-opus-4-8",
+  "count": 15,
+  "newCount": 19,
   "projects": [
     {
-      "id": "xjournal-ai",
-      "name": "XJournal AI — App",
-      "emoji": "📱",
+      "id": "faceless-youtube-studio",
+      "name": "Faceless YouTube Studio",
+      "emoji": "",
       "status": "active",
       "accent": "#2563eb",
-      "summary": "SwiftUI iOS app; Model G v3 + v4 semantic-embedding pipeline shipped (~3 calls, Gemini/OpenAI, 9-axis scoring), 34-theme detection, Human Critic, Momentum reskin, Dynamic Type, iPad polish, App Store screenshots all built.",
-      "nextUp": "Wire real phonetic rhyme (CMUDICT/RhymeClusterEngine) into v3 generation, then Phase-4 UX (onboarding + one-tap Generate) and decompose the 6.6k-line RapSuggestionAPI.",
+      "summary": "Channel 'The Great Silence' defined; full kit + Ep001-003 scripts written; Ep003 has all 7 Grok clips + CapCut guide; Ep001 teleprompter + temp AI VO.",
+      "nextUp": "Generate Ep001 shots 03-08 (Grok batch failed); assemble Ep003 (Descript retry or CapCut); record real narration; write Ep004 (WOW! signal) script.",
       "tasks": [
-        { "title": "Model G v3 pipeline (planned verse, ~3 calls) + user-pickable model", "done": true, "owner": "agent", "command": "" },
-        { "title": "Model G v4 Phase 2b on-device semantic embeddings (Approach A)", "done": true, "owner": "agent", "command": "" },
-        { "title": "Gemini backend auto-routed + 9-axis scoring ledger + trend screen", "done": true, "owner": "agent", "command": "" },
-        { "title": "Theme-aware generation on 34-theme ThemeCatalog", "done": true, "owner": "agent", "command": "" },
-        { "title": "Human Critic Phase 1 (calm-editor) + voice toggle", "done": true, "owner": "agent", "command": "" },
-        { "title": "Generation controls → sliders (Creativity/Effort/Quality)", "done": true, "owner": "agent", "command": "" },
-        { "title": "Full Dynamic Type sweep + Momentum reskin + iPad polish", "done": true, "owner": "agent", "command": "" },
-        { "title": "Wire real phonetic rhyme into v3 generation + scoring (replace word-repetition echo scorer)", "done": false, "owner": "agent", "command": "In repo /Users/samuel/Documents/The Final Journal AI (XJournal AI.xcodeproj, scheme 'XJournal AI'): in XJournal AI/ModelG/ModelGLLMService.swift pass the end-word to rhyme against + scheme into the v3 verse prompt (multisyllabic/internal rhyme), and in ModelG/ScoringEngine.swift (~:145) replace scoreInternalEcho with phonetic rhyme scoring using CMUDICT + RhymeClusterEngine so A2/A3 reward real rhyme not word repetition. Build with xcodebuild -scheme 'XJournal AI' -destination 'platform=iOS Simulator,name=iPhone 17'." },
-        { "title": "Phase 4 UX overhaul: onboarding + one-tap Generate with smart defaults", "done": false, "owner": "agent", "command": "In repo /Users/samuel/Documents/The Final Journal AI: add a 2-3 screen first-run onboarding (what it does → write a line → see a verse) in OnboardingWelcomeFlow.swift, and refactor ModelGControlSurfaceView.swift to a primary one-tap Generate with smart defaults, collapsing topic/tone/world-word/highlight/style under a 'Customize' disclosure and v3/originality under 'Advanced'. Keep every control reachable; build-verify on iPhone 17 sim." },
-        { "title": "Decompose 6.6k-line RapSuggestionAPI.swift and unify the two generation paths", "done": false, "owner": "agent", "command": "In repo /Users/samuel/Documents/The Final Journal AI, split XJournal AI/RapSuggestionAPI.swift (~6600 lines) into focused services (prompting / networking / retrieval / orchestration), and reconcile the legacy systemPromptTemplate path with ModelG/* so there is one clear pipeline. Preserve SuggestionModel routing incl. .modelGv3; build with xcodebuild -scheme 'XJournal AI' after each extraction." },
-        { "title": "Wire Suno/Uberduck music synthesis + StoreKit subscription + Supabase sync", "done": false, "owner": "agent", "command": "In repo /Users/samuel/Documents/The Final Journal AI: wire the beat/vocal buttons to SunoService.swift / UberduckService.swift (keys in Keychain), implement the StoreKit subscription TODO in XJournal AI/ContentView.CCV.14.swift, and complete AccountManager.swift Supabase profile sync/upload TODOs. Flip FeatureGate isDevelopmentMode=false to test paywall gating. Build-verify on iPhone 17 sim." },
-        { "title": "Behavioral-test 3 new sliders + manual QA pass on device", "done": false, "owner": "human", "command": "" }
-      ]
-    },
-    {
-      "id": "xjournal-model-g",
-      "name": "XJournal AI — Model G",
-      "emoji": "🧠",
-      "status": "active",
-      "accent": "#7c3aed",
-      "summary": "v4 RAG fully wired/tested (retrieval by tone+tags, Inspired slider, scoring). Vault cleaned + corpus regenerated to 6,376 bars (100% themes/tags/bpm). v4.1 punchline upgrade P1–P5 shipped behind flag. BPM/key/scale + syllable metadata editor built.",
-      "nextUp": "Pin the open v4-on 'API request failed' runtime bug (needs Xcode console from a repro), then A/B v4.1. v5 simplified one-pass pipeline is designed but not built.",
-      "tasks": [
-        { "title": "v4 RAG retrieval wired by tone+tags, never-empty", "done": true, "owner": "agent", "command": "" },
-        { "title": "Inspired slider gradient: scales exemplar k 4→12 + prompt directive", "done": true, "owner": "agent", "command": "" },
-        { "title": "Vault hygiene + corpus regen: 13,192→6,376 unique bars", "done": true, "owner": "agent", "command": "" },
-        { "title": "BPM/key/scale + user syllable-range metadata editor", "done": true, "owner": "agent", "command": "" },
-        { "title": "v4.1 punchline/concept axis P1–P5 shipped behind useModelGv41", "done": true, "owner": "agent", "command": "" },
-        { "title": "Diagnose + fix open v4-on 'API request failed' runtime error", "done": false, "owner": "human", "command": "" },
-        { "title": "Filter corpus exemplars to real bars (≥4 words) to kill ad-lib fragments", "done": false, "owner": "agent", "command": "In repo The Final Journal AI, edit XJournal AI/ModelG/Corpus/ModelGCorpusRetriever.swift retrieve(): before exemplars become the prompt BLUEPRINT, filter the pool with pool = pool.filter { $0.text.split(separator: \" \").count >= 4 } to drop ≤2-word ad-libs; add a unit test asserting fragments are excluded (P3 of v4.1 plan)." },
-        { "title": "Replace bag-of-words Jaccard sig with on-device embedding cosine", "done": false, "owner": "agent", "command": "In repo The Final Journal AI, edit XJournal AI/ModelG/ScoringEngine.swift so the corpus sig term uses ModelGEmbeddingIndex cosine similarity instead of Jaccard word-overlap, crediting reworded-but-inspired bars; keep the inspiration-scaled signatureShare; update scoring tests." },
-        { "title": "Add LLM-judge wit/punchline rerank as best-of-N tiebreaker (P4)", "done": false, "owner": "agent", "command": "In repo The Final Journal AI, edit XJournal AI/ModelG/ModelGCoreCoordinatorV4.swift consider(): when useModelGv41, add a cheap LLM-judge call (port eval/llm_judge.py rubric to a Swift ModelGLLMService call) ranking the N candidates on wit/punchline/concept and use it as the tiebreaker instead of v4Total alone." },
-        { "title": "Build v5 simplified one-pass coordinator behind useModelGv5", "done": false, "owner": "agent", "command": "In repo The Final Journal AI, fork v3's generateFullVerse into a new ModelGCoreCoordinatorV5 behind a useModelGv5 flag: strip HardRejectionEngine, score-gated selection, the sig term, and the 6-retry cliff; assemble one cacheable SYSTEM (craft+structure contract) + small USER (narrative + BPM/key/scale facts + example line + 3–6 flat tone/tag exemplars) and do a single generation pass." }
-      ]
-    },
-    {
-      "id": "cdl-prac-one",
-      "name": "CDL PRAC One",
-      "emoji": "🗂️",
-      "status": "active",
-      "accent": "#d97706",
-      "summary": "Feature-complete local-first iOS v1: 18 phases, 4 tabs, 699-question banks, MasteryEngine (7/7 tests green), 3D badges/emblems, license card, pre-trip tools — all built & sim-verified.",
-      "nextUp": "Commit the last uncommitted Phase 16 hero/glass work, strip QA debug hooks, push to a GitHub remote, then run physical-device QA.",
-      "tasks": [
-        { "title": "Core app: 4-tab scaffold, design system, 6 SwiftData models, onboarding", "done": true, "owner": "agent", "command": "" },
-        { "title": "Quiz engine + 13 JSON banks (~699 Qs), Standard/Extended, results & review", "done": true, "owner": "agent", "command": "" },
-        { "title": "MasteryEngine (accuracy×coverage, weak areas) + 7/7 unit tests", "done": true, "owner": "agent", "command": "" },
-        { "title": "Pre-trip tools: Parts Map (7 zones×35 parts), Say-It drill, galleries", "done": true, "owner": "agent", "command": "" },
-        { "title": "3D category emblems + 8 badge medallions + flippable license card", "done": true, "owner": "agent", "command": "" },
-        { "title": "Profile/gamification: XP, levels, streaks, freezes, Achievements", "done": true, "owner": "agent", "command": "" },
-        { "title": "Commit uncommitted Phase 16 (hero-banner art + iOS 26 glass nav chrome)", "done": false, "owner": "agent", "command": "In repo /Users/samuel/Desktop/CLAUDE WORLD/CDL PRAC one/, stage and commit the uncommitted Phase 16 work on main: the 7 hero-* imagesets plus HeroBanner, CategoryHero, BackButton, TopEyebrow, and the ~8 screen edits that mount them. Build green + 7/7 MasteryEngine tests pass (build DerivedData to /tmp/cdl-dd, never inside the iCloud-synced repo) before committing." },
-        { "title": "Strip QA launch-env debug hooks + seedSampleMastery before ship", "done": false, "owner": "agent", "command": "In repo /Users/samuel/Desktop/CLAUDE WORLD/CDL PRAC one/, remove QA debug launch-env hooks CDL_THEME, CDL_TAB, CDL_OPEN, CDL_SEED, CDL_GALLERY and seedSampleMastery() (grep each identifier), guarding any that must stay behind #if DEBUG so they never compile into release. Rebuild to /tmp/cdl-dd and confirm 7/7 tests pass." },
-        { "title": "Remove orphaned MapHomeView code; move in-cab test under Pre-Trip", "done": false, "owner": "agent", "command": "In repo /Users/samuel/Desktop/CLAUDE WORLD/CDL PRAC one/, delete orphaned MapHomeView helpers ZoneCard, readCount, sectionHeader, and relocate the in-cab test from the Articles hub to the Pre-Trip section. Build to /tmp/cdl-dd and verify nothing referenced the removed symbols." },
-        { "title": "Implement real Google Sign-In + email/password auth (replace stubs)", "done": false, "owner": "agent", "command": "In repo /Users/samuel/Desktop/CLAUDE WORLD/CDL PRAC one/, replace GoogleSignInButton and EmailSignInForm stubs with real auth: integrate Supabase Auth (SupabaseManager + AuthBridge per docs/superpowers/specs/), add Google Sign-In SDK with an OAuth client ID, add User.supabaseUserId to the SwiftData schema with a migration default. Keep Apple + Guest working; local-first stays source of truth." },
-        { "title": "Audit all 699 questions vs NJ MVC/FMCSA; add General Knowledge bank", "done": false, "owner": "agent", "command": "In repo /Users/samuel/Desktop/CLAUDE WORLD/CDL PRAC one/, audit Resources/cdl-questions/ (~699 Qs) against the NJ MVC CDL Manual + FMCSA, fixing/flagging outdated questions, and add a new General Knowledge bank wired into TestCatalog and CdlQuestionsLoader." },
-        { "title": "Create GitHub remote and push main; add .gitignore for /tmp build dirs", "done": false, "owner": "human", "command": "" },
-        { "title": "Install on a physical iPhone and run full runtime QA", "done": false, "owner": "human", "command": "" }
-      ]
-    },
-    {
-      "id": "ap-connect",
-      "name": "AP Connect",
-      "emoji": "📸",
-      "status": "active",
-      "accent": "#dc2626",
-      "summary": "Native SwiftUI: Momentum design system, 3-tab shell (Create/Gallery/Profile), pixel-accurate screenshot composer w/ photo upload + auto color theory, API-key mgmt, LLM text gen via Gemini, ASC JWT auth.",
-      "nextUp": "Wire Gallery persistence (save/reopen SwiftData creations) and replace App Store Connect screenshot-upload Task.sleep stubs with real /appScreenshots API calls.",
-      "tasks": [
-        { "title": "Momentum design system + 3-tab glass shell", "done": true, "owner": "agent", "command": "" },
-        { "title": "Screenshot composer: live preview, device sizes, PhotosPicker, pixel-accurate export", "done": true, "owner": "agent", "command": "" },
-        { "title": "API key layer: Keychain, per-provider validation, Profile rows", "done": true, "owner": "agent", "command": "" },
-        { "title": "AI text service wired into composer + promo-text tools", "done": true, "owner": "agent", "command": "" },
-        { "title": "ASC JWT/ES256 auth signing (CryptoKit P256, .p8 key)", "done": true, "owner": "agent", "command": "" },
-        { "title": "Gallery persistence: save exported/AI/text creations and reopen them", "done": false, "owner": "agent", "command": "In '/Users/samuel/Desktop/CLAUDE WORLD/AP connect + images', implement SwiftData persistence for Gallery: in Views/GalleryHubView.swift query @Model Creation (Models/Creation.swift) via modelContext instead of the visual stub, save exported screenshots and generated text as Creation rows from ScreenshotComposerView/TextToolView, and render saved items with reopen. Attach a ModelContainer for Creation in App/APConnectImagesApp.swift." },
-        { "title": "Replace App Store Connect screenshot-upload + status stubs with real API calls", "done": false, "owner": "agent", "command": "In '/Users/samuel/Desktop/CLAUDE WORLD/AP connect + images/Services/AppStoreConnectService.swift', replace the Task.sleep 'Simulating … for the MVP' blocks and PLACEHOLDER_SET_ID with real ASC calls: POST /v1/appScreenshots to reserve, PUT chunks to the uploadOperations URLs, PATCH /v1/appScreenshots/{id} with uploaded:true, and make checkAppStatus read appStoreState from GET /v1/apps/{id}/appStoreVersions. Use makeRequest + AppStoreConnectAuth JWT." },
-        { "title": "Fix 'My App' placeholder default in app-name handling", "done": false, "owner": "agent", "command": "In '/Users/samuel/Desktop/CLAUDE WORLD/AP connect + images', remove the 'My App' fallback at Models/AppProfile.swift:19 (and seeded sample text in Views/GalleryHubView.swift:78-81): when ap_name is unset, prompt the user to set the Current App name (AppContextEditorView) or fall back to the real app display name, so batch/promo output never ships the placeholder." },
-        { "title": "Delete legacy dead-code views (ContentView, WizardView, SettingsView, etc.)", "done": false, "owner": "agent", "command": "In '/Users/samuel/Desktop/CLAUDE WORLD/AP connect + images/Views' and App/, delete the legacy views listed as dead code in docs/ARCHITECTURE.md (ContentView, WizardView, ImageGeneratorView, ImageStudioView, SettingsView, GalleryView, AdvancedCanvasView, HeadlineEducationView, App/WorkflowState.swift) after grep-confirming no references; build with scripts/run-sim.sh." },
-        { "title": "Add unit tests for image generation / export pipeline", "done": false, "owner": "agent", "command": "In '/Users/samuel/Desktop/CLAUDE WORLD/AP connect + images', add a Tests target covering Utils/ExportManager (ImageRenderer scale 1.0 yields exact pixel dims), Utils/ColorTheory.harmoniousBackground hue tracking, and Services/TextService prompt/route selection per APIProvider. Add the test target to Package.swift." },
-        { "title": "Verify image generation with a non-Google (OpenAI/Grok) image key", "done": false, "owner": "human", "command": "" },
-        { "title": "Push project to GitHub", "done": false, "owner": "human", "command": "" }
-      ]
-    },
-    {
-      "id": "ui-dashboard-x",
-      "name": "UI Dashboard X",
-      "emoji": "🖥️",
-      "status": "active",
-      "accent": "#e11d48",
-      "summary": "Vite 8 + React 19 SPA; 11 zones live (music tools, Agent Farm, Daily Brief, Tesla mock, Pulse, Harmony, dev diagnostics); BFF bundled; deployed to Vercel; lucide circular-dep fixed.",
-      "nextUp": "Add 12 missing API keys to Vercel env so diagnostics pass; fix launchd 'daily' brief job that actually runs weekly; merge/close PR #1.",
-      "tasks": [
-        { "title": "Core zone navigation + sidebar with mobile swipe gestures", "done": true, "owner": "agent", "command": "" },
-        { "title": "Music tools: Chord Detector, BPM Finder, Stem Splitter, Note Detector", "done": true, "owner": "agent", "command": "" },
-        { "title": "Agent Farm + YouTube, Piano/MIDI, Rhyme Studio (local LLM)", "done": true, "owner": "agent", "command": "" },
-        { "title": "Daily Brief, Pulse, Harmony Stack, Tesla Fleet mock zones", "done": true, "owner": "agent", "command": "" },
-        { "title": "BFF bundled for Vercel + live deploy", "done": true, "owner": "human", "command": "" },
-        { "title": "Fix lucide-react circular-dep chunk crash in Vercel prod", "done": true, "owner": "agent", "command": "" },
-        { "title": "Fix launchd plist: 'daily' brief job runs weekly → daily 07:00", "done": false, "owner": "agent", "command": "In repo /Users/samuel/Desktop/CLAUDE WORLD/UI Dashboard x, locate the launchd plist that triggers the Daily Brief vault→dashboard sync (search ~/Library/LaunchAgents and the repo for *.plist). It is weekly (Weekday=1 Mon 07:00). Edit StartCalendarInterval to fire daily at 07:00 by removing the Weekday key (keep Hour=7, Minute=0), then launchctl unload <plist> && launchctl load <plist>." },
-        { "title": "Split ToolsChordDetectorPage.tsx (2,831 lines) into ≤5 sub-components", "done": false, "owner": "agent", "command": "In repo /Users/samuel/Desktop/CLAUDE WORLD/UI Dashboard x, refactor src/zones/tools/ToolsChordDetectorPage.tsx (2,831 lines) into ChordDetectorControls, ChordDetectorAnalysis (ONNX + pitch), ChordDetectorVisualization, ChordDetectorMidiExport, and a ChordDetectorPage composition root. Keep behavior identical; target the page file <600 lines." },
-        { "title": "Migrate 213 inline style= attrs to Tailwind utility classes", "done": false, "owner": "agent", "command": "In repo /Users/samuel/Desktop/CLAUDE WORLD/UI Dashboard x, replace inline style= attributes with Tailwind classes starting with src/MAINsamuelXdashboardFile.tsx, src/components/TweaksPanel.tsx, src/components/ConnectionPill.tsx and zone headers. Map CSS vars (--bg-app,--border,--text-1,--text-2,--bg-sidebar,--bg-hover) into tailwind.config theme.extend tokens and reference those. Goal: grep -r 'style=' src/ returns <20." },
-        { "title": "Add Playwright visual baselines + per-zone error boundaries", "done": false, "owner": "agent", "command": "In repo /Users/samuel/Desktop/CLAUDE WORLD/UI Dashboard x, add Playwright visual tests under tests/ that screenshot all 11 zones at desktop + mobile viewports and commit baselines (npm run test:visual). Also wrap each zone in MainContent.tsx with a React error boundary so one zone crash doesn't take down the shell." },
-        { "title": "Add 12 missing env keys to Vercel Environment Variables", "done": false, "owner": "human", "command": "" },
-        { "title": "Merge or close open PR #1", "done": false, "owner": "human", "command": "" }
+        {
+          "id": "faceless-youtube-studio-full-content-kit-written-files-01-10-12",
+          "title": "Full content kit written (files 01-10, 12)",
+          "done": true,
+          "owner": "agent",
+          "command": "",
+          "isNew": true,
+          "addedAt": "2026-07-10T05:00:12.801Z"
+        },
+        {
+          "id": "faceless-youtube-studio-ep001-script-gemini-starter-image-first-grok-cli",
+          "title": "Ep001 script + Gemini starter image + first Grok clip",
+          "done": true,
+          "owner": "agent",
+          "command": "",
+          "isNew": true,
+          "addedAt": "2026-07-10T05:00:12.801Z"
+        },
+        {
+          "id": "faceless-youtube-studio-ep002-script-written-bootes-void",
+          "title": "Ep002 script written (Bootes Void)",
+          "done": true,
+          "owner": "agent",
+          "command": "",
+          "isNew": true,
+          "addedAt": "2026-07-10T05:00:12.801Z"
+        },
+        {
+          "id": "faceless-youtube-studio-ep003-script-7-shot-prompts-all-7-grok-clips-cap",
+          "title": "Ep003 script + 7 shot prompts + all 7 Grok clips + CapCut guide",
+          "done": true,
+          "owner": "agent",
+          "command": "",
+          "isNew": true,
+          "addedAt": "2026-07-10T05:00:12.801Z"
+        },
+        {
+          "id": "faceless-youtube-studio-ep001-teleprompter-narration-script-temp-ai-scra",
+          "title": "Ep001 teleprompter narration script + temp AI scratch VO",
+          "done": true,
+          "owner": "agent",
+          "command": "",
+          "isNew": true,
+          "addedAt": "2026-07-10T05:00:12.801Z"
+        },
+        {
+          "id": "faceless-youtube-studio-generate-ep001-shots-03-08-in-grok-imagine-batch",
+          "title": "Generate Ep001 shots 03-08 in Grok Imagine (batch failed)",
+          "done": false,
+          "owner": "agent",
+          "command": "Re-run the Grok Imagine batch for Ep001 shots 03-08 using the prompts in '19 - Ep 001 Grok Shot Prompts.md' (Video 720p 10s 16:9); download and file each clip into the Ep001 02-video-clips folder.",
+          "isNew": true,
+          "addedAt": "2026-07-10T05:00:12.801Z"
+        },
+        {
+          "id": "faceless-youtube-studio-retry-descript-auto-assembly-of-ep003-quota-bloc",
+          "title": "Retry Descript auto-assembly of Ep003 (quota-blocked)",
+          "done": false,
+          "owner": "agent",
+          "command": "Retry the Descript auto-assembly of Ep003: import the 7 clips from Downloads/.../Ep003.../02-video-clips/, sequence 1->7, add cross-dissolves + captions per '16 - Ep 003 CapCut Assembly Guide.md'.",
+          "isNew": true,
+          "addedAt": "2026-07-10T05:00:12.801Z"
+        },
+        {
+          "id": "faceless-youtube-studio-record-real-narration-for-ep001-003",
+          "title": "Record real narration for Ep001-003",
+          "done": false,
+          "owner": "human",
+          "command": "",
+          "isNew": true,
+          "addedAt": "2026-07-10T05:00:12.801Z"
+        },
+        {
+          "id": "faceless-youtube-studio-run-adobe-media-enhance-speech-on-recorded-voice",
+          "title": "Run Adobe media_enhance_speech on recorded voiceover",
+          "done": false,
+          "owner": "agent",
+          "command": "Run Adobe media_enhance_speech on the recorded Ep001 voiceover in the Ep001 03-voiceover folder and save the cleaned track alongside the source.",
+          "isNew": true,
+          "addedAt": "2026-07-10T05:00:12.801Z"
+        },
+        {
+          "id": "faceless-youtube-studio-write-ep004-script-the-wow-signal",
+          "title": "Write Ep004 script (the WOW! signal)",
+          "done": false,
+          "owner": "agent",
+          "command": "Write the Ep004 script on the WOW! signal following '02 - Script Template.md' and the awe->dread formula; save as a new '20 - Script - Ep 004' note in the Faceless YouTube Studio folder.",
+          "isNew": true,
+          "addedAt": "2026-07-10T05:00:12.801Z"
+        },
+        {
+          "id": "faceless-youtube-studio-design-thumbnails-for-ep001-003-thumbnail-system",
+          "title": "Design thumbnails for Ep001-003 (Thumbnail System)",
+          "done": false,
+          "owner": "agent",
+          "command": "Design thumbnails for Ep001-003 using the formula in '10 - Thumbnail System.md' (bold 2-word dread text, high-contrast cosmic image); export ready-to-upload PNGs.",
+          "isNew": true,
+          "addedAt": "2026-07-10T05:00:12.801Z"
+        },
+        {
+          "id": "faceless-youtube-studio-channel-setup-claim-handle-banner-about-logo",
+          "title": "Channel setup: claim handle + banner + About + logo",
+          "done": false,
+          "owner": "human",
+          "command": "",
+          "isNew": true,
+          "addedAt": "2026-07-10T05:00:12.801Z"
+        }
       ]
     },
     {
@@ -123,90 +130,94 @@
       "name": "Tesla Heat Map X",
       "emoji": "🌡️",
       "status": "active",
-      "accent": "#f59e0b",
-      "summary": "iOS SwiftUI/SwiftData app working: heat map overlay on MapKit, trip control overlay, API key mgmt, mock data mode, dark/light, elevation service.",
-      "nextUp": "Wire live Tesla Fleet API (replace mock) with OAuth + rate-limit backoff; harden security by moving API keys to Keychain.",
+      "accent": "#7c3aed",
+      "summary": "Core heat map on MapKit, trip control overlay, profile/API-key mgmt, mock-data mode, dark/light, elevation service - all working locally with mock data.",
+      "nextUp": "P0 security/cleanup: move API keys to Keychain, consolidate the two Xcode projects, add .gitignore, push to GitHub; then wire live Tesla Fleet API.",
       "tasks": [
-        { "title": "Heat map visualization view on MapKit", "done": true, "owner": "agent", "command": "" },
-        { "title": "Trip control overlay (start/stop)", "done": true, "owner": "agent", "command": "" },
-        { "title": "Profile / API key management (Tesla + Google)", "done": true, "owner": "agent", "command": "" },
-        { "title": "Mock data mode for offline development", "done": true, "owner": "agent", "command": "" },
-        { "title": "Dark / light mode support", "done": true, "owner": "agent", "command": "" },
-        { "title": "Elevation service integration", "done": true, "owner": "agent", "command": "" },
-        { "title": "Migrate API keys from UserDefaults to Keychain", "done": false, "owner": "agent", "command": "In repo '~/Desktop/CLAUDE WORLD/TESLA app CC /TESLA HEAT MAP X /', refactor APIKeyManager (UserDefaults singleton) to store Tesla + Google Maps keys in the iOS Keychain. Add a KeychainHelper (kSecClassGenericPassword, save/load/delete), replace all UserDefaults key read/write with it, and migrate existing UserDefaults values on first launch." },
-        { "title": "Wire live Tesla Fleet API with OAuth (replace mock)", "done": false, "owner": "agent", "command": "In repo '~/Desktop/CLAUDE WORLD/TESLA app CC /TESLA HEAT MAP X /', implement the live Tesla Fleet API client behind the existing mock/live toggle: add OAuth token flow, fetch vehicle telemetry, map responses into the TelemetryPoint SwiftData schema consumed by HeatMapView. Keep mock mode as fallback." },
-        { "title": "Add rate limiting / backoff for Tesla API polling", "done": false, "owner": "agent", "command": "In repo '~/Desktop/CLAUDE WORLD/TESLA app CC /TESLA HEAT MAP X /', add retry-with-exponential-backoff and request throttling to the Tesla Fleet API layer so rate-limited requests don't fail silently (surface errors to UI); add background telemetry polling at a safe interval." },
-        { "title": "Add .gitignore for build artifacts", "done": false, "owner": "agent", "command": "In repo '~/Desktop/CLAUDE WORLD/TESLA app CC /TESLA HEAT MAP X /', add a Swift/Xcode .gitignore (build/, DerivedData/, *.xcuserstate) and git rm --cached any already-committed build artifacts." },
-        { "title": "Unit tests for data layer + UI tests for map", "done": false, "owner": "agent", "command": "In repo '~/Desktop/CLAUDE WORLD/TESLA app CC /TESLA HEAT MAP X /', add an XCTest target: unit tests for TelemetryPoint persistence and APIKeyManager, plus UI tests for HeatMapView interactions and TripControlOverlay." },
-        { "title": "Consolidate duplicate Xcode projects", "done": false, "owner": "human", "command": "" },
-        { "title": "Push repo to GitHub", "done": false, "owner": "human", "command": "" }
-      ]
-    },
-    {
-      "id": "polymarket-bot",
-      "name": "Polymarket CLI",
-      "emoji": "🤖",
-      "status": "active",
-      "accent": "#059669",
-      "summary": "Rust CLI fully built: market browsing, CLOB read queries, order placement, CTF split/merge/redeem, wallet mgmt, REPL shell, JSON output, Homebrew dist — all compiling & working.",
-      "nextUp": "Fund Polygon wallet (MATIC+USDC) for first live trade, then implement the 4 documented bot strategies as CLI commands.",
-      "tasks": [
-        { "title": "CLI scaffolding (clap + tokio async dispatch)", "done": true, "owner": "agent", "command": "" },
-        { "title": "Market/event/tag/series browsing & search", "done": true, "owner": "agent", "command": "" },
-        { "title": "CLOB read queries (book, prices, spreads, history)", "done": true, "owner": "agent", "command": "" },
-        { "title": "Order placement (limit/market/batch) + cancellation", "done": true, "owner": "agent", "command": "" },
-        { "title": "CTF split/merge/redeem + contract approvals", "done": true, "owner": "agent", "command": "" },
-        { "title": "Wallet create/import/show/reset + JSON output + REPL shell", "done": true, "owner": "agent", "command": "" },
-        { "title": "Encrypt private key at rest (macOS Keychain) vs plaintext config.json", "done": false, "owner": "agent", "command": "In repo /Users/samuel/Desktop/CLAUDE WORLD/polymarket-cli, replace plaintext private_key storage in src/config.rs with macOS Keychain via the keyring crate. Add keyring to Cargo.toml, store/retrieve under service 'polymarket-cli', keep env-var + --private-key override precedence in src/auth.rs, and migrate any existing key out of ~/.config/polymarket/config.json on first run." },
-        { "title": "Add --dry-run + retry/backoff + fee pre-calc for trading commands", "done": false, "owner": "agent", "command": "In repo /Users/samuel/Desktop/CLAUDE WORLD/polymarket-cli, add a global --dry-run flag in src/main.rs that short-circuits order submission in src/commands/clob.rs (print the signed order instead of POSTing). Add exponential-backoff retry around CLOB/RPC calls in src/auth.rs, and call the fee-rate endpoint to display fees before submission." },
-        { "title": "Split clob.rs (34KB) into read/trade/rewards/keys submodules", "done": false, "owner": "agent", "command": "In repo /Users/samuel/Desktop/CLAUDE WORLD/polymarket-cli, refactor src/commands/clob.rs into a clob/ module with read.rs, trade.rs, rewards.rs, keys.rs; update src/commands/mod.rs wiring and keep public command names unchanged. Run cargo check && cargo test." },
-        { "title": "Implement Whale Scanner + Copy Trading bot commands (P2)", "done": false, "owner": "agent", "command": "In repo /Users/samuel/Desktop/CLAUDE WORLD/polymarket-cli, add a bot subcommand module src/commands/bot.rs per Polymarket Bot Rules.md: implement 'polymarket bot whale-scan' (WebSocket large-trade alerts, --min-amount default 10000) and 'polymarket bot copy-trade' (weekly-active leaderboard top-N, fixed --size default 5, proportional sells, auto-redeem, --follow poll mode). Wire into Commands enum in src/main.rs." },
-        { "title": "Implement 5-Min Crypto Sniper + Weather Stat-Arb bots (P2)", "done": false, "owner": "agent", "command": "In repo /Users/samuel/Desktop/CLAUDE WORLD/polymarket-cli, extend src/commands/bot.rs with 'polymarket bot sniper' (idle until ≤60s to resolution, only YES≥0.95, resting limit orders, cancel below 0.55) and 'polymarket bot weather-arb' (NOAA GFS ensemble vs implied odds, trade only when edge>3%). Support --dry-run with mock data." },
-        { "title": "Fund Polygon wallet with MATIC + USDC for first live trade", "done": false, "owner": "human", "command": "" }
-      ]
-    },
-    {
-      "id": "sanchez-auto-llc",
-      "name": "Sanchez Auto LLC",
-      "emoji": "🔧",
-      "status": "blocked",
-      "accent": "#ea580c",
-      "summary": "Next.js 16 + React 19 + Tailwind 4 + shadcn/ui site with responsive service tiles/grid and a vanilla HTML twin; GitHub repo created and Vercel deploy configured.",
-      "nextUp": "Revive: npm install + verify dev server on 3001; fix service-tile layout at iPhone 390px; then build the booking/appointment form (core business need).",
-      "tasks": [
-        { "title": "Next.js app with Tailwind + shadcn/ui", "done": true, "owner": "agent", "command": "" },
-        { "title": "Responsive service tiles/grid components", "done": true, "owner": "agent", "command": "" },
-        { "title": "Static HTML twin fallback site", "done": true, "owner": "agent", "command": "" },
-        { "title": "GitHub repo created + Vercel deployment configured", "done": true, "owner": "human", "command": "" },
-        { "title": "Run npm install and verify dev server starts on port 3001", "done": false, "owner": "agent", "command": "In repo /Users/samuel/Desktop/CLAUDE WORLD/sanchez-auto-llc, run npm install then npm run dev and confirm it serves on localhost:3001 without errors; fix any missing-dependency or build errors that block startup, then run npm run build and resolve export errors." },
-        { "title": "Fix service tile responsive layout (square) at iPhone 390px", "done": false, "owner": "agent", "command": "In repo /Users/samuel/Desktop/CLAUDE WORLD/sanchez-auto-llc, fix service tiles so they render square at 390px. Edit components/marketing/services-grid1515.tsx and services1515.tsx: use aspect-square tiles with a responsive grid (grid-cols-2 at 390px) and verify no overflow at the 390px breakpoint." },
-        { "title": "Build online booking / appointment scheduling form", "done": false, "owner": "agent", "command": "In repo /Users/samuel/Desktop/CLAUDE WORLD/sanchez-auto-llc, add an appointment booking form (name, phone, email, vehicle, service type, preferred date/time) under components/marketing/ and a route app/book/page.tsx. Reuse service-quote-modal1515.tsx + shadcn form components; submit to app/api/book/route.ts that validates input (stub the send for now)." },
-        { "title": "Add contact form with email notification", "done": false, "owner": "agent", "command": "In repo /Users/samuel/Desktop/CLAUDE WORLD/sanchez-auto-llc, add a contact form + app/api/contact/route.ts that validates and sends an email notification (Resend or Nodemailer; read API key from env, fall back to logging if unset)." },
-        { "title": "Google Places gallery + Google Maps location embed", "done": false, "owner": "agent", "command": "In repo /Users/samuel/Desktop/CLAUDE WORLD/sanchez-auto-llc, add a Google Places photo gallery (Places API via NEXT_PUBLIC_GOOGLE_PLACES_API_KEY + shop place_id from env) and a Google Maps iframe for the shop location on home + contact pages." },
-        { "title": "SEO optimization (meta tags + structured data)", "done": false, "owner": "agent", "command": "In repo /Users/samuel/Desktop/CLAUDE WORLD/sanchez-auto-llc, add per-page SEO: export Next.js metadata (title/description/openGraph) in app/page.tsx and app/services/page.tsx, and inject LocalBusiness/AutoRepair JSON-LD with shop name, address, phone, hours." },
-        { "title": "Visual QA pass on mobile + desktop", "done": false, "owner": "human", "command": "" }
-      ]
-    },
-    {
-      "id": "ruview",
-      "name": "RuView",
-      "emoji": "📡",
-      "status": "active",
-      "accent": "#0d9488",
-      "summary": "WiFi-CSI presence/DensePose system working: core engine, ESP32-C6 capture nodes, Observatory UI live on :3000, Tauri v2 desktop app, SQLite persistence, plugins + Claude integration.",
-      "nextUp": "Relocate repo out of ~/Downloads, push to GitHub, then run accuracy benchmarks and calibrate for home environment.",
-      "tasks": [
-        { "title": "WiFi DensePose core engine (CSI signal processing)", "done": true, "owner": "agent", "command": "" },
-        { "title": "ESP32-C6 research nodes for WiFi CSI capture", "done": true, "owner": "agent", "command": "" },
-        { "title": "Observatory UI (multi-person, presence) live on :3000", "done": true, "owner": "agent", "command": "" },
-        { "title": "Tauri v2 desktop app wrapper", "done": true, "owner": "agent", "command": "" },
-        { "title": "SQLite persistence + plugins + Claude integration", "done": true, "owner": "agent", "command": "" },
-        { "title": "Docker deployment for server components", "done": true, "owner": "agent", "command": "" },
-        { "title": "Add production docker-compose stack with monitoring/alerting", "done": false, "owner": "agent", "command": "In the RuView project (~/Downloads/RuView-main/RuView-main/), add a production docker-compose.prod.yml that runs the Node server, Python core engine, and SQLite volume with restart policies, plus a monitoring stack (Prometheus + Grafana or healthcheck endpoints). Document the 24/7 run + alerting in the runbook." },
-        { "title": "Run accuracy benchmark baselines + per-environment calibration", "done": false, "owner": "agent", "command": "In the RuView project (~/Downloads/RuView-main/RuView-main/), add a benchmark script that measures presence-detection and pose accuracy vs labeled ground truth, outputs metrics (precision/recall, HR/respiration error), and supports a home-environment calibration pass for WiFi CSI noise. Save a reproducible report." },
-        { "title": "Write ESP32-C6 hardware setup guide", "done": false, "owner": "agent", "command": "In the RuView project (~/Downloads/RuView-main/RuView-main/), write docs/esp32c6-setup.md covering ESP-IDF + Rust xtensa-esp32c6-espidf toolchain install, firmware build/flash, and node provisioning for WiFi CSI capture." },
-        { "title": "Move project from ~/Downloads to ~/Desktop/CLAUDE WORLD", "done": false, "owner": "human", "command": "" },
-        { "title": "Push project to GitHub with remote repo", "done": false, "owner": "human", "command": "" }
+        {
+          "id": "tesla-heat-map-x-heat-map-visualization-view-on-mapkit",
+          "title": "Heat map visualization view on MapKit",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "tesla-heat-map-x-trip-control-overlay-start-stop",
+          "title": "Trip control overlay (start/stop)",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "tesla-heat-map-x-profile-api-key-management-tesla-google",
+          "title": "Profile / API key management (Tesla + Google)",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "tesla-heat-map-x-mock-data-mode-for-offline-development",
+          "title": "Mock data mode for offline development",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "tesla-heat-map-x-elevation-service-integration",
+          "title": "Elevation service integration",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "tesla-heat-map-x-migrate-api-keys-from-userdefaults-to-keychain",
+          "title": "Migrate API keys from UserDefaults to Keychain",
+          "done": false,
+          "owner": "agent",
+          "command": "In the TESLA HEAT MAP X repo, refactor APIKeyManager to store the Tesla + Google Maps keys in Keychain (KeychainHelper) instead of UserDefaults; migrate existing values on first launch."
+        },
+        {
+          "id": "tesla-heat-map-x-wire-live-tesla-fleet-api-with-oauth-replace-moc",
+          "title": "Wire live Tesla Fleet API with OAuth (replace mock)",
+          "done": false,
+          "owner": "agent",
+          "command": "Replace the mock data path with live Tesla Fleet API calls including the OAuth token flow in the TESLA HEAT MAP X app, feeding TelemetryPoint from real vehicle telemetry; keep the mock toggle."
+        },
+        {
+          "id": "tesla-heat-map-x-add-rate-limiting-backoff-for-tesla-api-polling",
+          "title": "Add rate limiting / backoff for Tesla API polling",
+          "done": false,
+          "owner": "agent",
+          "command": "Add rate limiting + exponential backoff to Tesla Fleet API polling in the TESLA HEAT MAP X app so requests don't fail silently on 429s."
+        },
+        {
+          "id": "tesla-heat-map-x-add-gitignore-for-build-artifacts",
+          "title": "Add .gitignore for build artifacts",
+          "done": false,
+          "owner": "agent",
+          "command": "Add a .gitignore for Xcode/iOS build artifacts (DerivedData, build/, /tmp outputs) to the TESLA HEAT MAP X repo and untrack any committed build files."
+        },
+        {
+          "id": "tesla-heat-map-x-unit-tests-for-data-layer-ui-tests-for-map",
+          "title": "Unit tests for data layer + UI tests for map",
+          "done": false,
+          "owner": "agent",
+          "command": "Add unit tests for the TelemetryPoint/SwiftData data layer and UI tests for HeatMapView map interactions in the TESLA HEAT MAP.xcodeproj target."
+        },
+        {
+          "id": "tesla-heat-map-x-consolidate-duplicate-xcode-projects",
+          "title": "Consolidate duplicate Xcode projects",
+          "done": false,
+          "owner": "agent",
+          "command": "Consolidate the two Xcode projects (TESLA HEAT MAP.xcodeproj + TESLA HEAT MAP XXX.xcodeproj) into the primary TESLA HEAT MAP.xcodeproj and delete the duplicate."
+        },
+        {
+          "id": "tesla-heat-map-x-push-repo-to-github",
+          "title": "Push repo to GitHub",
+          "done": false,
+          "owner": "human",
+          "command": ""
+        }
       ]
     },
     {
@@ -214,18 +225,699 @@
       "name": "Harmony Stack",
       "emoji": "🎨",
       "status": "active",
-      "accent": "#06b6d4",
-      "summary": "Static marketing site built: landing page + large services/pricing page with tier01/tier35 package comparison includes, portfolio screenshots, and Python HTML-validation scripts.",
-      "nextUp": "Add a dynamic pricing calculator and a contact/lead-capture form, then deploy the static site.",
+      "accent": "#d97706",
+      "summary": "Landing page + 177KB services/pricing page with tier01/tier35 comparison tables, Python validation scripts, and portfolio screenshots - all local static.",
+      "nextUp": "Add dynamic pricing calculator and contact/lead-capture form, then deploy the static site to hosting.",
       "tasks": [
-        { "title": "Landing page (harmony-stack-landing.html)", "done": true, "owner": "agent", "command": "" },
-        { "title": "Services + pricing page with tiered packages", "done": true, "owner": "agent", "command": "" },
-        { "title": "Tier01 / Tier35 package comparison tables (.inc includes)", "done": true, "owner": "agent", "command": "" },
-        { "title": "Python validation scripts", "done": true, "owner": "agent", "command": "" },
-        { "title": "Portfolio screenshots assets", "done": true, "owner": "agent", "command": "" },
-        { "title": "Dynamic pricing calculator", "done": false, "owner": "agent", "command": "In '/Users/samuel/Desktop/CLAUDE WORLD/Harmony stack pricing sheet ', add a client-side pricing calculator to harmony-stack-services.html: vanilla JS that reads the tier package data (packages-tier01-compare.inc / packages-tier35-compare.inc), lets the user toggle tier + add-ons, and live-updates a total; keep it self-contained (no build step) and re-run python3 verify-html-structure.py." },
-        { "title": "Contact / lead-capture form", "done": false, "owner": "agent", "command": "In '/Users/samuel/Desktop/CLAUDE WORLD/Harmony stack pricing sheet ', add a contact/lead-capture form to harmony-stack-landing.html (name, email, package interest, message) styled to match the CSS, posting to a static-friendly endpoint (Formspree placeholder) with validation + success state; re-run python3 verify-html-structure.py." },
-        { "title": "Deploy static site to hosting", "done": false, "owner": "human", "command": "" }
+        {
+          "id": "harmony-stack-landing-page-harmony-stack-landing-html",
+          "title": "Landing page (harmony-stack-landing.html)",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "harmony-stack-services-pricing-page-with-tiered-packages",
+          "title": "Services + pricing page with tiered packages",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "harmony-stack-tier01-tier35-package-comparison-tables-inc-incl",
+          "title": "Tier01 / Tier35 package comparison tables (.inc includes)",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "harmony-stack-python-validation-scripts",
+          "title": "Python validation scripts",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "harmony-stack-portfolio-screenshots-assets",
+          "title": "Portfolio screenshots assets",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "harmony-stack-dynamic-pricing-calculator",
+          "title": "Dynamic pricing calculator",
+          "done": false,
+          "owner": "agent",
+          "command": "Add a dynamic pricing calculator to harmony-stack-services.html that computes package totals from the tier01/tier35 data client-side (vanilla JS)."
+        },
+        {
+          "id": "harmony-stack-contact-lead-capture-form",
+          "title": "Contact / lead-capture form",
+          "done": false,
+          "owner": "agent",
+          "command": "Add a contact / lead-capture form to harmony-stack-landing.html (name, email, message) posting to a form endpoint, with client-side validation."
+        },
+        {
+          "id": "harmony-stack-deploy-static-site-to-hosting",
+          "title": "Deploy static site to hosting",
+          "done": false,
+          "owner": "human",
+          "command": ""
+        }
+      ]
+    },
+    {
+      "id": "p-sultry-room",
+      "name": "P Sultry Room",
+      "emoji": "💅",
+      "status": "idle",
+      "accent": "#dc2626",
+      "summary": "Vanilla HTML/CSS/JS site — home w/ service descriptions+accordions, booking form, pricing page, mobile-first drawer nav. Functional; no git, not deployed.",
+      "nextUp": "React migration per BOOKING-REACT-SETUP.md, online payment on the booking form, then init git + push to GitHub and deploy to static hosting.",
+      "tasks": [
+        {
+          "id": "p-sultry-room-home-page-with-service-descriptions-accordion-se",
+          "title": "Home page with service descriptions + accordion sections",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "p-sultry-room-booking-form-page-booking-html",
+          "title": "Booking form page (booking.html)",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "p-sultry-room-pricing-page-with-service-tiers-prices-html",
+          "title": "Pricing page with service tiers (prices.html)",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "p-sultry-room-site-drawer-navigation-mobile-first-main-js",
+          "title": "Site drawer navigation (mobile-first, main.js)",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "p-sultry-room-react-migration-per-booking-react-setup-md",
+          "title": "React migration per BOOKING-REACT-SETUP.md",
+          "done": false,
+          "owner": "agent",
+          "command": "Migrate the P Sultry Room static site (~/Desktop/CLAUDE WORLD/P SULTRY ROOM/) to React following BOOKING-REACT-SETUP.md, starting with the booking form (booking.html)."
+        },
+        {
+          "id": "p-sultry-room-online-payment-integration-on-the-booking-form",
+          "title": "Online payment integration on the booking form",
+          "done": false,
+          "owner": "agent",
+          "command": "Add online payment (e.g. Stripe Checkout) to booking.html in the P Sultry Room site so appointments can be paid at booking; wire the form submit to the payment flow."
+        },
+        {
+          "id": "p-sultry-room-initialize-git-repo-push-to-github-no-repo-today",
+          "title": "Initialize git repo + push to GitHub (no repo today)",
+          "done": false,
+          "owner": "human",
+          "command": ""
+        },
+        {
+          "id": "p-sultry-room-deploy-to-static-hosting-vercel-netlify-firebase",
+          "title": "Deploy to static hosting (Vercel / Netlify / Firebase)",
+          "done": false,
+          "owner": "human",
+          "command": ""
+        }
+      ]
+    },
+    {
+      "id": "ruview",
+      "name": "RuView",
+      "emoji": "📡",
+      "status": "idle",
+      "accent": "#e11d48",
+      "summary": "WiFi DensePose CSI engine, ESP32-C6 capture nodes, Observatory UI live on :3000, Tauri v2 desktop, SQLite+plugins+Claude integration, Docker deploy — all built.",
+      "nextUp": "Move repo out of ~/Downloads + push to GitHub; then accuracy benchmarks + calibration, ESP32-C6 setup guide, and prod docker-compose w/ monitoring/alerting.",
+      "tasks": [
+        {
+          "id": "ruview-wifi-densepose-core-engine-csi-signal-processing",
+          "title": "WiFi DensePose core engine (CSI signal processing)",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "ruview-esp32-c6-research-nodes-for-wifi-csi-capture",
+          "title": "ESP32-C6 research nodes for WiFi CSI capture",
+          "done": true,
+          "owner": "human",
+          "command": ""
+        },
+        {
+          "id": "ruview-observatory-ui-multi-person-presence-live-on-300",
+          "title": "Observatory UI (multi-person, presence) live on :3000",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "ruview-tauri-v2-desktop-app-wrapper",
+          "title": "Tauri v2 desktop app wrapper",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "ruview-sqlite-persistence-plugins-claude-integration",
+          "title": "SQLite persistence + plugins + Claude integration",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "ruview-docker-deployment-for-server-components",
+          "title": "Docker deployment for server components",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "ruview-add-production-docker-compose-stack-with-monitor",
+          "title": "Add production docker-compose stack with monitoring/alerting",
+          "done": false,
+          "owner": "agent",
+          "command": "In the RuView repo (~/Downloads/RuView-main/RuView-main/), add a production docker-compose.prod.yml with Prometheus + Grafana monitoring and alerting alongside the existing server/Docker services."
+        },
+        {
+          "id": "ruview-run-accuracy-benchmark-baselines-per-environment",
+          "title": "Run accuracy benchmark baselines + per-environment calibration",
+          "done": false,
+          "owner": "human",
+          "command": ""
+        },
+        {
+          "id": "ruview-write-esp32-c6-hardware-setup-guide",
+          "title": "Write ESP32-C6 hardware setup guide",
+          "done": false,
+          "owner": "agent",
+          "command": "Write an ESP32-C6 hardware setup guide (docs/esp32-setup.md) in the RuView repo covering ESP-IDF + Rust xtensa-esp32c6-espidf toolchain install, flashing firmware, and node placement/calibration."
+        },
+        {
+          "id": "ruview-move-project-from-downloads-to-desktop-claude-wo",
+          "title": "Move project from ~/Downloads to ~/Desktop/CLAUDE WORLD",
+          "done": false,
+          "owner": "agent",
+          "command": "Move ~/Downloads/RuView-main/RuView-main/ to ~/Desktop/CLAUDE WORLD/RuView and update hardcoded ~/Downloads paths in docker-compose.yml, npm scripts, and the Tauri config."
+        },
+        {
+          "id": "ruview-push-project-to-github-with-remote-repo",
+          "title": "Push project to GitHub with remote repo",
+          "done": false,
+          "owner": "human",
+          "command": ""
+        }
+      ]
+    },
+    {
+      "id": "xjournal-ai",
+      "name": "XJournal AI - App",
+      "emoji": "📱",
+      "status": "active",
+      "accent": "#f59e0b",
+      "summary": "Model G v3+picker, Gemini backend, 9-axis ledger+trend screen, 34-theme gen, Human Critic P1, gen sliders, full Dynamic Type, Momentum reskin (PR #2 merged), iPad polish.",
+      "nextUp": "Real phonetic rhyme in v3 gen+scoring, Phase 4 UX (onboarding+one-tap Generate), decompose 6.6k RapSuggestionAPI, wire Suno/Uberduck+StoreKit+Supabase.",
+      "tasks": [
+        {
+          "id": "xjournal-ai-model-g-v3-pipeline-planned-verse-3-calls-user-p",
+          "title": "Model G v3 pipeline (planned verse, ~3 calls) + user-pickable model",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "xjournal-ai-gemini-backend-auto-routed-9-axis-scoring-ledger",
+          "title": "Gemini backend auto-routed + 9-axis scoring ledger + trend screen",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "xjournal-ai-theme-aware-generation-on-34-theme-themecatalog",
+          "title": "Theme-aware generation on 34-theme ThemeCatalog",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "xjournal-ai-human-critic-phase-1-calm-editor-voice-toggle",
+          "title": "Human Critic Phase 1 (calm-editor) + voice toggle",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "xjournal-ai-generation-controls-sliders-creativity-effort-qu",
+          "title": "Generation controls → sliders (Creativity/Effort/Quality)",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "xjournal-ai-full-dynamic-type-sweep-momentum-reskin-ipad-pol",
+          "title": "Full Dynamic Type sweep + Momentum reskin + iPad polish",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "xjournal-ai-app-store-screenshots-delivered-iphone-6-9-ipad-",
+          "title": "App Store screenshots delivered (iPhone 6.9″ + iPad 13″, 8 finals)",
+          "done": true,
+          "owner": "agent",
+          "command": "",
+          "isNew": true,
+          "addedAt": "2026-07-10T05:00:12.801Z"
+        },
+        {
+          "id": "xjournal-ai-wire-real-phonetic-rhyme-into-v3-generation-scor",
+          "title": "Wire real phonetic rhyme into v3 generation + scoring (replace word-repetition echo scorer)",
+          "done": false,
+          "owner": "agent",
+          "command": "In XJournal AI, add end-word + scheme rhyme targets (multisyllabic/internal) to ModelGLLMService verse prompts and replace the word-repetition scoreInternalEcho in ScoringEngine.swift:145 with CMUDICT + RhymeClusterEngine phonetic scoring; re-grade via eval/grade_modelg.py."
+        },
+        {
+          "id": "xjournal-ai-phase-4-ux-overhaul-onboarding-one-tap-generate-",
+          "title": "Phase 4 UX overhaul: onboarding + one-tap Generate with smart defaults",
+          "done": false,
+          "owner": "agent",
+          "command": "Build Phase 4 UX in XJournal AI: 2–3 first-run onboarding screens (write a line → see a verse) and a one-tap Generate with smart defaults, tucking controls behind Customize/Advanced in ModelGControlSurfaceView.swift per Improvement Roadmap Phase 4."
+        },
+        {
+          "id": "xjournal-ai-decompose-6-6k-line-rapsuggestionapi-swift-and-u",
+          "title": "Decompose 6.6k-line RapSuggestionAPI.swift and unify the two generation paths",
+          "done": false,
+          "owner": "agent",
+          "command": "Split XJournal AI/RapSuggestionAPI.swift (~6.6k lines) into focused services (prompting/networking/retrieval/orchestration) and unify the legacy systemPromptTemplate path with ModelG/* into one pipeline; keep no critical-path file over ~1k lines."
+        },
+        {
+          "id": "xjournal-ai-wire-suno-uberduck-music-synthesis-storekit-subs",
+          "title": "Wire Suno/Uberduck music synthesis + StoreKit subscription + Supabase sync",
+          "done": false,
+          "owner": "agent",
+          "command": "In XJournal AI, wire SunoService/UberduckService button calls for beat/vocal synthesis (keys already in Keychain), implement the StoreKit subscription flow (TODO in ContentView.CCV.14.swift) with ShowUpgradePrompt/ShowSubscriptionManagement listeners, and finish Supabase profile sync/upload in AccountManager.swift."
+        },
+        {
+          "id": "xjournal-ai-behavioral-test-3-new-sliders-manual-qa-pass-on-",
+          "title": "Behavioral-test 3 new sliders + manual QA pass on device",
+          "done": false,
+          "owner": "human",
+          "command": ""
+        }
+      ]
+    },
+    {
+      "id": "ap-connect",
+      "name": "AP Connect",
+      "emoji": "📸",
+      "status": "active",
+      "accent": "#059669",
+      "summary": "3-tab glass SwiftUI shell (Create/Gallery/Settings), Keychain API-key layer for 4 LLM providers, device-size configs, pixel-accurate ImageRenderer export.",
+      "nextUp": "Replace simulated LLMService with real API calls, add PhotosPicker screenshot compositing, fix 'My App' batch headline placeholder.",
+      "tasks": [
+        {
+          "id": "ap-connect-momentum-design-system-3-tab-glass-shell",
+          "title": "Momentum design system + 3-tab glass shell",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "ap-connect-screenshot-composer-live-preview-device-sizes-ph",
+          "title": "Screenshot composer: live preview, device sizes, PhotosPicker, pixel-accurate export",
+          "done": false,
+          "owner": "agent",
+          "command": "In ~/Desktop/CLAUDE WORLD/AP connect + images/Views/ImageGeneratorView.swift, add a PhotosPicker so users select a screenshot and composite it over the canvas placeholder rectangle, then include it in the ImageRenderer export."
+        },
+        {
+          "id": "ap-connect-api-key-layer-keychain-per-provider-validation-p",
+          "title": "API key layer: Keychain, per-provider validation, Profile rows",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "ap-connect-ai-text-service-wired-into-composer-promo-text-t",
+          "title": "AI text service wired into composer + promo-text tools",
+          "done": false,
+          "owner": "agent",
+          "command": "In ~/Desktop/CLAUDE WORLD/AP connect + images/Services/LLMService.swift, replace the simulated Task.sleep response with real URLSession REST calls per APIProvider (openAI/anthropic/google/xai) using the Keychain keys."
+        },
+        {
+          "id": "ap-connect-asc-jwt-es256-auth-signing-cryptokit-p256-p8-key",
+          "title": "ASC JWT/ES256 auth signing (CryptoKit P256, .p8 key)",
+          "done": false,
+          "owner": "agent",
+          "command": "Add an App Store Connect auth service in ~/Desktop/CLAUDE WORLD/AP connect + images/Services/ that signs ES256 JWTs with CryptoKit P256 from a .p8 key for ASC API requests."
+        },
+        {
+          "id": "ap-connect-gallery-persistence-save-exported-ai-text-creati",
+          "title": "Gallery persistence: save exported/AI/text creations and reopen them",
+          "done": false,
+          "owner": "agent",
+          "command": "Add a persistence layer so the Gallery tab saves exported/AI/text creations to app storage and can reopen them; wire save into ImageGeneratorView and load into the Gallery view."
+        },
+        {
+          "id": "ap-connect-replace-app-store-connect-screenshot-upload-stat",
+          "title": "Replace App Store Connect screenshot-upload + status stubs with real API calls",
+          "done": false,
+          "owner": "agent",
+          "command": "Wire real App Store Connect API calls in ~/Desktop/CLAUDE WORLD/AP connect + images/Services/ for screenshot upload + app status, replacing the stubbed/simulated responses."
+        },
+        {
+          "id": "ap-connect-fix-my-app-placeholder-default-in-app-name-handl",
+          "title": "Fix 'My App' placeholder default in app-name handling",
+          "done": false,
+          "owner": "agent",
+          "command": "Fix batch headline generation so the Current App card uses the real app name instead of the 'My App' placeholder in the app-name/headline path (AP connect + images/Views + Models)."
+        },
+        {
+          "id": "ap-connect-delete-legacy-dead-code-views-contentview-wizard",
+          "title": "Delete legacy dead-code views (ContentView, WizardView, SettingsView, etc.)",
+          "done": false,
+          "owner": "agent",
+          "command": "Delete unused legacy views (ContentView, WizardView, and any orphaned SettingsView variants) from ~/Desktop/CLAUDE WORLD/AP connect + images/Views/."
+        },
+        {
+          "id": "ap-connect-add-unit-tests-for-image-generation-export-pipel",
+          "title": "Add unit tests for image generation / export pipeline",
+          "done": false,
+          "owner": "agent",
+          "command": "Add unit tests for the image generation/export pipeline (ExportManager ImageRenderer scale 1.0 + ImageConfiguration device sizes) in the AP connect + images project."
+        },
+        {
+          "id": "ap-connect-verify-image-generation-with-a-non-google-openai",
+          "title": "Verify image generation with a non-Google (OpenAI/Grok) image key",
+          "done": false,
+          "owner": "human",
+          "command": ""
+        },
+        {
+          "id": "ap-connect-push-project-to-github",
+          "title": "Push project to GitHub",
+          "done": false,
+          "owner": "human",
+          "command": ""
+        }
+      ]
+    },
+    {
+      "id": "sanchez-auto-llc",
+      "name": "Sanchez Auto LLC",
+      "emoji": "🔧",
+      "status": "idle",
+      "accent": "#ea580c",
+      "summary": "Next.js 16 + Tailwind + shadcn/ui app with responsive service tiles, static HTML twin fallback, GitHub repo created, Vercel deploy configured.",
+      "nextUp": "Revive: npm install + verify dev on :3001, fix square tiles at 390px, visual QA, then build booking + contact forms.",
+      "tasks": [
+        {
+          "id": "sanchez-auto-llc-next-js-app-with-tailwind-shadcn-ui",
+          "title": "Next.js app with Tailwind + shadcn/ui",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "sanchez-auto-llc-responsive-service-tiles-grid-components",
+          "title": "Responsive service tiles/grid components",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "sanchez-auto-llc-static-html-twin-fallback-site",
+          "title": "Static HTML twin fallback site",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "sanchez-auto-llc-github-repo-created-vercel-deployment-configured",
+          "title": "GitHub repo created + Vercel deployment configured",
+          "done": true,
+          "owner": "human",
+          "command": ""
+        },
+        {
+          "id": "sanchez-auto-llc-run-npm-install-and-verify-dev-server-starts-on-",
+          "title": "Run npm install and verify dev server starts on port 3001",
+          "done": false,
+          "owner": "agent",
+          "command": "cd ~/Desktop/CLAUDE WORLD/sanchez-auto-llc && npm install && npm run dev, then confirm the dev server serves on localhost:3001."
+        },
+        {
+          "id": "sanchez-auto-llc-fix-service-tile-responsive-layout-square-at-iph",
+          "title": "Fix service tile responsive layout (square) at iPhone 390px",
+          "done": false,
+          "owner": "agent",
+          "command": "Fix the service tiles grid in ~/Desktop/CLAUDE WORLD/sanchez-auto-llc/app/page.tsx so tiles render square at the iPhone 390px viewport."
+        },
+        {
+          "id": "sanchez-auto-llc-build-online-booking-appointment-scheduling-form",
+          "title": "Build online booking / appointment scheduling form",
+          "done": false,
+          "owner": "agent",
+          "command": "Add an online booking/appointment scheduling form to ~/Desktop/CLAUDE WORLD/sanchez-auto-llc/ (new route/page + form components with date/time selection)."
+        },
+        {
+          "id": "sanchez-auto-llc-add-contact-form-with-email-notification",
+          "title": "Add contact form with email notification",
+          "done": false,
+          "owner": "agent",
+          "command": "Add a contact form with email notification to ~/Desktop/CLAUDE WORLD/sanchez-auto-llc/ (form UI + server handler that sends the email)."
+        },
+        {
+          "id": "sanchez-auto-llc-google-places-gallery-google-maps-location-embed",
+          "title": "Google Places gallery + Google Maps location embed",
+          "done": false,
+          "owner": "agent",
+          "command": "Add a Google Places reviews/gallery integration and a Google Maps location embed to ~/Desktop/CLAUDE WORLD/sanchez-auto-llc/."
+        },
+        {
+          "id": "sanchez-auto-llc-seo-optimization-meta-tags-structured-data",
+          "title": "SEO optimization (meta tags + structured data)",
+          "done": false,
+          "owner": "agent",
+          "command": "Add SEO to ~/Desktop/CLAUDE WORLD/sanchez-auto-llc/ — meta/OpenGraph tags plus JSON-LD structured data (LocalBusiness/AutoRepair)."
+        },
+        {
+          "id": "sanchez-auto-llc-visual-qa-pass-on-mobile-desktop",
+          "title": "Visual QA pass on mobile + desktop",
+          "done": false,
+          "owner": "agent",
+          "command": "Run the Sanchez Auto site and do a visual QA pass at mobile (390px) and desktop, capturing screenshots and noting layout regressions."
+        }
+      ]
+    },
+    {
+      "id": "ui-dashboard-x",
+      "name": "UI Dashboard X",
+      "emoji": "🖥️",
+      "status": "active",
+      "accent": "#0d9488",
+      "summary": "11-zone Vite/React SPA (music tools, Agent Farm, Rhyme Studio, Daily Brief, Pulse, Harmony, Tesla mock), BFF bundled + live on Vercel; lucide chunk crash fixed.",
+      "nextUp": "P0: add 12 Vercel env keys, fix launchd daily schedule, split 2,831-line ChordDetector, merge/close PR #1.",
+      "tasks": [
+        {
+          "id": "ui-dashboard-x-core-zone-navigation-sidebar-with-mobile-swipe-g",
+          "title": "Core zone navigation + sidebar with mobile swipe gestures",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "ui-dashboard-x-music-tools-chord-detector-bpm-finder-stem-split",
+          "title": "Music tools: Chord Detector, BPM Finder, Stem Splitter, Note Detector",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "ui-dashboard-x-agent-farm-youtube-piano-midi-rhyme-studio-local",
+          "title": "Agent Farm + YouTube, Piano/MIDI, Rhyme Studio (local LLM)",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "ui-dashboard-x-daily-brief-pulse-harmony-stack-tesla-fleet-mock",
+          "title": "Daily Brief, Pulse, Harmony Stack, Tesla Fleet mock zones",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "ui-dashboard-x-bff-bundled-for-vercel-live-deploy",
+          "title": "BFF bundled for Vercel + live deploy",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "ui-dashboard-x-fix-lucide-react-circular-dep-chunk-crash-in-ver",
+          "title": "Fix lucide-react circular-dep chunk crash in Vercel prod",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "ui-dashboard-x-fix-launchd-plist-daily-brief-job-runs-weekly-da",
+          "title": "Fix launchd plist: 'daily' brief job runs weekly → daily 07:00",
+          "done": false,
+          "owner": "agent",
+          "command": "Fix the Daily Brief launchd plist so the job runs daily at 07:00 instead of weekly (Mon 07:00) — update StartCalendarInterval in the daily-brief automation plist."
+        },
+        {
+          "id": "ui-dashboard-x-split-toolschorddetectorpage-tsx-2-831-lines-int",
+          "title": "Split ToolsChordDetectorPage.tsx (2,831 lines) into ≤5 sub-components",
+          "done": false,
+          "owner": "agent",
+          "command": "Split src/zones/tools/ToolsChordDetectorPage.tsx (2,831 lines) into ChordDetectorControls, ChordDetectorAnalysis, ChordDetectorVisualization, ChordDetectorMidiExport, and a ChordDetectorPage composition root."
+        },
+        {
+          "id": "ui-dashboard-x-migrate-213-inline-style-attrs-to-tailwind-utili",
+          "title": "Migrate 213 inline style= attrs to Tailwind utility classes",
+          "done": false,
+          "owner": "agent",
+          "command": "Migrate the 213 inline style= attributes in src/ to Tailwind utilities; map CSS vars (--bg-app, --border, --text-1) to theme.extend tokens per src/lib/design-tokens.ts."
+        },
+        {
+          "id": "ui-dashboard-x-add-playwright-visual-baselines-per-zone-error-b",
+          "title": "Add Playwright visual baselines + per-zone error boundaries",
+          "done": false,
+          "owner": "agent",
+          "command": "Add Playwright visual baselines for all 11 zones (desktop + mobile) in tests/, and wrap each zone component in MainContent.tsx with an error boundary so one zone crash can't take down the shell."
+        },
+        {
+          "id": "ui-dashboard-x-add-12-missing-env-keys-to-vercel-environment-va",
+          "title": "Add 12 missing env keys to Vercel Environment Variables",
+          "done": false,
+          "owner": "human",
+          "command": ""
+        },
+        {
+          "id": "ui-dashboard-x-merge-or-close-open-pr-1",
+          "title": "Merge or close open PR #1",
+          "done": false,
+          "owner": "human",
+          "command": ""
+        }
+      ]
+    },
+    {
+      "id": "cdl-prac-one",
+      "name": "CDL PRAC one - Index",
+      "emoji": "🗂️",
+      "status": "active",
+      "accent": "#06b6d4",
+      "summary": "v1 code-complete & pushed to GitHub: 4-tab app, quiz (699 Qs), MasteryEngine, 3D badges/emblems, real notifications, all 8 badges earnable, Game Center wired.",
+      "nextUp": "Non-code ship blockers vs open App Store 2.1 review: truck app icon, Privacy Policy/Terms + ASC URL, enable Game Center + cdl_total_xp in ASC, device QA.",
+      "tasks": [
+        {
+          "id": "cdl-prac-one-core-app-4-tab-scaffold-design-system-6-swiftdat",
+          "title": "Core app: 4-tab scaffold, design system, 6 SwiftData models, onboarding",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "cdl-prac-one-quiz-engine-13-json-banks-699-qs-standard-extend",
+          "title": "Quiz engine + 13 JSON banks (~699 Qs), Standard/Extended, results & review",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "cdl-prac-one-masteryengine-accuracy-coverage-weak-areas-7-7-u",
+          "title": "MasteryEngine (accuracy×coverage, weak areas) + 7/7 unit tests",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "cdl-prac-one-3d-category-emblems-8-badge-medallions-flippable",
+          "title": "3D category emblems + 8 badge medallions + flippable license card",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "cdl-prac-one-profile-gamification-xp-levels-streaks-freezes-a",
+          "title": "Profile/gamification: XP, levels, streaks, freezes, Achievements",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "cdl-prac-one-commit-uncommitted-phase-16-hero-banner-art-ios-",
+          "title": "Commit uncommitted Phase 16 (hero-banner art + iOS 26 glass nav chrome)",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "cdl-prac-one-create-github-remote-and-push-main-add-gitignore",
+          "title": "Create GitHub remote and push main; add .gitignore for /tmp build dirs",
+          "done": true,
+          "owner": "human",
+          "command": ""
+        },
+        {
+          "id": "cdl-prac-one-wire-real-study-notifications-notificationschedu",
+          "title": "Wire real study notifications (NotificationScheduler, daily 7 PM + Sat 10 AM)",
+          "done": true,
+          "owner": "agent",
+          "command": "",
+          "isNew": true,
+          "addedAt": "2026-07-10T05:00:12.801Z"
+        },
+        {
+          "id": "cdl-prac-one-make-all-8-badges-earnable-wire-4-missing-badgec",
+          "title": "Make all 8 badges earnable (wire 4 missing BadgeCatalog criteria)",
+          "done": true,
+          "owner": "agent",
+          "command": "",
+          "isNew": true,
+          "addedAt": "2026-07-10T05:00:12.801Z"
+        },
+        {
+          "id": "cdl-prac-one-add-game-center-entitlement-wire-leaderboard-sub",
+          "title": "Add Game Center entitlement + wire leaderboard submit (cdl_total_xp)",
+          "done": true,
+          "owner": "agent",
+          "command": "",
+          "isNew": true,
+          "addedAt": "2026-07-10T05:00:12.801Z"
+        },
+        {
+          "id": "cdl-prac-one-regenerate-app-icon-as-1024-opaque-truck-mark-re",
+          "title": "Regenerate app icon as 1024² opaque truck mark (replace green-book icon)",
+          "done": false,
+          "owner": "agent",
+          "command": "In /Users/samuel/Desktop/CLAUDE WORLD/CDL PRAC one/, generate a 1024x1024 opaque (no alpha, no rounded corners) truck app-icon via the Gemini image API and overwrite Assets.xcassets/AppIcon.appiconset/Image-1024 (2).png; leave Contents.json unchanged.",
+          "isNew": true,
+          "addedAt": "2026-07-10T05:00:12.801Z"
+        },
+        {
+          "id": "cdl-prac-one-install-on-a-physical-iphone-and-run-full-runtim",
+          "title": "Install on a physical iPhone and run full runtime QA",
+          "done": false,
+          "owner": "human",
+          "command": ""
+        }
       ]
     },
     {
@@ -234,41 +926,188 @@
       "emoji": "🚗",
       "status": "blocked",
       "accent": "#0891b2",
-      "summary": "Feature-complete iOS 27 CarPlay video app: dual-scene, tab bar, list+progress, details, AVPlayer HLS+AirPlay, resume points, mini player, phone UI. 33/33 tests pass.",
-      "nextUp": "Unblock distribution: apply for Apple CarPlay-video entitlement, then device/TestFlight verification and App Store submission (all gated on the entitlement).",
+      "summary": "Feature-complete CarPlay video app: dual-scene, tab nav, HLS+AirPlay playback, resume points, mini player, phone companion; 33/33 tests pass.",
+      "nextUp": "Blocked on iOS 27 GA + Apple entitlement: extract branch to standalone repo, apply for CarPlay video entitlement, then device/TestFlight + App Store submit.",
       "tasks": [
-        { "title": "CarPlay scene with video hardware detection", "done": true, "owner": "agent", "command": "" },
-        { "title": "Tab bar navigation (Videos / Playlist)", "done": true, "owner": "agent", "command": "" },
-        { "title": "List items with progress bars over thumbnails", "done": true, "owner": "agent", "command": "" },
-        { "title": "Details header with Play / Add to Playlist", "done": true, "owner": "agent", "command": "" },
-        { "title": "AVPlayer HLS playback with AirPlay support", "done": true, "owner": "agent", "command": "" },
-        { "title": "Resume points (persistent playback position)", "done": true, "owner": "agent", "command": "" },
-        { "title": "Phone companion UI in SwiftUI", "done": true, "owner": "agent", "command": "" },
-        { "title": "Mini player via CPNowPlayingTemplate (iOS 27)", "done": true, "owner": "agent", "command": "" },
-        { "title": "33/33 tests across 6 suites (TDD)", "done": true, "owner": "agent", "command": "" },
-        { "title": "Extract branch into standalone repo (avoid iCloud merge bloat)", "done": false, "owner": "agent", "command": "The Antigravity app lives at '~/Desktop/CLAUDE WORLD/1YTcarplay/.claude/worktrees/nifty-thompson-49c4cf/Antigravity/' on branch claude/nifty-thompson-49c4cf, which can't merge to trunk because the iCloud-synced root tree is too large. Copy the Antigravity/ project to a fresh standalone directory outside iCloud (e.g. ~/dev/Antigravity), run git init, commit the source, and confirm 'xcodebuild test -scheme Antigravity' still passes 33/33." },
-        { "title": "Apply for Apple CarPlay video entitlement", "done": false, "owner": "human", "command": "" },
-        { "title": "Device / TestFlight build verification", "done": false, "owner": "human", "command": "" },
-        { "title": "App Store submission (screenshots, privacy, review)", "done": false, "owner": "human", "command": "" }
+        {
+          "id": "antigravity-carplay-carplay-scene-with-video-hardware-detection",
+          "title": "CarPlay scene with video hardware detection",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "antigravity-carplay-tab-bar-navigation-videos-playlist",
+          "title": "Tab bar navigation (Videos / Playlist)",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "antigravity-carplay-list-items-with-progress-bars-over-thumbnails",
+          "title": "List items with progress bars over thumbnails",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "antigravity-carplay-avplayer-hls-playback-with-airplay-support",
+          "title": "AVPlayer HLS playback with AirPlay support",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "antigravity-carplay-resume-points-persistent-playback-position",
+          "title": "Resume points (persistent playback position)",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "antigravity-carplay-phone-companion-ui-in-swiftui",
+          "title": "Phone companion UI in SwiftUI",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "antigravity-carplay-mini-player-via-cpnowplayingtemplate-ios-27",
+          "title": "Mini player via CPNowPlayingTemplate (iOS 27)",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "antigravity-carplay-33-33-tests-across-6-suites-tdd",
+          "title": "33/33 tests across 6 suites (TDD)",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "antigravity-carplay-extract-branch-into-standalone-repo-avoid-icloud",
+          "title": "Extract branch into standalone repo (avoid iCloud merge bloat)",
+          "done": false,
+          "owner": "agent",
+          "command": "Extract branch claude/nifty-thompson-49c4cf from the CLAUDE WORLD repo into a fresh standalone git repo: copy ~/Desktop/CLAUDE WORLD/1YTcarplay/.claude/worktrees/nifty-thompson-49c4cf/Antigravity/ to a new non-iCloud path, git init, commit, so the merge no longer stalls on the iCloud-synced root tree."
+        },
+        {
+          "id": "antigravity-carplay-apply-for-apple-carplay-video-entitlement",
+          "title": "Apply for Apple CarPlay video entitlement",
+          "done": false,
+          "owner": "human",
+          "command": ""
+        },
+        {
+          "id": "antigravity-carplay-device-testflight-build-verification",
+          "title": "Device / TestFlight build verification",
+          "done": false,
+          "owner": "human",
+          "command": ""
+        },
+        {
+          "id": "antigravity-carplay-app-store-submission-screenshots-privacy-review",
+          "title": "App Store submission (screenshots, privacy, review)",
+          "done": false,
+          "owner": "human",
+          "command": ""
+        }
       ]
     },
     {
-      "id": "p-sultry-room",
-      "name": "P Sultry Room",
-      "emoji": "💅",
-      "status": "active",
+      "id": "polymarket-bot",
+      "name": "Polymarket Bot",
+      "emoji": "🤖",
+      "status": "idle",
       "accent": "#db2777",
-      "summary": "Vanilla HTML/CSS/JS booking site (no build step): home (service descriptions + accordions), booking form, and pricing-tier pages built and functional with mobile-first drawer nav.",
-      "nextUp": "Deploy the static site (Vercel/Netlify), then the planned React migration and online payment integration.",
+      "summary": "Functional Rust CLI: market/CLOB/on-chain browsing, order place+cancel, CTF split/merge/redeem, approvals, wallet mgmt, REPL, JSON output, Homebrew install.",
+      "nextUp": "Fund Polygon wallet (MATIC+USDC) for first live trade; harden CLI (encrypt key, --dry-run, retry, split clob.rs); implement P2 bot strategies.",
       "tasks": [
-        { "title": "Home page with service descriptions + accordion sections", "done": true, "owner": "agent", "command": "" },
-        { "title": "Booking form page (booking.html)", "done": true, "owner": "agent", "command": "" },
-        { "title": "Pricing page with service tiers (prices.html)", "done": true, "owner": "agent", "command": "" },
-        { "title": "Site drawer navigation (mobile-first, main.js)", "done": true, "owner": "agent", "command": "" },
-        { "title": "React migration per BOOKING-REACT-SETUP.md", "done": false, "owner": "agent", "command": "In the static site at ~/Desktop/CLAUDE WORLD/P SULTRY ROOM/, follow BOOKING-REACT-SETUP.md to scaffold the React app (Vite + React): port index.html, booking.html, prices.html into components, move styles.css into the component tree, and reimplement the main.js drawer nav as a React component. Keep the copy/pricing content verbatim." },
-        { "title": "Online payment integration on the booking form", "done": false, "owner": "agent", "command": "In the P Sultry Room booking flow (~/Desktop/CLAUDE WORLD/P SULTRY ROOM/), integrate a hosted checkout (Stripe Checkout or Payment Links) so a booking collects a deposit/payment. Add a client-side call to create a checkout session and redirect on submit; gate confirmation on payment success." },
-        { "title": "Initialize git repo + push to GitHub (no repo today)", "done": false, "owner": "human", "command": "" },
-        { "title": "Deploy to static hosting (Vercel / Netlify / Firebase)", "done": false, "owner": "human", "command": "" }
+        {
+          "id": "polymarket-bot-cli-scaffolding-clap-tokio-async-dispatch",
+          "title": "CLI scaffolding (clap + tokio async dispatch)",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "polymarket-bot-market-event-tag-series-browsing-search",
+          "title": "Market/event/tag/series browsing & search",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "polymarket-bot-clob-read-queries-book-prices-spreads-history",
+          "title": "CLOB read queries (book, prices, spreads, history)",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "polymarket-bot-order-placement-limit-market-batch-cancellation",
+          "title": "Order placement (limit/market/batch) + cancellation",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "polymarket-bot-ctf-split-merge-redeem-contract-approvals",
+          "title": "CTF split/merge/redeem + contract approvals",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "polymarket-bot-wallet-create-import-show-reset-json-output-repl",
+          "title": "Wallet create/import/show/reset + JSON output + REPL shell",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "polymarket-bot-encrypt-private-key-at-rest-macos-keychain-vs-pl",
+          "title": "Encrypt private key at rest (macOS Keychain) vs plaintext config.json",
+          "done": false,
+          "owner": "agent",
+          "command": "In /Users/samuel/Desktop/CLAUDE WORLD/polymarket-cli/src/config.rs and src/auth.rs, move the plaintext private_key out of ~/.config/polymarket/config.json into the macOS Keychain (security-framework), preserving the CLI-flag > env > keychain key-resolution order."
+        },
+        {
+          "id": "polymarket-bot-add-dry-run-retry-backoff-fee-pre-calc-for-tradi",
+          "title": "Add --dry-run + retry/backoff + fee pre-calc for trading commands",
+          "done": false,
+          "owner": "agent",
+          "command": "In /Users/samuel/Desktop/CLAUDE WORLD/polymarket-cli/src/commands/clob.rs, add a --dry-run flag (simulate without submitting) to order commands, exponential-backoff retry on transient network errors, and a --show-fees pre-submission fee calculation."
+        },
+        {
+          "id": "polymarket-bot-split-clob-rs-34kb-into-read-trade-rewards-keys-",
+          "title": "Split clob.rs (34KB) into read/trade/rewards/keys submodules",
+          "done": false,
+          "owner": "agent",
+          "command": "Split /Users/samuel/Desktop/CLAUDE WORLD/polymarket-cli/src/commands/clob.rs (34KB) into src/commands/clob/read.rs, trade.rs, rewards.rs, keys.rs and a clob/mod.rs, updating the command wiring in src/commands/mod.rs."
+        },
+        {
+          "id": "polymarket-bot-implement-whale-scanner-copy-trading-bot-command",
+          "title": "Implement Whale Scanner + Copy Trading bot commands (P2)",
+          "done": false,
+          "owner": "agent",
+          "command": "Add polymarket bot whale-scan and bot copy-trade subcommands under a new src/commands/bot/ per Polymarket Bot Rules.md — whale threshold via --min-amount (default $10k), copy-trade mirrors top-leaderboard traders with --size; validate in --dry-run first."
+        },
+        {
+          "id": "polymarket-bot-implement-5-min-crypto-sniper-weather-stat-arb-b",
+          "title": "Implement 5-Min Crypto Sniper + Weather Stat-Arb bots (P2)",
+          "done": false,
+          "owner": "agent",
+          "command": "Add polymarket bot sniper (5-min crypto, target YES≥0.95, resting limit orders only) and bot weather-arb (NOAA GFS ensemble vs implied odds, act when edge>3%) subcommands per Polymarket Bot Rules.md, both with --dry-run mode."
+        },
+        {
+          "id": "polymarket-bot-fund-polygon-wallet-with-matic-usdc-for-first-li",
+          "title": "Fund Polygon wallet with MATIC + USDC for first live trade",
+          "done": false,
+          "owner": "human",
+          "command": ""
+        }
       ]
     },
     {
@@ -277,35 +1116,224 @@
       "emoji": "🧠",
       "status": "active",
       "accent": "#9333ea",
-      "summary": "Obsidian RAG corpus fully built for Model G: 179 songs → 7,681 chronological lyric lines from Excel, 502-term authority lexicon, Entities, Thematic Ideas, 7,599 Bar Notes, Deep Concepts, tone metrics + master concept mapping.",
-      "nextUp": "Automate corpus sync into XJournal AI (currently a manual build-corpus.mjs regen) and put the corpus under version control.",
+      "summary": "Obsidian corpus built: 179 songs → 7,681 lyric lines, 502-term lexicon, 7,599 bar notes, entities/themes/deep-concepts, tone metrics + dataset analysis.",
+      "nextUp": "Automate the manual build-corpus.mjs regen to sync with XJournal AI, and add version control for corpus updates.",
       "tasks": [
-        { "title": "Extract 179 songs to 7,681 chronological lyric lines from Excel", "done": true, "owner": "agent", "command": "" },
-        { "title": "Build 502-term Slang & Lexicon authority list", "done": true, "owner": "agent", "command": "" },
-        { "title": "Build Entities, Thematic Ideas, Deep Concepts categories", "done": true, "owner": "agent", "command": "" },
-        { "title": "Generate 7,599 Bar Notes files", "done": true, "owner": "agent", "command": "" },
-        { "title": "Tone metrics + master concept mapping + dataset analysis", "done": true, "owner": "agent", "command": "" },
-        { "title": "Automate corpus sync with XJournal AI (replace manual regen)", "done": false, "owner": "agent", "command": "In repo The Final Journal AI under tools/modelg-corpus, add an npm script + file-watcher (chokidar) that re-runs build-corpus.mjs against '/Users/samuel/Desktop/CLAUDE WORLD/LLM builder local/LLM builder local' on vault changes and rewrites XJournal AI/ModelG/Corpus/ModelGCorpus.json, printing bar counts + bpm coverage so the app corpus stays in sync." },
-        { "title": "Add version control for corpus updates", "done": false, "owner": "human", "command": "" }
+        {
+          "id": "llm-builder-local-extract-179-songs-to-7-681-chronological-lyric-l",
+          "title": "Extract 179 songs to 7,681 chronological lyric lines from Excel",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "llm-builder-local-build-502-term-slang-lexicon-authority-list",
+          "title": "Build 502-term Slang & Lexicon authority list",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "llm-builder-local-build-entities-thematic-ideas-deep-concepts-cate",
+          "title": "Build Entities, Thematic Ideas, Deep Concepts categories",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "llm-builder-local-generate-7-599-bar-notes-files",
+          "title": "Generate 7,599 Bar Notes files",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "llm-builder-local-tone-metrics-master-concept-mapping-dataset-anal",
+          "title": "Tone metrics + master concept mapping + dataset analysis",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "llm-builder-local-automate-corpus-sync-with-xjournal-ai-replace-ma",
+          "title": "Automate corpus sync with XJournal AI (replace manual regen)",
+          "done": false,
+          "owner": "agent",
+          "command": "Automate the manual `node build-corpus.mjs` regen (in The Final Journal AI/tools/modelg-corpus) so edits to the LLM builder vault (~/Desktop/CLAUDE WORLD/LLM builder local/LLM builder local) auto-rebuild XJournal AI/ModelG/Corpus/ModelGCorpus.json — e.g. a watch/CLI script or git hook that runs build-corpus.mjs and reports counts + bpm coverage."
+        },
+        {
+          "id": "llm-builder-local-add-version-control-for-corpus-updates",
+          "title": "Add version control for corpus updates",
+          "done": false,
+          "owner": "agent",
+          "command": "Initialize git in the LLM builder vault (~/Desktop/CLAUDE WORLD/LLM builder local/LLM builder local), add a .gitignore for .obsidian workspace/graph state, commit the corpus as a baseline, and document a regen→commit workflow so corpus updates are tracked."
+        }
+      ]
+    },
+    {
+      "id": "xjournal-model-g",
+      "name": "XJournal AI - Model G",
+      "emoji": "🧠",
+      "status": "active",
+      "accent": "#65a30d",
+      "summary": "v4 RAG (tone+tag retrieval, Inspired slider, embeddings) + vault regen to 6,376 bars; v4.1 punchline axis P1–P5 + LLM-judge rerank shipped behind flags.",
+      "nextUp": "Build the v5 simplified one-pass coordinator behind useModelGv5; diagnose the open v4-on 'API request failed' runtime error.",
+      "tasks": [
+        {
+          "id": "xjournal-model-g-v4-rag-retrieval-wired-by-tone-tags-never-empty",
+          "title": "v4 RAG retrieval wired by tone+tags, never-empty",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "xjournal-model-g-inspired-slider-gradient-scales-exemplar-k-4-12-",
+          "title": "Inspired slider gradient: scales exemplar k 4→12 + prompt directive",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "xjournal-model-g-vault-hygiene-corpus-regen-13-192-6-376-unique-b",
+          "title": "Vault hygiene + corpus regen: 13,192→6,376 unique bars",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "xjournal-model-g-bpm-key-scale-user-syllable-range-metadata-edito",
+          "title": "BPM/key/scale + user syllable-range metadata editor",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "xjournal-model-g-v4-1-punchline-concept-axis-p1-p5-shipped-behind",
+          "title": "v4.1 punchline/concept axis P1–P5 shipped behind useModelGv41",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "xjournal-model-g-filter-corpus-exemplars-to-real-bars-4-words-to-",
+          "title": "Filter corpus exemplars to real bars (≥4 words) to kill ad-lib fragments",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "xjournal-model-g-add-llm-judge-wit-punchline-rerank-as-best-of-n-",
+          "title": "Add LLM-judge wit/punchline rerank as best-of-N tiebreaker (P4)",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "xjournal-model-g-add-anthropic-claude-as-a-third-byok-provider-sk",
+          "title": "Add Anthropic (Claude) as a third BYOK provider (sk-ant- routing)",
+          "done": true,
+          "owner": "agent",
+          "command": "",
+          "isNew": true,
+          "addedAt": "2026-07-10T05:00:12.801Z"
+        },
+        {
+          "id": "xjournal-model-g-replace-bag-of-words-jaccard-sig-with-on-device-",
+          "title": "Replace bag-of-words Jaccard sig with on-device embedding cosine",
+          "done": false,
+          "owner": "agent",
+          "command": "In XJournal AI/ModelG/ScoringEngine.swift, replace the Jaccard word-overlap `sig` term with cosine similarity from the existing on-device ModelGEmbeddingIndex (VectorMath.cosine) so reworded-but-inspired bars are credited, not just literal word reuse; update v4Breakdown and the scoring tests."
+        },
+        {
+          "id": "xjournal-model-g-diagnose-fix-open-v4-on-api-request-failed-runti",
+          "title": "Diagnose + fix open v4-on 'API request failed' runtime error",
+          "done": false,
+          "owner": "agent",
+          "command": "Reproduce a v4-on generation and read the Xcode console from the instrumentation commit 016966c (HTTP status/body, per-candidate error, which engine entered) to pin the swallowed provider error that surfaces via the v3 fallthrough in XJournal AI/ModelG/ModelGCoreCoordinatorV4.swift + ModelGLLMService.swift, then fix it."
+        },
+        {
+          "id": "xjournal-model-g-ghost-bar-free-live-next-line-rhyme-suggestions-",
+          "title": "Ghost Bar: Free/Live next-line rhyme suggestions in the editor",
+          "done": false,
+          "owner": "agent",
+          "command": "Implement Model G v4 Phase 4 Ghost Bar per the plan: add GhostMode/GhostSuggestionEngine/GhostBarPill under XJournal AI/ModelG/Ghost/, a ghost button + Off/Free/Live chooser in ContentView.CCV.14.swift, and wire the newline trigger + above-keyboard pill in ContentView.CCV.13.swift (Free = corpus+CMUDICT rhyme, Live = BYOK, fall back to Free).",
+          "isNew": true,
+          "addedAt": "2026-07-10T05:00:12.801Z"
+        },
+        {
+          "id": "xjournal-model-g-build-v5-simplified-one-pass-coordinator-behind-",
+          "title": "Build v5 simplified one-pass coordinator behind useModelGv5",
+          "done": false,
+          "owner": "agent",
+          "command": "Per 'Model G — v5 Simplified Pipeline & Audio Input (Design)', fork v3's generateFullVerse into a new XJournal AI/ModelG/ModelGCoreCoordinatorV5 behind useModelGv5: strip scoring/rejection/retry, assemble one SYSTEM+USER prompt (narrative + metadata facts + example-length line + 3–6 tone/tag exemplars, delete the sig term), one generation pass, advisory light post-check; add Item.narrativeState carry-forward."
+        }
       ]
     },
     {
       "id": "ai-toolkit",
-      "name": "AI Toolkit (Reference Library)",
+      "name": "AI Toolkit",
       "emoji": "🧰",
       "status": "idle",
-      "accent": "#65a30d",
-      "summary": "Cross-project Obsidian reference library (not a shippable app): index, ~150-entry clippings directory, 27 standard-app notes, detailed notes on 3D-gen, image (Gemini/Imagen), video (Veo/Runway), ElevenLabs TTS.",
-      "nextUp": "Passive reference. Open thread: the documented image-to-3D badge pipeline is blocked on a provisioned Meshy/Tripo key.",
+      "accent": "#2563eb",
+      "summary": "Shared AI reference library: index + key-store convention, ~150 categorized clippings, asset/video/audio service notes, 27 Standard Apps stubs; wikilink hygiene fixed.",
+      "nextUp": "Provision a text-to-3D key (Meshy Pro / Tripo) to unblock the CDL badge pipeline.",
       "tasks": [
-        { "title": "Toolkit index + key-store convention documented", "done": true, "owner": "agent", "command": "" },
-        { "title": "Clippings directory: ~150 AI tools categorized by workflow", "done": true, "owner": "agent", "command": "" },
-        { "title": "Asset-gen notes: 3D Model Generation, Gemini Image, Imagen", "done": true, "owner": "agent", "command": "" },
-        { "title": "Video + audio notes: Veo, Runway, ElevenLabs TTS", "done": true, "owner": "agent", "command": "" },
-        { "title": "27 Standard Apps reference stubs", "done": true, "owner": "agent", "command": "" },
-        { "title": "Fix broken wikilink syntax in 3D Model Generation.md", "done": false, "owner": "agent", "command": "In '/Users/samuel/dev/OB CLAUDE vault/🧰 AI Toolkit/3D Model Generation.md', fix the malformed Obsidian wikilinks: the frontmatter used_with array has triple-bracket entries and the Sources section has broken link/label syntax. Convert each to a valid single [[wikilink]] or a proper [label](url) Markdown link so they resolve in Obsidian." },
-        { "title": "Normalize literal '[[Gemini - Web Design Upgrades]]' links bleeding into prose", "done": false, "owner": "agent", "command": "Across '/Users/samuel/dev/OB CLAUDE vault/🧰 AI Toolkit/' (notably Gemini Image Generation.md), replace the literal '[[Gemini - Web Design Upgrades]]' wikilink accidentally substituted into product names / model IDs (e.g. 'Gemini - Web Design Upgrades-2.5-flash-image') with plain text 'Gemini' so model IDs and URLs read correctly." },
-        { "title": "Provision a text-to-3D key (Meshy Pro / Tripo) to unblock the badge pipeline", "done": false, "owner": "human", "command": "" }
+        {
+          "id": "ai-toolkit-toolkit-index-key-store-convention-documented",
+          "title": "Toolkit index + key-store convention documented",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "ai-toolkit-clippings-directory-150-ai-tools-categorized-by-",
+          "title": "Clippings directory: ~150 AI tools categorized by workflow",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "ai-toolkit-asset-gen-notes-3d-model-generation-gemini-image",
+          "title": "Asset-gen notes: 3D Model Generation, Gemini Image, Imagen",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "ai-toolkit-video-audio-notes-veo-runway-elevenlabs-tts",
+          "title": "Video + audio notes: Veo, Runway, ElevenLabs TTS",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "ai-toolkit-27-standard-apps-reference-stubs",
+          "title": "27 Standard Apps reference stubs",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "ai-toolkit-fix-broken-wikilink-syntax-in-3d-model-generatio",
+          "title": "Fix broken wikilink syntax in 3D Model Generation.md",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "ai-toolkit-normalize-literal-gemini-web-design-upgrades-lin",
+          "title": "Normalize literal '[[Gemini - Web Design Upgrades]]' links bleeding into prose",
+          "done": true,
+          "owner": "agent",
+          "command": ""
+        },
+        {
+          "id": "ai-toolkit-provision-a-text-to-3d-key-meshy-pro-tripo-to-un",
+          "title": "Provision a text-to-3D key (Meshy Pro / Tripo) to unblock the badge pipeline",
+          "done": false,
+          "owner": "human",
+          "command": ""
+        }
       ]
     }
   ]

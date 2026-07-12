@@ -10,8 +10,33 @@ import {
 type ProjStatus = 'planning' | 'active' | 'blocked' | 'shipped' | 'idle'
 type Owner = 'agent' | 'human'
 
-interface RawTask { title: string; done: boolean; owner: Owner; command: string }
-interface Task extends RawTask { id: string }
+/**
+ * `id` / `isNew` / `addedAt` are stamped by scripts/build-projects-claude.mjs.
+ * `isNew` living in the FILE (not just in a client-side before/after diff) is what lets
+ * the badge survive a reload and still appear for tasks the weekly cron added overnight.
+ */
+interface RawTask {
+  title: string; done: boolean; owner: Owner; command: string
+  id?: string; isNew?: boolean; addedAt?: string
+}
+interface Task extends RawTask { id: string; isNew?: boolean }
+
+/**
+ * Key a task's check-off state.
+ *
+ * Snapshots from build-projects-claude.mjs carry a title-derived `id` that survives a
+ * re-audit reordering its tasks. Older snapshots have no id, so fall back to the array
+ * index — correct for them precisely because they are never re-generated.
+ */
+const taskKey = (projectId: string, task: RawTask, index: number): string =>
+  task.id ?? `${projectId}-${index}`
+
+/** Every task id in a snapshot — used to diff before/after a Refresh so new work stands out. */
+function allTaskIds(payload: ProjectsPayload | null): Set<string> {
+  const ids = new Set<string>()
+  for (const p of payload?.projects ?? []) p.tasks.forEach((t, i) => ids.add(taskKey(p.id, t, i)))
+  return ids
+}
 
 interface VProject {
   id:      string
@@ -35,6 +60,10 @@ const STATUS_CONFIG: Record<ProjStatus, { label: string; color: string }> = {
   shipped:  { label: 'Shipped',  color: 'var(--good)'   },
   idle:     { label: 'Idle',     color: 'var(--text-4)' },
 }
+
+/** Owner colours, used everywhere ownership is shown: the bot (AI) is purple, your tasks are green. */
+const C_AI = '#8b5cf6'    // bot → purple
+const C_ME = '#22c55e'    // me  → green
 
 /* Local check-off overrides — tick in the dashboard, sticks across reloads, on top of the snapshot. */
 const DONE_KEY = 'projects:done-overrides-v1'
@@ -87,6 +116,7 @@ function ProjectCard({ project, active, onClick }: { project: EnrichedProject; a
   const done = project.tasks.filter(t => t.done).length
   const agentOpen = project.tasks.filter(t => !t.done && t.owner === 'agent').length
   const humanOpen = project.tasks.filter(t => !t.done && t.owner === 'human').length
+  const newOpen = project.tasks.filter(t => t.isNew && !t.done).length
   return (
     <button
       onClick={onClick}
@@ -110,17 +140,27 @@ function ProjectCard({ project, active, onClick }: { project: EnrichedProject; a
 
       <div className="flex items-center gap-2 flex-wrap">
         <StatusPill status={project.status} />
-        {agentOpen > 0 && (
-          <span className="mono inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded"
-            style={{ background: 'color-mix(in oklab, var(--accent) 14%, transparent)', color: 'var(--accent)' }}>
-            <Bot size={11} /> {agentOpen} AI-doable
+        {newOpen > 0 && (
+          <span className="mono inline-flex items-center gap-1 whitespace-nowrap text-[10px] px-2 py-0.5 rounded"
+            style={{ background: 'color-mix(in oklab, var(--accent) 18%, transparent)', color: 'var(--accent)' }}>
+            {newOpen} new
           </span>
         )}
-        {humanOpen > 0 && (
-          <span className="mono inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded"
-            style={{ background: 'var(--bg-muted)', color: 'var(--text-3)' }}>
-            <UserRound size={11} /> {humanOpen} you
-          </span>
+        {(agentOpen > 0 || humanOpen > 0) && (
+          <div className="flex items-center gap-2">
+            {agentOpen > 0 && (
+              <span className="mono inline-flex items-center gap-1 whitespace-nowrap text-[10px] px-2 py-0.5 rounded"
+                style={{ background: `color-mix(in oklab, ${C_AI} 16%, transparent)`, color: C_AI }}>
+                <Bot size={11} /> {agentOpen} AI-doable
+              </span>
+            )}
+            {humanOpen > 0 && (
+              <span className="mono inline-flex items-center gap-1 whitespace-nowrap text-[10px] px-2 py-0.5 rounded"
+                style={{ background: `color-mix(in oklab, ${C_ME} 16%, transparent)`, color: C_ME }}>
+                <UserRound size={11} /> {humanOpen} you
+              </span>
+            )}
+          </div>
         )}
       </div>
 
@@ -144,6 +184,12 @@ function TaskRow({ task, onToggle, onCopy, copied }: {
       </button>
       <span className="flex-1 text-[12px] leading-snug" style={{ color: 'var(--text-1)', textDecoration: task.done ? 'line-through' : 'none' }}>
         {task.title}
+        {task.isNew && (
+          <span className="mono ml-1.5 align-middle text-[9px] font-semibold px-1.5 py-0.5 rounded"
+            style={{ background: 'color-mix(in oklab, var(--accent) 18%, transparent)', color: 'var(--accent)' }}>
+            NEW
+          </span>
+        )}
       </span>
       {onCopy && task.command && (
         <button
@@ -173,8 +219,11 @@ function ProjectPanel({ project, onToggle, onClose }: {
     window.setTimeout(() => setCopiedKey(k => (k === key ? null : k)), 1500)
   }, [])
 
-  const aiTasks   = project.tasks.filter(t => !t.done && t.owner === 'agent')
-  const youTasks  = project.tasks.filter(t => !t.done && t.owner === 'human')
+  // Newly-surfaced work floats to the top of its section — the point of hitting Refresh
+  // is to see what changed, not to hunt for it in a list of things you already knew.
+  const newFirst = (a: Task, b: Task) => Number(Boolean(b.isNew)) - Number(Boolean(a.isNew))
+  const aiTasks   = project.tasks.filter(t => !t.done && t.owner === 'agent').sort(newFirst)
+  const youTasks  = project.tasks.filter(t => !t.done && t.owner === 'human').sort(newFirst)
   const doneTasks = project.tasks.filter(t => t.done)
   const done = doneTasks.length
 
@@ -213,7 +262,7 @@ function ProjectPanel({ project, onToggle, onClose }: {
         {/* AI-doable */}
         <section className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <h3 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--accent)' }}>
+            <h3 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide" style={{ color: C_AI }}>
               <Bot size={13} /> AI can run these ({aiTasks.length})
             </h3>
             {aiTasks.length > 0 && (
@@ -237,7 +286,7 @@ function ProjectPanel({ project, onToggle, onClose }: {
         {/* Human-only */}
         {youTasks.length > 0 && (
           <section className="space-y-1.5">
-            <h3 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>
+            <h3 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide" style={{ color: C_ME }}>
               <UserRound size={13} /> You handle these ({youTasks.length})
             </h3>
             {youTasks.map(t => <TaskRow key={t.id} task={t} onToggle={onToggle} />)}
@@ -265,17 +314,24 @@ export default function CpwZone() {
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError]           = useState<string | null>(null)
   const [overrides, setOverrides]   = useState<Record<string, boolean>>(loadOverrides)
+  const [newTaskIds, setNewTaskIds] = useState<Set<string>>(() => new Set())
+  const [didRefresh, setDidRefresh] = useState(false)
+  const [auditError, setAuditError] = useState<string | null>(null)
+  const [progress, setProgress]     = useState<string | null>(null)
   const [activeId, setActiveId]     = useState<string | null>(null)
   const [filter, setFilter]         = useState<ProjStatus | 'all'>('all')
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (): Promise<ProjectsPayload | null> => {
     try {
       const r = await fetch(`/data/projects.json?t=${Date.now()}`)
       if (!r.ok) throw new Error(`HTTP ${r.status}`)
-      setPayload((await r.json()) as ProjectsPayload)
+      const next = (await r.json()) as ProjectsPayload
+      setPayload(next)
       setError(null)
+      return next
     } catch {
       setError('Could not load projects.json — run the project audit, or hit Refresh.')
+      return null
     } finally {
       setLoading(false)
     }
@@ -298,22 +354,57 @@ export default function CpwZone() {
     })
   }, [])
 
+  /**
+   * Refresh = re-audit the vault, then show what's new.
+   *
+   * The audit is one LLM call per project, so /build only *starts* it and we poll
+   * /status until it settles. Previously this awaited a script that bailed out
+   * immediately, which is why Refresh never surfaced new work.
+   */
   const refresh = useCallback(async () => {
     setRefreshing(true)
-    try { await fetch('/api/local/projects/build', { method: 'POST' }) } catch { /* route absent in prod */ }
+    setAuditError(null)
+    const before = allTaskIds(payload)
+
+    try {
+      const started = await fetch('/api/local/projects/build', { method: 'POST' })
+      const info = await started.json().catch(() => ({}))
+
+      if (info?.status === 'blocked') {
+        setAuditError(info.message ?? 'Re-audit is blocked.')
+      } else if (info?.status === 'started' || info?.status === 'already_running') {
+        setProgress('Re-auditing your vault…')
+        // Poll rather than await: a 15-project Opus pass runs for minutes.
+        for (let i = 0; i < 300; i++) {
+          await new Promise(r => setTimeout(r, 3000))
+          const s = await fetch('/api/local/projects/status').then(r => r.json()).catch(() => null)
+          if (!s) break
+          if (!s.running) {
+            if (s.ok === false && s.error) setAuditError(s.error)
+            break
+          }
+          setProgress(`Re-auditing your vault… (${Math.round((i + 1) * 3)}s)`)
+        }
+      }
+    } catch { /* route absent in prod — fall through to a plain reload */ }
+    setProgress(null)
+
     try { await fetch('/api/local/projects/sync', { method: 'POST' }) } catch { /* route absent in prod */ }
     try {
       const map = await fetchCheckoffs()
       if (Object.keys(map).length) setOverrides(prev => { const n = { ...prev, ...map }; saveOverrides(n); return n })
     } catch { /* offline */ }
-    await fetchData()
-    setRefreshing(false)
-  }, [fetchData])
 
-  // Vault/snapshot committed done-state, before local overrides (keyed by synthesized task id).
+    const next = await fetchData()
+    if (next) setNewTaskIds(new Set([...allTaskIds(next)].filter(id => !before.has(id))))
+    setDidRefresh(true)
+    setRefreshing(false)
+  }, [fetchData, payload])
+
+  // Vault/snapshot committed done-state, before local overrides (keyed by task id).
   const baseDone = useMemo(() => {
     const m: Record<string, boolean> = {}
-    for (const p of payload?.projects ?? []) p.tasks.forEach((t, i) => { m[`${p.id}-${i}`] = t.done })
+    for (const p of payload?.projects ?? []) p.tasks.forEach((t, i) => { m[taskKey(p.id, t, i)] = t.done })
     return m
   }, [payload])
 
@@ -333,10 +424,18 @@ export default function CpwZone() {
   const projects = useMemo(() => (payload?.projects ?? []).map(p => ({
     ...p,
     tasks: p.tasks.map((t, i): Task => {
-      const id = `${p.id}-${i}`
-      return { ...t, id, done: overrides[id] ?? t.done }
+      const id = taskKey(p.id, t, i)
+      // Union: the generator's stamp (durable) OR a task that appeared during this
+      // session's Refresh (covers snapshots produced before isNew existed).
+      return { ...t, id, done: overrides[id] ?? t.done, isNew: t.isNew || newTaskIds.has(id) }
     }),
-  })), [payload, overrides])
+  })), [payload, overrides, newTaskIds])
+
+  /** How many open tasks are flagged new right now — drives the header pill. */
+  const newCount = useMemo(
+    () => projects.reduce((n, p) => n + p.tasks.filter(t => t.isNew && !t.done).length, 0),
+    [projects],
+  )
 
   // Mirror check-off state into the vault note via the local BFF (no-ops on Vercel,
   // where the route is absent — those check-offs reach the vault through the cloud sync).
@@ -383,14 +482,34 @@ export default function CpwZone() {
             {projects.length} projects
           </span>
         </div>
-        <button onClick={() => void refresh()} disabled={refreshing}
-          className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium transition-colors disabled:opacity-60"
-          style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-1)' }}
-          title="Re-pull the project snapshot">
-          <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
-          {refreshing ? 'Refreshing…' : 'Refresh'}
-        </button>
+        <div className="flex items-center gap-2 min-w-0">
+          {progress && (
+            <span className="mono text-[10px] truncate" style={{ color: 'var(--text-4)' }}>{progress}</span>
+          )}
+          {!refreshing && (newCount > 0 || didRefresh) && (
+            <span className="mono text-[10px] px-2 py-0.5 rounded"
+              style={newCount > 0
+                ? { background: 'color-mix(in oklab, var(--accent) 18%, transparent)', color: 'var(--accent)' }
+                : { background: 'var(--bg-muted)', color: 'var(--text-4)' }}>
+              {newCount > 0 ? `${newCount} new task${newCount === 1 ? '' : 's'}` : 'no new tasks'}
+            </span>
+          )}
+          <button onClick={() => void refresh()} disabled={refreshing}
+            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium transition-colors disabled:opacity-60"
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-1)' }}
+            title="Re-audit your vault docs and surface any new tasks">
+            <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
+            {refreshing ? 'Auditing…' : 'Refresh'}
+          </button>
+        </div>
       </header>
+
+      {auditError && (
+        <div className="px-4 py-2 text-[11px] leading-snug shrink-0"
+          style={{ background: 'color-mix(in oklab, var(--bad) 12%, transparent)', color: 'var(--text-1)', borderBottom: '1px solid var(--border)' }}>
+          {auditError}
+        </div>
+      )}
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
         <div className="flex-1 overflow-auto">
@@ -401,8 +520,8 @@ export default function CpwZone() {
                 <h1 className="text-[22px] font-semibold tracking-tight" style={{ color: 'var(--text-1)' }}>Projects Overview</h1>
                 <p className="mt-1 flex items-center gap-3 text-[11px]" style={{ color: 'var(--text-4)' }}>
                   <span className="inline-flex items-center gap-1.5"><ListTodo size={12} />{projects.length} projects</span>
-                  <span className="inline-flex items-center gap-1" style={{ color: 'var(--accent)' }}><Bot size={12} />{totalAgentOpen} AI-doable</span>
-                  <span className="inline-flex items-center gap-1"><UserRound size={12} />{totalHumanOpen} for you</span>
+                  <span className="inline-flex items-center gap-1" style={{ color: C_AI }}><Bot size={12} />{totalAgentOpen} AI-doable</span>
+                  <span className="inline-flex items-center gap-1" style={{ color: C_ME }}><UserRound size={12} />{totalHumanOpen} for you</span>
                   {payload?.generatedAt && <span>· audited {timeAgo(payload.generatedAt)}</span>}
                 </p>
               </div>
