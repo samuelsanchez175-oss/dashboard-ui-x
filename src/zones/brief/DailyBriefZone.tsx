@@ -105,6 +105,12 @@ interface BriefJson {
   pipeline?: Pipeline
   delta?: Delta | null
   workflows?: BriefWorkflow[]
+  catchup_prompts?: CatchupPromptGroup[]
+}
+
+interface CatchupPromptGroup {
+  project: string
+  prompts: string[]
 }
 
 const DATA_URL = '/data/daily-brief.json'
@@ -281,6 +287,7 @@ export default function DailyBriefZone() {
   const [notifDismissed, setNotifDismissed] = useState(true)
   const [planDone, setPlanDone] = useState<string[]>([])
   const [copiedFile, setCopiedFile] = useState<string | null>(null)
+  const [copiedPrompt, setCopiedPrompt] = useState<string | null>(null)
   const copyTimer = useRef<number | undefined>(undefined)
 
   // Local Dev Controls State — vault scripts only exist on the host Mac.
@@ -451,22 +458,49 @@ export default function DailyBriefZone() {
     setLoading(true)
     setShowLogConsole(true)
     setActiveLogType('action')
-    setActionLogs('① Regenerating the daily brief from the vault…')
+    setActionLogs('① Starting brief generation (run_brief.sh)…\nThis takes ~3 min. Tailing logs below — reload when done appears.')
+
     try {
       const g = await fetch('/api/local/brief/generate', { method: 'POST' })
         .then(r => r.json())
-        .catch(() => ({ ok: false }))
-      const gMsg = g?.ok ? '✓ brief regenerated' : '⚠ brief regen skipped/failed'
-      setActionLogs(`${gMsg}\n② Rebuilding the dashboard snapshot…`)
-      const b = await fetch('/api/local/brief/build', { method: 'POST' })
-        .then(r => r.json())
-        .catch(() => ({ ok: false }))
-      const bMsg = b?.ok ? '✓ snapshot rebuilt' : '⚠ snapshot rebuild skipped/failed'
-      setActionLogs(`${gMsg}\n${bMsg}\n③ Reloading…`)
+        .catch(() => ({ ok: false, status: 'error' }))
+
+      if (!g?.ok) {
+        setActionLogs('[ERROR] Could not start brief generation.')
+        setLoading(false)
+        return
+      }
+
+      if (g.status === 'already_running') {
+        setActionLogs('⚠ Brief generation already in progress — tailing log…')
+      } else {
+        setActionLogs('✓ Started. Tailing log — waiting for "DONE"…\n')
+      }
+
+      // Poll log every 3s; stop when "daily-brief DONE" appears.
+      let attempts = 0
+      const MAX = 80 // 4 min ceiling
+      const poll = async () => {
+        attempts++
+        try {
+          const lr = await fetch('/api/local/vault/logs?type=brief').then(r => r.json()).catch(() => null)
+          if (lr?.ok) setActionLogs(lr.logs)
+          const done = lr?.logs?.includes('daily-brief DONE')
+          const status = await fetch('/api/local/brief/status').then(r => r.json()).catch(() => ({ running: true }))
+          if (done || (!status.running && attempts > 2)) {
+            setActionLogs((lr?.logs ?? '') + '\n③ Reloading data…')
+            await load()
+            return
+          }
+        } catch { /* keep polling */ }
+        if (attempts < MAX) window.setTimeout(() => void poll(), 3000)
+        else setActionLogs(logs => logs + '\n[TIMEOUT] Exceeded 4 min — check Brief Logs manually.')
+      }
+      window.setTimeout(() => void poll(), 3000)
     } catch (err) {
       setActionLogs(`[ERROR] ${err instanceof Error ? err.message : 'refresh failed'}`)
+      setLoading(false)
     }
-    await load()
   }, [isLocalHost, load])
 
   const dismissNotif = () => {
@@ -518,6 +552,17 @@ export default function DailyBriefZone() {
       setCopiedFile(s.file)
       window.clearTimeout(copyTimer.current)
       copyTimer.current = window.setTimeout(() => setCopiedFile(null), 1600)
+    } catch {
+      /* clipboard blocked — no-op */
+    }
+  }
+
+  const copyPrompt = async (id: string, text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedPrompt(id)
+      window.clearTimeout(copyTimer.current)
+      copyTimer.current = window.setTimeout(() => setCopiedPrompt(null), 1600)
     } catch {
       /* clipboard blocked — no-op */
     }
@@ -822,6 +867,58 @@ export default function DailyBriefZone() {
                     )
                   })}
                 </ul>
+              </SectionCard>
+            ) : null}
+
+            {/* High-yield prompts — copy-to-run, per project (from the 📌 DB Catchup note) */}
+            {data.catchup_prompts && data.catchup_prompts.length > 0 ? (
+              <SectionCard
+                title="High-yield prompts"
+                count={data.catchup_prompts.reduce((n, g) => n + g.prompts.length, 0)}
+                right={<Terminal className="size-3.5 text-emerald-600" aria-hidden />}
+              >
+                <p className="mb-4 text-xs" style={{ color: 'var(--text-3)' }}>
+                  Copy any prompt into a Claude Code session opened in that project — each is scoped to one high-leverage change.
+                </p>
+                <div className="space-y-5">
+                  {data.catchup_prompts.map(group => (
+                    <div key={group.project}>
+                      <p className="mb-2 text-sm font-semibold" style={{ color: 'var(--text-1)' }}>
+                        {group.project}
+                      </p>
+                      <ul className="space-y-2">
+                        {group.prompts.map((p, i) => {
+                          const id = `${group.project}#${i}`
+                          return (
+                            <li
+                              key={id}
+                              className="group relative rounded-xl border p-3 pr-11"
+                              style={{ borderColor: 'var(--border-soft)', background: 'var(--bg-card-soft)' }}
+                            >
+                              <pre className="whitespace-pre-wrap font-mono text-xs leading-relaxed" style={{ color: 'var(--text-2)' }}>
+                                {p}
+                              </pre>
+                              <button
+                                type="button"
+                                onClick={() => void copyPrompt(id, p)}
+                                title="Copy prompt"
+                                aria-label="Copy prompt"
+                                className="absolute right-2 top-2 rounded-md border p-1.5 opacity-70 transition-opacity hover:opacity-100"
+                                style={{ borderColor: 'var(--border-soft)', color: copiedPrompt === id ? undefined : 'var(--text-3)' }}
+                              >
+                                {copiedPrompt === id ? (
+                                  <Check className="size-3.5 text-emerald-600" aria-hidden />
+                                ) : (
+                                  <Copy className="size-3.5" aria-hidden />
+                                )}
+                              </button>
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
               </SectionCard>
             ) : null}
 

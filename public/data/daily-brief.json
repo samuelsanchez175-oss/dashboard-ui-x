@@ -75,7 +75,7 @@
     "name": "OB CLAUDE vault",
     "brief_file": "🌅 Daily Brief/Briefs/2026-07-13.md",
     "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%8C%85%20Daily%20Brief/Briefs/2026-07-13",
-    "generated_at": "2026-07-13T14:45:50",
+    "generated_at": "2026-07-13T15:06:50",
     "counts": {
       "briefs": 11,
       "clippings": 145,
@@ -2652,6 +2652,48 @@
       ],
       "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Zoo Text-to-CAD - Natural Language CAD Generator.md",
       "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Zoo%20Text-to-CAD%20-%20Natural%20Language%20CAD%20Generator"
+    }
+  ],
+  "catchup_prompts": [
+    {
+      "project": "🗂️ CDL PRAC one — iOS study app (SwiftUI + SwiftData)",
+      "prompts": [
+        "On the first-run/onboarding screen, implement smart defaults: pre-select Class A and a sensible\ndaily question goal so the user never faces a blank slate. Show the SwiftUI diff, then build.",
+        "In the quiz progress UI, apply the goal-gradient effect: start the bar at ~15% (endowed progress)\ninstead of 0 and add a \"X of Y to today's goal\" label wired to the XP/streak state. Then build.",
+        "Rewrite the paywall copy using loss aversion — frame the headline around what the user loses\nwithout Pro (streak, XP, progress). Give 3 options and update the paywall view with the strongest."
+      ]
+    },
+    {
+      "project": "🤖 Polymarket Bot — Rust CLI (markets, orders, onchain CTF)",
+      "prompts": [
+        "Add a `watch` subcommand that streams live price/volume for a market id and alerts when the\nyes-price crosses a --above/--below threshold. Show the clap arg setup and the polling loop.",
+        "Add a read-only `positions` command that reads my onchain CTF positions and prints a P&L table\n(entry vs current mid). No order placement.",
+        "Write an integration test that mocks the Polymarket API and exercises the place-order path\nend-to-end, asserting the CTF position updates. Inject the HTTP client via a trait."
+      ]
+    },
+    {
+      "project": "🧠 LLM Builder Local — Model G lyric corpus (179 songs, lexicon, entities)",
+      "prompts": [
+        "Audit the corpus for coverage gaps: report which themes/entities in the mapping have fewer than\nN lines and produce a to-collect list so Model G training isn't skewed.",
+        "Write a validator that checks every song's frontmatter (slang lexicon refs, entities, theme tags)\nagainst the schema and lists offenders with file paths.",
+        "From the 7,681 lines, extract candidate slang not yet in the lexicon, with example lines and\nfrequency counts, and append the new entries to the lexicon."
+      ]
+    },
+    {
+      "project": "📱 Penwork Studios — AI journaling / lyric-generation app",
+      "prompts": [
+        "Profile the slowest screen (the \"slow, dark, hard-to-use\" flow) and give me the top 3\nrendering/data bottlenecks with concrete fixes, then apply the highest-impact one.",
+        "Add smart defaults to the generation screen: pre-fill theme/jargon from the user's last session\nso they never start from an empty prompt. Show the diff, then build.",
+        "Wire the Model G v3 pipeline output into the grading view and show the grade breakdown inline."
+      ]
+    },
+    {
+      "project": "🚗 YouTube CarPlay Player — CarPlay video app (iOS 27 \"Video in Car\", 33/33 tests)",
+      "prompts": [
+        "Add a \"Continue watching\" row on the now-playing CarPlay template that resumes the last video at\nits saved timestamp. Persist position in UserDefaults.",
+        "Implement background audio + Now Playing info (title, artwork, elapsed) so audio keeps playing\nwhen CarPlay backgrounds the video.",
+        "Add UI tests for the CarPlay playback controls (play/pause/seek) using the CarPlay test harness\nand keep the suite green (currently 33/33)."
+      ]
     }
   ]
 }
