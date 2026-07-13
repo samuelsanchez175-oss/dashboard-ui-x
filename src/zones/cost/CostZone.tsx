@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   Activity,
   BarChart3,
+  Check,
+  ClipboardCopy,
   Coins,
   Database,
   ExternalLink,
@@ -194,12 +196,30 @@ function BarRow({ label, value, max, right }: { label: string; value: number; ma
   )
 }
 
+/**
+ * Paste-ready prompt that re-bakes the CodeBurn spend snapshot. Copied by the
+ * "Copy refresh prompt" button — drop it into Claude Code on the vault Mac to
+ * update this zone with current AI-spend numbers.
+ */
+const REFRESH_PROMPT = `Refresh the CodeBurn AI-spend snapshot on the dashboard. cd "~/dev/UI Dashboard x" and run \`npm run refresh:codeburn\` to bake a fresh public/data/codeburn.json from the local CodeBurn CLI, then commit ONLY public/data/codeburn.json and git push origin main so the deployed Cost zone updates on Vercel. Report the new totals (today / month / all).`
+
 export default function CostZone() {
   const [data, setData] = useState<CodeburnSnapshot | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [period, setPeriod] = useState<PeriodKey>('month')
   const [metric, setMetric] = useState<'cost' | 'calls'>('cost')
+  const [copied, setCopied] = useState(false)
+
+  async function copyRefreshPrompt() {
+    try {
+      await navigator.clipboard.writeText(REFRESH_PROMPT)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      /* clipboard blocked — no-op */
+    }
+  }
 
   async function load() {
     setLoading(true)
@@ -241,6 +261,15 @@ export default function CostZone() {
           description="Where your AI coding tokens go — by task, tool, model, and project. Baked from CodeBurn on your Mac."
           actions={
             <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={copyRefreshPrompt}
+                leading={copied ? <Check className="size-3.5" /> : <ClipboardCopy className="size-3.5" />}
+                title="Copy the prompt that re-bakes the CodeBurn snapshot with current numbers"
+              >
+                {copied ? 'Copied!' : 'Copy refresh prompt'}
+              </Button>
               <Button
                 variant="secondary"
                 size="sm"
