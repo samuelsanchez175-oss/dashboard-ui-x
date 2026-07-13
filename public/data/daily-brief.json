@@ -75,12 +75,12 @@
     "name": "OB CLAUDE vault",
     "brief_file": "🌅 Daily Brief/Briefs/2026-07-13.md",
     "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%8C%85%20Daily%20Brief/Briefs/2026-07-13",
-    "generated_at": "2026-07-13T12:30:20",
+    "generated_at": "2026-07-13T14:45:50",
     "counts": {
       "briefs": 11,
       "clippings": 145,
       "tools": 34,
-      "handoffs": 142,
+      "handoffs": 146,
       "tracks": 2
     },
     "recent_briefs": [
@@ -93,6 +93,28 @@
   },
   "ai_sessions": [
     {
+      "title": "2026-07-13-obsidian-vault-routine-6796f7-e029a80f",
+      "source": "claude",
+      "project": "XJournal AI",
+      "status": "open",
+      "updated": "2026-07-13",
+      "started_with": "Help me write a routine that will update my Obsidian repositories... well, Obsidian Vault called o b, Claude Vault with new tasks, updates on where the tasks are, what are complete",
+      "file": "🤝 Handoffs/2026-07-13-obsidian-vault-routine-6796f7-e029a80f.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-13-obsidian-vault-routine-6796f7-e029a80f",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-13-obsidian-vault-routine-6796f7-e029a80f.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+    },
+    {
+      "title": "2026-07-13-obsidian-vault-audit-d61be1-7428ba4a",
+      "source": "claude",
+      "project": "XJournal AI",
+      "status": "open",
+      "updated": "2026-07-13",
+      "started_with": "This session here was gonna be used to automate my my Obsidian note taking that I've been doing for all of my applications. I'm going into my o b, Claude, Bault in Obsidian, and I'",
+      "file": "🤝 Handoffs/2026-07-13-obsidian-vault-audit-d61be1-7428ba4a.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-13-obsidian-vault-audit-d61be1-7428ba4a",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-13-obsidian-vault-audit-d61be1-7428ba4a.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+    },
+    {
       "title": "2026-07-13-daily-brief-publisher-4f88e1-45dae61a",
       "source": "claude",
       "project": "XJournal AI",
@@ -104,6 +126,28 @@
       "resume_prompt": "Read \"🤝 Handoffs/2026-07-13-daily-brief-publisher-4f88e1-45dae61a.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     },
     {
+      "title": "2026-07-13-codeburn-repo-setup-fa7d49-c88f1849",
+      "source": "claude",
+      "project": "XJournal AI",
+      "status": "open",
+      "updated": "2026-07-13",
+      "started_with": "gh repo clone getagentseal/codeburn",
+      "file": "🤝 Handoffs/2026-07-13-codeburn-repo-setup-fa7d49-c88f1849.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-13-codeburn-repo-setup-fa7d49-c88f1849",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-13-codeburn-repo-setup-fa7d49-c88f1849.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+    },
+    {
+      "title": "2026-07-13-caveman-repo-setup-0c81fa-fa92b3a8",
+      "source": "claude",
+      "project": "AI Toolkit",
+      "status": "open",
+      "updated": "2026-07-13",
+      "started_with": "gh repo clone JuliusBrussee/caveman",
+      "file": "🤝 Handoffs/2026-07-13-caveman-repo-setup-0c81fa-fa92b3a8.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-13-caveman-repo-setup-0c81fa-fa92b3a8",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-13-caveman-repo-setup-0c81fa-fa92b3a8.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+    },
+    {
       "title": "2026-07-13-ob-claude-vault-924cd4b9",
       "source": "claude",
       "project": "XJournal AI",
@@ -113,50 +157,6 @@
       "file": "🤝 Handoffs/2026-07-13-ob-claude-vault-924cd4b9.md",
       "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-13-ob-claude-vault-924cd4b9",
       "resume_prompt": "Read \"🤝 Handoffs/2026-07-13-ob-claude-vault-924cd4b9.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
-    },
-    {
-      "title": "2026-07-12-jolly-grothendieck-f4b622-a6d915cd",
-      "source": "claude",
-      "project": "XJournal AI",
-      "status": "open",
-      "updated": "2026-07-13",
-      "started_with": "your is to Make sure that this app reaches the App Store and we complete everything that the app will... is asking us to do. This next message is from Apple saying that our sign in",
-      "file": "🤝 Handoffs/2026-07-12-jolly-grothendieck-f4b622-a6d915cd.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-12-jolly-grothendieck-f4b622-a6d915cd",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-12-jolly-grothendieck-f4b622-a6d915cd.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
-    },
-    {
-      "title": "2026-07-12-aliens-vs-zombies-handoff-38b451-606ff693",
-      "source": "claude",
-      "project": "XJournal AI",
-      "status": "open",
-      "updated": "2026-07-13",
-      "started_with": "can you make me a game just like this one, can you write up a great handoff file to start this process, https://apps.apple.com/us/app/aliens-vs-zombies-invasion/id6740232087",
-      "file": "🤝 Handoffs/2026-07-12-aliens-vs-zombies-handoff-38b451-606ff693.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-12-aliens-vs-zombies-handoff-38b451-606ff693",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-12-aliens-vs-zombies-handoff-38b451-606ff693.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
-    },
-    {
-      "title": "2026-07-13-hardcore-jones-57c478-52ab0647",
-      "source": "claude",
-      "project": "XJournal AI",
-      "status": "open",
-      "updated": "2026-07-13",
-      "started_with": "I'm gonna share with you a link that has to do with UI psychology and the reasoning behind certain things, uh, and how they're set up and why they're set up. I would like you to lo",
-      "file": "🤝 Handoffs/2026-07-13-hardcore-jones-57c478-52ab0647.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-13-hardcore-jones-57c478-52ab0647",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-13-hardcore-jones-57c478-52ab0647.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
-    },
-    {
-      "title": "2026-07-12-spec-kit-install-986f5c-be285c27",
-      "source": "claude",
-      "project": "XJournal AI",
-      "status": "open",
-      "updated": "2026-07-12",
-      "started_with": "install this and tell me how to use afterwards gh repo clone github/spec-kit",
-      "file": "🤝 Handoffs/2026-07-12-spec-kit-install-986f5c-be285c27.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-12-spec-kit-install-986f5c-be285c27",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-12-spec-kit-install-986f5c-be285c27.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     }
   ],
   "pipeline": {
@@ -166,7 +166,7 @@
     "next_run": "07:00 daily",
     "streak": 1,
     "chat_ingest": "every 2h",
-    "chat_ingest_last": "2026-07-13T12:27"
+    "chat_ingest_last": "2026-07-13T14:30"
   },
   "delta": {
     "vs_date": "2026-07-09",
@@ -194,7 +194,7 @@
     ],
     "counts_changed": {
       "briefs": 1,
-      "handoffs": 21
+      "handoffs": 25
     }
   },
   "workflows": [
