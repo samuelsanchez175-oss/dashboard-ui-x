@@ -1,7 +1,16 @@
 import { useEffect, useState } from 'react'
-import { Compass, Download, ExternalLink, RefreshCw } from 'lucide-react'
+import { Check, ClipboardCopy, Compass, Download, ExternalLink, RefreshCw } from 'lucide-react'
 import ZoneHeader from '../../components/ZoneHeader'
 import Button from '../../components/ui/Button'
+
+/**
+ * The paste-ready prompt that re-runs the whole handoff refresh. Copied to the
+ * clipboard by the "Copy refresh prompt" button — drop it into Claude Code from
+ * the vault to regenerate this document with current info.
+ */
+const REFRESH_PROMPT = `/vault-routine task1
+
+Refresh the Project Command Center. Re-scan the vault AND my code roots (~/dev and ~/Desktop/CLAUDE WORLD.nosync) AND recent sessions for every active project — including any that aren't documented in the vault yet — and infer each project's current end goal and status from all the info. Rebuild 00_Project_Command_Center.md, re-render the branded CPW-style PDF handoff into "📄 Handoff Sheets/", copy it to ~/Downloads, and republish it to the Samuel X Dashboard (Daily Brief → Project Command Center) with a commit + push to Vercel. Use the current project names.`
 
 /**
  * Project Command Center zone — the Obsidian adviser handoff, published here by
@@ -23,6 +32,17 @@ interface Meta {
 
 export default function CommandCenterZone() {
   const [meta, setMeta] = useState<Meta | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  async function copyRefreshPrompt() {
+    try {
+      await navigator.clipboard.writeText(REFRESH_PROMPT)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      /* clipboard blocked — no-op; user can still Download PDF / Open full page */
+    }
+  }
 
   useEffect(() => {
     let alive = true
@@ -48,8 +68,16 @@ export default function CommandCenterZone() {
         description="Your active-projects handoff — goal, status, and a paste-ready jump-back-in prompt per project. Refreshed each time you run the vault routine."
         actions={
           <div className="flex items-center gap-2">
+            <Button
+              variant="primary"
+              onClick={copyRefreshPrompt}
+              leading={copied ? <Check className="size-4" /> : <ClipboardCopy className="size-4" />}
+              title="Copy the prompt that regenerates this document with current info"
+            >
+              {copied ? 'Copied!' : 'Copy refresh prompt'}
+            </Button>
             <a href={PDF_URL} download>
-              <Button variant="primary" leading={<Download className="size-4" />}>
+              <Button variant="secondary" leading={<Download className="size-4" />}>
                 Download PDF
               </Button>
             </a>
