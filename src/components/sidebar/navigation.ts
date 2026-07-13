@@ -62,14 +62,14 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
-    id:    'cost',
-    title: 'AI SPEND',
-    items: [{ id: 'codeburn', label: 'Cost', icon: Flame }],
-  },
-  {
     id:    'cpw',
     title: 'PROJECTS',
     items: [{ id: 'cpw-projects', label: 'All projects', icon: FolderKanban }],
+  },
+  {
+    id:    'cost',
+    title: 'AI SPEND',
+    items: [{ id: 'codeburn', label: 'Cost', icon: Flame }],
   },
   {
     id:    'polymarket',
