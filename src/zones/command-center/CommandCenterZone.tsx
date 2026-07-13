@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Check, ClipboardCopy, Compass, Download, ExternalLink, RefreshCw } from 'lucide-react'
 import ZoneHeader from '../../components/ZoneHeader'
 import Button from '../../components/ui/Button'
+import { CONTAINERS } from '../../lib/design-tokens'
 
 /**
  * The paste-ready prompt that re-runs the whole handoff refresh. Copied to the
@@ -60,7 +61,12 @@ export default function CommandCenterZone() {
   }, [])
 
   return (
-    <div className="flex h-full flex-col gap-4 pb-6">
+    <div
+      className="flex-1 overflow-auto"
+      style={{ background: 'var(--bg-canvas)', color: 'var(--text-1)' }}
+    >
+      <div className={`${CONTAINERS.page} py-8`}>
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
       <ZoneHeader
         eyebrow="OBSIDIAN ADVISER"
         title="Project Command Center"
@@ -101,12 +107,14 @@ export default function CommandCenterZone() {
         </div>
       )}
 
-      <iframe
-        title="Project Command Center"
-        src={HTML_URL}
-        className="w-full flex-1 rounded-2xl border"
-        style={{ minHeight: '72vh', background: '#fff', borderColor: 'var(--border-soft)' }}
-      />
+          <iframe
+            title="Project Command Center"
+            src={HTML_URL}
+            className="w-full rounded-2xl border"
+            style={{ height: '80vh', background: '#fff', borderColor: 'var(--border-soft)' }}
+          />
+        </div>
+      </div>
     </div>
   )
 }
