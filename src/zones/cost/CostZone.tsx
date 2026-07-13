@@ -231,9 +231,10 @@ export default function CostZone() {
   const chartMax = useMemo(() => Math.max(1, ...daily.map(d => d[metric])), [daily, metric])
 
   return (
-    <div className={`${CONTAINERS.page} py-8`}>
-      <div className="mx-auto w-full max-w-5xl space-y-5">
-        <ZoneHeader
+    <div className="flex-1 overflow-auto" style={{ background: 'var(--bg-canvas)', color: 'var(--text-1)' }}>
+      <div className={`${CONTAINERS.page} py-8`}>
+        <div className="mx-auto w-full max-w-5xl space-y-5">
+          <ZoneHeader
           eyebrow="AI SPEND · CODEBURN"
           title="Cost"
           icon={Flame}
@@ -435,6 +436,7 @@ export default function CostZone() {
             )}
           </>
         ) : null}
+        </div>
       </div>
     </div>
   )
