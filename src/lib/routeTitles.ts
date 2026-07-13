@@ -7,6 +7,7 @@ const TOOL_TITLES = Object.fromEntries(
 const NON_TOOL_TITLES: Record<string, string> = {
   'agent-farm': 'Agent farm',
   'codeburn': 'Cost',
+  'command-center': 'Project Command Center',
   'cpw-projects': 'All projects',
   'daily-brief': 'Daily brief',
   'dev': 'Dev settings',

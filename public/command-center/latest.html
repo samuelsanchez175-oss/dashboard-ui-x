@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Project Command Center — Adviser Handoff</title>
+<style>
+  :root{
+    --purple:#6d28d9; --purple2:#7c3aed; --ink:#2c2436; --muted:#6b6577;
+    --pink:#f8c7de; --pinkline:#ec4899;
+    --chipbg:#f3efff; --chipink:#5b21b6;
+    --warnbg:#fff2ea; --warn:#f97316;
+    --okbg:#e9f9f0; --ok:#10b981;
+    --notebg:#f6f0ff; --note:#a855f7;
+  }
+  @page{ size:letter; margin:0; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--pink);
+    padding:30px 20px;
+    font-family:"Avenir Next","Helvetica Neue",Arial,sans-serif;
+    color:var(--ink); font-size:13.5px; line-height:1.5;
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+  .card{ background:#fff; border-radius:22px; padding:44px 40px 40px; max-width:760px; margin:0 auto; }
+  h1{ color:var(--purple); font-weight:800; font-size:34px; line-height:1.08; letter-spacing:-.01em; margin:0 0 6px; text-transform:uppercase; }
+  .sub{ color:var(--muted); font-size:12.5px; margin:0 0 22px; }
+  .divider{ height:3px; border-radius:3px; background:linear-gradient(90deg,var(--pinkline),var(--purple2)); margin:22px 0 26px; }
+
+  .metabox{ background:var(--notebg); border:1px solid #ecdcff; border-radius:14px; padding:16px 18px; margin:0 0 6px; }
+  .metabox .eyebrow{ font-size:10.5px; letter-spacing:.14em; color:var(--purple); font-weight:700; text-transform:uppercase; margin-bottom:7px; }
+  .metabox p{ margin:6px 0 0; }
+
+  .keybox{ background:#faf7ff; border:1px solid #eee0ff; border-radius:14px; padding:14px 18px; margin:22px 0 30px; break-inside:avoid; }
+  .keybox .eyebrow{ font-size:10.5px; letter-spacing:.14em; color:var(--muted); font-weight:700; text-transform:uppercase; margin-bottom:10px; }
+  .chip{ display:inline-block; font-size:11px; font-weight:700; padding:4px 10px; border-radius:8px; margin:3px 6px 3px 0; }
+
+  section{ margin:0 0 26px; }
+  .shead{ display:flex; align-items:center; gap:12px; border-bottom:2px solid #f0eafb; padding-bottom:10px; margin-bottom:14px; }
+  .badge{ flex:none; font-size:11px; font-weight:800; color:var(--purple); border:1.5px solid #d9c8f7; border-radius:7px; padding:2px 7px; letter-spacing:.05em; }
+  .shead h2{ color:var(--purple); font-weight:800; font-size:17.5px; text-transform:uppercase; letter-spacing:.005em; margin:0; }
+  .stamp{ margin-left:auto; font-size:10.5px; color:var(--muted); font-weight:600; white-space:nowrap; }
+
+  .field{ margin:9px 0; }
+  .lab{ font-weight:800; color:var(--ink); }
+  .goal{ color:var(--purple2); font-weight:700; }
+  code{ font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace; font-size:11.5px; background:var(--chipbg); color:var(--chipink); padding:1.5px 5px; border-radius:5px; }
+
+  .callout{ border-left:4px solid var(--note); background:var(--notebg); border-radius:0 10px 10px 0; padding:11px 15px; margin:12px 0; break-inside:avoid; }
+  .callout.warn{ border-left-color:var(--warn); background:var(--warnbg); }
+  .callout.ok{ border-left-color:var(--ok); background:var(--okbg); }
+  .callout .ct{ font-weight:800; text-transform:uppercase; font-size:10.5px; letter-spacing:.08em; margin-bottom:4px; }
+  .callout.warn .ct{ color:#c2410c; } .callout.ok .ct{ color:#047857; } .callout .ct{ color:var(--purple); }
+
+  .prompt{ margin:12px 0 2px; }
+  .prompt .plab{ font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--purple); font-weight:700; margin-bottom:6px; }
+  pre{ background:#faf8ff; border:1px solid #ece3fb; border-radius:12px; padding:14px 16px; margin:0; font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace; font-size:11px; line-height:1.55; color:#332a44; white-space:pre-wrap; word-break:break-word; break-inside:avoid; }
+
+  table{ width:100%; border-collapse:collapse; margin-top:6px; }
+  th{ text-align:left; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:700; border-bottom:1.5px solid #eee; padding:7px 8px; }
+  td{ font-size:12px; padding:9px 8px; border-bottom:1px solid #f3f0f7; vertical-align:top; }
+  td .p{ font-weight:700; color:var(--ink); }
+  .foot{ margin-top:26px; padding-top:14px; border-top:2px solid #f0eafb; font-size:11px; color:var(--muted); }
+  ul{ margin:6px 0; padding-left:18px; } li{ margin:3px 0; }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <h1>Project Command Center<br>— Adviser Handoff</h1>
+  <p class="sub">Obsidian second-brain read &nbsp;|&nbsp; Samuel Sanchez &nbsp;|&nbsp; Last updated: July 13, 2026</p>
+
+  <div class="metabox">
+    <div class="eyebrow">How to use this sheet</div>
+    <p>The adviser read of your work: for each <strong>active</strong> project — its inferred end goal, where you are, what's done, what's open, and a <strong>paste-ready jump-back-in prompt</strong> to open your next session at full speed. Regenerate with <code>/vault-routine task1</code>. Active projects are detected across the vault <strong>and</strong> your code roots (<code>~/dev</code>, <code>~/Desktop/CLAUDE WORLD.nosync</code>) plus session history — apps are documented in the vault but coded outside it.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="keybox">
+    <div class="eyebrow">Active projects</div>
+    <span class="chip" style="background:#ede9fe;color:#6d28d9;">👾 Saucer Siege</span>
+    <span class="chip" style="background:#ffe4dd;color:#c2410c;">🚙 Alamo Car Parts</span>
+    <span class="chip" style="background:#dcfce7;color:#15803d;">🗂️ CDL PRAC one</span>
+    <span class="chip" style="background:#dbeafe;color:#1d4ed8;">📱 XJournal AI + Model G</span>
+    <span class="chip" style="background:#fef3c7;color:#b45309;">🖥️ UI Dashboard X</span>
+    <span class="chip" style="background:#fce7f3;color:#be185d;">📸 AP Connect</span>
+    <span class="chip" style="background:#e0e7ff;color:#4338ca;">🧠 LLM Builder Local</span>
+  </div>
+
+  <!-- 01 -->
+  <section>
+    <div class="shead"><span class="badge">01</span><h2>👾 Saucer Siege — Game</h2><span class="stamp">updated 2026-07-13 · most active</span></div>
+    <div class="field"><span class="lab">🎯 End goal (inferred):</span> <span class="goal">Ship a polished, reskinnable 3D web arcade game (devour-and-defend saucer roguelite) as a mobile app</span> — Capacitor wrap, real IAP, final art/name lock. The pure-logic-systems + swappable-renderer architecture exists so this one engine can reskin into multiple store titles.</div>
+    <div class="field"><span class="lab">📍 Where you are now:</span> M0–M5 complete, playable end-to-end in the browser, <code>106</code> tests passing. Sitting at the M6 doorstep. Not yet pushed to GitHub.</div>
+    <div class="field"><span class="lab">✅ Recently done:</span> Full 3D renderer (Three.js, night desert, bloom); 6 weapons × 6 levels w/ roguelite pick-of-3 drafts; meta progression + coins + versioned save; DraftPacer / WaveDirector / BossSystem (boss every 5th wave).</div>
+    <div class="field"><span class="lab">⏳ Open / blocked:</span> M6 — final art + game-name lock, balance pass, Capacitor iOS/Android wrap, real IAP. Backlog: endless mode, difficulty tuning, sound/music, settings screen. Push to GitHub.</div>
+    <div class="prompt"><div class="plab">📋 Jump-back-in prompt</div>
+<pre>Project: Saucer Siege (~/dev/saucer-siege, branch main). Goal this session: start M6 — get to a shippable mobile build.
+Context: M0–M5 done, 106 Vitest tests green, Three.js renderer. Pure logic in src/systems/, renderer in src/three/, config in data/*.json (a reskin = swap art + JSON, no logic changes).
+Do, in order: (1) run the full test suite + a balance sanity pass on WaveDirector/BossSystem difficulty; (2) scaffold the Capacitor iOS + Android wrap and confirm it boots the Three.js renderer on a device profile; (3) list exactly what remains for real IAP + final art/name lock as a checklist. Commit each green step; don't push to GitHub unless I say so.</pre></div>
+  </section>
+
+  <!-- 02 — ALAMO -->
+  <section>
+    <div class="shead"><span class="badge">02</span><h2>🚙 Alamo Car Parts</h2><span class="stamp">design spec 2026-07-11 · uncommitted WIP</span></div>
+    <div class="field"><span class="lab">🎯 End goal (inferred):</span> <span class="goal">Ship a native iOS app: point your phone at a BMW F30 → it IDs the car + components in frame (Claude vision), overlays tappable AR labels incl. "x-ray" hidden parts, and sells the right part at a marked-up price via RockAuto referral</span> — backed by a catalog, cart, garage (VIN) + AI diagnostic chat. Success bar ≥90% correct component ID; schema built to scale past the F30.</div>
+    <div class="field"><span class="lab">📍 Where you are now:</span> Full v1 prototype scaffolded and building — Onboarding · Scanner · Catalog · Cart · Garage · Diagnose + F30 seed data (commit <code>3b6d969</code>). Demo mode works offline (deterministic detections). Vision uses <code>claude-fable-5</code> with <code>claude-opus-4-8</code> fallback. Code at <code>~/Desktop/CLAUDE WORLD.nosync/Alamo Car Parts</code>.</div>
+    <div class="field"><span class="lab">✅ Recently done:</span> Whole app flow built in one pass; F30 catalog JSON + region cutaways; MarginEngine bracket pricing; ClaudeService (vision schema <code>{vehicle, region, components[]}</code> + chat); pluggable background registry (coralWash / bluePlasma Metal shader); PenWork Studio visual language.</div>
+    <div class="callout warn"><div class="ct">⚠️ Open — commit + accuracy + docs</div>Working tree has <strong>uncommitted changes</strong> (App, CartStore, ProfileStore, ScannerView + new <code>DebugHarness.swift</code>). Validate real component-ID accuracy toward the ≥90% bar (currently simulated). RealOEM full catalog scrape is a pipeline task (only a curated seed ships). True volumetric x-ray = v2/v3. <strong>No vault index note yet</strong> — add one.</div>
+    <div class="prompt"><div class="plab">📋 Jump-back-in prompt</div>
+<pre>Project: Alamo Car Parts (native iOS SwiftUI, ~/Desktop/CLAUDE WORLD.nosync/Alamo Car Parts). Goal this session: commit the in-flight work, then validate real component ID on a BMW F30.
+Context: v1 prototype fully scaffolded (Scanner/Catalog/Diagnose/Cart/Garage + F30 seed). ClaudeService uses claude-fable-5 vision (opus-4-8 fallback) returning {vehicle, region, components[]}; demo mode gives deterministic detections offline. Working tree has uncommitted changes + new DebugHarness.swift. Success bar = ≥90% correct component ID. See docs/specs/2026-07-11-alamo-car-parts-design.md.
+Do, in order: (1) review + commit the uncommitted changes with a clear message; (2) wire the real API-key path (Keychain) and run the scanner against real F30 photos, logging component-ID hit rate vs the 90% bar; (3) list the top accuracy gaps + the RealOEM catalog-scrape pipeline as next milestones. Commit; don't push unless I say so.</pre></div>
+  </section>
+
+  <!-- 03 -->
+  <section>
+    <div class="shead"><span class="badge">03</span><h2>🗂️ CDL PRAC one</h2><span class="stamp">updated 2026-07-13 · very active</span></div>
+    <div class="field"><span class="lab">🎯 End goal (inferred):</span> <span class="goal">Ship a native iOS CDL Class A study app to the App Store and pass Review on the first submission</span> — 699 questions, XP/streak/badges, 3D badges.</div>
+    <div class="field"><span class="lab">📍 Where you are now:</span> Feature-complete for v1; all <em>code-side</em> ship blockers cleared, build green (Debug + Release). Remaining blockers are non-code.</div>
+    <div class="field"><span class="lab">✅ Recently done:</span> Fixed <code>check_schema_defaults.py</code> CI guard (was silently skipping all <code>@Model</code> classes) → gave 38 stored props defaults, dodging a latent SwiftData-migration crash; quiz haptics; Streak Freeze; all 8 badges earnable; Deep Dive cut for v1; iPhone-only; large-file splits.</div>
+    <div class="callout warn"><div class="ct">⚠️ Ship blockers — all non-code</div>(1) App icon is a green book → need a <strong>1024² opaque truck mark</strong>. (2) Privacy Policy + Terms hosted + linked + Privacy URL in ASC. (3) ASC: enable Game Center + create the <code>cdl_total_xp</code> leaderboard (wired code stays inert until then). (4) Device QA — notifications, CoreMotion tilt-shine, freeze/badge flows. (5) Strip QA launch hooks before ship.</div>
+    <div class="prompt"><div class="plab">📋 Jump-back-in prompt</div>
+<pre>Project: CDL PRAC one (native iOS, SwiftUI + SwiftData). Goal this session: knock out the non-code ship blockers so I can submit to App Review.
+Context: v1 feature-complete; all code blockers cleared, build green. See 🗂️ CDL PRAC one - Index/01_Tasks.md. Remaining = art + App Store Connect config + device QA.
+Do, in order: (1) generate a 1024² opaque truck app-icon (use Gemini for image gen — xAI has 0 credits) and drop it in as AppIcon Image-1024 (2).png; (2) draft a Privacy Policy + Terms I can host, and give me the exact ASC steps for the Privacy URL, enabling Game Center, and creating the cdl_total_xp leaderboard; (3) give me a device-QA checklist for notifications, CoreMotion tilt-shine, and freeze/badge flows; (4) list the QA launch hooks (CDL_THEME/CDL_TAB/CDL_OPEN/CDL_SEED/CDL_GALLERY) + seedSampleMastery to strip. Commit code changes; don't push unless I say so.</pre></div>
+  </section>
+
+  <!-- 04 -->
+  <section>
+    <div class="shead"><span class="badge">04</span><h2>📱 XJournal AI — App + 🧠 Model G</h2><span class="stamp">Model G record 2026-05-31 · heavy June</span></div>
+    <div class="field"><span class="lab">🎯 End goal (inferred):</span> <span class="goal">Ship an iOS journaling app whose in-house Model G pipeline turns a journal entry into a hook + 16 bars of Gunna/Thug-style melodic trap</span> that scores well on the 9-axis ledger — culturally grounded (references the corpus), not sterile-original, tuned to the entry's BPM/key/theme.</div>
+    <div class="field"><span class="lab">📍 Where you are now:</span> Model G v3 built and user-pickable (plan → 2 parallel verse candidates → score → best; ~3 calls vs ~17). Dual OpenAI/Gemini routing. On-device scoring at parity with the offline grader.</div>
+    <div class="field"><span class="lab">✅ Recently done:</span> v3 pipeline + Originality→"Inspiration" reframe; RhymeClusterEngine on-device (slant-aware); BPM→cadence + key→mood plumbing; coded-reference lever; in-app Lyric Scores trend screen; offline grader with <code>--history</code>.</div>
+    <div class="callout"><div class="ct">Note — needs a fresh state capture</div>No single status note exists after early June. First move next session is to re-establish current state before tuning.</div>
+    <div class="prompt"><div class="plab">📋 Jump-back-in prompt</div>
+<pre>Project: XJournal AI (SwiftUI/SwiftData iOS app) + Model G lyric pipeline. Goal this session: re-establish current state, then push Model G output quality up on the grader.
+Context: Model G v3 is built and user-pickable (see 📱 XJournal AI - App/Model G — Build Status & New Pipeline.md). 9-axis NET ledger runs offline (eval/grade_modelg.py) and on-device (VerseLedger). "Inspiration" target = grounded in corpus idioms, not verbatim, not sterile-original.
+Do, in order: (1) write a fresh 30-second state note (what's built, last commit, what's uncommitted); (2) run the offline grader + 5× A/B Gemini runner and report current avg NET vs the 65 goal, with the weakest axes; (3) propose 2–3 targeted prompt/scoring changes to lift the weakest axes and implement the highest-confidence one behind the v3 toggle; (4) list what's left before a TestFlight build. Commit compile-verified changes; don't push unless I say so.</pre></div>
+  </section>
+
+  <!-- 05 -->
+  <section>
+    <div class="shead"><span class="badge">05</span><h2>🖥️ UI Dashboard X</h2><span class="stamp">code touched 2026-07-13</span></div>
+    <div class="field"><span class="lab">🎯 End goal (inferred):</span> <span class="goal">A fully-working local-first zone-based dashboard (11 zones) deployed and green on Vercel</span>, with the Daily Brief pipeline feeding it reliably.</div>
+    <div class="field"><span class="lab">📍 Where you are now:</span> Live at <code>samuel-x-dashboard.vercel.app</code>, BFF bundled into one serverless function, 13 zone dirs. Deploy is <strong>partially functional</strong> — all 12 diagnostic env keys read 'missing' (<code>.env.local</code> not deployed). PR #1 open.</div>
+    <div class="field"><span class="lab">✅ Recently done:</span> Zone nav + mobile swipe; music tools (chord/BPM/stem/note); Agent Farm + YouTube; piano/MIDI + Rhyme Studio; Tesla fleet mock; Daily Brief zone; Vercel deploy live.</div>
+    <div class="callout warn"><div class="ct">⚠️ Two concrete bugs</div>12 missing Vercel env keys block a full diagnostic pass; and the "daily" brief launchd job actually runs <strong>weekly</strong> (Mon 07:00).</div>
+    <div class="prompt"><div class="plab">📋 Jump-back-in prompt</div>
+<pre>Project: UI Dashboard X (Vite 8 + React 19 + TS, Vercel: samuel-x-dashboard). Goal this session: get the Vercel deploy fully green and fix the daily-brief schedule bug.
+Context: deploy is live but partial — 12 diagnostic env keys show 'missing' because .env.local isn't deployed. The launchd "daily" brief job actually runs weekly (Mon 07:00). See 🖥️ UI Dashboard X → Build/Errors/Config runbook.
+Do, in order: (1) push the 12 missing env keys to Vercel and confirm the diagnostic zone goes all-green; (2) fix the launchd schedule so the brief runs daily at 07:00 and verify the plist; (3) split ToolsChordDetectorPage.tsx (2,831 lines) into focused components with no behavior change. Commit each step; don't push unless I say so.</pre></div>
+  </section>
+
+  <!-- 06 -->
+  <section>
+    <div class="shead"><span class="badge">06</span><h2>📸 AP Connect</h2><span class="stamp">updated 2026-06-11</span></div>
+    <div class="field"><span class="lab">🎯 End goal (inferred):</span> <span class="goal">An iOS app that generates App Store Connect promotional screenshots</span> (iPad + iPhone, iOS 26 glass) — ideally wired to the real ASC API — so you can make store artwork for your other apps fast.</div>
+    <div class="field"><span class="lab">📍 Where you are now:</span> Runs on iPhone 17 sim. 3-tab UI, config workflow, full-screen preview, share-sheet export all working. Swift Playground app, no GitHub.</div>
+    <div class="field"><span class="lab">✅ Recently done:</span> Glass container styling, image config workflow, preview overlay, export.</div>
+    <div class="field"><span class="lab">⏳ Open / blocked:</span> Fix batch headlines ("My App" placeholder), real ASC API integration, tests, push to GitHub.</div>
+    <div class="prompt"><div class="plab">📋 Jump-back-in prompt</div>
+<pre>Project: AP Connect (SwiftUI Swift Playground app, iOS 17+). Goal this session: fix the batch-headline placeholder and stand up a GitHub repo.
+Context: app runs on iPhone 17 sim with Create/Gallery/Settings tabs, config workflow, preview, and share-sheet export. Batch headlines still show "My App". No GitHub, no tests.
+Do, in order: (1) trace where batch headlines get their text and make them use the real per-image config instead of "My App"; (2) add a minimal test around the config/export path; (3) init git + give me the gh command to create + push the repo. Since this app makes App Store screenshots, also tell me how I'd point it at CDL PRAC one's assets next. Commit; don't push to GitHub unless I say so.</pre></div>
+  </section>
+
+  <!-- 07 -->
+  <section>
+    <div class="shead"><span class="badge">07</span><h2>🧠 LLM Builder Local</h2><span class="stamp">updated 2026-06-11 · supports XJournal</span></div>
+    <div class="field"><span class="lab">🎯 End goal (inferred):</span> <span class="goal">Keep a clean, queryable ground-truth corpus (179 songs → 7,681 lines, 502-term lexicon) feeding Model G's scoring</span> — and make the hand-off to XJournal automatic, not manual.</div>
+    <div class="field"><span class="lab">📍 Where you are now:</span> Corpus fully extracted + categorized; v8 502-term lexicon already wired into Model G scoring. No version control; sync is manual.</div>
+    <div class="field"><span class="lab">✅ Recently done:</span> 179 songs → chronological lines; slang lexicon; entities; thematic ideas; bar notes; deep concepts; tone metrics; dataset analysis doc.</div>
+    <div class="field"><span class="lab">⏳ Open / blocked:</span> Automated sync with XJournal AI; version control for corpus updates.</div>
+    <div class="prompt"><div class="plab">📋 Jump-back-in prompt</div>
+<pre>Project: LLM Builder Local (Obsidian corpus, RAG source for XJournal Model G). Goal this session: make the corpus → XJournal handoff automatic and versioned.
+Context: 179 songs / 7,681 lines / 502-term lexicon, all extracted; the v8 lexicon is already wired into Model G scoring, but updates are copied by hand and the vault has no version control.
+Do, in order: (1) put the corpus under git with a sensible .gitignore + initial commit; (2) write a small sync script that exports the lexicon/entities into the exact format Model G loads, and diff it against what XJournal currently uses; (3) document the update workflow in Architecture & Data Pipeline. Commit; don't push unless I say so.</pre></div>
+  </section>
+
+  <!-- 08 -->
+  <section>
+    <div class="shead"><span class="badge">08</span><h2>💤 Dormant / Quieter</h2><span class="stamp">live, not touched recently</span></div>
+    <table>
+      <thead><tr><th>Project</th><th>Inferred end goal</th><th>Last signal</th></tr></thead>
+      <tbody>
+        <tr><td class="p">🚗 Antigravity CarPlay</td><td>CarPlay video-streaming demo of iOS 27 "Video in Car" (33/33 tests)</td><td>2026-06-12</td></tr>
+        <tr><td class="p">📡 RuView</td><td>WiFi CSI presence detection + DensePose multi-person tracking, Tauri UI</td><td>2026-05-30</td></tr>
+        <tr><td class="p">🔧 Sanchez Auto LLC</td><td>Ship the auto-shop website (Next.js 16 + static twin) on Vercel</td><td>2026-05-05</td></tr>
+        <tr><td class="p">🌡️ Tesla Heat Map X</td><td>Tesla companion app: telemetry heat map + trip control overlay</td><td>index</td></tr>
+        <tr><td class="p">🤖 Polymarket Bot</td><td>Rust CLI for Polymarket markets / orders / CTF positions</td><td>2026-05-26</td></tr>
+        <tr><td class="p">💅 P Sultry Room</td><td>Booking + services site for a beauty business</td><td>index</td></tr>
+        <tr><td class="p">🎨 Harmony Stack</td><td>Landing + pricing sheet for a web-design services business</td><td>index</td></tr>
+        <tr><td class="p">⚙️ automation / 🌅 Daily Brief</td><td>Reliable 7am brief pipeline feeding the dashboard</td><td>2026-07-04</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="foot">Generated by <code>/vault-routine task1</code> — the Obsidian adviser routine. Scanned: the vault + <code>~/dev</code> + <code>~/Desktop/CLAUDE WORLD.nosync</code> + session history. Source of record: <code>00_Project_Command_Center.md</code>. Also detected but excluded: <code>codeburn</code> (external/OSS repo) and empty stubs <code>CAD APP AR</code> / <code>SUPER IRON CAD APP</code>.</div>
+
+</div>
+</body>
+</html>
