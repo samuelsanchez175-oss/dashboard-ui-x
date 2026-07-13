@@ -2,6 +2,7 @@ import {
   Car,
   CheckSquare,
   Cpu,
+  Flame,
   Globe,
   Headphones,
   Images,
@@ -55,6 +56,11 @@ export const NAV_SECTIONS: NavSection[] = [
     id:    'brief',
     title: 'DAILY BRIEF',
     items: [{ id: 'daily-brief', label: 'Daily Brief', icon: Sunrise }],
+  },
+  {
+    id:    'cost',
+    title: 'AI SPEND',
+    items: [{ id: 'codeburn', label: 'Cost', icon: Flame }],
   },
   {
     id:    'cpw',

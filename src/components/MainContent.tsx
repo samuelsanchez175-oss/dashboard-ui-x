@@ -36,6 +36,7 @@ const PolymarketCopy = lazy(() => import('../zones/polymarket/CopyTraderZone'))
 const PolymarketBot = lazy(() => import('../zones/polymarket/PolymarketBotZone'))
 const PulseDigest = lazy(() => import('../zones/pulse/PulseDigest'))
 const DailyBriefZone = lazy(() => import('../zones/brief/DailyBriefZone'))
+const CostZone = lazy(() => import('../zones/cost/CostZone'))
 const DevSettings = lazy(() => import('../zones/dev/DevSettings'))
 const DiagnosticsZone = lazy(() => import('../zones/dev/DiagnosticsZone'))
 const NewZonePage = lazy(() => import('../zones/builder/NewZonePage'))
@@ -140,6 +141,9 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
       break
     case 'daily-brief':
       body = <DailyBriefZone />
+      break
+    case 'codeburn':
+      body = <CostZone />
       break
     case 'web-designer':
       body = <WebDesignerZone key="web-designer-main" onNavigate={onNavigate} />

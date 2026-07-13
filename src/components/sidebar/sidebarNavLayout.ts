@@ -51,6 +51,31 @@ function migrateLegacyNavItemIds(layout: SidebarNavLayoutPersist): SidebarNavLay
   return { ...layout, hiddenItemIds, itemsBySection }
 }
 
+/**
+ * Newly-added sections should slot next to a stable neighbour in an existing
+ * saved layout instead of appending at the very bottom (the {@link orderedSectionIds}
+ * fallback). Maps a new section id → the section id it should appear directly after.
+ */
+const NEW_SECTION_AFTER: Record<string, string> = {
+  cost: 'brief', // "AI SPEND" lives directly under DAILY BRIEF
+}
+
+function insertNewSectionsAfterNeighbors(layout: SidebarNavLayoutPersist): SidebarNavLayoutPersist {
+  // sectionOrder === null means "use source order", which already positions new
+  // sections correctly — nothing to migrate.
+  if (!layout.sectionOrder) return layout
+  const order = [...layout.sectionOrder]
+  let changed = false
+  for (const [id, after] of Object.entries(NEW_SECTION_AFTER)) {
+    if (order.includes(id)) continue
+    const idx = order.indexOf(after)
+    if (idx === -1) continue // neighbour absent → let the append fallback handle it
+    order.splice(idx + 1, 0, id)
+    changed = true
+  }
+  return changed ? { ...layout, sectionOrder: order } : layout
+}
+
 function normalizeParsedLayout(parsed: Partial<SidebarNavLayoutPersist>): SidebarNavLayoutPersist | null {
   if (parsed.version !== 1) return null
   const base: SidebarNavLayoutPersist = {
@@ -63,7 +88,7 @@ function normalizeParsedLayout(parsed: Partial<SidebarNavLayoutPersist>): Sideba
       : {},
     collapsedSectionIds:   Array.isArray(parsed.collapsedSectionIds) ? parsed.collapsedSectionIds : [],
   }
-  return migrateLegacyNavItemIds(base)
+  return insertNewSectionsAfterNeighbors(migrateLegacyNavItemIds(base))
 }
 
 export function loadSidebarNavLayout(): SidebarNavLayoutPersist {

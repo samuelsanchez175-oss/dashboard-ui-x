@@ -1,0 +1,1342 @@
+{
+  "generated_at": "2026-07-13T17:16:31.737Z",
+  "device": "Samuels-MacBook-Pro-2.local",
+  "history": {
+    "daily": [
+      {
+        "date": "2026-01-13",
+        "cost": 5.752966500000004,
+        "calls": 186,
+        "inputTokens": 2253610,
+        "outputTokens": 124654
+      },
+      {
+        "date": "2026-01-15",
+        "cost": 20.79500250000001,
+        "calls": 897,
+        "inputTokens": 11299578,
+        "outputTokens": 667053
+      },
+      {
+        "date": "2026-01-16",
+        "cost": 1.9595187500000004,
+        "calls": 98,
+        "inputTokens": 1053271,
+        "outputTokens": 64293
+      },
+      {
+        "date": "2026-01-17",
+        "cost": 30.05411425000002,
+        "calls": 1006,
+        "inputTokens": 13575938,
+        "outputTokens": 674263
+      },
+      {
+        "date": "2026-01-19",
+        "cost": 22.772133000000004,
+        "calls": 335,
+        "inputTokens": 6342656,
+        "outputTokens": 249611
+      },
+      {
+        "date": "2026-01-20",
+        "cost": 15.748604999999998,
+        "calls": 203,
+        "inputTokens": 4529155,
+        "outputTokens": 144076
+      },
+      {
+        "date": "2026-01-21",
+        "cost": 33.645609000000036,
+        "calls": 591,
+        "inputTokens": 9188708,
+        "outputTokens": 405299
+      },
+      {
+        "date": "2026-01-22",
+        "cost": 0.850851,
+        "calls": 15,
+        "inputTokens": 240302,
+        "outputTokens": 8663
+      },
+      {
+        "date": "2026-01-24",
+        "cost": 0.35058,
+        "calls": 14,
+        "inputTokens": 94280,
+        "outputTokens": 4516
+      },
+      {
+        "date": "2026-01-25",
+        "cost": 31.027836000000093,
+        "calls": 506,
+        "inputTokens": 8446362,
+        "outputTokens": 379250
+      },
+      {
+        "date": "2026-01-26",
+        "cost": 6.936204000000004,
+        "calls": 116,
+        "inputTokens": 1680193,
+        "outputTokens": 126375
+      },
+      {
+        "date": "2026-01-27",
+        "cost": 19.80156900000002,
+        "calls": 383,
+        "inputTokens": 5286353,
+        "outputTokens": 262834
+      },
+      {
+        "date": "2026-01-28",
+        "cost": 6.366672,
+        "calls": 47,
+        "inputTokens": 1842619,
+        "outputTokens": 55921
+      },
+      {
+        "date": "2026-01-30",
+        "cost": 18.527135999999985,
+        "calls": 297,
+        "inputTokens": 4884367,
+        "outputTokens": 258269
+      },
+      {
+        "date": "2026-02-02",
+        "cost": 12.684516799999994,
+        "calls": 302,
+        "inputTokens": 3011223,
+        "outputTokens": 227453
+      },
+      {
+        "date": "2026-02-03",
+        "cost": 15.7215136,
+        "calls": 445,
+        "inputTokens": 3023503,
+        "outputTokens": 225247
+      },
+      {
+        "date": "2026-02-05",
+        "cost": 2.071501299999998,
+        "calls": 410,
+        "inputTokens": 310990,
+        "outputTokens": 55326
+      },
+      {
+        "date": "2026-02-06",
+        "cost": 0.00354,
+        "calls": 6,
+        "inputTokens": 0,
+        "outputTokens": 236
+      },
+      {
+        "date": "2026-02-08",
+        "cost": 0.14847300000000005,
+        "calls": 107,
+        "inputTokens": 27331,
+        "outputTokens": 4432
+      },
+      {
+        "date": "2026-02-09",
+        "cost": 0.7324929999999973,
+        "calls": 454,
+        "inputTokens": 151866,
+        "outputTokens": 20201
+      },
+      {
+        "date": "2026-02-10",
+        "cost": 0.05710799999999999,
+        "calls": 79,
+        "inputTokens": 123,
+        "outputTokens": 3885
+      },
+      {
+        "date": "2026-02-13",
+        "cost": 0.01005,
+        "calls": 12,
+        "inputTokens": 0,
+        "outputTokens": 670
+      },
+      {
+        "date": "2026-02-14",
+        "cost": 1.5078350000000005,
+        "calls": 220,
+        "inputTokens": 397515,
+        "outputTokens": 7031
+      },
+      {
+        "date": "2026-02-18",
+        "cost": 0.6993664999999999,
+        "calls": 24,
+        "inputTokens": 186064,
+        "outputTokens": 9099
+      },
+      {
+        "date": "2026-02-19",
+        "cost": 0.55036275,
+        "calls": 6,
+        "inputTokens": 114735,
+        "outputTokens": 11391
+      },
+      {
+        "date": "2026-02-22",
+        "cost": 1.0688897999999998,
+        "calls": 136,
+        "inputTokens": 332735,
+        "outputTokens": 16961
+      },
+      {
+        "date": "2026-02-23",
+        "cost": 0.010692,
+        "calls": 12,
+        "inputTokens": 0,
+        "outputTokens": 891
+      },
+      {
+        "date": "2026-02-24",
+        "cost": 0.6521519999999997,
+        "calls": 516,
+        "inputTokens": 0,
+        "outputTokens": 54346
+      },
+      {
+        "date": "2026-02-25",
+        "cost": 0.5352375000000003,
+        "calls": 268,
+        "inputTokens": 54738,
+        "outputTokens": 26882
+      },
+      {
+        "date": "2026-02-26",
+        "cost": 0.058309999999999876,
+        "calls": 92,
+        "inputTokens": 0,
+        "outputTokens": 3332
+      },
+      {
+        "date": "2026-02-27",
+        "cost": 0.7521015000000006,
+        "calls": 666,
+        "inputTokens": 70375,
+        "outputTokens": 32760
+      },
+      {
+        "date": "2026-02-28",
+        "cost": 0.014889999999999999,
+        "calls": 9,
+        "inputTokens": 210,
+        "outputTokens": 936
+      },
+      {
+        "date": "2026-03-01",
+        "cost": 3.418680499999978,
+        "calls": 502,
+        "inputTokens": 672185,
+        "outputTokens": 48625
+      },
+      {
+        "date": "2026-03-02",
+        "cost": 0.7290955,
+        "calls": 59,
+        "inputTokens": 171701,
+        "outputTokens": 13281
+      },
+      {
+        "date": "2026-03-03",
+        "cost": 0.7544465000000025,
+        "calls": 1366,
+        "inputTokens": 62380,
+        "outputTokens": 30682
+      },
+      {
+        "date": "2026-03-04",
+        "cost": 1.125007,
+        "calls": 453,
+        "inputTokens": 210157,
+        "outputTokens": 27776
+      },
+      {
+        "date": "2026-03-05",
+        "cost": 1.8699265000000007,
+        "calls": 406,
+        "inputTokens": 411127,
+        "outputTokens": 49481
+      },
+      {
+        "date": "2026-03-06",
+        "cost": 1.3134884999999947,
+        "calls": 730,
+        "inputTokens": 253611,
+        "outputTokens": 25073
+      },
+      {
+        "date": "2026-03-07",
+        "cost": 5.554594800000124,
+        "calls": 1024,
+        "inputTokens": 1824857,
+        "outputTokens": 64972
+      },
+      {
+        "date": "2026-03-08",
+        "cost": 1.3805786500000037,
+        "calls": 171,
+        "inputTokens": 142738,
+        "outputTokens": 30521
+      },
+      {
+        "date": "2026-03-09",
+        "cost": 3.582103349999998,
+        "calls": 142,
+        "inputTokens": 947498,
+        "outputTokens": 37402
+      },
+      {
+        "date": "2026-03-12",
+        "cost": 2.6524317999999982,
+        "calls": 993,
+        "inputTokens": 456322,
+        "outputTokens": 75386
+      },
+      {
+        "date": "2026-03-13",
+        "cost": 0.012246000000000002,
+        "calls": 30,
+        "inputTokens": 127,
+        "outputTokens": 791
+      },
+      {
+        "date": "2026-03-14",
+        "cost": 1.1641110000000052,
+        "calls": 566,
+        "inputTokens": 172069,
+        "outputTokens": 43332
+      },
+      {
+        "date": "2026-03-16",
+        "cost": 4.849035749999982,
+        "calls": 5006,
+        "inputTokens": 259062,
+        "outputTokens": 272142
+      },
+      {
+        "date": "2026-03-17",
+        "cost": 0.6292949999999988,
+        "calls": 438,
+        "inputTokens": 82055,
+        "outputTokens": 25542
+      },
+      {
+        "date": "2026-03-18",
+        "cost": 0.033630000000000014,
+        "calls": 49,
+        "inputTokens": 0,
+        "outputTokens": 2242
+      },
+      {
+        "date": "2026-03-19",
+        "cost": 0.33346499999999835,
+        "calls": 477,
+        "inputTokens": 0,
+        "outputTokens": 22231
+      },
+      {
+        "date": "2026-03-20",
+        "cost": 0.033105,
+        "calls": 46,
+        "inputTokens": 0,
+        "outputTokens": 2207
+      },
+      {
+        "date": "2026-03-22",
+        "cost": 0.455770500000001,
+        "calls": 885,
+        "inputTokens": 311601,
+        "outputTokens": 37848
+      },
+      {
+        "date": "2026-03-23",
+        "cost": 0.2950534999999999,
+        "calls": 117,
+        "inputTokens": 172627,
+        "outputTokens": 23745
+      },
+      {
+        "date": "2026-03-25",
+        "cost": 0.5052195000000008,
+        "calls": 590,
+        "inputTokens": 850434,
+        "outputTokens": 21030
+      },
+      {
+        "date": "2026-03-26",
+        "cost": 0.06813300000000037,
+        "calls": 268,
+        "inputTokens": 60491,
+        "outputTokens": 7100
+      },
+      {
+        "date": "2026-03-27",
+        "cost": 0.0574595,
+        "calls": 185,
+        "inputTokens": 629613,
+        "outputTokens": 11640
+      },
+      {
+        "date": "2026-03-28",
+        "cost": 0.46390799999999993,
+        "calls": 334,
+        "inputTokens": 1296291,
+        "outputTokens": 29847
+      },
+      {
+        "date": "2026-03-29",
+        "cost": 0.8156909999999999,
+        "calls": 88,
+        "inputTokens": 398905,
+        "outputTokens": 8350
+      },
+      {
+        "date": "2026-03-30",
+        "cost": 3.4807069999999976,
+        "calls": 580,
+        "inputTokens": 3118146,
+        "outputTokens": 50998
+      },
+      {
+        "date": "2026-03-31",
+        "cost": 2.56296124999996,
+        "calls": 846,
+        "inputTokens": 2261156,
+        "outputTokens": 37040
+      },
+      {
+        "date": "2026-04-01",
+        "cost": 0.12249299999999999,
+        "calls": 38,
+        "inputTokens": 82211,
+        "outputTokens": 10530
+      },
+      {
+        "date": "2026-04-02",
+        "cost": 0.08941899999999998,
+        "calls": 66,
+        "inputTokens": 131858,
+        "outputTokens": 9396
+      },
+      {
+        "date": "2026-04-05",
+        "cost": 17.66230455,
+        "calls": 340,
+        "inputTokens": 165789,
+        "outputTokens": 214501
+      },
+      {
+        "date": "2026-04-06",
+        "cost": 5.026422249999999,
+        "calls": 286,
+        "inputTokens": 536,
+        "outputTokens": 122140
+      },
+      {
+        "date": "2026-04-08",
+        "cost": 0.4624290000000001,
+        "calls": 638,
+        "inputTokens": 689688,
+        "outputTokens": 21418
+      },
+      {
+        "date": "2026-04-09",
+        "cost": 0.4752784999999996,
+        "calls": 343,
+        "inputTokens": 827102,
+        "outputTokens": 14418
+      },
+      {
+        "date": "2026-04-11",
+        "cost": 0.9250153999999999,
+        "calls": 642,
+        "inputTokens": 283843,
+        "outputTokens": 69056
+      },
+      {
+        "date": "2026-04-12",
+        "cost": 0.05316749999999998,
+        "calls": 203,
+        "inputTokens": 0,
+        "outputTokens": 21267
+      },
+      {
+        "date": "2026-04-13",
+        "cost": 12.929144950000007,
+        "calls": 608,
+        "inputTokens": 533801,
+        "outputTokens": 103903
+      },
+      {
+        "date": "2026-04-14",
+        "cost": 26.5201231,
+        "calls": 1010,
+        "inputTokens": 193570,
+        "outputTokens": 114162
+      },
+      {
+        "date": "2026-04-15",
+        "cost": 1.5546990000000005,
+        "calls": 529,
+        "inputTokens": 308594,
+        "outputTokens": 54590
+      },
+      {
+        "date": "2026-04-17",
+        "cost": 0.4307429999999997,
+        "calls": 161,
+        "inputTokens": 201189,
+        "outputTokens": 13795
+      },
+      {
+        "date": "2026-04-19",
+        "cost": 0.0015300000000000001,
+        "calls": 39,
+        "inputTokens": 205163,
+        "outputTokens": 6582
+      },
+      {
+        "date": "2026-04-20",
+        "cost": 1.6159379999999988,
+        "calls": 557,
+        "inputTokens": 1846918,
+        "outputTokens": 44249
+      },
+      {
+        "date": "2026-04-24",
+        "cost": 7.302130000000012,
+        "calls": 324,
+        "inputTokens": 1923483,
+        "outputTokens": 20357
+      },
+      {
+        "date": "2026-04-26",
+        "cost": 18.585304099999956,
+        "calls": 771,
+        "inputTokens": 4189603,
+        "outputTokens": 94234
+      },
+      {
+        "date": "2026-05-01",
+        "cost": 0.31766999999999984,
+        "calls": 114,
+        "inputTokens": 407802,
+        "outputTokens": 20932
+      },
+      {
+        "date": "2026-05-04",
+        "cost": 1.0896154999999998,
+        "calls": 44,
+        "inputTokens": 347986,
+        "outputTokens": 4333
+      },
+      {
+        "date": "2026-05-05",
+        "cost": 12.030433499999985,
+        "calls": 834,
+        "inputTokens": 4294294,
+        "outputTokens": 77801
+      },
+      {
+        "date": "2026-05-06",
+        "cost": 0.022867500000000002,
+        "calls": 68,
+        "inputTokens": 0,
+        "outputTokens": 9147
+      },
+      {
+        "date": "2026-05-09",
+        "cost": 0.26601900000000006,
+        "calls": 42,
+        "inputTokens": 78643,
+        "outputTokens": 6343
+      },
+      {
+        "date": "2026-05-10",
+        "cost": 0.008310000000000001,
+        "calls": 13,
+        "inputTokens": 505,
+        "outputTokens": 567
+      },
+      {
+        "date": "2026-05-11",
+        "cost": 15.140717200000003,
+        "calls": 303,
+        "inputTokens": 68965,
+        "outputTokens": 173721
+      },
+      {
+        "date": "2026-05-12",
+        "cost": 95.7021142000002,
+        "calls": 1066,
+        "inputTokens": 5872620,
+        "outputTokens": 435400
+      },
+      {
+        "date": "2026-05-13",
+        "cost": 263.6714360000002,
+        "calls": 810,
+        "inputTokens": 1109858,
+        "outputTokens": 550544
+      },
+      {
+        "date": "2026-05-14",
+        "cost": 8.196281999999997,
+        "calls": 321,
+        "inputTokens": 2609249,
+        "outputTokens": 24569
+      },
+      {
+        "date": "2026-05-18",
+        "cost": 2.1944405000000002,
+        "calls": 8,
+        "inputTokens": 18,
+        "outputTokens": 25846
+      },
+      {
+        "date": "2026-05-28",
+        "cost": 207.77136249999998,
+        "calls": 705,
+        "inputTokens": 4825,
+        "outputTokens": 1087672
+      },
+      {
+        "date": "2026-05-29",
+        "cost": 276.5843209500001,
+        "calls": 722,
+        "inputTokens": 489992,
+        "outputTokens": 1557274
+      },
+      {
+        "date": "2026-05-30",
+        "cost": 182.601195,
+        "calls": 512,
+        "inputTokens": 203294,
+        "outputTokens": 1217055
+      },
+      {
+        "date": "2026-05-31",
+        "cost": 55.18547850000002,
+        "calls": 206,
+        "inputTokens": 692088,
+        "outputTokens": 215607
+      },
+      {
+        "date": "2026-06-01",
+        "cost": 2.1163625000000006,
+        "calls": 246,
+        "inputTokens": 330065,
+        "outputTokens": 30895
+      },
+      {
+        "date": "2026-06-02",
+        "cost": 8.459375500000002,
+        "calls": 27,
+        "inputTokens": 148582,
+        "outputTokens": 55997
+      },
+      {
+        "date": "2026-06-03",
+        "cost": 152.63867794999996,
+        "calls": 732,
+        "inputTokens": 187098,
+        "outputTokens": 1198309
+      },
+      {
+        "date": "2026-06-04",
+        "cost": 184.4475089500001,
+        "calls": 496,
+        "inputTokens": 156276,
+        "outputTokens": 897999
+      },
+      {
+        "date": "2026-06-05",
+        "cost": 59.410356150000005,
+        "calls": 153,
+        "inputTokens": 64867,
+        "outputTokens": 230465
+      },
+      {
+        "date": "2026-06-09",
+        "cost": 22.200296250000005,
+        "calls": 69,
+        "inputTokens": 126655,
+        "outputTokens": 112279
+      },
+      {
+        "date": "2026-06-10",
+        "cost": 302.10576165000003,
+        "calls": 989,
+        "inputTokens": 1978700,
+        "outputTokens": 1293196
+      },
+      {
+        "date": "2026-06-11",
+        "cost": 231.26464600000008,
+        "calls": 466,
+        "inputTokens": 230852,
+        "outputTokens": 678748
+      },
+      {
+        "date": "2026-06-12",
+        "cost": 15.397012000000007,
+        "calls": 73,
+        "inputTokens": 47264,
+        "outputTokens": 69315
+      },
+      {
+        "date": "2026-06-13",
+        "cost": 32.683999099999994,
+        "calls": 250,
+        "inputTokens": 18612,
+        "outputTokens": 156355
+      },
+      {
+        "date": "2026-06-18",
+        "cost": 9.388416600000003,
+        "calls": 11,
+        "inputTokens": 21639,
+        "outputTokens": 6710
+      },
+      {
+        "date": "2026-06-21",
+        "cost": 5.270968,
+        "calls": 37,
+        "inputTokens": 3511,
+        "outputTokens": 21264
+      },
+      {
+        "date": "2026-06-22",
+        "cost": 165.14426354999978,
+        "calls": 566,
+        "inputTokens": 127809,
+        "outputTokens": 655860
+      },
+      {
+        "date": "2026-06-23",
+        "cost": 170.75711805,
+        "calls": 484,
+        "inputTokens": 376981,
+        "outputTokens": 714569
+      },
+      {
+        "date": "2026-06-24",
+        "cost": 61.60765235000002,
+        "calls": 292,
+        "inputTokens": 108146,
+        "outputTokens": 351366
+      },
+      {
+        "date": "2026-06-28",
+        "cost": 220.9580007499998,
+        "calls": 1056,
+        "inputTokens": 1187725,
+        "outputTokens": 1023842
+      },
+      {
+        "date": "2026-06-29",
+        "cost": 20.595207600000002,
+        "calls": 39,
+        "inputTokens": 4420,
+        "outputTokens": 38756
+      },
+      {
+        "date": "2026-06-30",
+        "cost": 0.23763,
+        "calls": 1,
+        "inputTokens": 42821,
+        "outputTokens": 414
+      },
+      {
+        "date": "2026-07-01",
+        "cost": 5.98229665,
+        "calls": 100,
+        "inputTokens": 168,
+        "outputTokens": 46637
+      },
+      {
+        "date": "2026-07-03",
+        "cost": 9.390329699999999,
+        "calls": 129,
+        "inputTokens": 44522,
+        "outputTokens": 63028
+      },
+      {
+        "date": "2026-07-04",
+        "cost": 95.04361489999998,
+        "calls": 1594,
+        "inputTokens": 536485,
+        "outputTokens": 678865
+      },
+      {
+        "date": "2026-07-06",
+        "cost": 211.51327340000012,
+        "calls": 1131,
+        "inputTokens": 529516,
+        "outputTokens": 692498
+      },
+      {
+        "date": "2026-07-07",
+        "cost": 64.23057599999999,
+        "calls": 265,
+        "inputTokens": 225831,
+        "outputTokens": 230206
+      },
+      {
+        "date": "2026-07-08",
+        "cost": 129.02660370000004,
+        "calls": 651,
+        "inputTokens": 129000,
+        "outputTokens": 327596
+      },
+      {
+        "date": "2026-07-09",
+        "cost": 6.4248292000000005,
+        "calls": 30,
+        "inputTokens": 73274,
+        "outputTokens": 10857
+      },
+      {
+        "date": "2026-07-10",
+        "cost": 163.40735524999994,
+        "calls": 833,
+        "inputTokens": 1968366,
+        "outputTokens": 742408
+      },
+      {
+        "date": "2026-07-11",
+        "cost": 140.09924150000003,
+        "calls": 221,
+        "inputTokens": 575999,
+        "outputTokens": 426328
+      },
+      {
+        "date": "2026-07-12",
+        "cost": 375.97038904999937,
+        "calls": 1092,
+        "inputTokens": 1021420,
+        "outputTokens": 912389
+      },
+      {
+        "date": "2026-07-13",
+        "cost": 234.45175299999994,
+        "calls": 934,
+        "inputTokens": 678871,
+        "outputTokens": 1059638
+      }
+    ]
+  },
+  "periods": {
+    "today": {
+      "label": "Today (2026-07-13)",
+      "cost": 234.451753,
+      "calls": 934,
+      "sessions": 16,
+      "oneShotRate": 0.6551724137931034,
+      "inputTokens": 678871,
+      "outputTokens": 1059638,
+      "cacheReadTokens": 290563236,
+      "cacheWriteTokens": 6177891,
+      "cacheHitPercent": 99.7669049276587,
+      "codexCredits": 0,
+      "topActivities": [
+        {
+          "name": "Feature Dev",
+          "cost": 85.7452835,
+          "turns": 23,
+          "oneShotRate": 0.6
+        },
+        {
+          "name": "Coding",
+          "cost": 83.26164100000003,
+          "turns": 23,
+          "oneShotRate": 0.7692307692307693
+        },
+        {
+          "name": "Refactoring",
+          "cost": 33.8736975,
+          "turns": 2,
+          "oneShotRate": 0
+        },
+        {
+          "name": "Exploration",
+          "cost": 16.656075750000003,
+          "turns": 10,
+          "oneShotRate": null
+        },
+        {
+          "name": "Brainstorming",
+          "cost": 3.852895,
+          "turns": 2,
+          "oneShotRate": null
+        },
+        {
+          "name": "Testing",
+          "cost": 3.3699142500000003,
+          "turns": 3,
+          "oneShotRate": null
+        },
+        {
+          "name": "Delegation",
+          "cost": 2.6435045000000006,
+          "turns": 1,
+          "oneShotRate": null
+        },
+        {
+          "name": "Git Ops",
+          "cost": 1.8343787499999997,
+          "turns": 1,
+          "oneShotRate": null
+        },
+        {
+          "name": "General",
+          "cost": 1.700693,
+          "turns": 6,
+          "oneShotRate": null
+        },
+        {
+          "name": "Debugging",
+          "cost": 0.8642747500000001,
+          "turns": 1,
+          "oneShotRate": null
+        },
+        {
+          "name": "Conversation",
+          "cost": 0.649395,
+          "turns": 6,
+          "oneShotRate": null
+        }
+      ],
+      "topModels": [
+        {
+          "name": "Opus 4.8",
+          "cost": 234.451753,
+          "calls": 932
+        }
+      ],
+      "topProjects": [
+        {
+          "name": "CDL PRAC one",
+          "cost": 126.08446799999999,
+          "sessions": 9
+        },
+        {
+          "name": "OB CLAUDE vault",
+          "cost": 105.33790949999998,
+          "sessions": 6
+        },
+        {
+          "name": "OB CLAUDE vault",
+          "cost": 3.0293755000000004,
+          "sessions": 1
+        }
+      ],
+      "providers": [
+        {
+          "name": "claude",
+          "cost": 234.45175299999994
+        }
+      ]
+    },
+    "month": {
+      "label": "July 2026",
+      "cost": 1435.5402623499995,
+      "calls": 6980,
+      "sessions": 359,
+      "oneShotRate": 0.7788944723618091,
+      "inputTokens": 5783452,
+      "outputTokens": 5190450,
+      "cacheReadTokens": 1353259679,
+      "cacheWriteTokens": 50412457,
+      "cacheHitPercent": 99.5744467656634,
+      "codexCredits": 0,
+      "topActivities": [
+        {
+          "name": "Coding",
+          "cost": 682.9869069000003,
+          "turns": 180,
+          "oneShotRate": 0.7816091954022989
+        },
+        {
+          "name": "Feature Dev",
+          "cost": 303.4158663,
+          "turns": 119,
+          "oneShotRate": 0.8
+        },
+        {
+          "name": "Exploration",
+          "cost": 227.58603535,
+          "turns": 225,
+          "oneShotRate": null
+        },
+        {
+          "name": "Refactoring",
+          "cost": 63.90963940000001,
+          "turns": 27,
+          "oneShotRate": 0.5714285714285714
+        },
+        {
+          "name": "Delegation",
+          "cost": 52.95909405,
+          "turns": 27,
+          "oneShotRate": 0.4
+        },
+        {
+          "name": "Debugging",
+          "cost": 38.66620995,
+          "turns": 25,
+          "oneShotRate": 0.8666666666666667
+        },
+        {
+          "name": "Testing",
+          "cost": 20.3830222,
+          "turns": 15,
+          "oneShotRate": null
+        },
+        {
+          "name": "General",
+          "cost": 18.6985528,
+          "turns": 25,
+          "oneShotRate": null
+        },
+        {
+          "name": "Conversation",
+          "cost": 14.731701599999996,
+          "turns": 58,
+          "oneShotRate": null
+        },
+        {
+          "name": "Git Ops",
+          "cost": 6.01542555,
+          "turns": 8,
+          "oneShotRate": null
+        },
+        {
+          "name": "Brainstorming",
+          "cost": 5.935283450000001,
+          "turns": 13,
+          "oneShotRate": null
+        },
+        {
+          "name": "Build/Deploy",
+          "cost": 0.2525248,
+          "turns": 1,
+          "oneShotRate": null
+        }
+      ],
+      "topModels": [
+        {
+          "name": "Opus 4.8",
+          "cost": 962.6019120000002,
+          "calls": 4261
+        },
+        {
+          "name": "Fable 5",
+          "cost": 402.60236199999997,
+          "calls": 768
+        },
+        {
+          "name": "Sonnet 4.6",
+          "cost": 62.11843710000001,
+          "calls": 1606
+        },
+        {
+          "name": "Sonnet 5",
+          "cost": 4.431820800000001,
+          "calls": 137
+        },
+        {
+          "name": "grok-4.5",
+          "cost": 2.579612,
+          "calls": 9
+        },
+        {
+          "name": "Haiku 4.5",
+          "cost": 1.20611845,
+          "calls": 77
+        }
+      ],
+      "topProjects": [
+        {
+          "name": "OB CLAUDE vault",
+          "cost": 447.7911622999997,
+          "sessions": 20
+        },
+        {
+          "name": "UI Dashboard x",
+          "cost": 404.6449820500001,
+          "sessions": 28
+        },
+        {
+          "name": "OB CLAUDE vault",
+          "cost": 196.4743048,
+          "sessions": 27
+        },
+        {
+          "name": "CDL PRAC one",
+          "cost": 172.97647749999996,
+          "sessions": 20
+        },
+        {
+          "name": "CLAUDE WORLD",
+          "cost": 111.00671449999999,
+          "sessions": 105
+        }
+      ],
+      "providers": [
+        {
+          "name": "claude",
+          "cost": 1432.9606503499995
+        },
+        {
+          "name": "grok build",
+          "cost": 2.579612
+        }
+      ]
+    },
+    "all": {
+      "label": "Last 6 months",
+      "cost": 4604.769892849998,
+      "calls": 50099,
+      "sessions": 1623,
+      "oneShotRate": 0.8374233128834356,
+      "inputTokens": 131872915,
+      "outputTokens": 24193638,
+      "cacheReadTokens": 4097115455,
+      "cacheWriteTokens": 169113111,
+      "cacheHitPercent": 96.88169123529654,
+      "codexCredits": 55.2239875,
+      "topActivities": [
+        {
+          "name": "Coding",
+          "cost": 1867.8093117999995,
+          "turns": 2539,
+          "oneShotRate": 0.8146718146718147
+        },
+        {
+          "name": "Feature Dev",
+          "cost": 1238.63135335,
+          "turns": 11154,
+          "oneShotRate": 0.8464163822525598
+        },
+        {
+          "name": "Exploration",
+          "cost": 526.4748367500013,
+          "turns": 4208,
+          "oneShotRate": null
+        },
+        {
+          "name": "Conversation",
+          "cost": 223.89553700000027,
+          "turns": 12139,
+          "oneShotRate": null
+        },
+        {
+          "name": "Delegation",
+          "cost": 216.95552235000002,
+          "turns": 63,
+          "oneShotRate": 0.8461538461538461
+        },
+        {
+          "name": "Debugging",
+          "cost": 196.20826950000003,
+          "turns": 2643,
+          "oneShotRate": 0.92
+        },
+        {
+          "name": "Refactoring",
+          "cost": 108.54041854999996,
+          "turns": 44,
+          "oneShotRate": 0.7916666666666666
+        },
+        {
+          "name": "Testing",
+          "cost": 89.71983470000002,
+          "turns": 52,
+          "oneShotRate": null
+        },
+        {
+          "name": "General",
+          "cost": 67.15625535,
+          "turns": 92,
+          "oneShotRate": null
+        },
+        {
+          "name": "Brainstorming",
+          "cost": 33.358535200000006,
+          "turns": 1208,
+          "oneShotRate": null
+        },
+        {
+          "name": "Planning",
+          "cost": 17.543520500000007,
+          "turns": 6,
+          "oneShotRate": null
+        },
+        {
+          "name": "Build/Deploy",
+          "cost": 11.480602300000001,
+          "turns": 6,
+          "oneShotRate": null
+        },
+        {
+          "name": "Git Ops",
+          "cost": 6.995895499999999,
+          "turns": 13,
+          "oneShotRate": null
+        }
+      ],
+      "topModels": [
+        {
+          "name": "Opus 4.8",
+          "cost": 2966.889673749998,
+          "calls": 9782
+        },
+        {
+          "name": "Fable 5",
+          "cost": 547.173446,
+          "calls": 1003
+        },
+        {
+          "name": "Opus 4.7",
+          "cost": 514.5942047499999,
+          "calls": 1459
+        },
+        {
+          "name": "Cursor (auto)",
+          "cost": 270.93786300000136,
+          "calls": 18264
+        },
+        {
+          "name": "Sonnet 4.6",
+          "cost": 189.02219910000002,
+          "calls": 3728
+        },
+        {
+          "name": "composer-1",
+          "cost": 43.79080500000002,
+          "calls": 1914
+        },
+        {
+          "name": "GPT-5.3 Codex",
+          "cost": 21.089843949999995,
+          "calls": 1341
+        },
+        {
+          "name": "GPT-5.5",
+          "cost": 12.350865000000002,
+          "calls": 539
+        },
+        {
+          "name": "Haiku 4.5",
+          "cost": 9.9332446,
+          "calls": 697
+        },
+        {
+          "name": "composer-1.5",
+          "cost": 6.995961000000005,
+          "calls": 3898
+        },
+        {
+          "name": "GPT-5.2",
+          "cost": 5.9936184000000035,
+          "calls": 271
+        },
+        {
+          "name": "Sonnet 5",
+          "cost": 4.431820800000001,
+          "calls": 137
+        },
+        {
+          "name": "composer-2",
+          "cost": 4.152720999999999,
+          "calls": 4712
+        },
+        {
+          "name": "grok-4.5",
+          "cost": 2.579612,
+          "calls": 9
+        },
+        {
+          "name": "GPT-5.4",
+          "cost": 2.2089595,
+          "calls": 50
+        },
+        {
+          "name": "Gemini 3.1 Pro",
+          "cost": 1.3160299999999976,
+          "calls": 859
+        },
+        {
+          "name": "Opus 4.6",
+          "cost": 1.309025,
+          "calls": 86
+        },
+        {
+          "name": "premium",
+          "cost": 0,
+          "calls": 1037
+        },
+        {
+          "name": "nemotron-3-super:cloud",
+          "cost": 0,
+          "calls": 4
+        }
+      ],
+      "topProjects": [
+        {
+          "name": "CDL PRAC one",
+          "cost": 1012.3774094999999,
+          "sessions": 57
+        },
+        {
+          "name": "OB CLAUDE vault",
+          "cost": 447.7911622999997,
+          "sessions": 20
+        },
+        {
+          "name": "UI Dashboard x",
+          "cost": 412.9571499500001,
+          "sessions": 37
+        },
+        {
+          "name": "relaxed-saha-2b85c3",
+          "cost": 396.1343024999996,
+          "sessions": 1
+        },
+        {
+          "name": "OB CLAUDE vault",
+          "cost": 341.6393617,
+          "sessions": 44
+        }
+      ],
+      "providers": [
+        {
+          "name": "claude",
+          "cost": 4229.017974
+        },
+        {
+          "name": "cursor",
+          "cost": 345.03192075
+        },
+        {
+          "name": "codex",
+          "cost": 23.210414099999998
+        },
+        {
+          "name": "cursor agent",
+          "cost": 4.929972000000001
+        },
+        {
+          "name": "grok build",
+          "cost": 2.579612
+        }
+      ]
+    }
+  }
+}
