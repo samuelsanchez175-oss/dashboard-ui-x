@@ -45,6 +45,33 @@ export default defineConfig({
          */
         manualChunks(id) {
           if (id.includes('node_modules/lucide-react')) return 'lucide-react'
+          /**
+           * Same circular-chunk hazard with `music-metadata`: its format
+           * parsers (APEv2Parser, MP4Parser, …) get split into their own
+           * chunks but import shared helpers (notably the CommonJS `debug`
+           * module) that auto-chunking left inside the main bundle, while the
+           * main bundle imports the parser chunks back → the parser evaluates
+           * before main finishes initializing → `TypeError: U is not a
+           * function` at startup (white screen). Group music-metadata and its
+           * dependency cluster into one chunk so parsers resolve helpers
+           * without a back-edge to main.
+           */
+          const musicMetadataDeps = [
+            'node_modules/music-metadata',
+            'node_modules/@borewit/',
+            'node_modules/@tokenizer/',
+            'node_modules/strtok3',
+            'node_modules/token-types',
+            'node_modules/file-type',
+            'node_modules/uint8array-extras',
+            'node_modules/peek-readable',
+            'node_modules/media-typer',
+            'node_modules/content-type',
+            'node_modules/win-guid',
+            'node_modules/debug',
+            'node_modules/ms/',
+          ]
+          if (musicMetadataDeps.some((dep) => id.includes(dep))) return 'music-metadata'
         },
       },
     },
