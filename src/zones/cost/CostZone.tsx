@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   Activity,
   BarChart3,
+  Bot,
   Check,
   ClipboardCopy,
   Coins,
@@ -11,7 +12,11 @@ import {
   FolderOpen,
   Layers,
   RefreshCw,
+  Server,
+  Sparkles,
   Target,
+  TrendingDown,
+  Wrench,
   Zap,
 } from 'lucide-react'
 import ZoneHeader from '../../components/ZoneHeader'
@@ -31,12 +36,39 @@ import { CONTAINERS } from '../../lib/design-tokens'
 const DATA_URL = '/data/codeburn.json'
 const LIVE_URL = 'http://127.0.0.1:4747'
 
-type PeriodKey = 'today' | 'month' | 'all'
+type PeriodKey = 'today' | 'week' | '30days' | 'month' | 'all'
 
 interface Activity_ { name: string; cost: number; turns: number; oneShotRate: number | null }
 interface ModelRow { name: string; cost: number; calls: number; inputTokens: number; outputTokens: number }
-interface ProjectRow { name: string; cost: number; calls: number; sessions: number }
+interface ProjectRow { name: string; cost: number; calls: number; sessions: number; avgCostPerSession?: number }
 interface ProviderRow { name: string; cost: number; calls: number }
+interface ToolRow { name: string; calls: number; cost?: number }
+interface SkillRow { name: string; turns: number; cost: number }
+interface SubagentRow { name: string; calls: number; cost: number }
+interface RetryTax {
+  totalUSD: number
+  retries: number
+  editTurns: number
+  byModel: { name: string; taxUSD: number; retries: number; retriesPerEdit: number }[]
+}
+interface RoutingWaste {
+  totalSavingsUSD: number
+  baselineModel: string
+  baselineCostPerEdit: number
+  byModel: {
+    name: string
+    costPerEdit: number
+    editTurns: number
+    actualUSD: number
+    counterfactualUSD: number
+    savingsUSD: number
+  }[]
+}
+interface LocalModelSavings {
+  totalUSD: number
+  calls: number
+  byModel: { name: string; savingsUSD: number; calls: number }[]
+}
 
 interface PeriodData {
   label: string
@@ -54,6 +86,15 @@ interface PeriodData {
   topModels: ModelRow[]
   topProjects: ProjectRow[]
   providers: ProviderRow[]
+  // Sections the live visualizer renders — optional so an older snapshot
+  // (baked before these were captured) still loads instead of blanking the zone.
+  tools?: ToolRow[]
+  skills?: SkillRow[]
+  subagents?: SubagentRow[]
+  mcpServers?: ToolRow[]
+  retryTax?: RetryTax | null
+  routingWaste?: RoutingWaste | null
+  localModelSavings?: LocalModelSavings | null
 }
 
 interface DailyPoint { date: string; cost: number; calls: number; inputTokens: number; outputTokens: number }
@@ -65,8 +106,11 @@ interface CodeburnSnapshot {
   periods: Record<PeriodKey, PeriodData | null>
 }
 
+/** Same five periods, same order, as the live visualizer's tab bar. */
 const PERIOD_TABS: { key: PeriodKey; label: string }[] = [
   { key: 'today', label: 'Today' },
+  { key: 'week', label: '7 days' },
+  { key: '30days', label: '30 days' },
   { key: 'month', label: 'This month' },
   { key: 'all', label: 'Last 6 months' },
 ]
@@ -150,18 +194,22 @@ function SectionCard({
   )
 }
 
+type Metric = 'cost' | 'tokens' | 'calls'
+
+/** Value of a daily point under the selected metric. Tokens are in + out, the
+ * same total the live visualizer charts. */
+const metricValue = (d: DailyPoint, metric: Metric) =>
+  metric === 'cost' ? d.cost : metric === 'calls' ? d.calls : d.inputTokens + d.outputTokens
+
 /** Simple, dependency-free daily bar chart (matches the live visualizer). */
-function DailyBars({ data, metric }: { data: DailyPoint[]; metric: 'cost' | 'calls' }) {
-  const max = Math.max(1, ...data.map(d => d[metric]))
+function DailyBars({ data, metric }: { data: DailyPoint[]; metric: Metric }) {
+  const max = Math.max(1, ...data.map(d => metricValue(d, metric)))
   return (
     <div className="flex h-40 items-end gap-[2px] overflow-hidden">
       {data.map(d => {
-        const v = d[metric]
+        const v = metricValue(d, metric)
         const h = Math.max(2, (v / max) * 100)
-        const title =
-          metric === 'cost'
-            ? `${d.date} · ${usd2(d.cost)} · ${d.calls} calls`
-            : `${d.date} · ${d.calls} calls · ${usd2(d.cost)}`
+        const title = `${d.date} · ${usd2(d.cost)} · ${d.calls} calls · ${compact(d.inputTokens + d.outputTokens)} tokens`
         return (
           <div
             key={d.date}
@@ -179,8 +227,26 @@ function DailyBars({ data, metric }: { data: DailyPoint[]; metric: 'cost' | 'cal
   )
 }
 
-function BarRow({ label, value, max, right }: { label: string; value: number; max: number; right: string }) {
+/**
+ * One breakdown row. `total` is the period total for this breakdown — when
+ * given, the row also shows its share of spend, the way the live visualizer
+ * labels each bar ("$21.38  100%").
+ */
+function BarRow({
+  label,
+  value,
+  max,
+  right,
+  total,
+}: {
+  label: string
+  value: number
+  max: number
+  right: string
+  total?: number
+}) {
   const w = max > 0 ? Math.max(3, (value / max) * 100) : 0
+  const share = total && total > 0 ? Math.round((value / total) * 100) : null
   return (
     <div className="flex items-center gap-3 py-1.5">
       <span className="w-40 shrink-0 truncate text-[13px]" style={{ color: 'var(--text-2)' }} title={label}>
@@ -192,6 +258,89 @@ function BarRow({ label, value, max, right }: { label: string; value: number; ma
       <span className="w-20 shrink-0 text-right text-[13px] font-semibold tabular-nums" style={{ color: 'var(--text-1)' }}>
         {right}
       </span>
+      {share != null ? (
+        <span className="w-9 shrink-0 text-right text-[12px] tabular-nums" style={{ color: 'var(--text-4)' }}>
+          {share}%
+        </span>
+      ) : null}
+    </div>
+  )
+}
+
+/** Compact table for the count-based panels (tools, skills, MCP servers, …),
+ * matching the live visualizer's table panels. */
+function DataTable({
+  columns,
+  rows,
+  empty,
+}: {
+  columns: { key: string; label: string; align?: 'right' }[]
+  rows: Record<string, React.ReactNode>[]
+  empty: string
+}) {
+  if (!rows.length) {
+    return (
+      <p className="text-[13px]" style={{ color: 'var(--text-4)' }}>
+        {empty}
+      </p>
+    )
+  }
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-[13px]">
+        <thead>
+          <tr>
+            {columns.map(c => (
+              <th
+                key={c.key}
+                className={`pb-2 text-[11px] font-semibold uppercase tracking-wide ${
+                  c.align === 'right' ? 'text-right' : 'text-left'
+                }`}
+                style={{ color: 'var(--text-4)' }}
+              >
+                {c.label}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={i} style={{ borderTop: '1px solid var(--border-soft)' }}>
+              {columns.map(c => (
+                <td
+                  key={c.key}
+                  className={`py-1.5 ${c.align === 'right' ? 'text-right tabular-nums font-semibold' : 'truncate'}`}
+                  style={{ color: c.align === 'right' ? 'var(--text-1)' : 'var(--text-2)' }}
+                >
+                  {r[c.key]}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+/** Headline number + caption, used inside the "Savings & waste" panel. */
+function WasteStat({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone?: 'bad' | 'good' }) {
+  return (
+    <div className="rounded-xl border px-3.5 py-3" style={{ borderColor: 'var(--border-soft)', background: 'var(--bg-hover)' }}>
+      <div
+        className="text-lg font-bold tabular-nums"
+        style={{ color: tone === 'bad' ? 'var(--bad, #dc2626)' : tone === 'good' ? 'var(--good, #059669)' : 'var(--text-1)' }}
+      >
+        {value}
+      </div>
+      <div className="text-[11px] uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>
+        {label}
+      </div>
+      {sub ? (
+        <div className="mt-0.5 text-[11px]" style={{ color: 'var(--text-4)' }}>
+          {sub}
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -208,7 +357,7 @@ export default function CostZone() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [period, setPeriod] = useState<PeriodKey>('month')
-  const [metric, setMetric] = useState<'cost' | 'calls'>('cost')
+  const [metric, setMetric] = useState<Metric>('cost')
   const [copied, setCopied] = useState(false)
 
   async function copyRefreshPrompt() {
@@ -231,7 +380,7 @@ export default function CostZone() {
       setData(json)
       // Default to the first period that actually has data.
       if (!json.periods[period]) {
-        const first = (['month', 'today', 'all'] as PeriodKey[]).find(k => json.periods[k])
+        const first = (['month', '30days', 'week', 'today', 'all'] as PeriodKey[]).find(k => json.periods[k])
         if (first) setPeriod(first)
       }
     } catch (e) {
@@ -248,7 +397,7 @@ export default function CostZone() {
 
   const cur = data?.periods[period] ?? null
   const daily = data?.history.daily ?? []
-  const chartMax = useMemo(() => Math.max(1, ...daily.map(d => d[metric])), [daily, metric])
+  const chartMax = useMemo(() => Math.max(1, ...daily.map(d => metricValue(d, metric))), [daily, metric])
 
   return (
     <div className="flex-1 overflow-auto" style={{ background: 'var(--bg-canvas)', color: 'var(--text-1)' }}>
@@ -342,7 +491,7 @@ export default function CostZone() {
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      {(['cost', 'calls'] as const).map(m => (
+                      {(['cost', 'tokens', 'calls'] as const).map(m => (
                         <button
                           key={m}
                           type="button"
@@ -390,8 +539,64 @@ export default function CostZone() {
                   <StatTile icon={<Database className="size-4" />} value={compact(cur.cacheWriteTokens)} label="Cache write" />
                 </div>
 
-                {/* Breakdowns */}
+                {/* Breakdowns — same panels, same order, as the live visualizer:
+                    by tool · top models · top projects · by activity ·
+                    subagents · skills · MCP servers · savings & waste · tools. */}
                 <div className="grid gap-4 lg:grid-cols-2">
+                  <SectionCard title="By tool" right={<Coins className="size-3.5" style={{ color: 'var(--text-4)' }} />}>
+                    {cur.providers.length ? (
+                      <div>
+                        {cur.providers.slice(0, 8).map(p => (
+                          <BarRow
+                            key={p.name}
+                            label={p.name}
+                            value={p.cost}
+                            max={cur.providers[0].cost}
+                            right={usd(p.cost)}
+                            total={cur.cost}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-[13px]" style={{ color: 'var(--text-4)' }}>No tool data.</p>
+                    )}
+                  </SectionCard>
+
+                  <SectionCard title="Top models" right={<BarChart3 className="size-3.5" style={{ color: 'var(--text-4)' }} />}>
+                    {cur.topModels.length ? (
+                      <div>
+                        {cur.topModels.slice(0, 8).map(m => (
+                          <BarRow
+                            key={m.name}
+                            label={m.name}
+                            value={m.cost}
+                            max={cur.topModels[0].cost}
+                            right={usd(m.cost)}
+                            total={cur.cost}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-[13px]" style={{ color: 'var(--text-4)' }}>No model data.</p>
+                    )}
+                  </SectionCard>
+
+                  <SectionCard title="Top projects" right={<FolderOpen className="size-3.5" style={{ color: 'var(--text-4)' }} />}>
+                    <DataTable
+                      columns={[
+                        { key: 'name', label: 'Project' },
+                        { key: 'cost', label: 'Cost', align: 'right' },
+                        { key: 'sessions', label: 'Sessions', align: 'right' },
+                      ]}
+                      rows={cur.topProjects.slice(0, 8).map(p => ({
+                        name: p.name,
+                        cost: usd2(p.cost),
+                        sessions: p.sessions.toLocaleString(),
+                      }))}
+                      empty="No project data."
+                    />
+                  </SectionCard>
+
                   <SectionCard title="By activity" right={<Activity className="size-3.5" style={{ color: 'var(--text-4)' }} />}>
                     {cur.topActivities.length ? (
                       <div>
@@ -402,6 +607,7 @@ export default function CostZone() {
                             value={a.cost}
                             max={cur.topActivities[0].cost}
                             right={usd(a.cost)}
+                            total={cur.cost}
                           />
                         ))}
                       </div>
@@ -410,42 +616,150 @@ export default function CostZone() {
                     )}
                   </SectionCard>
 
-                  <SectionCard title="Top models" right={<BarChart3 className="size-3.5" style={{ color: 'var(--text-4)' }} />}>
-                    {cur.topModels.length ? (
-                      <div>
-                        {cur.topModels.slice(0, 8).map(m => (
-                          <BarRow key={m.name} label={m.name} value={m.cost} max={cur.topModels[0].cost} right={usd(m.cost)} />
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-[13px]" style={{ color: 'var(--text-4)' }}>No model data.</p>
-                    )}
+                  <SectionCard title="Subagents" right={<Bot className="size-3.5" style={{ color: 'var(--text-4)' }} />}>
+                    <DataTable
+                      columns={[
+                        { key: 'name', label: 'Subagent' },
+                        { key: 'calls', label: 'Calls', align: 'right' },
+                        { key: 'cost', label: 'Cost', align: 'right' },
+                      ]}
+                      rows={(cur.subagents ?? []).slice(0, 8).map(s => ({
+                        name: s.name,
+                        calls: s.calls.toLocaleString(),
+                        cost: usd2(s.cost),
+                      }))}
+                      empty="No data."
+                    />
                   </SectionCard>
 
-                  <SectionCard title="Top projects" right={<FolderOpen className="size-3.5" style={{ color: 'var(--text-4)' }} />}>
-                    {cur.topProjects.length ? (
-                      <div>
-                        {cur.topProjects.slice(0, 8).map(p => (
-                          <BarRow key={p.name} label={p.name} value={p.cost} max={cur.topProjects[0].cost} right={usd(p.cost)} />
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-[13px]" style={{ color: 'var(--text-4)' }}>No project data.</p>
-                    )}
+                  <SectionCard title="Skills" right={<Sparkles className="size-3.5" style={{ color: 'var(--text-4)' }} />}>
+                    <DataTable
+                      columns={[
+                        { key: 'name', label: 'Skill' },
+                        { key: 'turns', label: 'Turns', align: 'right' },
+                        { key: 'cost', label: 'Cost', align: 'right' },
+                      ]}
+                      rows={(cur.skills ?? []).slice(0, 8).map(s => ({
+                        name: s.name,
+                        turns: s.turns.toLocaleString(),
+                        cost: usd2(s.cost),
+                      }))}
+                      empty="No data."
+                    />
                   </SectionCard>
 
-                  <SectionCard title="By provider" right={<Coins className="size-3.5" style={{ color: 'var(--text-4)' }} />}>
-                    {cur.providers.length ? (
-                      <div>
-                        {cur.providers.slice(0, 8).map(p => (
-                          <BarRow key={p.name} label={p.name} value={p.cost} max={cur.providers[0].cost} right={usd(p.cost)} />
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-[13px]" style={{ color: 'var(--text-4)' }}>No provider data.</p>
-                    )}
+                  <SectionCard title="MCP servers" right={<Server className="size-3.5" style={{ color: 'var(--text-4)' }} />}>
+                    <DataTable
+                      columns={[
+                        { key: 'name', label: 'Server' },
+                        { key: 'calls', label: 'Calls', align: 'right' },
+                      ]}
+                      rows={(cur.mcpServers ?? []).slice(0, 8).map(m => ({
+                        name: m.name,
+                        calls: m.calls.toLocaleString(),
+                      }))}
+                      empty="No data."
+                    />
+                  </SectionCard>
+
+                  <SectionCard title="Tools" right={<Wrench className="size-3.5" style={{ color: 'var(--text-4)' }} />}>
+                    <DataTable
+                      columns={[
+                        { key: 'name', label: 'Tool' },
+                        { key: 'calls', label: 'Calls', align: 'right' },
+                      ]}
+                      rows={(cur.tools ?? []).slice(0, 10).map(t => ({
+                        name: t.name,
+                        calls: t.calls.toLocaleString(),
+                      }))}
+                      empty="No data."
+                    />
                   </SectionCard>
                 </div>
+
+                {/* Savings & waste — full width: three headline numbers plus the
+                    per-model detail behind retry tax and routing waste. */}
+                <SectionCard
+                  title="Savings & waste"
+                  right={<TrendingDown className="size-3.5" style={{ color: 'var(--text-4)' }} />}
+                >
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <WasteStat
+                      label="Local-model savings"
+                      value={usd2(cur.localModelSavings?.totalUSD ?? 0)}
+                      sub={`${(cur.localModelSavings?.calls ?? 0).toLocaleString()} calls on local models`}
+                      tone="good"
+                    />
+                    <WasteStat
+                      label="Retry tax"
+                      value={usd2(cur.retryTax?.totalUSD ?? 0)}
+                      sub={`${(cur.retryTax?.retries ?? 0).toLocaleString()} retries over ${(
+                        cur.retryTax?.editTurns ?? 0
+                      ).toLocaleString()} edit turns`}
+                      tone="bad"
+                    />
+                    <WasteStat
+                      label="Routing waste (potential)"
+                      value={usd2(cur.routingWaste?.totalSavingsUSD ?? 0)}
+                      sub={
+                        cur.routingWaste?.baselineModel
+                          ? `vs ${cur.routingWaste.baselineModel} at ${usd2(
+                              cur.routingWaste.baselineCostPerEdit ?? 0,
+                            )}/edit`
+                          : 'no cheaper baseline found'
+                      }
+                      tone="bad"
+                    />
+                  </div>
+
+                  {cur.retryTax?.byModel?.length ? (
+                    <div className="mt-4">
+                      <h3 className="mb-1 text-[11px] uppercase tracking-wide" style={{ color: 'var(--text-4)' }}>
+                        Retry tax by model
+                      </h3>
+                      <DataTable
+                        columns={[
+                          { key: 'name', label: 'Model' },
+                          { key: 'tax', label: 'Tax', align: 'right' },
+                          { key: 'retries', label: 'Retries', align: 'right' },
+                          { key: 'perEdit', label: 'Per edit', align: 'right' },
+                        ]}
+                        rows={cur.retryTax.byModel.slice(0, 6).map(m => ({
+                          name: m.name,
+                          tax: usd2(m.taxUSD),
+                          retries: m.retries.toLocaleString(),
+                          perEdit: m.retriesPerEdit.toFixed(1),
+                        }))}
+                        empty="No data."
+                      />
+                    </div>
+                  ) : null}
+
+                  {cur.routingWaste?.byModel?.length ? (
+                    <div className="mt-4">
+                      <h3 className="mb-1 text-[11px] uppercase tracking-wide" style={{ color: 'var(--text-4)' }}>
+                        Routing waste by model
+                      </h3>
+                      <DataTable
+                        columns={[
+                          { key: 'name', label: 'Model' },
+                          { key: 'perEdit', label: 'Cost / edit', align: 'right' },
+                          { key: 'actual', label: 'Actual', align: 'right' },
+                          { key: 'counterfactual', label: 'On baseline', align: 'right' },
+                          { key: 'savings', label: 'Could save', align: 'right' },
+                        ]}
+                        rows={cur.routingWaste.byModel.slice(0, 6).map(m => ({
+                          name: m.name,
+                          perEdit: usd2(m.costPerEdit),
+                          actual: usd2(m.actualUSD),
+                          counterfactual: usd2(m.counterfactualUSD),
+                          savings: usd2(m.savingsUSD),
+                        }))}
+                        empty="No data."
+                      />
+                    </div>
+                  ) : null}
+                </SectionCard>
 
                 <p className="pt-1 text-center text-[11px]" style={{ color: 'var(--text-4)' }}>
                   Snapshot only — refresh from your Mac with{' '}

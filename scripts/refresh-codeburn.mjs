@@ -23,7 +23,9 @@ import { fileURLToPath } from 'node:url'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const OUT = join(ROOT, 'public', 'data', 'codeburn.json')
-const PERIODS = ['today', 'month', 'all']
+// Same five periods the live visualizer offers in its top-right tab bar, so the
+// zone is one-to-one with it: Today / 7 days / 30 days / Month / All.
+const PERIODS = ['today', 'week', '30days', 'month', 'all']
 
 /** Resolve the codeburn CLI: explicit override → npm global bin → PATH. */
 function resolveBin() {
@@ -45,7 +47,9 @@ function fetchPeriod(period) {
   return JSON.parse(raw)
 }
 
-/** Keep only the fields the Cost zone renders, so the committed file stays small
+/** Keep every section the live CodeBurn visualizer renders, so the Cost zone is
+ * one-to-one with it, but drop per-row noise the panels never show (notably
+ * `topProjects[].sessionDetails`, ~8KB/period) so the committed file stays small
  * and its daily git diff stays legible. */
 function slimCurrent(c) {
   if (!c) return null
@@ -60,6 +64,16 @@ function slimCurrent(c) {
           .filter(p => p.cost > 0)
           .sort((a, b) => b.cost - a.cost)
       : pickList(m, ['name', 'cost'])
+  // `retryTax` / `routingWaste` / `localModelSavings` back the visualizer's
+  // "Savings & waste" panel. Objects, not lists — keep their shape and slim only
+  // the per-model rows hanging off them.
+  const pickObj = (o, keys, listKey, listKeys) => {
+    if (!o || typeof o !== 'object') return null
+    const out = Object.fromEntries(keys.filter(k => k in o).map(k => [k, o[k]]))
+    if (listKey) out[listKey] = pickList(o[listKey], listKeys)
+    return out
+  }
+
   return {
     label: c.label,
     cost: c.cost,
@@ -72,10 +86,31 @@ function slimCurrent(c) {
     cacheWriteTokens: c.cacheWriteTokens,
     cacheHitPercent: c.cacheHitPercent,
     codexCredits: c.codexCredits,
-    topActivities: pickList(c.topActivities, ['name', 'cost', 'turns', 'oneShotRate']),
-    topModels: pickList(c.topModels, ['name', 'cost', 'calls', 'inputTokens', 'outputTokens']),
-    topProjects: pickList(c.topProjects, ['name', 'cost', 'calls', 'sessions']),
+    topActivities: pickList(c.topActivities, ['name', 'cost', 'turns', 'oneShotRate', 'savingsUSD']),
+    topModels: pickList(c.topModels, ['name', 'cost', 'calls', 'inputTokens', 'outputTokens', 'savingsUSD']),
+    topProjects: pickList(c.topProjects, ['name', 'cost', 'calls', 'sessions', 'avgCostPerSession']),
     providers: providerList(c.providers),
+    // Panels the visualizer shows that the zone used to drop entirely.
+    tools: pickList(c.tools, ['name', 'calls', 'cost']),
+    skills: pickList(c.skills, ['name', 'turns', 'cost']),
+    subagents: pickList(c.subagents, ['name', 'calls', 'cost']),
+    mcpServers: pickList(c.mcpServers, ['name', 'calls', 'cost']),
+    retryTax: pickObj(c.retryTax, ['totalUSD', 'retries', 'editTurns'], 'byModel', [
+      'name',
+      'taxUSD',
+      'retries',
+      'retriesPerEdit',
+    ]),
+    routingWaste: pickObj(
+      c.routingWaste,
+      ['totalSavingsUSD', 'baselineModel', 'baselineCostPerEdit'],
+      'byModel',
+      ['name', 'costPerEdit', 'editTurns', 'actualUSD', 'counterfactualUSD', 'savingsUSD'],
+    ),
+    localModelSavings: pickObj(c.localModelSavings, ['totalUSD', 'calls'], 'byModel', ['name', 'savingsUSD', 'calls']),
+    modelEfficiency: pickList(c.modelEfficiency, ['name', 'costPerEdit', 'oneShotRate']),
+    topSessions: pickList(c.topSessions, ['project', 'cost', 'calls', 'date', 'savingsUSD']),
+    unpricedModels: pickList(c.unpricedModels, ['name', 'calls', 'inputTokens', 'outputTokens']),
   }
 }
 

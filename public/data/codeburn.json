@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-13T17:16:31.737Z",
-  "device": "Samuels-MacBook-Pro-2.local",
+  "generated_at": "2026-07-24T14:57:37.130Z",
+  "device": "Samuels-MacBook-Pro-3.local",
   "history": {
     "daily": [
       {
@@ -824,505 +824,1694 @@
       },
       {
         "date": "2026-07-13",
-        "cost": 234.45175299999994,
-        "calls": 934,
-        "inputTokens": 678871,
-        "outputTokens": 1059638
+        "cost": 452.0260162499998,
+        "calls": 1651,
+        "inputTokens": 1058693,
+        "outputTokens": 1770063
+      },
+      {
+        "date": "2026-07-14",
+        "cost": 347.0328674000001,
+        "calls": 1469,
+        "inputTokens": 3314412,
+        "outputTokens": 2865253
+      },
+      {
+        "date": "2026-07-15",
+        "cost": 327.2450372999998,
+        "calls": 1258,
+        "inputTokens": 1088803,
+        "outputTokens": 1471480
+      },
+      {
+        "date": "2026-07-16",
+        "cost": 20.739799999999967,
+        "calls": 718,
+        "inputTokens": 3133305,
+        "outputTokens": 96824
+      },
+      {
+        "date": "2026-07-17",
+        "cost": 1.5868329999999997,
+        "calls": 151,
+        "inputTokens": 182703,
+        "outputTokens": 7787
+      },
+      {
+        "date": "2026-07-18",
+        "cost": 28.721767500000066,
+        "calls": 476,
+        "inputTokens": 164384,
+        "outputTokens": 158897
+      },
+      {
+        "date": "2026-07-19",
+        "cost": 6.5651635000000015,
+        "calls": 28,
+        "inputTokens": 51,
+        "outputTokens": 17335
+      },
+      {
+        "date": "2026-07-20",
+        "cost": 36.174324000000034,
+        "calls": 314,
+        "inputTokens": 946705,
+        "outputTokens": 159860
+      },
+      {
+        "date": "2026-07-22",
+        "cost": 67.14887900000008,
+        "calls": 424,
+        "inputTokens": 697059,
+        "outputTokens": 213715
+      },
+      {
+        "date": "2026-07-23",
+        "cost": 0.9577220000000003,
+        "calls": 3,
+        "inputTokens": 6,
+        "outputTokens": 725
+      },
+      {
+        "date": "2026-07-24",
+        "cost": 23.346961999999998,
+        "calls": 215,
+        "inputTokens": 676,
+        "outputTokens": 111829
       }
     ]
   },
   "periods": {
     "today": {
-      "label": "Today (2026-07-13)",
-      "cost": 234.451753,
-      "calls": 934,
-      "sessions": 16,
-      "oneShotRate": 0.6551724137931034,
-      "inputTokens": 678871,
-      "outputTokens": 1059638,
-      "cacheReadTokens": 290563236,
-      "cacheWriteTokens": 6177891,
-      "cacheHitPercent": 99.7669049276587,
+      "label": "Today (2026-07-24)",
+      "cost": 23.34696200000001,
+      "calls": 215,
+      "sessions": 3,
+      "oneShotRate": 0.5,
+      "inputTokens": 676,
+      "outputTokens": 111829,
+      "cacheReadTokens": 28959654,
+      "cacheWriteTokens": 606803,
+      "cacheHitPercent": 99.99766577245494,
       "codexCredits": 0,
       "topActivities": [
         {
-          "name": "Feature Dev",
-          "cost": 85.7452835,
-          "turns": 23,
-          "oneShotRate": 0.6
+          "name": "Coding",
+          "cost": 13.322975999999997,
+          "turns": 4,
+          "oneShotRate": 0.6666666666666666,
+          "savingsUSD": 0
         },
         {
-          "name": "Coding",
-          "cost": 83.26164100000003,
-          "turns": 23,
-          "oneShotRate": 0.7692307692307693
+          "name": "Feature Dev",
+          "cost": 4.1485915,
+          "turns": 5,
+          "oneShotRate": 0.5,
+          "savingsUSD": 0
         },
         {
           "name": "Refactoring",
-          "cost": 33.8736975,
-          "turns": 2,
-          "oneShotRate": 0
-        },
-        {
-          "name": "Exploration",
-          "cost": 16.656075750000003,
-          "turns": 10,
-          "oneShotRate": null
-        },
-        {
-          "name": "Brainstorming",
-          "cost": 3.852895,
-          "turns": 2,
-          "oneShotRate": null
-        },
-        {
-          "name": "Testing",
-          "cost": 3.3699142500000003,
-          "turns": 3,
-          "oneShotRate": null
-        },
-        {
-          "name": "Delegation",
-          "cost": 2.6435045000000006,
+          "cost": 2.2700055,
           "turns": 1,
-          "oneShotRate": null
+          "oneShotRate": 0,
+          "savingsUSD": 0
         },
         {
           "name": "Git Ops",
-          "cost": 1.8343787499999997,
+          "cost": 1.8502030000000005,
           "turns": 1,
-          "oneShotRate": null
-        },
-        {
-          "name": "General",
-          "cost": 1.700693,
-          "turns": 6,
-          "oneShotRate": null
-        },
-        {
-          "name": "Debugging",
-          "cost": 0.8642747500000001,
-          "turns": 1,
-          "oneShotRate": null
+          "oneShotRate": null,
+          "savingsUSD": 0
         },
         {
           "name": "Conversation",
-          "cost": 0.649395,
-          "turns": 6,
-          "oneShotRate": null
+          "cost": 0.8731705000000001,
+          "turns": 7,
+          "oneShotRate": null,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Exploration",
+          "cost": 0.32869149999999997,
+          "turns": 1,
+          "oneShotRate": null,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Testing",
+          "cost": 0.32664400000000005,
+          "turns": 2,
+          "oneShotRate": null,
+          "savingsUSD": 0
+        },
+        {
+          "name": "General",
+          "cost": 0.22668,
+          "turns": 2,
+          "oneShotRate": null,
+          "savingsUSD": 0
         }
       ],
       "topModels": [
         {
           "name": "Opus 4.8",
-          "cost": 234.451753,
-          "calls": 932
+          "cost": 23.34696200000001,
+          "calls": 215,
+          "savingsUSD": 0
         }
       ],
       "topProjects": [
         {
-          "name": "CDL PRAC one",
-          "cost": 126.08446799999999,
-          "sessions": 9
+          "name": "CLAUDE WORLD",
+          "cost": 16.817919000000007,
+          "sessions": 1,
+          "avgCostPerSession": 16.817919000000007
+        },
+        {
+          "name": "dashboard-ui-x",
+          "cost": 4.67884,
+          "sessions": 1,
+          "avgCostPerSession": 4.67884
         },
         {
           "name": "OB CLAUDE vault",
-          "cost": 105.33790949999998,
-          "sessions": 6
-        },
-        {
-          "name": "OB CLAUDE vault",
-          "cost": 3.0293755000000004,
-          "sessions": 1
+          "cost": 1.8502030000000005,
+          "sessions": 1,
+          "avgCostPerSession": 1.8502030000000005
         }
       ],
       "providers": [
         {
           "name": "claude",
-          "cost": 234.45175299999994
+          "cost": 23.346961999999998
         }
-      ]
+      ],
+      "tools": [
+        {
+          "name": "Bash",
+          "calls": 97
+        },
+        {
+          "name": "Edit",
+          "calls": 42
+        },
+        {
+          "name": "Write",
+          "calls": 32
+        },
+        {
+          "name": "Read",
+          "calls": 5
+        },
+        {
+          "name": "Skill",
+          "calls": 2
+        },
+        {
+          "name": "AskUserQuestion",
+          "calls": 1
+        }
+      ],
+      "skills": [
+        {
+          "name": "superpowers:brainstorming",
+          "turns": 1,
+          "cost": 0.1305485
+        },
+        {
+          "name": "frontend-design:frontend-design",
+          "turns": 1,
+          "cost": 0.0961315
+        }
+      ],
+      "subagents": [],
+      "mcpServers": [
+        {
+          "name": "Claude_Browser",
+          "calls": 16
+        },
+        {
+          "name": "plugin_context-mode_context-mode",
+          "calls": 1
+        }
+      ],
+      "retryTax": {
+        "totalUSD": 102.31146749999999,
+        "retries": 33,
+        "editTurns": 6,
+        "byModel": [
+          {
+            "name": "Opus 4.8",
+            "taxUSD": 102.31146749999999,
+            "retries": 33,
+            "retriesPerEdit": 5.5
+          }
+        ]
+      },
+      "routingWaste": {
+        "totalSavingsUSD": 0,
+        "baselineModel": "",
+        "baselineCostPerEdit": 0,
+        "byModel": []
+      },
+      "localModelSavings": {
+        "totalUSD": 0,
+        "calls": 0,
+        "byModel": []
+      },
+      "modelEfficiency": [
+        {
+          "name": "Opus 4.8",
+          "costPerEdit": 3.1003475,
+          "oneShotRate": 50
+        }
+      ],
+      "topSessions": [
+        {
+          "project": "CLAUDE WORLD",
+          "cost": 16.817919000000007,
+          "calls": 167,
+          "date": "2026-07-24",
+          "savingsUSD": 0
+        },
+        {
+          "project": "dashboard-ui-x",
+          "cost": 4.67884,
+          "calls": 43,
+          "date": "2026-07-24",
+          "savingsUSD": 0
+        },
+        {
+          "project": "OB CLAUDE vault",
+          "cost": 1.8502030000000005,
+          "calls": 5,
+          "date": "2026-07-24",
+          "savingsUSD": 0
+        }
+      ],
+      "unpricedModels": []
     },
-    "month": {
-      "label": "July 2026",
-      "cost": 1435.5402623499995,
-      "calls": 6980,
-      "sessions": 359,
-      "oneShotRate": 0.7788944723618091,
-      "inputTokens": 5783452,
-      "outputTokens": 5190450,
-      "cacheReadTokens": 1353259679,
-      "cacheWriteTokens": 50412457,
-      "cacheHitPercent": 99.5744467656634,
+    "week": {
+      "label": "Last 7 Days",
+      "cost": 164.50165100000004,
+      "calls": 1611,
+      "sessions": 73,
+      "oneShotRate": 0.7419354838709677,
+      "inputTokens": 1991584,
+      "outputTokens": 670148,
+      "cacheReadTokens": 185552348,
+      "cacheWriteTokens": 5030319,
+      "cacheHitPercent": 98.93807068095384,
       "codexCredits": 0,
       "topActivities": [
         {
           "name": "Coding",
-          "cost": 682.9869069000003,
-          "turns": 180,
-          "oneShotRate": 0.7816091954022989
+          "cost": 80.550431,
+          "turns": 45,
+          "oneShotRate": 0.7647058823529411,
+          "savingsUSD": 0
         },
         {
           "name": "Feature Dev",
-          "cost": 303.4158663,
-          "turns": 119,
-          "oneShotRate": 0.8
-        },
-        {
-          "name": "Exploration",
-          "cost": 227.58603535,
-          "turns": 225,
-          "oneShotRate": null
+          "cost": 41.203934499999995,
+          "turns": 176,
+          "oneShotRate": 0.8333333333333334,
+          "savingsUSD": 0
         },
         {
           "name": "Refactoring",
-          "cost": 63.90963940000001,
-          "turns": 27,
-          "oneShotRate": 0.5714285714285714
+          "cost": 12.580934999999998,
+          "turns": 2,
+          "oneShotRate": 0,
+          "savingsUSD": 0
         },
         {
-          "name": "Delegation",
-          "cost": 52.95909405,
-          "turns": 27,
-          "oneShotRate": 0.4
-        },
-        {
-          "name": "Debugging",
-          "cost": 38.66620995,
-          "turns": 25,
-          "oneShotRate": 0.8666666666666667
-        },
-        {
-          "name": "Testing",
-          "cost": 20.3830222,
-          "turns": 15,
-          "oneShotRate": null
-        },
-        {
-          "name": "General",
-          "cost": 18.6985528,
-          "turns": 25,
-          "oneShotRate": null
-        },
-        {
-          "name": "Conversation",
-          "cost": 14.731701599999996,
-          "turns": 58,
-          "oneShotRate": null
+          "name": "Exploration",
+          "cost": 10.784804000000001,
+          "turns": 133,
+          "oneShotRate": null,
+          "savingsUSD": 0
         },
         {
           "name": "Git Ops",
-          "cost": 6.01542555,
-          "turns": 8,
-          "oneShotRate": null
+          "cost": 7.673349000000001,
+          "turns": 7,
+          "oneShotRate": null,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Conversation",
+          "cost": 7.4638415,
+          "turns": 301,
+          "oneShotRate": null,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Testing",
+          "cost": 1.796182,
+          "turns": 3,
+          "oneShotRate": null,
+          "savingsUSD": 0
+        },
+        {
+          "name": "General",
+          "cost": 1.5369090000000003,
+          "turns": 3,
+          "oneShotRate": null,
+          "savingsUSD": 0
         },
         {
           "name": "Brainstorming",
-          "cost": 5.935283450000001,
-          "turns": 13,
-          "oneShotRate": null
+          "cost": 0.7895740000000002,
+          "turns": 93,
+          "oneShotRate": null,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Debugging",
+          "cost": 0.12169099999999998,
+          "turns": 126,
+          "oneShotRate": null,
+          "savingsUSD": 0
+        }
+      ],
+      "topModels": [
+        {
+          "name": "Opus 4.8",
+          "cost": 157.815304,
+          "calls": 803,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Cursor (auto)",
+          "cost": 5.886621000000002,
+          "calls": 635,
+          "savingsUSD": 0
+        },
+        {
+          "name": "grok-4.5",
+          "cost": 0.7997259999999999,
+          "calls": 168,
+          "savingsUSD": 0
+        }
+      ],
+      "topProjects": [
+        {
+          "name": "carviews-app-scaffolding-98e36a",
+          "cost": 64.08974649999999,
+          "sessions": 1,
+          "avgCostPerSession": 64.08974649999999
+        },
+        {
+          "name": "10 CDL PRAC one",
+          "cost": 42.34252299999999,
+          "sessions": 2,
+          "avgCostPerSession": 21.171261499999996
+        },
+        {
+          "name": "CLAUDE WORLD",
+          "cost": 39.0071205,
+          "sessions": 2,
+          "avgCostPerSession": 19.50356025
+        },
+        {
+          "name": "OB CLAUDE vault",
+          "cost": 7.673349000000001,
+          "sessions": 7,
+          "avgCostPerSession": 1.0961927142857144
+        },
+        {
+          "name": "cursor",
+          "cost": 6.576887,
+          "sessions": 30,
+          "avgCostPerSession": 0.21922956666666668
+        }
+      ],
+      "providers": [
+        {
+          "name": "claude",
+          "cost": 157.79157899999998
+        },
+        {
+          "name": "cursor",
+          "cost": 6.576886999999999
+        },
+        {
+          "name": "cursor agent",
+          "cost": 0.133185
+        }
+      ],
+      "tools": [
+        {
+          "name": "Bash",
+          "calls": 292
+        },
+        {
+          "name": "Edit",
+          "calls": 188
+        },
+        {
+          "name": "Write",
+          "calls": 65
+        },
+        {
+          "name": "Read",
+          "calls": 65
+        },
+        {
+          "name": "cursor:task",
+          "calls": 64
+        },
+        {
+          "name": "cursor:read",
+          "calls": 40
+        },
+        {
+          "name": "cursor:glob",
+          "calls": 37
+        },
+        {
+          "name": "cursor:grep",
+          "calls": 28
+        },
+        {
+          "name": "cursor:updatecurrentstep",
+          "calls": 24
+        },
+        {
+          "name": "cursor:shell",
+          "calls": 24
+        }
+      ],
+      "skills": [
+        {
+          "name": "superpowers:test-driven-development",
+          "turns": 1,
+          "cost": 1.3102290000000003
+        },
+        {
+          "name": "superpowers:brainstorming",
+          "turns": 1,
+          "cost": 0.1305485
+        },
+        {
+          "name": "frontend-design:frontend-design",
+          "turns": 1,
+          "cost": 0.0961315
+        }
+      ],
+      "subagents": [],
+      "mcpServers": [
+        {
+          "name": "claude-in-chrome",
+          "calls": 61
+        },
+        {
+          "name": "plugin_context-mode_context-mode",
+          "calls": 24
+        },
+        {
+          "name": "Claude_Browser",
+          "calls": 16
+        },
+        {
+          "name": "Claude_Code_iOS_Simulator",
+          "calls": 3
+        },
+        {
+          "name": "computer-use",
+          "calls": 3
+        },
+        {
+          "name": "9b991a7d-a516-4a57-97e7-19a5c63ba502",
+          "calls": 2
+        }
+      ],
+      "retryTax": {
+        "totalUSD": 237.68311679032254,
+        "retries": 59,
+        "editTurns": 31,
+        "byModel": [
+          {
+            "name": "Opus 4.8",
+            "taxUSD": 237.68311679032254,
+            "retries": 59,
+            "retriesPerEdit": 1.9
+          }
+        ]
+      },
+      "routingWaste": {
+        "totalSavingsUSD": 0,
+        "baselineModel": "",
+        "baselineCostPerEdit": 0,
+        "byModel": []
+      },
+      "localModelSavings": {
+        "totalUSD": 0,
+        "calls": 0,
+        "byModel": []
+      },
+      "modelEfficiency": [
+        {
+          "name": "Opus 4.8",
+          "costPerEdit": 4.028527403225806,
+          "oneShotRate": 74.2
+        }
+      ],
+      "topSessions": [
+        {
+          "project": "carviews-app-scaffolding-98e36a",
+          "cost": 64.08974649999999,
+          "calls": 205,
+          "date": "2026-07-22",
+          "savingsUSD": 0
+        },
+        {
+          "project": "10 CDL PRAC one",
+          "cost": 42.34252299999999,
+          "calls": 229,
+          "date": "2026-07-18",
+          "savingsUSD": 0
+        },
+        {
+          "project": "CLAUDE WORLD",
+          "cost": 22.189201499999996,
+          "calls": 130,
+          "date": "2026-07-20",
+          "savingsUSD": 0
+        }
+      ],
+      "unpricedModels": []
+    },
+    "30days": {
+      "label": "Last 30 Days",
+      "cost": 2816.0323719999997,
+      "calls": 14141,
+      "sessions": 656,
+      "oneShotRate": 0.8129675810473815,
+      "inputTokens": 17034490,
+      "outputTokens": 12418958,
+      "cacheReadTokens": 2613677031,
+      "cacheWriteTokens": 98853713,
+      "cacheHitPercent": 99.35247594181195,
+      "codexCredits": 0,
+      "topActivities": [
+        {
+          "name": "Coding",
+          "cost": 1259.4344056499986,
+          "turns": 339,
+          "oneShotRate": 0.8171428571428572,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Feature Dev",
+          "cost": 565.3979270000008,
+          "turns": 588,
+          "oneShotRate": 0.8205128205128205,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Exploration",
+          "cost": 339.6252116000004,
+          "turns": 497,
+          "oneShotRate": null,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Debugging",
+          "cost": 159.91905560000012,
+          "turns": 299,
+          "oneShotRate": 0.8181818181818182,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Delegation",
+          "cost": 143.57052555,
+          "turns": 45,
+          "oneShotRate": 0.8421052631578947,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Refactoring",
+          "cost": 137.435089,
+          "turns": 40,
+          "oneShotRate": 0.6666666666666666,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Testing",
+          "cost": 78.36204390000002,
+          "turns": 53,
+          "oneShotRate": null,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Conversation",
+          "cost": 65.78094559999995,
+          "turns": 588,
+          "oneShotRate": null,
+          "savingsUSD": 0
+        },
+        {
+          "name": "General",
+          "cost": 32.4266278,
+          "turns": 42,
+          "oneShotRate": null,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Brainstorming",
+          "cost": 18.932647950000003,
+          "turns": 172,
+          "oneShotRate": null,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Git Ops",
+          "cost": 14.895367549999998,
+          "turns": 17,
+          "oneShotRate": null,
+          "savingsUSD": 0
         },
         {
           "name": "Build/Deploy",
           "cost": 0.2525248,
           "turns": 1,
-          "oneShotRate": null
+          "oneShotRate": null,
+          "savingsUSD": 0
         }
       ],
       "topModels": [
         {
           "name": "Opus 4.8",
-          "cost": 962.6019120000002,
-          "calls": 4261
+          "cost": 1951.4124734999998,
+          "calls": 8397,
+          "savingsUSD": 0
         },
         {
           "name": "Fable 5",
-          "cost": 402.60236199999997,
-          "calls": 768
+          "cost": 715.5482255,
+          "calls": 1657,
+          "savingsUSD": 0
         },
         {
           "name": "Sonnet 4.6",
-          "cost": 62.11843710000001,
-          "calls": 1606
-        },
-        {
-          "name": "Sonnet 5",
-          "cost": 4.431820800000001,
-          "calls": 137
+          "cost": 72.1552893,
+          "calls": 1920,
+          "savingsUSD": 0
         },
         {
           "name": "grok-4.5",
-          "cost": 2.579612,
-          "calls": 9
+          "cost": 33.748217000000004,
+          "calls": 219,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Sonnet 5",
+          "cost": 26.681603999999997,
+          "calls": 605,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Cursor (auto)",
+          "cost": 15.118206000000006,
+          "calls": 1070,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Haiku 4.5",
+          "cost": 1.3683566999999999,
+          "calls": 88,
+          "savingsUSD": 0
+        }
+      ],
+      "topProjects": [
+        {
+          "name": "CLAUDE WORLD",
+          "cost": 495.11634494999987,
+          "sessions": 39,
+          "avgCostPerSession": 12.695290896153843
+        },
+        {
+          "name": "UI Dashboard x",
+          "cost": 412.6246795500001,
+          "sessions": 36,
+          "avgCostPerSession": 11.461796654166669
+        },
+        {
+          "name": "aliens-vs-zombies-handoff-38b451",
+          "cost": 393.6147114999997,
+          "sessions": 2,
+          "avgCostPerSession": 196.80735574999986
+        },
+        {
+          "name": "jolly-grothendieck-f4b622",
+          "cost": 207.9315935,
+          "sessions": 6,
+          "avgCostPerSession": 34.65526558333333
+        },
+        {
+          "name": "OB CLAUDE vault",
+          "cost": 206.9308558,
+          "sessions": 37,
+          "avgCostPerSession": 5.592725832432432
+        }
+      ],
+      "providers": [
+        {
+          "name": "claude",
+          "cost": 2764.632868999998
+        },
+        {
+          "name": "grok build",
+          "cost": 32.257467000000005
+        },
+        {
+          "name": "cursor",
+          "cost": 18.956065999999993
+        },
+        {
+          "name": "cursor agent",
+          "cost": 0.18596999999999997
+        }
+      ],
+      "tools": [
+        {
+          "name": "Bash",
+          "calls": 4594
+        },
+        {
+          "name": "Edit",
+          "calls": 2262
+        },
+        {
+          "name": "Read",
+          "calls": 1836
+        },
+        {
+          "name": "Write",
+          "calls": 667
+        },
+        {
+          "name": "ToolSearch",
+          "calls": 306
+        },
+        {
+          "name": "write",
+          "calls": 239
+        },
+        {
+          "name": "StructuredOutput",
+          "calls": 174
+        },
+        {
+          "name": "AskUserQuestion",
+          "calls": 117
+        },
+        {
+          "name": "Grep",
+          "calls": 112
+        },
+        {
+          "name": "cursor:glob",
+          "calls": 105
+        }
+      ],
+      "skills": [
+        {
+          "name": "superpowers:brainstorming",
+          "turns": 15,
+          "cost": 15.048712
+        },
+        {
+          "name": "superpowers:systematic-debugging",
+          "turns": 5,
+          "cost": 4.223318
+        },
+        {
+          "name": "superpowers:test-driven-development",
+          "turns": 2,
+          "cost": 3.5945290000000005
+        },
+        {
+          "name": "claude-api",
+          "turns": 1,
+          "cost": 3.3396800000000004
+        },
+        {
+          "name": "superpowers:writing-plans",
+          "turns": 4,
+          "cost": 2.359834
+        },
+        {
+          "name": "superpowers:subagent-driven-development",
+          "turns": 3,
+          "cost": 1.3062750000000003
+        },
+        {
+          "name": "unlockt-download",
+          "turns": 1,
+          "cost": 0.546886
+        },
+        {
+          "name": "deep-research",
+          "turns": 2,
+          "cost": 0.546579
+        },
+        {
+          "name": "schedule",
+          "turns": 1,
+          "cost": 0.356579
+        },
+        {
+          "name": "apply-to-jobs",
+          "turns": 1,
+          "cost": 0.2789715
+        }
+      ],
+      "subagents": [
+        {
+          "name": "general-purpose",
+          "calls": 51,
+          "cost": 18.0093135
+        },
+        {
+          "name": "Explore",
+          "calls": 11,
+          "cost": 2.9922156000000006
+        }
+      ],
+      "mcpServers": [
+        {
+          "name": "claude-in-chrome",
+          "calls": 1164
+        },
+        {
+          "name": "Claude_Browser",
+          "calls": 857
+        },
+        {
+          "name": "plugin_context-mode_context-mode",
+          "calls": 348
+        },
+        {
+          "name": "Claude_in_Chrome",
+          "calls": 212
+        },
+        {
+          "name": "computer-use",
+          "calls": 176
+        },
+        {
+          "name": "Claude_Preview",
+          "calls": 138
+        },
+        {
+          "name": "ccd_session",
+          "calls": 32
+        },
+        {
+          "name": "Control_Chrome",
+          "calls": 12
+        },
+        {
+          "name": "01c19199-9768-4a29-8876-a139f50b93ce",
+          "calls": 11
+        },
+        {
+          "name": "b092b569-e17c-4632-b424-3236ba890d06",
+          "calls": 10
+        }
+      ],
+      "retryTax": {
+        "totalUSD": 1126.0042922875673,
+        "retries": 207,
+        "editTurns": 395,
+        "byModel": [
+          {
+            "name": "Opus 4.8",
+            "taxUSD": 595.8294604777396,
+            "retries": 141,
+            "retriesPerEdit": 0.5
+          },
+          {
+            "name": "Fable 5",
+            "taxUSD": 503.2835574523808,
+            "retries": 37,
+            "retriesPerEdit": 0.9
+          },
+          {
+            "name": "Sonnet 4.6",
+            "taxUSD": 16.43348765744681,
+            "retries": 22,
+            "retriesPerEdit": 0.5
+          },
+          {
+            "name": "Sonnet 5",
+            "taxUSD": 10.457786700000002,
+            "retries": 7,
+            "retriesPerEdit": 0.5
+          }
+        ]
+      },
+      "routingWaste": {
+        "totalSavingsUSD": 333.5499933999999,
+        "baselineModel": "grok-4.5",
+        "baselineCostPerEdit": 5.6605918,
+        "byModel": [
+          {
+            "name": "Fable 5",
+            "costPerEdit": 13.602258309523807,
+            "editTurns": 42,
+            "actualUSD": 571.2948489999999,
+            "counterfactualUSD": 237.7448556,
+            "savingsUSD": 333.5499933999999
+          }
+        ]
+      },
+      "localModelSavings": {
+        "totalUSD": 0,
+        "calls": 0,
+        "byModel": []
+      },
+      "modelEfficiency": [
+        {
+          "name": "Haiku 4.5",
+          "costPerEdit": 0.1344225,
+          "oneShotRate": 100
+        },
+        {
+          "name": "Sonnet 4.6",
+          "costPerEdit": 0.7469767117021278,
+          "oneShotRate": 72.3
+        },
+        {
+          "name": "Sonnet 5",
+          "costPerEdit": 1.4939695285714287,
+          "oneShotRate": 78.6
+        },
+        {
+          "name": "Opus 4.8",
+          "costPerEdit": 4.225740854452054,
+          "oneShotRate": 84.6
+        },
+        {
+          "name": "grok-4.5",
+          "costPerEdit": 5.6605918,
+          "oneShotRate": 100
+        }
+      ],
+      "topSessions": [
+        {
+          "project": "aliens-vs-zombies-handoff-38b451",
+          "cost": 374.0095414999997,
+          "calls": 899,
+          "date": "2026-07-12",
+          "savingsUSD": 0
+        },
+        {
+          "project": "CLAUDE WORLD",
+          "cost": 188.699572,
+          "calls": 529,
+          "date": "2026-07-14",
+          "savingsUSD": 0
+        },
+        {
+          "project": "amazing-newton-e995a1",
+          "cost": 145.93516399999996,
+          "calls": 252,
+          "date": "2026-06-24",
+          "savingsUSD": 0
+        }
+      ],
+      "unpricedModels": []
+    },
+    "month": {
+      "label": "July 2026",
+      "cost": 2512.6338812999993,
+      "calls": 12753,
+      "sessions": 607,
+      "oneShotRate": 0.8105849582172702,
+      "inputTokens": 15691378,
+      "outputTokens": 11004580,
+      "cacheReadTokens": 2342413544,
+      "cacheWriteTokens": 84653600,
+      "cacheHitPercent": 99.33457676740306,
+      "codexCredits": 0,
+      "topActivities": [
+        {
+          "name": "Coding",
+          "cost": 1141.5477041499987,
+          "turns": 319,
+          "oneShotRate": 0.8260869565217391,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Feature Dev",
+          "cost": 510.0751382499999,
+          "turns": 566,
+          "oneShotRate": 0.8181818181818182,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Exploration",
+          "cost": 306.51575525000027,
+          "turns": 473,
+          "oneShotRate": null,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Debugging",
+          "cost": 157.1489366000001,
+          "turns": 297,
+          "oneShotRate": 0.8387096774193549,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Refactoring",
+          "cost": 122.59685419999994,
+          "turns": 36,
+          "oneShotRate": 0.5714285714285714,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Delegation",
+          "cost": 99.25863205000002,
+          "turns": 35,
+          "oneShotRate": 0.7,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Testing",
+          "cost": 72.7945236,
+          "turns": 47,
+          "oneShotRate": null,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Conversation",
+          "cost": 48.348644599999965,
+          "turns": 573,
+          "oneShotRate": null,
+          "savingsUSD": 0
+        },
+        {
+          "name": "General",
+          "cost": 30.778897300000004,
+          "turns": 39,
+          "oneShotRate": null,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Git Ops",
+          "cost": 14.657737549999998,
+          "turns": 16,
+          "oneShotRate": null,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Brainstorming",
+          "cost": 8.658532950000005,
+          "turns": 171,
+          "oneShotRate": null,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Build/Deploy",
+          "cost": 0.2525248,
+          "turns": 1,
+          "oneShotRate": null,
+          "savingsUSD": 0
+        }
+      ],
+      "topModels": [
+        {
+          "name": "Opus 4.8",
+          "cost": 1658.2130732499998,
+          "calls": 7362,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Fable 5",
+          "cost": 715.5482255,
+          "calls": 1657,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Sonnet 4.6",
+          "cost": 62.118437099999994,
+          "calls": 1606,
+          "savingsUSD": 0
+        },
+        {
+          "name": "grok-4.5",
+          "cost": 33.748217000000004,
+          "calls": 219,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Sonnet 5",
+          "cost": 26.681603999999997,
+          "calls": 605,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Cursor (auto)",
+          "cost": 15.118206000000006,
+          "calls": 1070,
+          "savingsUSD": 0
         },
         {
           "name": "Haiku 4.5",
           "cost": 1.20611845,
-          "calls": 77
+          "calls": 77,
+          "savingsUSD": 0
         }
       ],
       "topProjects": [
         {
-          "name": "OB CLAUDE vault",
-          "cost": 447.7911622999997,
-          "sessions": 20
+          "name": "CLAUDE WORLD",
+          "cost": 495.11634494999987,
+          "sessions": 39,
+          "avgCostPerSession": 12.695290896153843
         },
         {
           "name": "UI Dashboard x",
           "cost": 404.6449820500001,
-          "sessions": 28
+          "sessions": 28,
+          "avgCostPerSession": 14.451606501785719
+        },
+        {
+          "name": "aliens-vs-zombies-handoff-38b451",
+          "cost": 393.6147114999997,
+          "sessions": 2,
+          "avgCostPerSession": 196.80735574999986
+        },
+        {
+          "name": "jolly-grothendieck-f4b622",
+          "cost": 207.9315935,
+          "sessions": 6,
+          "avgCostPerSession": 34.65526558333333
         },
         {
           "name": "OB CLAUDE vault",
-          "cost": 196.4743048,
-          "sessions": 27
-        },
-        {
-          "name": "CDL PRAC one",
-          "cost": 172.97647749999996,
-          "sessions": 20
-        },
-        {
-          "name": "CLAUDE WORLD",
-          "cost": 111.00671449999999,
-          "sessions": 105
+          "cost": 206.69322579999996,
+          "sessions": 36,
+          "avgCostPerSession": 5.7414784944444435
         }
       ],
       "providers": [
         {
           "name": "claude",
-          "cost": 1432.9606503499995
+          "cost": 2461.2343782999988
         },
         {
           "name": "grok build",
-          "cost": 2.579612
+          "cost": 32.257467000000005
+        },
+        {
+          "name": "cursor",
+          "cost": 18.956065999999993
+        },
+        {
+          "name": "cursor agent",
+          "cost": 0.18596999999999997
         }
-      ]
+      ],
+      "tools": [
+        {
+          "name": "Bash",
+          "calls": 4115
+        },
+        {
+          "name": "Edit",
+          "calls": 2125
+        },
+        {
+          "name": "Read",
+          "calls": 1663
+        },
+        {
+          "name": "Write",
+          "calls": 575
+        },
+        {
+          "name": "ToolSearch",
+          "calls": 287
+        },
+        {
+          "name": "write",
+          "calls": 239
+        },
+        {
+          "name": "StructuredOutput",
+          "calls": 162
+        },
+        {
+          "name": "Grep",
+          "calls": 112
+        },
+        {
+          "name": "AskUserQuestion",
+          "calls": 106
+        },
+        {
+          "name": "cursor:glob",
+          "calls": 105
+        }
+      ],
+      "skills": [
+        {
+          "name": "superpowers:brainstorming",
+          "turns": 15,
+          "cost": 15.048712
+        },
+        {
+          "name": "superpowers:systematic-debugging",
+          "turns": 5,
+          "cost": 4.223318
+        },
+        {
+          "name": "superpowers:test-driven-development",
+          "turns": 2,
+          "cost": 3.5945290000000005
+        },
+        {
+          "name": "claude-api",
+          "turns": 1,
+          "cost": 3.3396800000000004
+        },
+        {
+          "name": "superpowers:subagent-driven-development",
+          "turns": 2,
+          "cost": 1.2197065000000002
+        },
+        {
+          "name": "superpowers:writing-plans",
+          "turns": 3,
+          "cost": 1.065379
+        },
+        {
+          "name": "unlockt-download",
+          "turns": 1,
+          "cost": 0.546886
+        },
+        {
+          "name": "deep-research",
+          "turns": 2,
+          "cost": 0.546579
+        },
+        {
+          "name": "schedule",
+          "turns": 1,
+          "cost": 0.356579
+        },
+        {
+          "name": "apply-to-jobs",
+          "turns": 1,
+          "cost": 0.2789715
+        }
+      ],
+      "subagents": [
+        {
+          "name": "general-purpose",
+          "calls": 39,
+          "cost": 13.660229000000001
+        },
+        {
+          "name": "Explore",
+          "calls": 10,
+          "cost": 2.8666336000000006
+        }
+      ],
+      "mcpServers": [
+        {
+          "name": "claude-in-chrome",
+          "calls": 1164
+        },
+        {
+          "name": "Claude_Browser",
+          "calls": 857
+        },
+        {
+          "name": "plugin_context-mode_context-mode",
+          "calls": 323
+        },
+        {
+          "name": "computer-use",
+          "calls": 176
+        },
+        {
+          "name": "Claude_Preview",
+          "calls": 49
+        },
+        {
+          "name": "Claude_in_Chrome",
+          "calls": 22
+        },
+        {
+          "name": "Control_Chrome",
+          "calls": 12
+        },
+        {
+          "name": "ccd_session",
+          "calls": 11
+        },
+        {
+          "name": "b092b569-e17c-4632-b424-3236ba890d06",
+          "calls": 9
+        },
+        {
+          "name": "visualize",
+          "calls": 6
+        }
+      ],
+      "retryTax": {
+        "totalUSD": 1054.8383344868503,
+        "retries": 197,
+        "editTurns": 353,
+        "byModel": [
+          {
+            "name": "Opus 4.8",
+            "taxUSD": 526.4150159884169,
+            "retries": 132,
+            "retriesPerEdit": 0.5
+          },
+          {
+            "name": "Fable 5",
+            "taxUSD": 503.2835574523808,
+            "retries": 37,
+            "retriesPerEdit": 0.9
+          },
+          {
+            "name": "Sonnet 4.6",
+            "taxUSD": 14.68197434605263,
+            "retries": 21,
+            "retriesPerEdit": 0.6
+          },
+          {
+            "name": "Sonnet 5",
+            "taxUSD": 10.457786700000002,
+            "retries": 7,
+            "retriesPerEdit": 0.5
+          }
+        ]
+      },
+      "routingWaste": {
+        "totalSavingsUSD": 333.5499933999999,
+        "baselineModel": "grok-4.5",
+        "baselineCostPerEdit": 5.6605918,
+        "byModel": [
+          {
+            "name": "Fable 5",
+            "costPerEdit": 13.602258309523807,
+            "editTurns": 42,
+            "actualUSD": 571.2948489999999,
+            "counterfactualUSD": 237.7448556,
+            "savingsUSD": 333.5499933999999
+          }
+        ]
+      },
+      "localModelSavings": {
+        "totalUSD": 0,
+        "calls": 0,
+        "byModel": []
+      },
+      "modelEfficiency": [
+        {
+          "name": "Haiku 4.5",
+          "costPerEdit": 0.1344225,
+          "oneShotRate": 100
+        },
+        {
+          "name": "Sonnet 4.6",
+          "costPerEdit": 0.6991416355263157,
+          "oneShotRate": 68.4
+        },
+        {
+          "name": "Sonnet 5",
+          "costPerEdit": 1.4939695285714287,
+          "oneShotRate": 78.6
+        },
+        {
+          "name": "Opus 4.8",
+          "costPerEdit": 3.987992545366795,
+          "oneShotRate": 84.9
+        },
+        {
+          "name": "grok-4.5",
+          "costPerEdit": 5.6605918,
+          "oneShotRate": 100
+        }
+      ],
+      "topSessions": [
+        {
+          "project": "aliens-vs-zombies-handoff-38b451",
+          "cost": 374.0095414999997,
+          "calls": 899,
+          "date": "2026-07-12",
+          "savingsUSD": 0
+        },
+        {
+          "project": "CLAUDE WORLD",
+          "cost": 188.699572,
+          "calls": 529,
+          "date": "2026-07-14",
+          "savingsUSD": 0
+        },
+        {
+          "project": "jolly-grothendieck-f4b622",
+          "cost": 125.2633975,
+          "calls": 352,
+          "date": "2026-07-12",
+          "savingsUSD": 0
+        }
+      ],
+      "unpricedModels": []
     },
     "all": {
       "label": "Last 6 months",
-      "cost": 4604.769892849998,
-      "calls": 50099,
-      "sessions": 1623,
-      "oneShotRate": 0.8374233128834356,
-      "inputTokens": 131872915,
-      "outputTokens": 24193638,
-      "cacheReadTokens": 4097115455,
-      "cacheWriteTokens": 169113111,
-      "cacheHitPercent": 96.88169123529654,
+      "cost": 4190.949297799997,
+      "calls": 23846,
+      "sessions": 1265,
+      "oneShotRate": 0.823240589198036,
+      "inputTokens": 24784862,
+      "outputTokens": 19728138,
+      "cacheReadTokens": 4035087247,
+      "cacheWriteTokens": 156887669,
+      "cacheHitPercent": 99.38951618832877,
       "codexCredits": 55.2239875,
       "topActivities": [
         {
           "name": "Coding",
-          "cost": 1867.8093117999995,
-          "turns": 2539,
-          "oneShotRate": 0.8146718146718147
+          "cost": 1778.745948849998,
+          "turns": 690,
+          "oneShotRate": 0.8143939393939394,
+          "savingsUSD": 0
         },
         {
           "name": "Feature Dev",
-          "cost": 1238.63135335,
-          "turns": 11154,
-          "oneShotRate": 0.8464163822525598
+          "cost": 977.0701649000005,
+          "turns": 1476,
+          "oneShotRate": 0.8373015873015873,
+          "savingsUSD": 0
         },
         {
           "name": "Exploration",
-          "cost": 526.4748367500013,
-          "turns": 4208,
-          "oneShotRate": null
-        },
-        {
-          "name": "Conversation",
-          "cost": 223.89553700000027,
-          "turns": 12139,
-          "oneShotRate": null
+          "cost": 532.0834583500005,
+          "turns": 972,
+          "oneShotRate": null,
+          "savingsUSD": 0
         },
         {
           "name": "Delegation",
-          "cost": 216.95552235000002,
-          "turns": 63,
-          "oneShotRate": 0.8461538461538461
+          "cost": 219.51590085,
+          "turns": 67,
+          "oneShotRate": 0.8928571428571429,
+          "savingsUSD": 0
         },
         {
           "name": "Debugging",
-          "cost": 196.20826950000003,
-          "turns": 2643,
-          "oneShotRate": 0.92
+          "cost": 217.4211336500001,
+          "turns": 473,
+          "oneShotRate": 0.8409090909090909,
+          "savingsUSD": 0
         },
         {
           "name": "Refactoring",
-          "cost": 108.54041854999996,
-          "turns": 44,
-          "oneShotRate": 0.7916666666666666
+          "cost": 146.27714185,
+          "turns": 45,
+          "oneShotRate": 0.6521739130434783,
+          "savingsUSD": 0
         },
         {
           "name": "Testing",
-          "cost": 89.71983470000002,
-          "turns": 52,
-          "oneShotRate": null
+          "cost": 121.00431510000003,
+          "turns": 69,
+          "oneShotRate": null,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Conversation",
+          "cost": 99.4542235000001,
+          "turns": 2725,
+          "oneShotRate": null,
+          "savingsUSD": 0
         },
         {
           "name": "General",
-          "cost": 67.15625535,
-          "turns": 92,
-          "oneShotRate": null
+          "cost": 56.806849899999996,
+          "turns": 80,
+          "oneShotRate": null,
+          "savingsUSD": 0
         },
         {
           "name": "Brainstorming",
-          "cost": 33.358535200000006,
-          "turns": 1208,
-          "oneShotRate": null
-        },
-        {
-          "name": "Planning",
-          "cost": 17.543520500000007,
-          "turns": 6,
-          "oneShotRate": null
-        },
-        {
-          "name": "Build/Deploy",
-          "cost": 11.480602300000001,
-          "turns": 6,
-          "oneShotRate": null
+          "cost": 20.193551200000005,
+          "turns": 288,
+          "oneShotRate": null,
+          "savingsUSD": 0
         },
         {
           "name": "Git Ops",
-          "cost": 6.995895499999999,
-          "turns": 13,
-          "oneShotRate": null
+          "cost": 15.475366849999999,
+          "turns": 20,
+          "oneShotRate": null,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Build/Deploy",
+          "cost": 6.4604843,
+          "turns": 2,
+          "oneShotRate": null,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Planning",
+          "cost": 0.4407585,
+          "turns": 2,
+          "oneShotRate": null,
+          "savingsUSD": 0
         }
       ],
       "topModels": [
         {
           "name": "Opus 4.8",
-          "cost": 2966.889673749998,
-          "calls": 9782
+          "cost": 3062.284078749998,
+          "calls": 11024,
+          "savingsUSD": 0
         },
         {
           "name": "Fable 5",
-          "cost": 547.173446,
-          "calls": 1003
-        },
-        {
-          "name": "Opus 4.7",
-          "cost": 514.5942047499999,
-          "calls": 1459
-        },
-        {
-          "name": "Cursor (auto)",
-          "cost": 270.93786300000136,
-          "calls": 18264
+          "cost": 752.2829524999999,
+          "calls": 1737,
+          "savingsUSD": 0
         },
         {
           "name": "Sonnet 4.6",
-          "cost": 189.02219910000002,
-          "calls": 3728
+          "cost": 188.5153992,
+          "calls": 3715,
+          "savingsUSD": 0
         },
         {
-          "name": "composer-1",
-          "cost": 43.79080500000002,
-          "calls": 1914
+          "name": "Opus 4.7",
+          "cost": 77.22094875,
+          "calls": 366,
+          "savingsUSD": 0
+        },
+        {
+          "name": "grok-4.5",
+          "cost": 33.748217000000004,
+          "calls": 219,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Sonnet 5",
+          "cost": 26.681603999999997,
+          "calls": 605,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Cursor (auto)",
+          "cost": 20.048177999999986,
+          "calls": 4672,
+          "savingsUSD": 0
         },
         {
           "name": "GPT-5.3 Codex",
-          "cost": 21.089843949999995,
-          "calls": 1341
-        },
-        {
-          "name": "GPT-5.5",
-          "cost": 12.350865000000002,
-          "calls": 539
+          "cost": 15.007836199999998,
+          "calls": 360,
+          "savingsUSD": 0
         },
         {
           "name": "Haiku 4.5",
-          "cost": 9.9332446,
-          "calls": 697
-        },
-        {
-          "name": "composer-1.5",
-          "cost": 6.995961000000005,
-          "calls": 3898
+          "cost": 6.957505499999999,
+          "calls": 534,
+          "savingsUSD": 0
         },
         {
           "name": "GPT-5.2",
           "cost": 5.9936184000000035,
-          "calls": 271
-        },
-        {
-          "name": "Sonnet 5",
-          "cost": 4.431820800000001,
-          "calls": 137
-        },
-        {
-          "name": "composer-2",
-          "cost": 4.152720999999999,
-          "calls": 4712
-        },
-        {
-          "name": "grok-4.5",
-          "cost": 2.579612,
-          "calls": 9
+          "calls": 271,
+          "savingsUSD": 0
         },
         {
           "name": "GPT-5.4",
           "cost": 2.2089595,
-          "calls": 50
-        },
-        {
-          "name": "Gemini 3.1 Pro",
-          "cost": 1.3160299999999976,
-          "calls": 859
-        },
-        {
-          "name": "Opus 4.6",
-          "cost": 1.309025,
-          "calls": 86
-        },
-        {
-          "name": "premium",
-          "cost": 0,
-          "calls": 1037
+          "calls": 50,
+          "savingsUSD": 0
         },
         {
           "name": "nemotron-3-super:cloud",
           "cost": 0,
-          "calls": 4
+          "calls": 4,
+          "savingsUSD": 0
         }
       ],
       "topProjects": [
         {
-          "name": "CDL PRAC one",
-          "cost": 1012.3774094999999,
-          "sessions": 57
-        },
-        {
-          "name": "OB CLAUDE vault",
-          "cost": 447.7911622999997,
-          "sessions": 20
+          "name": "CLAUDE WORLD",
+          "cost": 495.11634494999987,
+          "sessions": 39,
+          "avgCostPerSession": 12.695290896153843
         },
         {
           "name": "UI Dashboard x",
           "cost": 412.9571499500001,
-          "sessions": 37
+          "sessions": 37,
+          "avgCostPerSession": 11.161004052702705
+        },
+        {
+          "name": "CDL PRAC one",
+          "cost": 410.656708,
+          "sessions": 23,
+          "avgCostPerSession": 17.854639478260868
         },
         {
           "name": "relaxed-saha-2b85c3",
           "cost": 396.1343024999996,
-          "sessions": 1
+          "sessions": 1,
+          "avgCostPerSession": 396.1343024999996
         },
         {
-          "name": "OB CLAUDE vault",
-          "cost": 341.6393617,
-          "sessions": 44
+          "name": "aliens-vs-zombies-handoff-38b451",
+          "cost": 393.6147114999997,
+          "sessions": 2,
+          "avgCostPerSession": 196.80735574999986
         }
       ],
       "providers": [
         {
           "name": "claude",
-          "cost": 4229.017974
+          "cost": 5257.291701949999
         },
         {
           "name": "cursor",
-          "cost": 345.03192075
+          "cost": 363.98798675
+        },
+        {
+          "name": "grok build",
+          "cost": 32.257467000000005
         },
         {
           "name": "codex",
@@ -1330,13 +2519,265 @@
         },
         {
           "name": "cursor agent",
-          "cost": 4.929972000000001
+          "cost": 5.115942000000001
+        }
+      ],
+      "tools": [
+        {
+          "name": "Bash",
+          "calls": 6563
         },
         {
-          "name": "grok build",
-          "cost": 2.579612
+          "name": "Edit",
+          "calls": 2989
+        },
+        {
+          "name": "Read",
+          "calls": 2626
+        },
+        {
+          "name": "Write",
+          "calls": 1131
+        },
+        {
+          "name": "cursor:read",
+          "calls": 974
+        },
+        {
+          "name": "cursor:grep",
+          "calls": 915
+        },
+        {
+          "name": "cursor:readfile",
+          "calls": 537
+        },
+        {
+          "name": "cursor:glob",
+          "calls": 535
+        },
+        {
+          "name": "cursor:shell",
+          "calls": 427
+        },
+        {
+          "name": "ToolSearch",
+          "calls": 415
         }
-      ]
+      ],
+      "skills": [
+        {
+          "name": "superpowers:brainstorming",
+          "turns": 22,
+          "cost": 24.5133575
+        },
+        {
+          "name": "clear-ui-labels",
+          "turns": 1,
+          "cost": 7.994428
+        },
+        {
+          "name": "claude-api",
+          "turns": 2,
+          "cost": 5.1885735
+        },
+        {
+          "name": "superpowers:systematic-debugging",
+          "turns": 6,
+          "cost": 4.6613125
+        },
+        {
+          "name": "superpowers:test-driven-development",
+          "turns": 2,
+          "cost": 3.5945290000000005
+        },
+        {
+          "name": "superpowers:writing-plans",
+          "turns": 6,
+          "cost": 2.7685139999999997
+        },
+        {
+          "name": "verify",
+          "turns": 1,
+          "cost": 1.4238045000000001
+        },
+        {
+          "name": "superpowers:subagent-driven-development",
+          "turns": 3,
+          "cost": 1.3062750000000003
+        },
+        {
+          "name": "run",
+          "turns": 2,
+          "cost": 0.6112554
+        },
+        {
+          "name": "unlockt-download",
+          "turns": 1,
+          "cost": 0.546886
+        }
+      ],
+      "subagents": [
+        {
+          "name": "general-purpose",
+          "calls": 75,
+          "cost": 29.088298
+        },
+        {
+          "name": "Explore",
+          "calls": 14,
+          "cost": 3.3353750000000004
+        }
+      ],
+      "mcpServers": [
+        {
+          "name": "claude-in-chrome",
+          "calls": 1164
+        },
+        {
+          "name": "Claude_Browser",
+          "calls": 857
+        },
+        {
+          "name": "Claude_Preview",
+          "calls": 535
+        },
+        {
+          "name": "plugin_context-mode_context-mode",
+          "calls": 523
+        },
+        {
+          "name": "Claude_in_Chrome",
+          "calls": 437
+        },
+        {
+          "name": "computer-use",
+          "calls": 267
+        },
+        {
+          "name": "ccd_session",
+          "calls": 54
+        },
+        {
+          "name": "Control_Chrome",
+          "calls": 26
+        },
+        {
+          "name": "b092b569-e17c-4632-b424-3236ba890d06",
+          "calls": 22
+        },
+        {
+          "name": "session_info",
+          "calls": 17
+        }
+      ],
+      "retryTax": {
+        "totalUSD": 1407.2119238169753,
+        "retries": 257,
+        "editTurns": 606,
+        "byModel": [
+          {
+            "name": "Opus 4.8",
+            "taxUSD": 841.7202061492804,
+            "retries": 173,
+            "retriesPerEdit": 0.4
+          },
+          {
+            "name": "Fable 5",
+            "taxUSD": 498.059220840909,
+            "retries": 37,
+            "retriesPerEdit": 0.8
+          },
+          {
+            "name": "Sonnet 4.6",
+            "taxUSD": 29.569067314285718,
+            "retries": 30,
+            "retriesPerEdit": 0.3
+          },
+          {
+            "name": "Opus 4.7",
+            "taxUSD": 25.04545134375,
+            "retries": 6,
+            "retriesPerEdit": 0.4
+          },
+          {
+            "name": "Sonnet 5",
+            "taxUSD": 10.457786700000002,
+            "retries": 7,
+            "retriesPerEdit": 0.5
+          }
+        ]
+      },
+      "routingWaste": {
+        "totalSavingsUSD": 343.22060179999994,
+        "baselineModel": "grok-4.5",
+        "baselineCostPerEdit": 5.6605918,
+        "byModel": [
+          {
+            "name": "Fable 5",
+            "costPerEdit": 13.46106002272727,
+            "editTurns": 44,
+            "actualUSD": 592.2866409999999,
+            "counterfactualUSD": 249.06603919999998,
+            "savingsUSD": 343.22060179999994
+          }
+        ]
+      },
+      "localModelSavings": {
+        "totalUSD": 0,
+        "calls": 0,
+        "byModel": []
+      },
+      "modelEfficiency": [
+        {
+          "name": "Haiku 4.5",
+          "costPerEdit": 0.55145546875,
+          "oneShotRate": 87.5
+        },
+        {
+          "name": "GPT-5.4",
+          "costPerEdit": 0.6029120000000001,
+          "oneShotRate": 50
+        },
+        {
+          "name": "Sonnet 4.6",
+          "costPerEdit": 0.9856355771428572,
+          "oneShotRate": 81
+        },
+        {
+          "name": "Sonnet 5",
+          "costPerEdit": 1.4939695285714287,
+          "oneShotRate": 78.6
+        },
+        {
+          "name": "Opus 4.7",
+          "costPerEdit": 4.174241890625,
+          "oneShotRate": 68.8
+        }
+      ],
+      "topSessions": [
+        {
+          "project": "relaxed-saha-2b85c3",
+          "cost": 396.1343024999996,
+          "calls": 681,
+          "date": "2026-06-10",
+          "savingsUSD": 0
+        },
+        {
+          "project": "aliens-vs-zombies-handoff-38b451",
+          "cost": 374.0095414999997,
+          "calls": 899,
+          "date": "2026-07-12",
+          "savingsUSD": 0
+        },
+        {
+          "project": "CDL PRAC one",
+          "cost": 329.780118,
+          "calls": 648,
+          "date": "2026-05-30",
+          "savingsUSD": 0
+        }
+      ],
+      "unpricedModels": []
     }
   }
 }
