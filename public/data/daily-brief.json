@@ -1,205 +1,200 @@
 {
-  "date": "2026-07-09",
+  "date": "2026-07-13",
   "active_project": "CDL",
   "synthesis": [
-    "CDL NJ Prep is code-complete — the schema-check CI fix and quiz haptics (1b585a8, 2026-07-04) were the last engineering commits, and every v1 feature is shipped. The only things between this app and a live App Store listing are four non-code chores: the app icon (still the green book placeholder, a guaranteed hard-rejection), Privacy Policy / Terms hosted and linked in ASC, Game Center provisioning (enable the App ID capability + create the cdl_total_xp leaderboard in ASC), and a real-device QA pass for the three things the Simulator can't exercise — push notifications, CoreMotion tilt-shine, and the streak-freeze / badge flows. Running in parallel is the CDL job-search thread: the Indeed batch was filled out but hit an API error, and is still waiting on a résumé upload and a CDL-A license entry before any applications can actually be submitted. The single highest-leverage move today is generating the truck icon via Gemini Image Generation — it's the only hard-rejection blocker that is purely artwork and zero code risk."
+    "Today's lens is the CDL app, where yesterday's long session (324 turns) turned into a real UX-psychology audit — mapping the six behavioral-design principles (smart defaults, goal-gradient, reciprocity, endowment/IKEA effect, loss aversion, anchoring) onto the app's onboarding, quiz, and paywall flows. You left off mid-verification: a \"Magnet\" window-manager overlay was intercepting clicks on the iOS Simulator, and the sign-in path needs your Google credentials — so the drive-the-app loop stalled, not the design work itself. The highest-value move is to stop fighting the Simulator and land one principle in code: implement smart defaults on the CDL first-run screen so no user starts from a blank slate. From there, apply the goal-gradient rule to the quiz progress UI (never show 0%), the single change most likely to cut early drop-off. Secondary but quick: the UI Dashboard Projects-audit WIP (edd13f3 on task3-4-tokens-and-visual-tests) is committed but unpushed and worth flushing before it rots."
   ],
   "plan": [
     {
-      "title": "Generate truck app icon",
-      "note": "prompt Gemini for 1024×1024 opaque truck mark; drop into `AppIcon.appiconset/Image-1024 (2).png`",
+      "title": "Smart defaults on CDL first-run",
+      "note": "pre-select sensible defaults on the onboarding screen, no blank start",
       "priority": "high",
       "done": false
     },
     {
-      "title": "Resume Indeed job-search handoff",
-      "note": "upload résumé + fix CDL-A entry, then submit the pending application batch",
+      "title": "Goal-gradient in CDL quiz",
+      "note": "seed the progress bar above 0% so users never start empty",
       "priority": "high",
       "done": false
     },
     {
-      "title": "Host Privacy Policy + Terms",
-      "note": "put the doc at a public URL; enter it in App Store Connect under App Privacy",
+      "title": "Quit Magnet, re-drive Simulator",
+      "note": "close the overlay so Simulator taps land, re-run the sign-in flow",
       "priority": "med",
       "done": false
     },
     {
-      "title": "ASC Game Center setup",
-      "note": "enable Game Center on the App ID + create `cdl_total_xp` leaderboard in ASC",
+      "title": "Push dashboard WIP",
+      "note": "push `edd13f3` on `task3-4-tokens-and-visual-tests` before it goes stale",
       "priority": "med",
       "done": false
     },
     {
-      "title": "Device QA pass",
-      "note": "test push notifications, CoreMotion tilt-shine, streak-freeze auto-consume, and 8-badge earn flows on a real iPhone",
-      "priority": "med",
+      "title": "Loss-aversion paywall copy",
+      "note": "reframe the CDL paywall around what's lost, not gained",
+      "priority": "low",
       "done": false
     }
   ],
   "tools": [
     {
-      "name": "Gemini Image Generation",
-      "desc": "confirmed path for the truck icon; xAI has 0 credits, Gemini 2.5 Flash is the active alternative."
+      "name": "Figma",
+      "desc": "mock the smart-defaults + goal-gradient screens before touching Swift."
     },
     {
-      "name": "3D Model Generation",
-      "desc": "Meshy (native USDZ) for future 3D badge work once a Pro key is provisioned; not blocking today."
+      "name": "VS Code",
+      "desc": "where the CDL app edits actually land."
     },
     {
-      "name": "Imagen",
-      "desc": "Google Vertex AI image gen; fallback if Gemini output needs a higher-res or style-tuned pass."
+      "name": "Github",
+      "desc": "version the CDL UX changes and flush the unpushed dashboard WIP."
     },
     {
-      "name": "ElevenLabs",
-      "desc": "TTS for any \"Say It\" drill audio additions if the ASC review surfaces gaps."
-    },
-    {
-      "name": "Runway",
-      "desc": "for App Store preview video if needed before submission."
+      "name": "Photoshop",
+      "desc": "quick asset tweaks for any redesigned onboarding/paywall states."
     }
   ],
   "tracks": [],
   "handoffs": [
     {
-      "name": "2026-07-08-ob-claude-vault-2ec24603",
-      "note": "CDL job search on Indeed (506 turns); left off at API error mid-batch; needs résumé upload + CDL-A license correction before submissions go out."
+      "name": "Resume here:",
+      "note": "CDL UX-psychology audit; implement the six principles into onboarding/quiz/paywall. Left off blocked by a Magnet overlay intercepting Simulator taps + Google login needing your creds."
     },
     {
-      "name": "2026-07-08-ob-claude-vault-98961ef2",
-      "note": "CDL + AI Toolkit session (40 turns); pick up any open threads from that run."
-    },
-    {
-      "name": "2026-07-04-ob-claude-vault-d0a57a6f",
-      "note": "Automation/CI fix (62 turns); fixed `auto_ingest.py` phantom-dir bug; brief pipeline now healthy."
+      "name": "2026-07-12-ui-dashboard-x-2b8616d0",
+      "note": "2026-07-12-ui-dashboard-x-2b8616d0 — Projects-audit WIP committed `edd13f3` on `task3-4-tokens-and-visual-tests` (not pushed); the strongest \"continue\" candidate on the dashboard side."
     }
   ],
   "resurface": [
     {
-      "name": "Futurepedia - AI Tools Aggregation",
-      "note": "just imported; good discovery layer for any tooling gaps before ASC submission (App Store screenshot / preview generation)."
-    },
-    {
-      "name": "Remotion - Programmatic Video Creation",
-      "note": "programmatic video; worth a look for automating App Store preview clips from simulator recordings."
+      "name": "`01-yt-ux-psychology-audit`",
+      "note": "the ready-to-apply playbook with findings and file references for the CDL app; open it before implementing."
     }
   ],
   "vault": {
     "name": "OB CLAUDE vault",
-    "brief_file": "🌅 Daily Brief/Briefs/2026-07-09.md",
-    "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%8C%85%20Daily%20Brief/Briefs/2026-07-09",
-    "generated_at": "2026-07-10T01:11:52",
+    "brief_file": "🌅 Daily Brief/Briefs/2026-07-13.md",
+    "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%8C%85%20Daily%20Brief/Briefs/2026-07-13",
+    "generated_at": "2026-07-13T15:06:50",
     "counts": {
-      "briefs": 10,
+      "briefs": 11,
       "clippings": 145,
       "tools": 34,
-      "handoffs": 121,
+      "handoffs": 146,
       "tracks": 2
     },
     "recent_briefs": [
+      "2026-07-13",
       "2026-07-09",
       "2026-07-08",
       "2026-07-07",
-      "2026-07-06",
-      "2026-07-04"
+      "2026-07-06"
     ]
   },
   "ai_sessions": [
     {
-      "title": "2026-07-10-ob-claude-vault-60cc4d26",
+      "title": "2026-07-13-obsidian-vault-routine-6796f7-e029a80f",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
-      "updated": "2026-07-10",
-      "started_with": "You are the **Daily Brief synthesizer** for this Obsidian vault. You run head­less once a day. Work autonomously, make the edits, do not ask questions. Be concise and concrete. ## ",
-      "file": "🤝 Handoffs/2026-07-10-ob-claude-vault-60cc4d26.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-10-ob-claude-vault-60cc4d26",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-10-ob-claude-vault-60cc4d26.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+      "updated": "2026-07-13",
+      "started_with": "Help me write a routine that will update my Obsidian repositories... well, Obsidian Vault called o b, Claude Vault with new tasks, updates on where the tasks are, what are complete",
+      "file": "🤝 Handoffs/2026-07-13-obsidian-vault-routine-6796f7-e029a80f.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-13-obsidian-vault-routine-6796f7-e029a80f",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-13-obsidian-vault-routine-6796f7-e029a80f.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     },
     {
-      "title": "2026-07-08-ob-claude-vault-98961ef2",
+      "title": "2026-07-13-obsidian-vault-audit-d61be1-7428ba4a",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
-      "updated": "2026-07-10",
-      "started_with": "Help me create a new Claude Code plugin watch me apply to a job and learn how to do it",
-      "file": "🤝 Handoffs/2026-07-08-ob-claude-vault-98961ef2.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-08-ob-claude-vault-98961ef2",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-08-ob-claude-vault-98961ef2.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+      "updated": "2026-07-13",
+      "started_with": "This session here was gonna be used to automate my my Obsidian note taking that I've been doing for all of my applications. I'm going into my o b, Claude, Bault in Obsidian, and I'",
+      "file": "🤝 Handoffs/2026-07-13-obsidian-vault-audit-d61be1-7428ba4a.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-13-obsidian-vault-audit-d61be1-7428ba4a",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-13-obsidian-vault-audit-d61be1-7428ba4a.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     },
     {
-      "title": "2026-07-09-ob-claude-vault-da0751c1",
+      "title": "2026-07-13-daily-brief-publisher-4f88e1-45dae61a",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
-      "updated": "2026-07-10",
+      "updated": "2026-07-13",
+      "started_with": "Instead of handing this off onto a routine that is scheduled to do it over the cloud, I'm going to do this here as a session, and I'll pin this so I could run this as often as I ne",
+      "file": "🤝 Handoffs/2026-07-13-daily-brief-publisher-4f88e1-45dae61a.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-13-daily-brief-publisher-4f88e1-45dae61a",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-13-daily-brief-publisher-4f88e1-45dae61a.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+    },
+    {
+      "title": "2026-07-13-codeburn-repo-setup-fa7d49-c88f1849",
+      "source": "claude",
+      "project": "XJournal AI",
+      "status": "open",
+      "updated": "2026-07-13",
+      "started_with": "gh repo clone getagentseal/codeburn",
+      "file": "🤝 Handoffs/2026-07-13-codeburn-repo-setup-fa7d49-c88f1849.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-13-codeburn-repo-setup-fa7d49-c88f1849",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-13-codeburn-repo-setup-fa7d49-c88f1849.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+    },
+    {
+      "title": "2026-07-13-caveman-repo-setup-0c81fa-fa92b3a8",
+      "source": "claude",
+      "project": "AI Toolkit",
+      "status": "open",
+      "updated": "2026-07-13",
+      "started_with": "gh repo clone JuliusBrussee/caveman",
+      "file": "🤝 Handoffs/2026-07-13-caveman-repo-setup-0c81fa-fa92b3a8.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-13-caveman-repo-setup-0c81fa-fa92b3a8",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-13-caveman-repo-setup-0c81fa-fa92b3a8.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+    },
+    {
+      "title": "2026-07-13-ob-claude-vault-924cd4b9",
+      "source": "claude",
+      "project": "XJournal AI",
+      "status": "open",
+      "updated": "2026-07-13",
       "started_with": "<scheduled-task name=\"daily-brief-publish\" file=\"/Users/samuel/.claude/scheduled-tasks/daily-brief-publish/SKILL.md\"> This is an automated run of a scheduled task. The user is not ",
-      "file": "🤝 Handoffs/2026-07-09-ob-claude-vault-da0751c1.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-09-ob-claude-vault-da0751c1",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-09-ob-claude-vault-da0751c1.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
-    },
-    {
-      "title": "2026-07-09-ob-claude-vault-893bb80f",
-      "source": "claude",
-      "project": "XJournal AI",
-      "status": "open",
-      "updated": "2026-07-09",
-      "started_with": "You are the **Daily Brief synthesizer** for this Obsidian vault. You run head­less once a day. Work autonomously, make the edits, do not ask questions. Be concise and concrete. ## ",
-      "file": "🤝 Handoffs/2026-07-09-ob-claude-vault-893bb80f.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-09-ob-claude-vault-893bb80f",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-09-ob-claude-vault-893bb80f.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
-    },
-    {
-      "title": "2026-07-09-ui-dashboard-x-9a2bfa7c",
-      "source": "claude",
-      "project": "XJournal AI",
-      "status": "open",
-      "updated": "2026-07-09",
-      "started_with": "<scheduled-task name=\"weekly-linkedin-post-draft\" file=\"/Users/samuel/.claude/scheduled-tasks/weekly-linkedin-post-draft/SKILL.md\"> This is an automated run of a scheduled task. Th",
-      "file": "🤝 Handoffs/2026-07-09-ui-dashboard-x-9a2bfa7c.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-09-ui-dashboard-x-9a2bfa7c",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-09-ui-dashboard-x-9a2bfa7c.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
-    },
-    {
-      "title": "2026-07-07-ob-claude-vault-f430d75e",
-      "source": "claude",
-      "project": "XJournal AI",
-      "status": "open",
-      "updated": "2026-07-08",
-      "started_with": "how can i make money using cluade?",
-      "file": "🤝 Handoffs/2026-07-07-ob-claude-vault-f430d75e.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-07-ob-claude-vault-f430d75e",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-07-ob-claude-vault-f430d75e.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+      "file": "🤝 Handoffs/2026-07-13-ob-claude-vault-924cd4b9.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-13-ob-claude-vault-924cd4b9",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-13-ob-claude-vault-924cd4b9.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     }
   ],
   "pipeline": {
-    "last_run": "2026-07-10 01:08:14",
+    "last_run": "2026-07-13 07:00:04",
     "last_status": "blocked",
     "model": "claude-sonnet-4-6",
     "next_run": "07:00 daily",
-    "streak": 4,
+    "streak": 1,
     "chat_ingest": "every 2h",
-    "chat_ingest_last": "2026-07-09T23:05"
+    "chat_ingest_last": "2026-07-13T14:30"
   },
   "delta": {
-    "vs_date": "2026-07-08",
+    "vs_date": "2026-07-09",
     "tools_added": [
-      "ElevenLabs",
-      "Runway"
+      "Figma",
+      "Github",
+      "Photoshop",
+      "VS Code"
     ],
     "tools_removed": [
-      "Canva"
+      "3D Model Generation",
+      "ElevenLabs",
+      "Gemini Image Generation",
+      "Imagen",
+      "Runway"
     ],
     "handoffs_added": [
-      "2026-07-04-ob-claude-vault-d0a57a6f",
-      "2026-07-08-ob-claude-vault-98961ef2"
+      "2026-07-12-ui-dashboard-x-2b8616d0",
+      "Resume here:"
     ],
     "handoffs_resolved": [
-      "2026-07-04-ui-dashboard-x-8ff53098",
-      "2026-07-08-ob-claude-vault-aac83d22"
+      "2026-07-04-ob-claude-vault-d0a57a6f",
+      "2026-07-08-ob-claude-vault-2ec24603",
+      "2026-07-08-ob-claude-vault-98961ef2"
     ],
     "counts_changed": {
       "briefs": 1,
-      "handoffs": 5
+      "handoffs": 25
     }
   },
   "workflows": [
@@ -2657,6 +2652,48 @@
       ],
       "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Zoo Text-to-CAD - Natural Language CAD Generator.md",
       "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Zoo%20Text-to-CAD%20-%20Natural%20Language%20CAD%20Generator"
+    }
+  ],
+  "catchup_prompts": [
+    {
+      "project": "🗂️ CDL PRAC one — iOS study app (SwiftUI + SwiftData)",
+      "prompts": [
+        "On the first-run/onboarding screen, implement smart defaults: pre-select Class A and a sensible\ndaily question goal so the user never faces a blank slate. Show the SwiftUI diff, then build.",
+        "In the quiz progress UI, apply the goal-gradient effect: start the bar at ~15% (endowed progress)\ninstead of 0 and add a \"X of Y to today's goal\" label wired to the XP/streak state. Then build.",
+        "Rewrite the paywall copy using loss aversion — frame the headline around what the user loses\nwithout Pro (streak, XP, progress). Give 3 options and update the paywall view with the strongest."
+      ]
+    },
+    {
+      "project": "🤖 Polymarket Bot — Rust CLI (markets, orders, onchain CTF)",
+      "prompts": [
+        "Add a `watch` subcommand that streams live price/volume for a market id and alerts when the\nyes-price crosses a --above/--below threshold. Show the clap arg setup and the polling loop.",
+        "Add a read-only `positions` command that reads my onchain CTF positions and prints a P&L table\n(entry vs current mid). No order placement.",
+        "Write an integration test that mocks the Polymarket API and exercises the place-order path\nend-to-end, asserting the CTF position updates. Inject the HTTP client via a trait."
+      ]
+    },
+    {
+      "project": "🧠 LLM Builder Local — Model G lyric corpus (179 songs, lexicon, entities)",
+      "prompts": [
+        "Audit the corpus for coverage gaps: report which themes/entities in the mapping have fewer than\nN lines and produce a to-collect list so Model G training isn't skewed.",
+        "Write a validator that checks every song's frontmatter (slang lexicon refs, entities, theme tags)\nagainst the schema and lists offenders with file paths.",
+        "From the 7,681 lines, extract candidate slang not yet in the lexicon, with example lines and\nfrequency counts, and append the new entries to the lexicon."
+      ]
+    },
+    {
+      "project": "📱 Penwork Studios — AI journaling / lyric-generation app",
+      "prompts": [
+        "Profile the slowest screen (the \"slow, dark, hard-to-use\" flow) and give me the top 3\nrendering/data bottlenecks with concrete fixes, then apply the highest-impact one.",
+        "Add smart defaults to the generation screen: pre-fill theme/jargon from the user's last session\nso they never start from an empty prompt. Show the diff, then build.",
+        "Wire the Model G v3 pipeline output into the grading view and show the grade breakdown inline."
+      ]
+    },
+    {
+      "project": "🚗 YouTube CarPlay Player — CarPlay video app (iOS 27 \"Video in Car\", 33/33 tests)",
+      "prompts": [
+        "Add a \"Continue watching\" row on the now-playing CarPlay template that resumes the last video at\nits saved timestamp. Persist position in UserDefaults.",
+        "Implement background audio + Now Playing info (title, artwork, elapsed) so audio keeps playing\nwhen CarPlay backgrounds the video.",
+        "Add UI tests for the CarPlay playback controls (play/pause/seek) using the CarPlay test harness\nand keep the suite green (currently 33/33)."
+      ]
     }
   ]
 }
