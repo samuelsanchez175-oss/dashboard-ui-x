@@ -114,6 +114,8 @@ function slimCurrent(c) {
   }
 }
 
+/** Per-day rows behind the chart. `topModels` is what the visualizer's hover
+ * card breaks a day's spend down by, so it has to survive the slimming. */
 function slimDaily(history) {
   const daily = history && Array.isArray(history.daily) ? history.daily : []
   return daily.map(d => ({
@@ -122,6 +124,17 @@ function slimDaily(history) {
     calls: d.calls,
     inputTokens: d.inputTokens,
     outputTokens: d.outputTokens,
+    cacheReadTokens: d.cacheReadTokens,
+    cacheWriteTokens: d.cacheWriteTokens,
+    topModels: Array.isArray(d.topModels)
+      ? d.topModels.map(m => ({
+          name: m.name,
+          cost: m.cost,
+          calls: m.calls,
+          inputTokens: m.inputTokens,
+          outputTokens: m.outputTokens,
+        }))
+      : [],
   }))
 }
 

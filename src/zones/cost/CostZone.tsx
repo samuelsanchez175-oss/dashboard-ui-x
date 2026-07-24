@@ -97,7 +97,20 @@ interface PeriodData {
   localModelSavings?: LocalModelSavings | null
 }
 
-interface DailyPoint { date: string; cost: number; calls: number; inputTokens: number; outputTokens: number }
+interface DailyModelRow { name: string; cost: number; calls: number; inputTokens: number; outputTokens: number }
+interface DailyPoint {
+  date: string
+  cost: number
+  calls: number
+  inputTokens: number
+  outputTokens: number
+  cacheReadTokens?: number
+  cacheWriteTokens?: number
+  /** Per-model split for the day — drives the chart's hover card. Optional so a
+   * snapshot baked before it was captured still renders (card falls back to
+   * the day's totals). */
+  topModels?: DailyModelRow[]
+}
 
 interface CodeburnSnapshot {
   generated_at: string
@@ -201,28 +214,123 @@ type Metric = 'cost' | 'tokens' | 'calls'
 const metricValue = (d: DailyPoint, metric: Metric) =>
   metric === 'cost' ? d.cost : metric === 'calls' ? d.calls : d.inputTokens + d.outputTokens
 
+/** Day label for the hover card: "13 Jul", like the live visualizer. */
+function dayLabel(date: string): string {
+  const [y, m, d] = date.split('-').map(Number)
+  if (!y || !m || !d) return date
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })
+}
+
+/** Per-model dot colors for the hover card, in rank order. */
+const MODEL_DOTS = ['#10b981', '#3b82f6', '#f59e0b', '#a855f7', '#ef4444', '#14b8a6']
+
+/**
+ * Hover card for one day of the chart — model-by-model breakdown of that day's
+ * spend plus a total row, mirroring the live visualizer's tooltip. Rendered
+ * inside the chart's relatively-positioned wrapper and flipped to the left half
+ * once the hovered bar passes the midpoint, so it never runs off the card edge.
+ */
+function DayCard({ point, metric, leftPercent }: { point: DailyPoint; metric: Metric; leftPercent: number }) {
+  const models = (point.topModels ?? []).slice(0, 6)
+  const flip = leftPercent > 55
+  const value = (m: DailyModelRow) =>
+    metric === 'calls'
+      ? m.calls.toLocaleString()
+      : metric === 'tokens'
+        ? compact(m.inputTokens + m.outputTokens)
+        : usd2(m.cost)
+  const total =
+    metric === 'calls'
+      ? point.calls.toLocaleString()
+      : metric === 'tokens'
+        ? compact(point.inputTokens + point.outputTokens)
+        : usd2(point.cost)
+
+  return (
+    <div
+      className="pointer-events-none absolute top-2 z-10 min-w-[190px] rounded-xl border px-3 py-2.5 shadow-lg"
+      style={{
+        background: 'var(--bg-card)',
+        borderColor: 'var(--border)',
+        left: flip ? undefined : `calc(${leftPercent}% + 10px)`,
+        right: flip ? `calc(${100 - leftPercent}% + 10px)` : undefined,
+      }}
+    >
+      <div className="mb-1.5 text-[12px] font-semibold" style={{ color: 'var(--text-1)' }}>
+        {dayLabel(point.date)}
+      </div>
+      {models.length ? (
+        models.map((m, i) => (
+          <div key={m.name} className="flex items-center gap-2 py-0.5 text-[12px]">
+            <span className="size-2 shrink-0 rounded-full" style={{ background: MODEL_DOTS[i % MODEL_DOTS.length] }} />
+            <span className="truncate" style={{ color: 'var(--text-2)' }}>
+              {m.name}
+            </span>
+            <span className="ml-auto shrink-0 tabular-nums font-medium" style={{ color: 'var(--text-1)' }}>
+              {value(m)}
+            </span>
+          </div>
+        ))
+      ) : (
+        <div className="py-0.5 text-[12px]" style={{ color: 'var(--text-4)' }}>
+          No model breakdown for this day.
+        </div>
+      )}
+      <div
+        className="mt-1.5 flex items-center gap-2 pt-1.5 text-[12px]"
+        style={{ borderTop: '1px solid var(--border-soft)' }}
+      >
+        <span style={{ color: 'var(--text-3)' }}>Total</span>
+        <span className="ml-auto tabular-nums font-bold" style={{ color: 'var(--text-1)' }}>
+          {total}
+        </span>
+      </div>
+      <div className="mt-1 text-[11px]" style={{ color: 'var(--text-4)' }}>
+        {point.calls.toLocaleString()} calls · {compact(point.inputTokens + point.outputTokens)} tokens
+      </div>
+    </div>
+  )
+}
+
 /** Simple, dependency-free daily bar chart (matches the live visualizer). */
 function DailyBars({ data, metric }: { data: DailyPoint[]; metric: Metric }) {
   const max = Math.max(1, ...data.map(d => metricValue(d, metric)))
+  const [hover, setHover] = useState<number | null>(null)
+  const point = hover != null ? data[hover] : null
+
   return (
-    <div className="flex h-40 items-end gap-[2px] overflow-hidden">
-      {data.map(d => {
-        const v = metricValue(d, metric)
-        const h = Math.max(2, (v / max) * 100)
-        const title = `${d.date} · ${usd2(d.cost)} · ${d.calls} calls · ${compact(d.inputTokens + d.outputTokens)} tokens`
-        return (
-          <div
-            key={d.date}
-            title={title}
-            className="flex-1 rounded-t-sm transition-opacity hover:opacity-70"
-            style={{
-              height: `${h}%`,
-              minWidth: 2,
-              background: v > 0 ? 'var(--good, #10b981)' : 'var(--border)',
-            }}
-          />
-        )
-      })}
+    <div className="relative">
+      <div className="flex h-40 items-end gap-[2px] overflow-hidden" onMouseLeave={() => setHover(null)}>
+        {data.map((d, i) => {
+          const v = metricValue(d, metric)
+          const h = Math.max(2, (v / max) * 100)
+          const dim = hover != null && hover !== i
+          return (
+            <div
+              key={d.date}
+              // Bars are ~2px wide, so hovering the bar itself is fiddly — the
+              // hit area is a full-height column, the bar inside is the visual.
+              className="flex h-full flex-1 items-end"
+              style={{ minWidth: 2 }}
+              onMouseEnter={() => setHover(i)}
+              onFocus={() => setHover(i)}
+              tabIndex={-1}
+            >
+              <span
+                className="w-full rounded-t-sm transition-opacity"
+                style={{
+                  height: `${h}%`,
+                  opacity: dim ? 0.35 : 1,
+                  background: v > 0 ? 'var(--good, #10b981)' : 'var(--border)',
+                }}
+              />
+            </div>
+          )
+        })}
+      </div>
+      {point ? (
+        <DayCard point={point} metric={metric} leftPercent={((hover! + 0.5) / data.length) * 100} />
+      ) : null}
     </div>
   )
 }

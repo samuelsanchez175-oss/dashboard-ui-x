@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-24T14:57:37.130Z",
+  "generated_at": "2026-07-24T15:10:00.813Z",
   "device": "Samuels-MacBook-Pro-3.local",
   "history": {
     "daily": [
@@ -8,925 +8,3642 @@
         "cost": 5.752966500000004,
         "calls": 186,
         "inputTokens": 2253610,
-        "outputTokens": 124654
+        "outputTokens": 124654,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 3.0901140000000002,
+            "calls": 44,
+            "inputTokens": 879168,
+            "outputTokens": 30174
+          },
+          {
+            "name": "composer-1",
+            "cost": 2.6628524999999996,
+            "calls": 142,
+            "inputTokens": 1374442,
+            "outputTokens": 94480
+          }
+        ]
       },
       {
         "date": "2026-01-15",
         "cost": 20.79500250000001,
         "calls": 897,
         "inputTokens": 11299578,
-        "outputTokens": 667053
+        "outputTokens": 667053,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "composer-1",
+            "cost": 20.79500250000001,
+            "calls": 897,
+            "inputTokens": 11299578,
+            "outputTokens": 667053
+          }
+        ]
       },
       {
         "date": "2026-01-16",
         "cost": 1.9595187500000004,
         "calls": 98,
         "inputTokens": 1053271,
-        "outputTokens": 64293
+        "outputTokens": 64293,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "composer-1",
+            "cost": 1.9595187500000004,
+            "calls": 98,
+            "inputTokens": 1053271,
+            "outputTokens": 64293
+          }
+        ]
       },
       {
         "date": "2026-01-17",
         "cost": 30.05411425000002,
         "calls": 1006,
         "inputTokens": 13575938,
-        "outputTokens": 674263
+        "outputTokens": 674263,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "composer-1",
+            "cost": 18.37343124999999,
+            "calls": 777,
+            "inputTokens": 10311937,
+            "outputTokens": 548351
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 11.680682999999995,
+            "calls": 229,
+            "inputTokens": 3264001,
+            "outputTokens": 125912
+          }
+        ]
       },
       {
         "date": "2026-01-19",
         "cost": 22.772133000000004,
         "calls": 335,
         "inputTokens": 6342656,
-        "outputTokens": 249611
+        "outputTokens": 249611,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 22.772133000000004,
+            "calls": 335,
+            "inputTokens": 6342656,
+            "outputTokens": 249611
+          }
+        ]
       },
       {
         "date": "2026-01-20",
         "cost": 15.748604999999998,
         "calls": 203,
         "inputTokens": 4529155,
-        "outputTokens": 144076
+        "outputTokens": 144076,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 15.748604999999998,
+            "calls": 203,
+            "inputTokens": 4529155,
+            "outputTokens": 144076
+          }
+        ]
       },
       {
         "date": "2026-01-21",
         "cost": 33.645609000000036,
         "calls": 591,
         "inputTokens": 9188708,
-        "outputTokens": 405299
+        "outputTokens": 405299,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 33.645609000000036,
+            "calls": 591,
+            "inputTokens": 9188708,
+            "outputTokens": 405299
+          }
+        ]
       },
       {
         "date": "2026-01-22",
         "cost": 0.850851,
         "calls": 15,
         "inputTokens": 240302,
-        "outputTokens": 8663
+        "outputTokens": 8663,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 0.850851,
+            "calls": 15,
+            "inputTokens": 240302,
+            "outputTokens": 8663
+          }
+        ]
       },
       {
         "date": "2026-01-24",
         "cost": 0.35058,
         "calls": 14,
         "inputTokens": 94280,
-        "outputTokens": 4516
+        "outputTokens": 4516,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 0.35058,
+            "calls": 14,
+            "inputTokens": 94280,
+            "outputTokens": 4516
+          }
+        ]
       },
       {
         "date": "2026-01-25",
         "cost": 31.027836000000093,
         "calls": 506,
         "inputTokens": 8446362,
-        "outputTokens": 379250
+        "outputTokens": 379250,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 31.027836000000093,
+            "calls": 506,
+            "inputTokens": 8446362,
+            "outputTokens": 379250
+          }
+        ]
       },
       {
         "date": "2026-01-26",
         "cost": 6.936204000000004,
         "calls": 116,
         "inputTokens": 1680193,
-        "outputTokens": 126375
+        "outputTokens": 126375,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 6.936204000000004,
+            "calls": 116,
+            "inputTokens": 1680193,
+            "outputTokens": 126375
+          }
+        ]
       },
       {
         "date": "2026-01-27",
         "cost": 19.80156900000002,
         "calls": 383,
         "inputTokens": 5286353,
-        "outputTokens": 262834
+        "outputTokens": 262834,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 19.80156900000002,
+            "calls": 383,
+            "inputTokens": 5286353,
+            "outputTokens": 262834
+          }
+        ]
       },
       {
         "date": "2026-01-28",
         "cost": 6.366672,
         "calls": 47,
         "inputTokens": 1842619,
-        "outputTokens": 55921
+        "outputTokens": 55921,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 6.366672,
+            "calls": 47,
+            "inputTokens": 1842619,
+            "outputTokens": 55921
+          }
+        ]
       },
       {
         "date": "2026-01-30",
         "cost": 18.527135999999985,
         "calls": 297,
         "inputTokens": 4884367,
-        "outputTokens": 258269
+        "outputTokens": 258269,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 18.527135999999985,
+            "calls": 297,
+            "inputTokens": 4884367,
+            "outputTokens": 258269
+          }
+        ]
       },
       {
         "date": "2026-02-02",
         "cost": 12.684516799999994,
         "calls": 302,
         "inputTokens": 3011223,
-        "outputTokens": 227453
+        "outputTokens": 227453,
+        "cacheReadTokens": 1937536,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 11.811767999999997,
+            "calls": 245,
+            "inputTokens": 2875991,
+            "outputTokens": 212253
+          },
+          {
+            "name": "gpt-5.2-codex",
+            "cost": 0.8727488000000002,
+            "calls": 57,
+            "inputTokens": 135232,
+            "outputTokens": 15200
+          }
+        ]
       },
       {
         "date": "2026-02-03",
         "cost": 15.7215136,
         "calls": 445,
         "inputTokens": 3023503,
-        "outputTokens": 225247
+        "outputTokens": 225247,
+        "cacheReadTokens": 19507072,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 10.600644,
+            "calls": 231,
+            "inputTokens": 2756143,
+            "outputTokens": 155481
+          },
+          {
+            "name": "gpt-5.2-codex",
+            "cost": 5.120869599999998,
+            "calls": 214,
+            "inputTokens": 267360,
+            "outputTokens": 69766
+          }
+        ]
       },
       {
         "date": "2026-02-05",
         "cost": 2.071501299999998,
         "calls": 410,
         "inputTokens": 310990,
-        "outputTokens": 55326
+        "outputTokens": 55326,
+        "cacheReadTokens": 2630656,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "gpt-5.3-codex",
+            "cost": 1.7747862999999995,
+            "calls": 56,
+            "inputTokens": 304690,
+            "outputTokens": 36805
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 0.2967149999999989,
+            "calls": 354,
+            "inputTokens": 6300,
+            "outputTokens": 18521
+          }
+        ]
       },
       {
         "date": "2026-02-06",
         "cost": 0.00354,
         "calls": 6,
         "inputTokens": 0,
-        "outputTokens": 236
+        "outputTokens": 236,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 0.00354,
+            "calls": 6,
+            "inputTokens": 0,
+            "outputTokens": 236
+          }
+        ]
       },
       {
         "date": "2026-02-08",
         "cost": 0.14847300000000005,
         "calls": 107,
         "inputTokens": 27331,
-        "outputTokens": 4432
+        "outputTokens": 4432,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 0.14847300000000005,
+            "calls": 107,
+            "inputTokens": 27331,
+            "outputTokens": 4432
+          }
+        ]
       },
       {
         "date": "2026-02-09",
         "cost": 0.7324929999999973,
         "calls": 454,
         "inputTokens": 151866,
-        "outputTokens": 20201
+        "outputTokens": 20201,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "gpt-5.3-codex",
+            "cost": 0.2447199999999989,
+            "calls": 145,
+            "inputTokens": 85584,
+            "outputTokens": 6782
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 0.19633500000000015,
+            "calls": 289,
+            "inputTokens": 0,
+            "outputTokens": 13089
+          },
+          {
+            "name": "claude-4.6-opus-high-thinking",
+            "cost": 0.17892,
+            "calls": 7,
+            "inputTokens": 34354,
+            "outputTokens": 286
+          },
+          {
+            "name": "composer-1.5",
+            "cost": 0.11251799999999999,
+            "calls": 13,
+            "inputTokens": 31928,
+            "outputTokens": 44
+          }
+        ]
       },
       {
         "date": "2026-02-10",
         "cost": 0.05710799999999999,
         "calls": 79,
         "inputTokens": 123,
-        "outputTokens": 3885
+        "outputTokens": 3885,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 0.035016000000000005,
+            "calls": 49,
+            "inputTokens": 67,
+            "outputTokens": 2321
+          },
+          {
+            "name": "gpt-5.3-codex",
+            "cost": 0.021896000000000002,
+            "calls": 28,
+            "inputTokens": 0,
+            "outputTokens": 1564
+          },
+          {
+            "name": "composer-1.5",
+            "cost": 0.000196,
+            "calls": 2,
+            "inputTokens": 56,
+            "outputTokens": 0
+          }
+        ]
       },
       {
         "date": "2026-02-13",
         "cost": 0.01005,
         "calls": 12,
         "inputTokens": 0,
-        "outputTokens": 670
+        "outputTokens": 670,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 0.01005,
+            "calls": 12,
+            "inputTokens": 0,
+            "outputTokens": 670
+          }
+        ]
       },
       {
         "date": "2026-02-14",
         "cost": 1.5078350000000005,
         "calls": 220,
         "inputTokens": 397515,
-        "outputTokens": 7031
+        "outputTokens": 7031,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "composer-1.5",
+            "cost": 1.4798560000000005,
+            "calls": 188,
+            "inputTokens": 397486,
+            "outputTokens": 5066
+          },
+          {
+            "name": "gpt-5.3-codex",
+            "cost": 0.022162,
+            "calls": 5,
+            "inputTokens": 0,
+            "outputTokens": 1583
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 0.005817000000000001,
+            "calls": 27,
+            "inputTokens": 29,
+            "outputTokens": 382
+          }
+        ]
       },
       {
         "date": "2026-02-18",
         "cost": 0.6993664999999999,
         "calls": 24,
         "inputTokens": 186064,
-        "outputTokens": 9099
+        "outputTokens": 9099,
+        "cacheReadTokens": 1126400,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "gpt-5.3-codex",
+            "cost": 0.6692139999999999,
+            "calls": 19,
+            "inputTokens": 186064,
+            "outputTokens": 7376
+          },
+          {
+            "name": "composer-1.5",
+            "cost": 0.0301525,
+            "calls": 5,
+            "inputTokens": 0,
+            "outputTokens": 1723
+          }
+        ]
       },
       {
         "date": "2026-02-19",
         "cost": 0.55036275,
         "calls": 6,
         "inputTokens": 114735,
-        "outputTokens": 11391
+        "outputTokens": 11391,
+        "cacheReadTokens": 359040,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "gpt-5.3-codex",
+            "cost": 0.54968025,
+            "calls": 4,
+            "inputTokens": 114735,
+            "outputTokens": 11352
+          },
+          {
+            "name": "composer-1.5",
+            "cost": 0.0006825,
+            "calls": 2,
+            "inputTokens": 0,
+            "outputTokens": 39
+          }
+        ]
       },
       {
         "date": "2026-02-22",
         "cost": 1.0688897999999998,
         "calls": 136,
         "inputTokens": 332735,
-        "outputTokens": 16961
+        "outputTokens": 16961,
+        "cacheReadTokens": 522496,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "gpt-5.3-codex",
+            "cost": 0.36147755000000004,
+            "calls": 5,
+            "inputTokens": 139005,
+            "outputTokens": 1291
+          },
+          {
+            "name": "gemini-3.1-pro-preview",
+            "cost": 0.34555,
+            "calls": 88,
+            "inputTokens": 122945,
+            "outputTokens": 8305
+          },
+          {
+            "name": "composer-1.5",
+            "cost": 0.29053150000000005,
+            "calls": 15,
+            "inputTokens": 69554,
+            "outputTokens": 2691
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.03963299999999998,
+            "calls": 16,
+            "inputTokens": 1046,
+            "outputTokens": 2433
+          },
+          {
+            "name": "gpt-5.3-codex-high",
+            "cost": 0.03169775,
+            "calls": 12,
+            "inputTokens": 185,
+            "outputTokens": 2241
+          }
+        ]
       },
       {
         "date": "2026-02-23",
         "cost": 0.010692,
         "calls": 12,
         "inputTokens": 0,
-        "outputTokens": 891
+        "outputTokens": 891,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "gemini-3.1-pro-preview",
+            "cost": 0.010692,
+            "calls": 12,
+            "inputTokens": 0,
+            "outputTokens": 891
+          }
+        ]
       },
       {
         "date": "2026-02-24",
         "cost": 0.6521519999999997,
         "calls": 516,
         "inputTokens": 0,
-        "outputTokens": 54346
+        "outputTokens": 54346,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "gemini-3.1-pro-preview",
+            "cost": 0.6521519999999997,
+            "calls": 516,
+            "inputTokens": 0,
+            "outputTokens": 54346
+          }
+        ]
       },
       {
         "date": "2026-02-25",
         "cost": 0.5352375000000003,
         "calls": 268,
         "inputTokens": 54738,
-        "outputTokens": 26882
+        "outputTokens": 26882,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "gemini-3.1-pro-preview",
+            "cost": 0.2766120000000003,
+            "calls": 210,
+            "inputTokens": 0,
+            "outputTokens": 23051
+          },
+          {
+            "name": "composer-1.5",
+            "cost": 0.2586255,
+            "calls": 58,
+            "inputTokens": 54738,
+            "outputTokens": 3831
+          }
+        ]
       },
       {
         "date": "2026-02-26",
         "cost": 0.058309999999999876,
         "calls": 92,
         "inputTokens": 0,
-        "outputTokens": 3332
+        "outputTokens": 3332,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "composer-1.5",
+            "cost": 0.058309999999999876,
+            "calls": 92,
+            "inputTokens": 0,
+            "outputTokens": 3332
+          }
+        ]
       },
       {
         "date": "2026-02-27",
         "cost": 0.7521015000000006,
         "calls": 666,
         "inputTokens": 70375,
-        "outputTokens": 32760
+        "outputTokens": 32760,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.3737820000000003,
+            "calls": 222,
+            "inputTokens": 6864,
+            "outputTokens": 23546
+          },
+          {
+            "name": "composer-1.5",
+            "cost": 0.3669435000000004,
+            "calls": 435,
+            "inputTokens": 63511,
+            "outputTokens": 8266
+          },
+          {
+            "name": "gemini-3.1-pro-preview",
+            "cost": 0.011376,
+            "calls": 9,
+            "inputTokens": 0,
+            "outputTokens": 948
+          }
+        ]
       },
       {
         "date": "2026-02-28",
         "cost": 0.014889999999999999,
         "calls": 9,
         "inputTokens": 210,
-        "outputTokens": 936
+        "outputTokens": 936,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.013349999999999999,
+            "calls": 7,
+            "inputTokens": 210,
+            "outputTokens": 848
+          },
+          {
+            "name": "composer-1.5",
+            "cost": 0.0015399999999999997,
+            "calls": 2,
+            "inputTokens": 0,
+            "outputTokens": 88
+          }
+        ]
       },
       {
         "date": "2026-03-01",
         "cost": 3.418680499999978,
         "calls": 502,
         "inputTokens": 672185,
-        "outputTokens": 48625
+        "outputTokens": 48625,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "composer-1.5",
+            "cost": 1.5449595000000007,
+            "calls": 357,
+            "inputTokens": 370812,
+            "outputTokens": 14121
+          },
+          {
+            "name": "claude-4.6-opus-high-thinking",
+            "cost": 1.1301050000000001,
+            "calls": 79,
+            "inputTokens": 187251,
+            "outputTokens": 7754
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 0.5097510000000001,
+            "calls": 17,
+            "inputTokens": 112167,
+            "outputTokens": 11550
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.23386500000000002,
+            "calls": 49,
+            "inputTokens": 1955,
+            "outputTokens": 15200
+          }
+        ]
       },
       {
         "date": "2026-03-02",
         "cost": 0.7290955,
         "calls": 59,
         "inputTokens": 171701,
-        "outputTokens": 13281
+        "outputTokens": 13281,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 0.59277,
+            "calls": 13,
+            "inputTokens": 170300,
+            "outputTokens": 5458
+          },
+          {
+            "name": "composer-1.5",
+            "cost": 0.1034425,
+            "calls": 26,
+            "inputTokens": 0,
+            "outputTokens": 5911
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.032883,
+            "calls": 20,
+            "inputTokens": 1401,
+            "outputTokens": 1912
+          }
+        ]
       },
       {
         "date": "2026-03-03",
         "cost": 0.7544465000000025,
         "calls": 1366,
         "inputTokens": 62380,
-        "outputTokens": 30682
+        "outputTokens": 30682,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "composer-1.5",
+            "cost": 0.7495355000000026,
+            "calls": 1362,
+            "inputTokens": 62203,
+            "outputTokens": 30390
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.0049110000000000004,
+            "calls": 4,
+            "inputTokens": 177,
+            "outputTokens": 292
+          }
+        ]
       },
       {
         "date": "2026-03-04",
         "cost": 1.125007,
         "calls": 453,
         "inputTokens": 210157,
-        "outputTokens": 27776
+        "outputTokens": 27776,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "composer-1.5",
+            "cost": 0.546637,
+            "calls": 164,
+            "inputTokens": 115592,
+            "outputTokens": 8118
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 0.33308399999999955,
+            "calls": 119,
+            "inputTokens": 89998,
+            "outputTokens": 4206
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.24501299999999998,
+            "calls": 166,
+            "inputTokens": 4411,
+            "outputTokens": 15452
+          },
+          {
+            "name": "gpt-5.3-codex",
+            "cost": 0.00027299999999999997,
+            "calls": 4,
+            "inputTokens": 156,
+            "outputTokens": 0
+          }
+        ]
       },
       {
         "date": "2026-03-05",
         "cost": 1.8699265000000007,
         "calls": 406,
         "inputTokens": 411127,
-        "outputTokens": 49481
+        "outputTokens": 49481,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 1.279953,
+            "calls": 79,
+            "inputTokens": 342096,
+            "outputTokens": 16911
+          },
+          {
+            "name": "gpt-5.3-codex-high",
+            "cost": 0.43763650000000076,
+            "calls": 228,
+            "inputTokens": 66142,
+            "outputTokens": 22992
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.15233700000000003,
+            "calls": 99,
+            "inputTokens": 2889,
+            "outputTokens": 9578
+          }
+        ]
       },
       {
         "date": "2026-03-06",
         "cost": 1.3134884999999947,
         "calls": 730,
         "inputTokens": 253611,
-        "outputTokens": 25073
+        "outputTokens": 25073,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "composer-1.5",
+            "cost": 1.2359234999999953,
+            "calls": 696,
+            "inputTokens": 252626,
+            "outputTokens": 20099
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.077565,
+            "calls": 34,
+            "inputTokens": 985,
+            "outputTokens": 4974
+          }
+        ]
       },
       {
         "date": "2026-03-07",
         "cost": 5.554594800000124,
         "calls": 1024,
         "inputTokens": 1824857,
-        "outputTokens": 64972
+        "outputTokens": 64972,
+        "cacheReadTokens": 7102336,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "gpt-5.3-codex",
+            "cost": 5.0772252999999985,
+            "calls": 92,
+            "inputTokens": 1818494,
+            "outputTokens": 35289
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 0.25714799999999843,
+            "calls": 430,
+            "inputTokens": 1441,
+            "outputTokens": 16855
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.12897299999999998,
+            "calls": 129,
+            "inputTokens": 3626,
+            "outputTokens": 7873
+          },
+          {
+            "name": "composer-1.5",
+            "cost": 0.09124849999999973,
+            "calls": 373,
+            "inputTokens": 1296,
+            "outputTokens": 4955
+          }
+        ]
       },
       {
         "date": "2026-03-08",
         "cost": 1.3805786500000037,
         "calls": 171,
         "inputTokens": 142738,
-        "outputTokens": 30521
+        "outputTokens": 30521,
+        "cacheReadTokens": 2778368,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "gpt-5.3-codex",
+            "cost": 1.2414146499999998,
+            "calls": 64,
+            "inputTokens": 134455,
+            "outputTokens": 22900
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 0.139164,
+            "calls": 107,
+            "inputTokens": 8283,
+            "outputTokens": 7621
+          }
+        ]
       },
       {
         "date": "2026-03-09",
         "cost": 3.582103349999998,
         "calls": 142,
         "inputTokens": 947498,
-        "outputTokens": 37402
+        "outputTokens": 37402,
+        "cacheReadTokens": 6542592,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "gpt-5.3-codex",
+            "cost": 3.542413350000001,
+            "calls": 75,
+            "inputTokens": 947193,
+            "outputTokens": 34817
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 0.03969000000000001,
+            "calls": 67,
+            "inputTokens": 305,
+            "outputTokens": 2585
+          }
+        ]
       },
       {
         "date": "2026-03-12",
         "cost": 2.6524317999999982,
         "calls": 993,
         "inputTokens": 456322,
-        "outputTokens": 75386
+        "outputTokens": 75386,
+        "cacheReadTokens": 3024256,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "gpt-5.3-codex",
+            "cost": 1.7916248000000001,
+            "calls": 45,
+            "inputTokens": 438176,
+            "outputTokens": 21392
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 0.606104999999997,
+            "calls": 760,
+            "inputTokens": 12620,
+            "outputTokens": 37883
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.20670299999999997,
+            "calls": 128,
+            "inputTokens": 5426,
+            "outputTokens": 12695
+          },
+          {
+            "name": "gpt-5.3-codex-high",
+            "cost": 0.04799900000000002,
+            "calls": 60,
+            "inputTokens": 100,
+            "outputTokens": 3416
+          }
+        ]
       },
       {
         "date": "2026-03-13",
         "cost": 0.012246000000000002,
         "calls": 30,
         "inputTokens": 127,
-        "outputTokens": 791
+        "outputTokens": 791,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 0.011694000000000001,
+            "calls": 29,
+            "inputTokens": 83,
+            "outputTokens": 763
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.000552,
+            "calls": 1,
+            "inputTokens": 44,
+            "outputTokens": 28
+          }
+        ]
       },
       {
         "date": "2026-03-14",
         "cost": 1.1641110000000052,
         "calls": 566,
         "inputTokens": 172069,
-        "outputTokens": 43332
+        "outputTokens": 43332,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 0.7529459999999989,
+            "calls": 345,
+            "inputTokens": 166262,
+            "outputTokens": 16944
+          },
+          {
+            "name": "gpt-5.3-codex-high",
+            "cost": 0.18736199999999922,
+            "calls": 100,
+            "inputTokens": 3640,
+            "outputTokens": 12928
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.115989,
+            "calls": 30,
+            "inputTokens": 1833,
+            "outputTokens": 7366
+          },
+          {
+            "name": "composer-1.5",
+            "cost": 0.10781399999999987,
+            "calls": 91,
+            "inputTokens": 334,
+            "outputTokens": 6094
+          }
+        ]
       },
       {
         "date": "2026-03-16",
         "cost": 4.849035749999982,
         "calls": 5006,
         "inputTokens": 259062,
-        "outputTokens": 272142
+        "outputTokens": 272142,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 4.3184969999999865,
+            "calls": 4591,
+            "inputTokens": 246459,
+            "outputTokens": 238608
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.473439,
+            "calls": 365,
+            "inputTokens": 10358,
+            "outputTokens": 29491
+          },
+          {
+            "name": "gpt-5.3-codex",
+            "cost": 0.03745175,
+            "calls": 24,
+            "inputTokens": 2065,
+            "outputTokens": 2417
+          },
+          {
+            "name": "gemini-3.1-pro-preview",
+            "cost": 0.019648,
+            "calls": 24,
+            "inputTokens": 68,
+            "outputTokens": 1626
+          },
+          {
+            "name": "premium",
+            "cost": 0,
+            "calls": 2,
+            "inputTokens": 112,
+            "outputTokens": 0
+          }
+        ]
       },
       {
         "date": "2026-03-17",
         "cost": 0.6292949999999988,
         "calls": 438,
         "inputTokens": 82055,
-        "outputTokens": 25542
+        "outputTokens": 25542,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 0.6273539999999989,
+            "calls": 433,
+            "inputTokens": 81948,
+            "outputTokens": 25434
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.001941,
+            "calls": 5,
+            "inputTokens": 107,
+            "outputTokens": 108
+          }
+        ]
       },
       {
         "date": "2026-03-18",
         "cost": 0.033630000000000014,
         "calls": 49,
         "inputTokens": 0,
-        "outputTokens": 2242
+        "outputTokens": 2242,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 0.033630000000000014,
+            "calls": 49,
+            "inputTokens": 0,
+            "outputTokens": 2242
+          }
+        ]
       },
       {
         "date": "2026-03-19",
         "cost": 0.33346499999999835,
         "calls": 477,
         "inputTokens": 0,
-        "outputTokens": 22231
+        "outputTokens": 22231,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 0.33346499999999835,
+            "calls": 477,
+            "inputTokens": 0,
+            "outputTokens": 22231
+          }
+        ]
       },
       {
         "date": "2026-03-20",
         "cost": 0.033105,
         "calls": 46,
         "inputTokens": 0,
-        "outputTokens": 2207
+        "outputTokens": 2207,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 0.033105,
+            "calls": 46,
+            "inputTokens": 0,
+            "outputTokens": 2207
+          }
+        ]
       },
       {
         "date": "2026-03-22",
         "cost": 0.455770500000001,
         "calls": 885,
         "inputTokens": 311601,
-        "outputTokens": 37848
+        "outputTokens": 37848,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "composer-2",
+            "cost": 0.2095959999999998,
+            "calls": 486,
+            "inputTokens": 292302,
+            "outputTokens": 25378
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.17437799999999998,
+            "calls": 264,
+            "inputTokens": 19151,
+            "outputTokens": 7795
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 0.0632040000000001,
+            "calls": 119,
+            "inputTokens": 148,
+            "outputTokens": 4184
+          },
+          {
+            "name": "composer-1.5",
+            "cost": 0.008592500000000001,
+            "calls": 16,
+            "inputTokens": 0,
+            "outputTokens": 491
+          }
+        ]
       },
       {
         "date": "2026-03-23",
         "cost": 0.2950534999999999,
         "calls": 117,
         "inputTokens": 172627,
-        "outputTokens": 23745
+        "outputTokens": 23745,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.16533899999999999,
+            "calls": 37,
+            "inputTokens": 1778,
+            "outputTokens": 10667
+          },
+          {
+            "name": "composer-2",
+            "cost": 0.11604199999999996,
+            "calls": 63,
+            "inputTokens": 169109,
+            "outputTokens": 12595
+          },
+          {
+            "name": "composer-1.5",
+            "cost": 0.0084525,
+            "calls": 1,
+            "inputTokens": 0,
+            "outputTokens": 483
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 0.00522,
+            "calls": 16,
+            "inputTokens": 1740,
+            "outputTokens": 0
+          }
+        ]
       },
       {
         "date": "2026-03-25",
         "cost": 0.5052195000000008,
         "calls": 590,
         "inputTokens": 850434,
-        "outputTokens": 21030
+        "outputTokens": 21030,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "composer-2",
+            "cost": 0.4723065000000007,
+            "calls": 528,
+            "inputTokens": 845028,
+            "outputTokens": 19917
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.03291300000000001,
+            "calls": 62,
+            "inputTokens": 5406,
+            "outputTokens": 1113
+          }
+        ]
       },
       {
         "date": "2026-03-26",
         "cost": 0.06813300000000037,
         "calls": 268,
         "inputTokens": 60491,
-        "outputTokens": 7100
+        "outputTokens": 7100,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "composer-2",
+            "cost": 0.043968000000000375,
+            "calls": 226,
+            "inputTokens": 56921,
+            "outputTokens": 6203
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.023928,
+            "calls": 40,
+            "inputTokens": 3491,
+            "outputTokens": 897
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 0.00023700000000000001,
+            "calls": 2,
+            "inputTokens": 79,
+            "outputTokens": 0
+          }
+        ]
       },
       {
         "date": "2026-03-27",
         "cost": 0.0574595,
         "calls": 185,
         "inputTokens": 629613,
-        "outputTokens": 11640
+        "outputTokens": 11640,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.051855,
+            "calls": 39,
+            "inputTokens": 1975,
+            "outputTokens": 3062
+          },
+          {
+            "name": "composer-2",
+            "cost": 0.004572499999999999,
+            "calls": 38,
+            "inputTokens": 0,
+            "outputTokens": 1829
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 0.0010320000000000001,
+            "calls": 8,
+            "inputTokens": 344,
+            "outputTokens": 0
+          },
+          {
+            "name": "premium",
+            "cost": 0,
+            "calls": 100,
+            "inputTokens": 627294,
+            "outputTokens": 6749
+          }
+        ]
       },
       {
         "date": "2026-03-28",
         "cost": 0.46390799999999993,
         "calls": 334,
         "inputTokens": 1296291,
-        "outputTokens": 29847
+        "outputTokens": 29847,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 0.381705,
+            "calls": 19,
+            "inputTokens": 111075,
+            "outputTokens": 3232
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.08220299999999998,
+            "calls": 78,
+            "inputTokens": 5161,
+            "outputTokens": 4448
+          },
+          {
+            "name": "premium",
+            "cost": 0,
+            "calls": 237,
+            "inputTokens": 1180055,
+            "outputTokens": 22167
+          }
+        ]
       },
       {
         "date": "2026-03-29",
         "cost": 0.8156909999999999,
         "calls": 88,
         "inputTokens": 398905,
-        "outputTokens": 8350
+        "outputTokens": 8350,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "gpt-5.3-codex",
+            "cost": 0.8095079999999999,
+            "calls": 79,
+            "inputTokens": 398624,
+            "outputTokens": 7994
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.006183,
+            "calls": 9,
+            "inputTokens": 281,
+            "outputTokens": 356
+          }
+        ]
       },
       {
         "date": "2026-03-30",
         "cost": 3.4807069999999976,
         "calls": 580,
         "inputTokens": 3118146,
-        "outputTokens": 50998
+        "outputTokens": 50998,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "gpt-5.3-codex",
+            "cost": 2.7022099999999987,
+            "calls": 182,
+            "inputTokens": 1410400,
+            "outputTokens": 16715
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 0.627123,
+            "calls": 26,
+            "inputTokens": 180116,
+            "outputTokens": 5785
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.15137399999999993,
+            "calls": 145,
+            "inputTokens": 8363,
+            "outputTokens": 8419
+          },
+          {
+            "name": "premium",
+            "cost": 0,
+            "calls": 227,
+            "inputTokens": 1519267,
+            "outputTokens": 20079
+          }
+        ]
       },
       {
         "date": "2026-03-31",
         "cost": 2.56296124999996,
         "calls": 846,
         "inputTokens": 2261156,
-        "outputTokens": 37040
+        "outputTokens": 37040,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "gpt-5.3-codex",
+            "cost": 1.5390917499999985,
+            "calls": 114,
+            "inputTokens": 807537,
+            "outputTokens": 8993
+          },
+          {
+            "name": "composer-2",
+            "cost": 0.7508515000000027,
+            "calls": 623,
+            "inputTokens": 1388238,
+            "outputTokens": 22693
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 0.176436,
+            "calls": 5,
+            "inputTokens": 57822,
+            "outputTokens": 198
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.096582,
+            "calls": 102,
+            "inputTokens": 7559,
+            "outputTokens": 4927
+          },
+          {
+            "name": "premium",
+            "cost": 0,
+            "calls": 2,
+            "inputTokens": 0,
+            "outputTokens": 229
+          }
+        ]
       },
       {
         "date": "2026-04-01",
         "cost": 0.12249299999999999,
         "calls": 38,
         "inputTokens": 82211,
-        "outputTokens": 10530
+        "outputTokens": 10530,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.066075,
+            "calls": 12,
+            "inputTokens": 370,
+            "outputTokens": 4331
+          },
+          {
+            "name": "composer-2",
+            "cost": 0.056417999999999996,
+            "calls": 26,
+            "inputTokens": 81841,
+            "outputTokens": 6199
+          }
+        ]
       },
       {
         "date": "2026-04-02",
         "cost": 0.08941899999999998,
         "calls": 66,
         "inputTokens": 131858,
-        "outputTokens": 9396
+        "outputTokens": 9396,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "composer-2",
+            "cost": 0.08941899999999998,
+            "calls": 66,
+            "inputTokens": 131858,
+            "outputTokens": 9396
+          }
+        ]
       },
       {
         "date": "2026-04-05",
         "cost": 17.66230455,
         "calls": 340,
         "inputTokens": 165789,
-        "outputTokens": 214501
+        "outputTokens": 214501,
+        "cacheReadTokens": 25796565,
+        "cacheWriteTokens": 1752367,
+        "topModels": [
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 15.965184449999997,
+            "calls": 216,
+            "inputTokens": 3512,
+            "outputTokens": 143366
+          },
+          {
+            "name": "claude-haiku-4-5-20251001",
+            "cost": 1.6143786000000002,
+            "calls": 112,
+            "inputTokens": 229,
+            "outputTokens": 70448
+          },
+          {
+            "name": "composer-2",
+            "cost": 0.0827415,
+            "calls": 7,
+            "inputTokens": 162048,
+            "outputTokens": 687
+          }
+        ]
       },
       {
         "date": "2026-04-06",
         "cost": 5.026422249999999,
         "calls": 286,
         "inputTokens": 536,
-        "outputTokens": 122140
+        "outputTokens": 122140,
+        "cacheReadTokens": 19183357,
+        "cacheWriteTokens": 592008,
+        "topModels": [
+          {
+            "name": "claude-haiku-4-5-20251001",
+            "cost": 2.689446549999999,
+            "calls": 259,
+            "inputTokens": 500,
+            "outputTokens": 95033
+          },
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 2.3358657,
+            "calls": 20,
+            "inputTokens": 36,
+            "outputTokens": 26663
+          },
+          {
+            "name": "composer-2",
+            "cost": 0.00111,
+            "calls": 4,
+            "inputTokens": 0,
+            "outputTokens": 444
+          }
+        ]
       },
       {
         "date": "2026-04-08",
         "cost": 0.4624290000000001,
         "calls": 638,
         "inputTokens": 689688,
-        "outputTokens": 21418
+        "outputTokens": 21418,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "composer-2",
+            "cost": 0.3855810000000001,
+            "calls": 576,
+            "inputTokens": 684242,
+            "outputTokens": 17384
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.07684799999999997,
+            "calls": 62,
+            "inputTokens": 5446,
+            "outputTokens": 4034
+          }
+        ]
       },
       {
         "date": "2026-04-09",
         "cost": 0.4752784999999996,
         "calls": 343,
         "inputTokens": 827102,
-        "outputTokens": 14418
+        "outputTokens": 14418,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "composer-2",
+            "cost": 0.44445949999999984,
+            "calls": 295,
+            "inputTokens": 822549,
+            "outputTokens": 13274
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.030819,
+            "calls": 48,
+            "inputTokens": 4553,
+            "outputTokens": 1144
+          }
+        ]
       },
       {
         "date": "2026-04-11",
         "cost": 0.9250153999999999,
         "calls": 642,
         "inputTokens": 283843,
-        "outputTokens": 69056
+        "outputTokens": 69056,
+        "cacheReadTokens": 274573,
+        "cacheWriteTokens": 81942,
+        "topModels": [
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 0.6159969000000001,
+            "calls": 8,
+            "inputTokens": 16,
+            "outputTokens": 2795
+          },
+          {
+            "name": "composer-2",
+            "cost": 0.3072754999999997,
+            "calls": 632,
+            "inputTokens": 283681,
+            "outputTokens": 66174
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.0017430000000000002,
+            "calls": 2,
+            "inputTokens": 146,
+            "outputTokens": 87
+          }
+        ]
       },
       {
         "date": "2026-04-12",
         "cost": 0.05316749999999998,
         "calls": 203,
         "inputTokens": 0,
-        "outputTokens": 21267
+        "outputTokens": 21267,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "composer-2",
+            "cost": 0.05316749999999998,
+            "calls": 203,
+            "inputTokens": 0,
+            "outputTokens": 21267
+          }
+        ]
       },
       {
         "date": "2026-04-13",
         "cost": 12.929144950000007,
         "calls": 608,
         "inputTokens": 533801,
-        "outputTokens": 103903
+        "outputTokens": 103903,
+        "cacheReadTokens": 16241799,
+        "cacheWriteTokens": 1003407,
+        "topModels": [
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 11.890197450000008,
+            "calls": 206,
+            "inputTokens": 1736,
+            "outputTokens": 66422
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 0.5800230000000002,
+            "calls": 69,
+            "inputTokens": 148166,
+            "outputTokens": 9035
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.23503200000000019,
+            "calls": 238,
+            "inputTokens": 21724,
+            "outputTokens": 11324
+          },
+          {
+            "name": "composer-2",
+            "cost": 0.22389249999999994,
+            "calls": 90,
+            "inputTokens": 362175,
+            "outputTokens": 17122
+          }
+        ]
       },
       {
         "date": "2026-04-14",
         "cost": 26.5201231,
         "calls": 1010,
         "inputTokens": 193570,
-        "outputTokens": 114162
+        "outputTokens": 114162,
+        "cacheReadTokens": 42278642,
+        "cacheWriteTokens": 1929834,
+        "topModels": [
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 24.9844596,
+            "calls": 230,
+            "inputTokens": 306,
+            "outputTokens": 48063
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 1.319897999999998,
+            "calls": 608,
+            "inputTokens": 182976,
+            "outputTokens": 51398
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.21000300000000002,
+            "calls": 124,
+            "inputTokens": 8021,
+            "outputTokens": 12396
+          },
+          {
+            "name": "composer-2",
+            "cost": 0.005762499999999999,
+            "calls": 23,
+            "inputTokens": 0,
+            "outputTokens": 2305
+          },
+          {
+            "name": "premium",
+            "cost": 0,
+            "calls": 21,
+            "inputTokens": 2267,
+            "outputTokens": 0
+          }
+        ]
       },
       {
         "date": "2026-04-15",
         "cost": 1.5546990000000005,
         "calls": 529,
         "inputTokens": 308594,
-        "outputTokens": 54590
+        "outputTokens": 54590,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 1.3477320000000002,
+            "calls": 423,
+            "inputTokens": 241899,
+            "outputTokens": 41469
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.2069670000000001,
+            "calls": 98,
+            "inputTokens": 6079,
+            "outputTokens": 12582
+          },
+          {
+            "name": "premium",
+            "cost": 0,
+            "calls": 8,
+            "inputTokens": 60616,
+            "outputTokens": 539
+          }
+        ]
       },
       {
         "date": "2026-04-17",
         "cost": 0.4307429999999997,
         "calls": 161,
         "inputTokens": 201189,
-        "outputTokens": 13795
+        "outputTokens": 13795,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 0.367167,
+            "calls": 94,
+            "inputTokens": 77014,
+            "outputTokens": 9075
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.063576,
+            "calls": 54,
+            "inputTokens": 3182,
+            "outputTokens": 3602
+          },
+          {
+            "name": "premium",
+            "cost": 0,
+            "calls": 13,
+            "inputTokens": 120993,
+            "outputTokens": 1118
+          }
+        ]
       },
       {
         "date": "2026-04-19",
         "cost": 0.0015300000000000001,
         "calls": 39,
         "inputTokens": 205163,
-        "outputTokens": 6582
+        "outputTokens": 6582,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.0015300000000000001,
+            "calls": 1,
+            "inputTokens": 125,
+            "outputTokens": 77
+          },
+          {
+            "name": "premium",
+            "cost": 0,
+            "calls": 38,
+            "inputTokens": 205038,
+            "outputTokens": 6505
+          }
+        ]
       },
       {
         "date": "2026-04-20",
         "cost": 1.6159379999999988,
         "calls": 557,
         "inputTokens": 1846918,
-        "outputTokens": 44249
+        "outputTokens": 44249,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 1.482872999999999,
+            "calls": 76,
+            "inputTokens": 451226,
+            "outputTokens": 8613
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.133065,
+            "calls": 136,
+            "inputTokens": 9700,
+            "outputTokens": 6931
+          },
+          {
+            "name": "premium",
+            "cost": 0,
+            "calls": 345,
+            "inputTokens": 1385992,
+            "outputTokens": 28705
+          }
+        ]
       },
       {
         "date": "2026-04-24",
         "cost": 7.302130000000012,
         "calls": 324,
         "inputTokens": 1923483,
-        "outputTokens": 20357
+        "outputTokens": 20357,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 4.290315,
+            "calls": 151,
+            "inputTokens": 1381180,
+            "outputTokens": 9785
+          },
+          {
+            "name": "gpt-5.5",
+            "cost": 2.992900000000001,
+            "calls": 152,
+            "inputTokens": 540248,
+            "outputTokens": 9722
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.018915,
+            "calls": 21,
+            "inputTokens": 2055,
+            "outputTokens": 850
+          }
+        ]
       },
       {
         "date": "2026-04-26",
         "cost": 18.585304099999956,
         "calls": 771,
         "inputTokens": 4189603,
-        "outputTokens": 94234
+        "outputTokens": 94234,
+        "cacheReadTokens": 5059255,
+        "cacheWriteTokens": 59213,
+        "topModels": [
+          {
+            "name": "gpt-5.5",
+            "cost": 9.35796499999999,
+            "calls": 387,
+            "inputTokens": 1677925,
+            "outputTokens": 32278
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 5.964957000000001,
+            "calls": 122,
+            "inputTokens": 1874719,
+            "outputTokens": 22720
+          },
+          {
+            "name": "gpt-5.4",
+            "cost": 2.2089595,
+            "calls": 50,
+            "inputTokens": 333461,
+            "outputTokens": 19419
+          },
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 0.6877310999999999,
+            "calls": 19,
+            "inputTokens": 25,
+            "outputTokens": 2768
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.20559899999999987,
+            "calls": 160,
+            "inputTokens": 8748,
+            "outputTokens": 11957
+          }
+        ]
       },
       {
         "date": "2026-05-01",
         "cost": 0.31766999999999984,
         "calls": 114,
         "inputTokens": 407802,
-        "outputTokens": 20932
+        "outputTokens": 20932,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "composer-2",
+            "cost": 0.24181199999999997,
+            "calls": 90,
+            "inputTokens": 403734,
+            "outputTokens": 15978
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.075858,
+            "calls": 21,
+            "inputTokens": 516,
+            "outputTokens": 4954
+          },
+          {
+            "name": "premium",
+            "cost": 0,
+            "calls": 3,
+            "inputTokens": 3552,
+            "outputTokens": 0
+          }
+        ]
       },
       {
         "date": "2026-05-04",
         "cost": 1.0896154999999998,
         "calls": 44,
         "inputTokens": 347986,
-        "outputTokens": 4333
+        "outputTokens": 4333,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 1.082643,
+            "calls": 22,
+            "inputTokens": 347486,
+            "outputTokens": 2679
+          },
+          {
+            "name": "composer-2",
+            "cost": 0.0038675000000000007,
+            "calls": 18,
+            "inputTokens": 0,
+            "outputTokens": 1547
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.003105,
+            "calls": 4,
+            "inputTokens": 500,
+            "outputTokens": 107
+          }
+        ]
       },
       {
         "date": "2026-05-05",
         "cost": 12.030433499999985,
         "calls": 834,
         "inputTokens": 4294294,
-        "outputTokens": 77801
+        "outputTokens": 77801,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 11.442174,
+            "calls": 339,
+            "inputTokens": 3657588,
+            "outputTokens": 31294
+          },
+          {
+            "name": "composer-2",
+            "cost": 0.3960105000000004,
+            "calls": 311,
+            "inputTokens": 607681,
+            "outputTokens": 36868
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.19224900000000011,
+            "calls": 176,
+            "inputTokens": 15888,
+            "outputTokens": 9639
+          },
+          {
+            "name": "premium",
+            "cost": 0,
+            "calls": 8,
+            "inputTokens": 13137,
+            "outputTokens": 0
+          }
+        ]
       },
       {
         "date": "2026-05-06",
         "cost": 0.022867500000000002,
         "calls": 68,
         "inputTokens": 0,
-        "outputTokens": 9147
+        "outputTokens": 9147,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "composer-2",
+            "cost": 0.022867500000000002,
+            "calls": 68,
+            "inputTokens": 0,
+            "outputTokens": 9147
+          }
+        ]
       },
       {
         "date": "2026-05-09",
         "cost": 0.26601900000000006,
         "calls": 42,
         "inputTokens": 78643,
-        "outputTokens": 6343
+        "outputTokens": 6343,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 0.258429,
+            "calls": 8,
+            "inputTokens": 78618,
+            "outputTokens": 1505
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.0075899999999999995,
+            "calls": 3,
+            "inputTokens": 25,
+            "outputTokens": 501
+          },
+          {
+            "name": "premium",
+            "cost": 0,
+            "calls": 31,
+            "inputTokens": 0,
+            "outputTokens": 4337
+          }
+        ]
       },
       {
         "date": "2026-05-10",
         "cost": 0.008310000000000001,
         "calls": 13,
         "inputTokens": 505,
-        "outputTokens": 567
+        "outputTokens": 567,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.008310000000000001,
+            "calls": 11,
+            "inputTokens": 505,
+            "outputTokens": 453
+          },
+          {
+            "name": "premium",
+            "cost": 0,
+            "calls": 2,
+            "inputTokens": 0,
+            "outputTokens": 114
+          }
+        ]
       },
       {
         "date": "2026-05-11",
         "cost": 15.140717200000003,
         "calls": 303,
         "inputTokens": 68965,
-        "outputTokens": 173721
+        "outputTokens": 173721,
+        "cacheReadTokens": 25177769,
+        "cacheWriteTokens": 817419,
+        "topModels": [
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 14.924900700000002,
+            "calls": 227,
+            "inputTokens": 8107,
+            "outputTokens": 162849
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 0.18942299999999998,
+            "calls": 6,
+            "inputTokens": 60841,
+            "outputTokens": 460
+          },
+          {
+            "name": "composer-2",
+            "cost": 0.0259675,
+            "calls": 68,
+            "inputTokens": 0,
+            "outputTokens": 10387
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.000426,
+            "calls": 1,
+            "inputTokens": 17,
+            "outputTokens": 25
+          }
+        ]
       },
       {
         "date": "2026-05-12",
         "cost": 95.7021142000002,
         "calls": 1066,
         "inputTokens": 5872620,
-        "outputTokens": 435400
+        "outputTokens": 435400,
+        "cacheReadTokens": 104435887,
+        "cacheWriteTokens": 2069978,
+        "topModels": [
+          {
+            "name": "claude-opus-4-7",
+            "cost": 75.02650825000006,
+            "calls": 358,
+            "inputTokens": 631,
+            "outputTokens": 344191
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 18.59913600000001,
+            "calls": 514,
+            "inputTokens": 5856492,
+            "outputTokens": 68644
+          },
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 1.5735141000000006,
+            "calls": 15,
+            "inputTokens": 21,
+            "outputTokens": 3620
+          },
+          {
+            "name": "claude-haiku-4-5-20251001",
+            "cost": 0.34879785,
+            "calls": 9,
+            "inputTokens": 45,
+            "outputTokens": 10354
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.1499580000000001,
+            "calls": 156,
+            "inputTokens": 15431,
+            "outputTokens": 6911
+          }
+        ]
       },
       {
         "date": "2026-05-13",
         "cost": 263.6714360000002,
         "calls": 810,
         "inputTokens": 1109858,
-        "outputTokens": 550544
+        "outputTokens": 550544,
+        "cacheReadTokens": 306264932,
+        "cacheWriteTokens": 9363440,
+        "topModels": [
+          {
+            "name": "claude-opus-4-7",
+            "cost": 260.05895599999997,
+            "calls": 638,
+            "inputTokens": 1048,
+            "outputTokens": 531474
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 3.4954710000000007,
+            "calls": 108,
+            "inputTokens": 1104062,
+            "outputTokens": 12219
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.117009,
+            "calls": 63,
+            "inputTokens": 4748,
+            "outputTokens": 6851
+          }
+        ]
       },
       {
         "date": "2026-05-14",
         "cost": 8.196281999999997,
         "calls": 321,
         "inputTokens": 2609249,
-        "outputTokens": 24569
+        "outputTokens": 24569,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "cursor-auto",
+            "cost": 8.146281,
+            "calls": 240,
+            "inputTokens": 2603012,
+            "outputTokens": 22483
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.050000999999999976,
+            "calls": 81,
+            "inputTokens": 6237,
+            "outputTokens": 2086
+          }
+        ]
       },
       {
         "date": "2026-05-18",
         "cost": 2.1944405000000002,
         "calls": 8,
         "inputTokens": 18,
-        "outputTokens": 25846
+        "outputTokens": 25846,
+        "cacheReadTokens": 536181,
+        "cacheWriteTokens": 128011,
+        "topModels": [
+          {
+            "name": "claude-opus-4-7",
+            "cost": 2.1944405000000002,
+            "calls": 8,
+            "inputTokens": 18,
+            "outputTokens": 25846
+          }
+        ]
       },
       {
         "date": "2026-05-28",
         "cost": 207.77136249999998,
         "calls": 705,
         "inputTokens": 4825,
-        "outputTokens": 1087672
+        "outputTokens": 1087672,
+        "cacheReadTokens": 169421342,
+        "cacheWriteTokens": 10318301,
+        "topModels": [
+          {
+            "name": "claude-opus-4-7",
+            "cost": 177.3143,
+            "calls": 455,
+            "inputTokens": 748,
+            "outputTokens": 715967
+          },
+          {
+            "name": "claude-opus-4-8",
+            "cost": 28.883106000000005,
+            "calls": 172,
+            "inputTokens": 3860,
+            "outputTokens": 355700
+          },
+          {
+            "name": "claude-haiku-4-5-20251001",
+            "cost": 1.5739565,
+            "calls": 74,
+            "inputTokens": 217,
+            "outputTokens": 16005
+          }
+        ]
       },
       {
         "date": "2026-05-29",
         "cost": 276.5843209500001,
         "calls": 722,
         "inputTokens": 489992,
-        "outputTokens": 1557274
+        "outputTokens": 1557274,
+        "cacheReadTokens": 281864505,
+        "cacheWriteTokens": 9690404,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 276.0306139999999,
+            "calls": 679,
+            "inputTokens": 489532,
+            "outputTokens": 1549066
+          },
+          {
+            "name": "claude-haiku-4-5-20251001",
+            "cost": 0.48272395,
+            "calls": 16,
+            "inputTokens": 59,
+            "outputTokens": 3556
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.05500800000000001,
+            "calls": 16,
+            "inputTokens": 401,
+            "outputTokens": 3587
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 0.015975,
+            "calls": 7,
+            "inputTokens": 0,
+            "outputTokens": 1065
+          }
+        ]
       },
       {
         "date": "2026-05-30",
         "cost": 182.601195,
         "calls": 512,
         "inputTokens": 203294,
-        "outputTokens": 1217055
+        "outputTokens": 1217055,
+        "cacheReadTokens": 223667335,
+        "cacheWriteTokens": 3932625,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 182.601195,
+            "calls": 507,
+            "inputTokens": 203294,
+            "outputTokens": 1217055
+          }
+        ]
       },
       {
         "date": "2026-05-31",
         "cost": 55.18547850000002,
         "calls": 206,
         "inputTokens": 692088,
-        "outputTokens": 215607
+        "outputTokens": 215607,
+        "cacheReadTokens": 51052520,
+        "cacheWriteTokens": 2264581,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 52.75907500000002,
+            "calls": 73,
+            "inputTokens": 7531,
+            "outputTokens": 181974
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 2.3957309999999996,
+            "calls": 18,
+            "inputTokens": 683807,
+            "outputTokens": 22954
+          },
+          {
+            "name": "composer-2",
+            "cost": 0.0263525,
+            "calls": 108,
+            "inputTokens": 0,
+            "outputTokens": 10541
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.00432,
+            "calls": 6,
+            "inputTokens": 750,
+            "outputTokens": 138
+          }
+        ]
       },
       {
         "date": "2026-06-01",
         "cost": 2.1163625000000006,
         "calls": 246,
         "inputTokens": 330065,
-        "outputTokens": 30895
+        "outputTokens": 30895,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 1.9617000000000004,
+            "calls": 68,
+            "inputTokens": 327250,
+            "outputTokens": 13018
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.13027500000000003,
+            "calls": 57,
+            "inputTokens": 2815,
+            "outputTokens": 8122
+          },
+          {
+            "name": "composer-2",
+            "cost": 0.024387500000000006,
+            "calls": 121,
+            "inputTokens": 0,
+            "outputTokens": 9755
+          }
+        ]
       },
       {
         "date": "2026-06-02",
         "cost": 8.459375500000002,
         "calls": 27,
         "inputTokens": 148582,
-        "outputTokens": 55997
+        "outputTokens": 55997,
+        "cacheReadTokens": 1612666,
+        "cacheWriteTokens": 681871,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 8.459375500000002,
+            "calls": 26,
+            "inputTokens": 148582,
+            "outputTokens": 55997
+          }
+        ]
       },
       {
         "date": "2026-06-03",
         "cost": 152.63867794999996,
         "calls": 732,
         "inputTokens": 187098,
-        "outputTokens": 1198309
+        "outputTokens": 1198309,
+        "cacheReadTokens": 176004590,
+        "cacheWriteTokens": 4322993,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 144.00697924999992,
+            "calls": 450,
+            "inputTokens": 186749,
+            "outputTokens": 1121243
+          },
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 8.6316987,
+            "calls": 277,
+            "inputTokens": 349,
+            "outputTokens": 77066
+          }
+        ]
       },
       {
         "date": "2026-06-04",
         "cost": 184.4475089500001,
         "calls": 496,
         "inputTokens": 156276,
-        "outputTokens": 897999
+        "outputTokens": 897999,
+        "cacheReadTokens": 180124643,
+        "cacheWriteTokens": 7688767,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 182.47533575,
+            "calls": 375,
+            "inputTokens": 156084,
+            "outputTokens": 855726
+          },
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 1.3343862000000002,
+            "calls": 48,
+            "inputTokens": 58,
+            "outputTokens": 11476
+          },
+          {
+            "name": "claude-haiku-4-5-20251001",
+            "cost": 0.6377869999999999,
+            "calls": 48,
+            "inputTokens": 134,
+            "outputTokens": 30797
+          }
+        ]
       },
       {
         "date": "2026-06-05",
         "cost": 59.410356150000005,
         "calls": 153,
         "inputTokens": 64867,
-        "outputTokens": 230465
+        "outputTokens": 230465,
+        "cacheReadTokens": 53861478,
+        "cacheWriteTokens": 2781058,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 59.1290845,
+            "calls": 120,
+            "inputTokens": 64801,
+            "outputTokens": 223942
+          },
+          {
+            "name": "claude-haiku-4-5-20251001",
+            "cost": 0.28127165,
+            "calls": 25,
+            "inputTokens": 66,
+            "outputTokens": 6523
+          }
+        ]
       },
       {
         "date": "2026-06-09",
         "cost": 22.200296250000005,
         "calls": 69,
         "inputTokens": 126655,
-        "outputTokens": 112279
+        "outputTokens": 112279,
+        "cacheReadTokens": 5976421,
+        "cacheWriteTokens": 676093,
+        "topModels": [
+          {
+            "name": "claude-fable-5",
+            "cost": 21.818466,
+            "calls": 39,
+            "inputTokens": 126567,
+            "outputTokens": 99424
+          },
+          {
+            "name": "claude-haiku-4-5-20251001",
+            "cost": 0.38183025,
+            "calls": 26,
+            "inputTokens": 88,
+            "outputTokens": 12855
+          }
+        ]
       },
       {
         "date": "2026-06-10",
         "cost": 302.10576165000003,
         "calls": 989,
         "inputTokens": 1978700,
-        "outputTokens": 1293196
+        "outputTokens": 1293196,
+        "cacheReadTokens": 174434226,
+        "cacheWriteTokens": 14166995,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 202.62641325000038,
+            "calls": 764,
+            "inputTokens": 1925152,
+            "outputTokens": 1012782
+          },
+          {
+            "name": "claude-fable-5",
+            "cost": 99.14687800000006,
+            "calls": 167,
+            "inputTokens": 53462,
+            "outputTokens": 273708
+          },
+          {
+            "name": "claude-haiku-4-5-20251001",
+            "cost": 0.3324704,
+            "calls": 26,
+            "inputTokens": 86,
+            "outputTokens": 5028
+          },
+          {
+            "name": "nemotron-3-super:cloud",
+            "cost": 0,
+            "calls": 4,
+            "inputTokens": 0,
+            "outputTokens": 1678
+          }
+        ]
       },
       {
         "date": "2026-06-11",
         "cost": 231.26464600000008,
         "calls": 466,
         "inputTokens": 230852,
-        "outputTokens": 678748
+        "outputTokens": 678748,
+        "cacheReadTokens": 190831057,
+        "cacheWriteTokens": 10703304,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 207.65890600000003,
+            "calls": 419,
+            "inputTokens": 217525,
+            "outputTokens": 608435
+          },
+          {
+            "name": "claude-fable-5",
+            "cost": 23.60573999999999,
+            "calls": 29,
+            "inputTokens": 13327,
+            "outputTokens": 70313
+          }
+        ]
       },
       {
         "date": "2026-06-12",
         "cost": 15.397012000000007,
         "calls": 73,
         "inputTokens": 47264,
-        "outputTokens": 69315
+        "outputTokens": 69315,
+        "cacheReadTokens": 16322650,
+        "cacheWriteTokens": 685320,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 13.01695,
+            "calls": 31,
+            "inputTokens": 47223,
+            "outputTokens": 38466
+          },
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 2.380062,
+            "calls": 37,
+            "inputTokens": 41,
+            "outputTokens": 30849
+          }
+        ]
       },
       {
         "date": "2026-06-13",
         "cost": 32.683999099999994,
         "calls": 250,
         "inputTokens": 18612,
-        "outputTokens": 156355
+        "outputTokens": 156355,
+        "cacheReadTokens": 39623615,
+        "cacheWriteTokens": 1698163,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 20.516938999999997,
+            "calls": 32,
+            "inputTokens": 17866,
+            "outputTokens": 61445
+          },
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 12.167060100000006,
+            "calls": 212,
+            "inputTokens": 746,
+            "outputTokens": 94910
+          }
+        ]
       },
       {
         "date": "2026-06-18",
         "cost": 9.388416600000003,
         "calls": 11,
         "inputTokens": 21639,
-        "outputTokens": 6710
+        "outputTokens": 6710,
+        "cacheReadTokens": 1063524,
+        "cacheWriteTokens": 890300,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 8.904981000000001,
+            "calls": 5,
+            "inputTokens": 21630,
+            "outputTokens": 5390
+          },
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 0.4834356000000001,
+            "calls": 3,
+            "inputTokens": 9,
+            "outputTokens": 1320
+          }
+        ]
       },
       {
         "date": "2026-06-21",
         "cost": 5.270968,
         "calls": 37,
         "inputTokens": 3511,
-        "outputTokens": 21264
+        "outputTokens": 21264,
+        "cacheReadTokens": 3627286,
+        "cacheWriteTokens": 342445,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 4.496548,
+            "calls": 25,
+            "inputTokens": 3483,
+            "outputTokens": 14336
+          },
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 0.77442,
+            "calls": 10,
+            "inputTokens": 28,
+            "outputTokens": 6928
+          }
+        ]
       },
       {
         "date": "2026-06-22",
         "cost": 165.14426354999978,
         "calls": 566,
         "inputTokens": 127809,
-        "outputTokens": 655860
+        "outputTokens": 655860,
+        "cacheReadTokens": 167129788,
+        "cacheWriteTokens": 7553959,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 150.32567549999993,
+            "calls": 312,
+            "inputTokens": 126807,
+            "outputTokens": 563887
+          },
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 14.596362899999995,
+            "calls": 229,
+            "inputTokens": 960,
+            "outputTokens": 90464
+          },
+          {
+            "name": "claude-haiku-4-5-20251001",
+            "cost": 0.22222515000000004,
+            "calls": 14,
+            "inputTokens": 42,
+            "outputTokens": 1509
+          }
+        ]
       },
       {
         "date": "2026-06-23",
         "cost": 170.75711805,
         "calls": 484,
         "inputTokens": 376981,
-        "outputTokens": 714569
+        "outputTokens": 714569,
+        "cacheReadTokens": 145194931,
+        "cacheWriteTokens": 8305743,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 167.23548375,
+            "calls": 428,
+            "inputTokens": 376444,
+            "outputTokens": 696235
+          },
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 3.521634300000002,
+            "calls": 51,
+            "inputTokens": 537,
+            "outputTokens": 18334
+          }
+        ]
       },
       {
         "date": "2026-06-24",
         "cost": 61.60765235000002,
         "calls": 292,
         "inputTokens": 108146,
-        "outputTokens": 351366
+        "outputTokens": 351366,
+        "cacheReadTokens": 53513497,
+        "cacheWriteTokens": 2823765,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 60.438206250000015,
+            "calls": 240,
+            "inputTokens": 108048,
+            "outputTokens": 342098
+          },
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 1.0072078500000001,
+            "calls": 37,
+            "inputTokens": 45,
+            "outputTokens": 5271
+          },
+          {
+            "name": "claude-haiku-4-5-20251001",
+            "cost": 0.16223825,
+            "calls": 11,
+            "inputTokens": 53,
+            "outputTokens": 3997
+          }
+        ]
       },
       {
         "date": "2026-06-28",
         "cost": 220.9580007499998,
         "calls": 1056,
         "inputTokens": 1187725,
-        "outputTokens": 1023842
+        "outputTokens": 1023842,
+        "cacheReadTokens": 201085502,
+        "cacheWriteTokens": 10192842,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 212.75323849999992,
+            "calls": 763,
+            "inputTokens": 1187415,
+            "outputTokens": 940596
+          },
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 8.204762250000005,
+            "calls": 270,
+            "inputTokens": 310,
+            "outputTokens": 83246
+          }
+        ]
       },
       {
         "date": "2026-06-29",
         "cost": 20.595207600000002,
         "calls": 39,
         "inputTokens": 4420,
-        "outputTokens": 38756
+        "outputTokens": 38756,
+        "cacheReadTokens": 16638138,
+        "cacheWriteTokens": 1183506,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 19.7703255,
+            "calls": 31,
+            "inputTokens": 4407,
+            "outputTokens": 36288
+          },
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 0.8248821,
+            "calls": 7,
+            "inputTokens": 13,
+            "outputTokens": 2468
+          }
+        ]
       },
       {
         "date": "2026-06-30",
         "cost": 0.23763,
         "calls": 1,
         "inputTokens": 42821,
-        "outputTokens": 414
+        "outputTokens": 414,
+        "cacheReadTokens": 26350,
+        "cacheWriteTokens": 0,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 0.23763,
+            "calls": 1,
+            "inputTokens": 42821,
+            "outputTokens": 414
+          }
+        ]
       },
       {
         "date": "2026-07-01",
         "cost": 5.98229665,
         "calls": 100,
         "inputTokens": 168,
-        "outputTokens": 46637
+        "outputTokens": 46637,
+        "cacheReadTokens": 9948384,
+        "cacheWriteTokens": 450855,
+        "topModels": [
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 5.848555500000001,
+            "calls": 93,
+            "inputTokens": 133,
+            "outputTokens": 40881
+          },
+          {
+            "name": "claude-haiku-4-5-20251001",
+            "cost": 0.13374114999999998,
+            "calls": 7,
+            "inputTokens": 35,
+            "outputTokens": 5756
+          }
+        ]
       },
       {
         "date": "2026-07-03",
         "cost": 9.390329699999999,
         "calls": 129,
         "inputTokens": 44522,
-        "outputTokens": 63028
+        "outputTokens": 63028,
+        "cacheReadTokens": 14215377,
+        "cacheWriteTokens": 369787,
+        "topModels": [
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 4.820308199999999,
+            "calls": 103,
+            "inputTokens": 143,
+            "outputTokens": 29149
+          },
+          {
+            "name": "claude-opus-4-8",
+            "cost": 4.570021499999999,
+            "calls": 26,
+            "inputTokens": 44379,
+            "outputTokens": 33879
+          }
+        ]
       },
       {
         "date": "2026-07-04",
         "cost": 95.04361489999998,
         "calls": 1594,
         "inputTokens": 536485,
-        "outputTokens": 678865
+        "outputTokens": 678865,
+        "cacheReadTokens": 96341165,
+        "cacheWriteTokens": 8138395,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 48.90656475000001,
+            "calls": 300,
+            "inputTokens": 531249,
+            "outputTokens": 270234
+          },
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 45.451620150000025,
+            "calls": 1249,
+            "inputTokens": 5029,
+            "outputTokens": 380834
+          },
+          {
+            "name": "claude-haiku-4-5-20251001",
+            "cost": 0.6854300000000001,
+            "calls": 41,
+            "inputTokens": 207,
+            "outputTokens": 27797
+          }
+        ]
       },
       {
         "date": "2026-07-06",
         "cost": 211.51327340000012,
         "calls": 1131,
         "inputTokens": 529516,
-        "outputTokens": 692498
+        "outputTokens": 692498,
+        "cacheReadTokens": 246733325,
+        "cacheWriteTokens": 7545065,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 206.3669687500001,
+            "calls": 979,
+            "inputTokens": 525391,
+            "outputTokens": 639009
+          },
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 4.893779849999999,
+            "calls": 124,
+            "inputTokens": 4053,
+            "outputTokens": 42652
+          },
+          {
+            "name": "claude-haiku-4-5-20251001",
+            "cost": 0.2525248,
+            "calls": 19,
+            "inputTokens": 72,
+            "outputTokens": 10837
+          }
+        ]
       },
       {
         "date": "2026-07-07",
         "cost": 64.23057599999999,
         "calls": 265,
         "inputTokens": 225831,
-        "outputTokens": 230206
+        "outputTokens": 230206,
+        "cacheReadTokens": 67724362,
+        "cacheWriteTokens": 2348409,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 64.23057599999999,
+            "calls": 263,
+            "inputTokens": 225831,
+            "outputTokens": 230206
+          }
+        ]
       },
       {
         "date": "2026-07-08",
         "cost": 129.02660370000004,
         "calls": 651,
         "inputTokens": 129000,
-        "outputTokens": 327596
+        "outputTokens": 327596,
+        "cacheReadTokens": 172189149,
+        "cacheWriteTokens": 3447501,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 128.45978250000005,
+            "calls": 632,
+            "inputTokens": 128973,
+            "outputTokens": 320768
+          },
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 0.5668212,
+            "calls": 18,
+            "inputTokens": 27,
+            "outputTokens": 6828
+          }
+        ]
       },
       {
         "date": "2026-07-09",
         "cost": 6.4248292000000005,
         "calls": 30,
         "inputTokens": 73274,
-        "outputTokens": 10857
+        "outputTokens": 10857,
+        "cacheReadTokens": 2494618,
+        "cacheWriteTokens": 489796,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 5.8874770000000005,
+            "calls": 9,
+            "inputTokens": 72684,
+            "outputTokens": 2678
+          },
+          {
+            "name": "claude-sonnet-4-6",
+            "cost": 0.5373522000000001,
+            "calls": 19,
+            "inputTokens": 590,
+            "outputTokens": 8179
+          }
+        ]
       },
       {
         "date": "2026-07-10",
         "cost": 163.40735524999994,
         "calls": 833,
         "inputTokens": 1968366,
-        "outputTokens": 742408
+        "outputTokens": 742408,
+        "cacheReadTokens": 137587788,
+        "cacheWriteTokens": 7845973,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 163.40735524999994,
+            "calls": 754,
+            "inputTokens": 1968366,
+            "outputTokens": 742408
+          }
+        ]
       },
       {
         "date": "2026-07-11",
         "cost": 140.09924150000003,
         "calls": 221,
         "inputTokens": 575999,
-        "outputTokens": 426328
+        "outputTokens": 426328,
+        "cacheReadTokens": 49054123,
+        "cacheWriteTokens": 6554204,
+        "topModels": [
+          {
+            "name": "claude-fable-5",
+            "cost": 80.98142499999999,
+            "calls": 87,
+            "inputTokens": 306120,
+            "outputTokens": 281745
+          },
+          {
+            "name": "claude-opus-4-8",
+            "cost": 59.1178165,
+            "calls": 126,
+            "inputTokens": 269879,
+            "outputTokens": 144583
+          }
+        ]
       },
       {
         "date": "2026-07-12",
         "cost": 375.97038904999937,
         "calls": 1092,
         "inputTokens": 1021420,
-        "outputTokens": 912389
+        "outputTokens": 912389,
+        "cacheReadTokens": 266408152,
+        "cacheWriteTokens": 7044581,
+        "topModels": [
+          {
+            "name": "claude-fable-5",
+            "cost": 321.62093699999974,
+            "calls": 681,
+            "inputTokens": 81604,
+            "outputTokens": 333018
+          },
+          {
+            "name": "claude-opus-4-8",
+            "cost": 47.20359675000004,
+            "calls": 240,
+            "inputTokens": 212824,
+            "outputTokens": 252538
+          },
+          {
+            "name": "claude-sonnet-5",
+            "cost": 4.431820799999996,
+            "calls": 137,
+            "inputTokens": 222422,
+            "outputTokens": 61402
+          },
+          {
+            "name": "grok-4.5",
+            "cost": 2.579612,
+            "calls": 9,
+            "inputTokens": 504484,
+            "outputTokens": 261774
+          },
+          {
+            "name": "claude-haiku-4-5-20251001",
+            "cost": 0.1344225,
+            "calls": 10,
+            "inputTokens": 86,
+            "outputTokens": 3657
+          }
+        ]
       },
       {
         "date": "2026-07-13",
         "cost": 452.0260162499998,
         "calls": 1651,
         "inputTokens": 1058693,
-        "outputTokens": 1770063
+        "outputTokens": 1770063,
+        "cacheReadTokens": 498978585,
+        "cacheWriteTokens": 15796457,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 452.0260162499998,
+            "calls": 1642,
+            "inputTokens": 1058693,
+            "outputTokens": 1770063
+          }
+        ]
       },
       {
         "date": "2026-07-14",
         "cost": 347.0328674000001,
         "calls": 1469,
         "inputTokens": 3314412,
-        "outputTokens": 2865253
+        "outputTokens": 2865253,
+        "cacheReadTokens": 314920286,
+        "cacheWriteTokens": 11732323,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 225.0461815000002,
+            "calls": 970,
+            "inputTokens": 605974,
+            "outputTokens": 1001323
+          },
+          {
+            "name": "claude-fable-5",
+            "cost": 90.23988999999992,
+            "calls": 264,
+            "inputTokens": 494,
+            "outputTokens": 137195
+          },
+          {
+            "name": "grok-4.5",
+            "cost": 22.534351,
+            "calls": 9,
+            "inputTokens": 2202474,
+            "outputTokens": 1598145
+          },
+          {
+            "name": "claude-sonnet-5",
+            "cost": 9.2124449,
+            "calls": 212,
+            "inputTokens": 505470,
+            "outputTokens": 128590
+          }
+        ]
       },
       {
         "date": "2026-07-15",
         "cost": 327.2450372999998,
         "calls": 1258,
         "inputTokens": 1088803,
-        "outputTokens": 1471480
+        "outputTokens": 1471480,
+        "cacheReadTokens": 267505566,
+        "cacheWriteTokens": 7505884,
+        "topModels": [
+          {
+            "name": "claude-fable-5",
+            "cost": 222.70597349999997,
+            "calls": 625,
+            "inputTokens": 1192,
+            "outputTokens": 386686
+          },
+          {
+            "name": "claude-opus-4-8",
+            "cost": 84.04730949999997,
+            "calls": 359,
+            "inputTokens": 447560,
+            "outputTokens": 392819
+          },
+          {
+            "name": "claude-sonnet-5",
+            "cost": 13.037338300000002,
+            "calls": 256,
+            "inputTokens": 849,
+            "outputTokens": 283763
+          },
+          {
+            "name": "grok-4.5",
+            "cost": 6.985557999999999,
+            "calls": 3,
+            "inputTokens": 511551,
+            "outputTokens": 402485
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 0.468078,
+            "calls": 6,
+            "inputTokens": 127526,
+            "outputTokens": 5700
+          }
+        ]
       },
       {
         "date": "2026-07-16",
         "cost": 20.739799999999967,
         "calls": 718,
         "inputTokens": 3133305,
-        "outputTokens": 96824
+        "outputTokens": 96824,
+        "cacheReadTokens": 12760316,
+        "cacheWriteTokens": 354051,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 11.128103000000001,
+            "calls": 259,
+            "inputTokens": 192,
+            "outputTokens": 48259
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 8.71072199999999,
+            "calls": 369,
+            "inputTokens": 2748159,
+            "outputTokens": 31083
+          },
+          {
+            "name": "grok-4.5",
+            "cost": 0.84897,
+            "calls": 30,
+            "inputTokens": 378669,
+            "outputTokens": 15272
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.052005,
+            "calls": 59,
+            "inputTokens": 6285,
+            "outputTokens": 2210
+          }
+        ]
       },
       {
         "date": "2026-07-17",
         "cost": 1.5868329999999997,
         "calls": 151,
         "inputTokens": 182703,
-        "outputTokens": 7787
+        "outputTokens": 7787,
+        "cacheReadTokens": 158254,
+        "cacheWriteTokens": 82511,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 0.9484420000000001,
+            "calls": 11,
+            "inputTokens": 6,
+            "outputTokens": 1767
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 0.588285,
+            "calls": 76,
+            "inputTokens": 178490,
+            "outputTokens": 3521
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.05010599999999999,
+            "calls": 64,
+            "inputTokens": 4207,
+            "outputTokens": 2499
+          }
+        ]
       },
       {
         "date": "2026-07-18",
         "cost": 28.721767500000066,
         "calls": 476,
         "inputTokens": 164384,
-        "outputTokens": 158897
+        "outputTokens": 158897,
+        "cacheReadTokens": 29632453,
+        "cacheWriteTokens": 982944,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 27.805451500000004,
+            "calls": 178,
+            "inputTokens": 332,
+            "outputTokens": 126325
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 0.7736249999999993,
+            "calls": 270,
+            "inputTokens": 113130,
+            "outputTokens": 28949
+          },
+          {
+            "name": "grok-4.5",
+            "cost": 0.10978399999999999,
+            "calls": 13,
+            "inputTokens": 50128,
+            "outputTokens": 1588
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.032907000000000006,
+            "calls": 14,
+            "inputTokens": 794,
+            "outputTokens": 2035
+          }
+        ]
       },
       {
         "date": "2026-07-19",
         "cost": 6.5651635000000015,
         "calls": 28,
         "inputTokens": 51,
-        "outputTokens": 17335
+        "outputTokens": 17335,
+        "cacheReadTokens": 5655127,
+        "cacheWriteTokens": 330397,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 6.5651635000000015,
+            "calls": 27,
+            "inputTokens": 51,
+            "outputTokens": 17335
+          }
+        ]
       },
       {
         "date": "2026-07-20",
         "cost": 36.174324000000034,
         "calls": 314,
         "inputTokens": 946705,
-        "outputTokens": 159860
+        "outputTokens": 159860,
+        "cacheReadTokens": 33431804,
+        "cacheWriteTokens": 1289327,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 33.031076999999996,
+            "calls": 159,
+            "inputTokens": 296,
+            "outputTokens": 136817
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 3.103185,
+            "calls": 104,
+            "inputTokens": 944920,
+            "outputTokens": 17895
+          },
+          {
+            "name": "grok-4.5",
+            "cost": 0.02775,
+            "calls": 36,
+            "inputTokens": 0,
+            "outputTokens": 4625
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.012312000000000002,
+            "calls": 14,
+            "inputTokens": 1489,
+            "outputTokens": 523
+          }
+        ]
       },
       {
         "date": "2026-07-22",
         "cost": 67.14887900000008,
         "calls": 424,
         "inputTokens": 697059,
-        "outputTokens": 213715
+        "outputTokens": 213715,
+        "cacheReadTokens": 87550622,
+        "cacheWriteTokens": 1652602,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 65.16048599999998,
+            "calls": 210,
+            "inputTokens": 396,
+            "outputTokens": 194287
+          },
+          {
+            "name": "cursor-auto",
+            "cost": 1.288341,
+            "calls": 44,
+            "inputTokens": 392907,
+            "outputTokens": 7308
+          },
+          {
+            "name": "grok-4.5",
+            "cost": 0.6621919999999999,
+            "calls": 119,
+            "inputTokens": 300136,
+            "outputTokens": 10320
+          },
+          {
+            "name": "cursor-agent-auto",
+            "cost": 0.03785999999999999,
+            "calls": 49,
+            "inputTokens": 3620,
+            "outputTokens": 1800
+          }
+        ]
       },
       {
         "date": "2026-07-23",
         "cost": 0.9577220000000003,
         "calls": 3,
         "inputTokens": 6,
-        "outputTokens": 725
+        "outputTokens": 725,
+        "cacheReadTokens": 164434,
+        "cacheWriteTokens": 85735,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 0.9577220000000003,
+            "calls": 3,
+            "inputTokens": 6,
+            "outputTokens": 725
+          }
+        ]
       },
       {
         "date": "2026-07-24",
-        "cost": 23.346961999999998,
-        "calls": 215,
-        "inputTokens": 676,
-        "outputTokens": 111829
+        "cost": 30.32249049999999,
+        "calls": 265,
+        "inputTokens": 771,
+        "outputTokens": 137592,
+        "cacheReadTokens": 36739691,
+        "cacheWriteTokens": 850899,
+        "topModels": [
+          {
+            "name": "claude-opus-4-8",
+            "cost": 30.32249049999999,
+            "calls": 264,
+            "inputTokens": 771,
+            "outputTokens": 137592
+          }
+        ]
       }
     ]
   },
   "periods": {
     "today": {
       "label": "Today (2026-07-24)",
-      "cost": 23.34696200000001,
-      "calls": 215,
-      "sessions": 3,
+      "cost": 30.322490500000008,
+      "calls": 265,
+      "sessions": 4,
       "oneShotRate": 0.5,
-      "inputTokens": 676,
-      "outputTokens": 111829,
-      "cacheReadTokens": 28959654,
-      "cacheWriteTokens": 606803,
-      "cacheHitPercent": 99.99766577245494,
+      "inputTokens": 771,
+      "outputTokens": 137592,
+      "cacheReadTokens": 36739691,
+      "cacheWriteTokens": 850899,
+      "cacheHitPercent": 99.99790149617607,
       "codexCredits": 0,
       "topActivities": [
         {
           "name": "Coding",
-          "cost": 13.322975999999997,
-          "turns": 4,
-          "oneShotRate": 0.6666666666666666,
+          "cost": 16.512787999999997,
+          "turns": 5,
+          "oneShotRate": 0.3333333333333333,
           "savingsUSD": 0
         },
         {
           "name": "Feature Dev",
-          "cost": 4.1485915,
-          "turns": 5,
-          "oneShotRate": 0.5,
+          "cost": 5.698309,
+          "turns": 7,
+          "oneShotRate": 0.75,
+          "savingsUSD": 0
+        },
+        {
+          "name": "Testing",
+          "cost": 2.5626430000000004,
+          "turns": 3,
+          "oneShotRate": null,
           "savingsUSD": 0
         },
         {
@@ -946,7 +3663,7 @@
         {
           "name": "Conversation",
           "cost": 0.8731705000000001,
-          "turns": 7,
+          "turns": 8,
           "oneShotRate": null,
           "savingsUSD": 0
         },
@@ -954,13 +3671,6 @@
           "name": "Exploration",
           "cost": 0.32869149999999997,
           "turns": 1,
-          "oneShotRate": null,
-          "savingsUSD": 0
-        },
-        {
-          "name": "Testing",
-          "cost": 0.32664400000000005,
-          "turns": 2,
           "oneShotRate": null,
           "savingsUSD": 0
         },
@@ -975,23 +3685,23 @@
       "topModels": [
         {
           "name": "Opus 4.8",
-          "cost": 23.34696200000001,
-          "calls": 215,
+          "cost": 30.322490500000008,
+          "calls": 264,
           "savingsUSD": 0
         }
       ],
       "topProjects": [
         {
           "name": "CLAUDE WORLD",
-          "cost": 16.817919000000007,
-          "sessions": 1,
-          "avgCostPerSession": 16.817919000000007
+          "cost": 19.517597500000004,
+          "sessions": 2,
+          "avgCostPerSession": 9.758798750000002
         },
         {
           "name": "dashboard-ui-x",
-          "cost": 4.67884,
+          "cost": 8.954690000000001,
           "sessions": 1,
-          "avgCostPerSession": 4.67884
+          "avgCostPerSession": 8.954690000000001
         },
         {
           "name": "OB CLAUDE vault",
@@ -1003,25 +3713,25 @@
       "providers": [
         {
           "name": "claude",
-          "cost": 23.346961999999998
+          "cost": 30.32249049999999
         }
       ],
       "tools": [
         {
           "name": "Bash",
-          "calls": 97
+          "calls": 111
         },
         {
           "name": "Edit",
-          "calls": 42
+          "calls": 52
         },
         {
           "name": "Write",
-          "calls": 32
+          "calls": 34
         },
         {
           "name": "Read",
-          "calls": 5
+          "calls": 7
         },
         {
           "name": "Skill",
@@ -1048,7 +3758,7 @@
       "mcpServers": [
         {
           "name": "Claude_Browser",
-          "calls": 16
+          "calls": 35
         },
         {
           "name": "plugin_context-mode_context-mode",
@@ -1056,15 +3766,15 @@
         }
       ],
       "retryTax": {
-        "totalUSD": 102.31146749999999,
-        "retries": 33,
-        "editTurns": 6,
+        "totalUSD": 100.92400499999998,
+        "retries": 35,
+        "editTurns": 8,
         "byModel": [
           {
             "name": "Opus 4.8",
-            "taxUSD": 102.31146749999999,
-            "retries": 33,
-            "retriesPerEdit": 5.5
+            "taxUSD": 100.92400499999998,
+            "retries": 35,
+            "retriesPerEdit": 4.4
           }
         ]
       },
@@ -1082,29 +3792,29 @@
       "modelEfficiency": [
         {
           "name": "Opus 4.8",
-          "costPerEdit": 3.1003475,
+          "costPerEdit": 2.8835429999999995,
           "oneShotRate": 50
         }
       ],
       "topSessions": [
         {
           "project": "CLAUDE WORLD",
-          "cost": 16.817919000000007,
-          "calls": 167,
+          "cost": 17.281598500000005,
+          "calls": 170,
           "date": "2026-07-24",
           "savingsUSD": 0
         },
         {
           "project": "dashboard-ui-x",
-          "cost": 4.67884,
-          "calls": 43,
+          "cost": 8.954690000000001,
+          "calls": 87,
           "date": "2026-07-24",
           "savingsUSD": 0
         },
         {
-          "project": "OB CLAUDE vault",
-          "cost": 1.8502030000000005,
-          "calls": 5,
+          "project": "CLAUDE WORLD",
+          "cost": 2.2359990000000005,
+          "calls": 3,
           "date": "2026-07-24",
           "savingsUSD": 0
         }
@@ -1113,29 +3823,29 @@
     },
     "week": {
       "label": "Last 7 Days",
-      "cost": 164.50165100000004,
-      "calls": 1611,
+      "cost": 171.47717950000003,
+      "calls": 1661,
       "sessions": 73,
-      "oneShotRate": 0.7419354838709677,
-      "inputTokens": 1991584,
-      "outputTokens": 670148,
-      "cacheReadTokens": 185552348,
-      "cacheWriteTokens": 5030319,
-      "cacheHitPercent": 98.93807068095384,
+      "oneShotRate": 0.7272727272727273,
+      "inputTokens": 1991679,
+      "outputTokens": 695911,
+      "cacheReadTokens": 193332385,
+      "cacheWriteTokens": 5274415,
+      "cacheHitPercent": 98.98032072484423,
       "codexCredits": 0,
       "topActivities": [
         {
           "name": "Coding",
-          "cost": 80.550431,
-          "turns": 45,
-          "oneShotRate": 0.7647058823529411,
+          "cost": 83.740243,
+          "turns": 46,
+          "oneShotRate": 0.7058823529411765,
           "savingsUSD": 0
         },
         {
           "name": "Feature Dev",
-          "cost": 41.203934499999995,
-          "turns": 176,
-          "oneShotRate": 0.8333333333333334,
+          "cost": 42.753651999999995,
+          "turns": 178,
+          "oneShotRate": 0.8571428571428571,
           "savingsUSD": 0
         },
         {
@@ -1162,14 +3872,14 @@
         {
           "name": "Conversation",
           "cost": 7.4638415,
-          "turns": 301,
+          "turns": 302,
           "oneShotRate": null,
           "savingsUSD": 0
         },
         {
           "name": "Testing",
-          "cost": 1.796182,
-          "turns": 3,
+          "cost": 4.0321810000000005,
+          "turns": 4,
           "oneShotRate": null,
           "savingsUSD": 0
         },
@@ -1198,8 +3908,8 @@
       "topModels": [
         {
           "name": "Opus 4.8",
-          "cost": 157.815304,
-          "calls": 803,
+          "cost": 164.79083249999996,
+          "calls": 852,
           "savingsUSD": 0
         },
         {
@@ -1230,27 +3940,27 @@
         },
         {
           "name": "CLAUDE WORLD",
-          "cost": 39.0071205,
+          "cost": 41.706799000000004,
           "sessions": 2,
-          "avgCostPerSession": 19.50356025
+          "avgCostPerSession": 20.853399500000002
+        },
+        {
+          "name": "dashboard-ui-x",
+          "cost": 8.954690000000001,
+          "sessions": 1,
+          "avgCostPerSession": 8.954690000000001
         },
         {
           "name": "OB CLAUDE vault",
           "cost": 7.673349000000001,
           "sessions": 7,
           "avgCostPerSession": 1.0961927142857144
-        },
-        {
-          "name": "cursor",
-          "cost": 6.576887,
-          "sessions": 30,
-          "avgCostPerSession": 0.21922956666666668
         }
       ],
       "providers": [
         {
           "name": "claude",
-          "cost": 157.79157899999998
+          "cost": 164.76710749999998
         },
         {
           "name": "cursor",
@@ -1264,19 +3974,19 @@
       "tools": [
         {
           "name": "Bash",
-          "calls": 292
+          "calls": 306
         },
         {
           "name": "Edit",
-          "calls": 188
+          "calls": 198
         },
         {
           "name": "Write",
-          "calls": 65
+          "calls": 67
         },
         {
           "name": "Read",
-          "calls": 65
+          "calls": 67
         },
         {
           "name": "cursor:task",
@@ -1327,12 +4037,12 @@
           "calls": 61
         },
         {
-          "name": "plugin_context-mode_context-mode",
-          "calls": 24
+          "name": "Claude_Browser",
+          "calls": 35
         },
         {
-          "name": "Claude_Browser",
-          "calls": 16
+          "name": "plugin_context-mode_context-mode",
+          "calls": 24
         },
         {
           "name": "Claude_Code_iOS_Simulator",
@@ -1348,15 +4058,15 @@
         }
       ],
       "retryTax": {
-        "totalUSD": 237.68311679032254,
-        "retries": 59,
-        "editTurns": 31,
+        "totalUSD": 239.10263995454542,
+        "retries": 61,
+        "editTurns": 33,
         "byModel": [
           {
             "name": "Opus 4.8",
-            "taxUSD": 237.68311679032254,
-            "retries": 59,
-            "retriesPerEdit": 1.9
+            "taxUSD": 239.10263995454542,
+            "retries": 61,
+            "retriesPerEdit": 1.8
           }
         ]
       },
@@ -1374,8 +4084,8 @@
       "modelEfficiency": [
         {
           "name": "Opus 4.8",
-          "costPerEdit": 4.028527403225806,
-          "oneShotRate": 74.2
+          "costPerEdit": 3.9197154090909088,
+          "oneShotRate": 72.7
         }
       ],
       "topSessions": [
@@ -1395,8 +4105,8 @@
         },
         {
           "project": "CLAUDE WORLD",
-          "cost": 22.189201499999996,
-          "calls": 130,
+          "cost": 24.4252005,
+          "calls": 133,
           "date": "2026-07-20",
           "savingsUSD": 0
         }
@@ -1405,29 +4115,29 @@
     },
     "30days": {
       "label": "Last 30 Days",
-      "cost": 2816.0323719999997,
-      "calls": 14141,
+      "cost": 2823.1339399999997,
+      "calls": 14192,
       "sessions": 656,
-      "oneShotRate": 0.8129675810473815,
-      "inputTokens": 17034490,
-      "outputTokens": 12418958,
-      "cacheReadTokens": 2613677031,
-      "cacheWriteTokens": 98853713,
-      "cacheHitPercent": 99.35247594181195,
+      "oneShotRate": 0.8114143920595533,
+      "inputTokens": 17034589,
+      "outputTokens": 12444927,
+      "cacheReadTokens": 2621669627,
+      "cacheWriteTokens": 99099268,
+      "cacheHitPercent": 99.35443355504913,
       "codexCredits": 0,
       "topActivities": [
         {
           "name": "Coding",
-          "cost": 1259.4344056499986,
-          "turns": 339,
-          "oneShotRate": 0.8171428571428572,
+          "cost": 1262.6242176499986,
+          "turns": 340,
+          "oneShotRate": 0.8114285714285714,
           "savingsUSD": 0
         },
         {
           "name": "Feature Dev",
-          "cost": 565.3979270000008,
-          "turns": 588,
-          "oneShotRate": 0.8205128205128205,
+          "cost": 567.0736840000008,
+          "turns": 590,
+          "oneShotRate": 0.8227848101265823,
           "savingsUSD": 0
         },
         {
@@ -1460,15 +4170,15 @@
         },
         {
           "name": "Testing",
-          "cost": 78.36204390000002,
-          "turns": 53,
+          "cost": 80.59804290000002,
+          "turns": 54,
           "oneShotRate": null,
           "savingsUSD": 0
         },
         {
           "name": "Conversation",
           "cost": 65.78094559999995,
-          "turns": 588,
+          "turns": 589,
           "oneShotRate": null,
           "savingsUSD": 0
         },
@@ -1504,8 +4214,8 @@
       "topModels": [
         {
           "name": "Opus 4.8",
-          "cost": 1951.4124734999998,
-          "calls": 8397,
+          "cost": 1958.5140414999998,
+          "calls": 8447,
           "savingsUSD": 0
         },
         {
@@ -1548,9 +4258,9 @@
       "topProjects": [
         {
           "name": "CLAUDE WORLD",
-          "cost": 495.11634494999987,
+          "cost": 497.9420629499999,
           "sessions": 39,
-          "avgCostPerSession": 12.695290896153843
+          "avgCostPerSession": 12.767745203846152
         },
         {
           "name": "UI Dashboard x",
@@ -1580,7 +4290,7 @@
       "providers": [
         {
           "name": "claude",
-          "cost": 2764.632868999998
+          "cost": 2771.6083974999983
         },
         {
           "name": "grok build",
@@ -1598,19 +4308,19 @@
       "tools": [
         {
           "name": "Bash",
-          "calls": 4594
+          "calls": 4609
         },
         {
           "name": "Edit",
-          "calls": 2262
+          "calls": 2272
         },
         {
           "name": "Read",
-          "calls": 1836
+          "calls": 1838
         },
         {
           "name": "Write",
-          "calls": 667
+          "calls": 669
         },
         {
           "name": "ToolSearch",
@@ -1708,7 +4418,7 @@
         },
         {
           "name": "Claude_Browser",
-          "calls": 857
+          "calls": 876
         },
         {
           "name": "plugin_context-mode_context-mode",
@@ -1744,14 +4454,14 @@
         }
       ],
       "retryTax": {
-        "totalUSD": 1126.0042922875673,
-        "retries": 207,
-        "editTurns": 395,
+        "totalUSD": 1132.5786882860182,
+        "retries": 209,
+        "editTurns": 397,
         "byModel": [
           {
             "name": "Opus 4.8",
-            "taxUSD": 595.8294604777396,
-            "retries": 141,
+            "taxUSD": 602.4038564761904,
+            "retries": 143,
             "retriesPerEdit": 0.5
           },
           {
@@ -1812,8 +4522,8 @@
         },
         {
           "name": "Opus 4.8",
-          "costPerEdit": 4.225740854452054,
-          "oneShotRate": 84.6
+          "costPerEdit": 4.21261438095238,
+          "oneShotRate": 84.4
         },
         {
           "name": "grok-4.5",
@@ -1848,29 +4558,29 @@
     },
     "month": {
       "label": "July 2026",
-      "cost": 2512.6338812999993,
-      "calls": 12753,
+      "cost": 2519.7354492999993,
+      "calls": 12804,
       "sessions": 607,
-      "oneShotRate": 0.8105849582172702,
-      "inputTokens": 15691378,
-      "outputTokens": 11004580,
-      "cacheReadTokens": 2342413544,
-      "cacheWriteTokens": 84653600,
-      "cacheHitPercent": 99.33457676740306,
+      "oneShotRate": 0.8088642659279779,
+      "inputTokens": 15691477,
+      "outputTokens": 11030549,
+      "cacheReadTokens": 2350406140,
+      "cacheWriteTokens": 84899155,
+      "cacheHitPercent": 99.33682038782933,
       "codexCredits": 0,
       "topActivities": [
         {
           "name": "Coding",
-          "cost": 1141.5477041499987,
-          "turns": 319,
-          "oneShotRate": 0.8260869565217391,
+          "cost": 1144.7375161499988,
+          "turns": 320,
+          "oneShotRate": 0.8198757763975155,
           "savingsUSD": 0
         },
         {
           "name": "Feature Dev",
-          "cost": 510.0751382499999,
-          "turns": 566,
-          "oneShotRate": 0.8181818181818182,
+          "cost": 511.7508952499999,
+          "turns": 568,
+          "oneShotRate": 0.8206896551724138,
           "savingsUSD": 0
         },
         {
@@ -1903,15 +4613,15 @@
         },
         {
           "name": "Testing",
-          "cost": 72.7945236,
-          "turns": 47,
+          "cost": 75.0305226,
+          "turns": 48,
           "oneShotRate": null,
           "savingsUSD": 0
         },
         {
           "name": "Conversation",
           "cost": 48.348644599999965,
-          "turns": 573,
+          "turns": 574,
           "oneShotRate": null,
           "savingsUSD": 0
         },
@@ -1947,8 +4657,8 @@
       "topModels": [
         {
           "name": "Opus 4.8",
-          "cost": 1658.2130732499998,
-          "calls": 7362,
+          "cost": 1665.3146412499998,
+          "calls": 7412,
           "savingsUSD": 0
         },
         {
@@ -1991,9 +4701,9 @@
       "topProjects": [
         {
           "name": "CLAUDE WORLD",
-          "cost": 495.11634494999987,
+          "cost": 497.9420629499999,
           "sessions": 39,
-          "avgCostPerSession": 12.695290896153843
+          "avgCostPerSession": 12.767745203846152
         },
         {
           "name": "UI Dashboard x",
@@ -2023,7 +4733,7 @@
       "providers": [
         {
           "name": "claude",
-          "cost": 2461.2343782999988
+          "cost": 2468.335946299999
         },
         {
           "name": "grok build",
@@ -2041,19 +4751,19 @@
       "tools": [
         {
           "name": "Bash",
-          "calls": 4115
+          "calls": 4130
         },
         {
           "name": "Edit",
-          "calls": 2125
+          "calls": 2135
         },
         {
           "name": "Read",
-          "calls": 1663
+          "calls": 1665
         },
         {
           "name": "Write",
-          "calls": 575
+          "calls": 577
         },
         {
           "name": "ToolSearch",
@@ -2151,7 +4861,7 @@
         },
         {
           "name": "Claude_Browser",
-          "calls": 857
+          "calls": 876
         },
         {
           "name": "plugin_context-mode_context-mode",
@@ -2187,14 +4897,14 @@
         }
       ],
       "retryTax": {
-        "totalUSD": 1054.8383344868503,
-        "retries": 197,
-        "editTurns": 353,
+        "totalUSD": 1061.0771011746788,
+        "retries": 199,
+        "editTurns": 355,
         "byModel": [
           {
             "name": "Opus 4.8",
-            "taxUSD": 526.4150159884169,
-            "retries": 132,
+            "taxUSD": 532.6537826762452,
+            "retries": 134,
             "retriesPerEdit": 0.5
           },
           {
@@ -2255,8 +4965,8 @@
         },
         {
           "name": "Opus 4.8",
-          "costPerEdit": 3.987992545366795,
-          "oneShotRate": 84.9
+          "costPerEdit": 3.9750282289272034,
+          "oneShotRate": 84.7
         },
         {
           "name": "grok-4.5",
@@ -2291,29 +5001,29 @@
     },
     "all": {
       "label": "Last 6 months",
-      "cost": 4190.949297799997,
-      "calls": 23846,
+      "cost": 4198.050865799997,
+      "calls": 23897,
       "sessions": 1265,
-      "oneShotRate": 0.823240589198036,
-      "inputTokens": 24784862,
-      "outputTokens": 19728138,
-      "cacheReadTokens": 4035087247,
-      "cacheWriteTokens": 156887669,
-      "cacheHitPercent": 99.38951618832877,
+      "oneShotRate": 0.8221859706362153,
+      "inputTokens": 24784961,
+      "outputTokens": 19754107,
+      "cacheReadTokens": 4043079843,
+      "cacheWriteTokens": 157133224,
+      "cacheHitPercent": 99.39071325635925,
       "codexCredits": 55.2239875,
       "topActivities": [
         {
           "name": "Coding",
-          "cost": 1778.745948849998,
-          "turns": 690,
-          "oneShotRate": 0.8143939393939394,
+          "cost": 1781.9357608499981,
+          "turns": 691,
+          "oneShotRate": 0.8106060606060606,
           "savingsUSD": 0
         },
         {
           "name": "Feature Dev",
-          "cost": 977.0701649000005,
-          "turns": 1476,
-          "oneShotRate": 0.8373015873015873,
+          "cost": 978.7459219000004,
+          "turns": 1478,
+          "oneShotRate": 0.8385826771653543,
           "savingsUSD": 0
         },
         {
@@ -2346,15 +5056,15 @@
         },
         {
           "name": "Testing",
-          "cost": 121.00431510000003,
-          "turns": 69,
+          "cost": 123.24031410000002,
+          "turns": 70,
           "oneShotRate": null,
           "savingsUSD": 0
         },
         {
           "name": "Conversation",
           "cost": 99.4542235000001,
-          "turns": 2725,
+          "turns": 2726,
           "oneShotRate": null,
           "savingsUSD": 0
         },
@@ -2397,8 +5107,8 @@
       "topModels": [
         {
           "name": "Opus 4.8",
-          "cost": 3062.284078749998,
-          "calls": 11024,
+          "cost": 3069.385646749998,
+          "calls": 11074,
           "savingsUSD": 0
         },
         {
@@ -2471,9 +5181,9 @@
       "topProjects": [
         {
           "name": "CLAUDE WORLD",
-          "cost": 495.11634494999987,
+          "cost": 497.9420629499999,
           "sessions": 39,
-          "avgCostPerSession": 12.695290896153843
+          "avgCostPerSession": 12.767745203846152
         },
         {
           "name": "UI Dashboard x",
@@ -2503,7 +5213,7 @@
       "providers": [
         {
           "name": "claude",
-          "cost": 5257.291701949999
+          "cost": 5264.393269949999
         },
         {
           "name": "cursor",
@@ -2525,19 +5235,19 @@
       "tools": [
         {
           "name": "Bash",
-          "calls": 6563
+          "calls": 6578
         },
         {
           "name": "Edit",
-          "calls": 2989
+          "calls": 2999
         },
         {
           "name": "Read",
-          "calls": 2626
+          "calls": 2628
         },
         {
           "name": "Write",
-          "calls": 1131
+          "calls": 1133
         },
         {
           "name": "cursor:read",
@@ -2635,7 +5345,7 @@
         },
         {
           "name": "Claude_Browser",
-          "calls": 857
+          "calls": 876
         },
         {
           "name": "Claude_Preview",
@@ -2671,14 +5381,14 @@
         }
       ],
       "retryTax": {
-        "totalUSD": 1407.2119238169753,
-        "retries": 257,
-        "editTurns": 606,
+        "totalUSD": 1414.7966120740195,
+        "retries": 259,
+        "editTurns": 608,
         "byModel": [
           {
             "name": "Opus 4.8",
-            "taxUSD": 841.7202061492804,
-            "retries": 173,
+            "taxUSD": 849.3048944063246,
+            "retries": 175,
             "retriesPerEdit": 0.4
           },
           {
