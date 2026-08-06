@@ -127,11 +127,7 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
       body = (
         <HarmonyStackZone
           key={activeRouteId}
-          defaultTab={
-            activeRouteId === 'harmony-todos' ? 'projects'
-              : activeRouteId === 'harmony-portfolio' ? 'portfolio'
-              : 'services'
-          }
+          defaultTab={activeRouteId === 'harmony-todos' ? 'projects' : 'site'}
         />
       )
       break

@@ -39,9 +39,10 @@ const SESSION_TOUCHED_ZONE_SEED = [
   'pulse',
   'dev-diagnostics',
   'dev',
-  'harmony-services',
-  'harmony-projects',
   'harmony-portfolio',
+  'harmony-todos',
+  'harmony-cdl',
+  'harmony-penwork',
 ] as const
 
 function App() {
