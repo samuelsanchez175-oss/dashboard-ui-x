@@ -154,7 +154,8 @@ export default function ToolsMetronomeExportPage({ onNavigate }: ToolsMetronomeE
 
     const arr = midi.toArray()
     const blob = new Blob([arr as BlobPart], { type: 'audio/midi' })
-    triggerDownload(blob, `metronome_${bpm}bpm_${exportBars}bars.mid`)
+    triggerDownload(blob, `metronome_${bpm}bpm_${exportBars}bars.mid`,
+      { sourceTool: 'tools-metronome-export', outputType: 'midi', tags: ['midi', `${bpm}bpm`] })
   }, [accentEvery, bpm, bars, beatsPerBar, maxBarsByDuration, secPerBeat])
 
   return (

@@ -1,6 +1,9 @@
-import { ChevronRight, PanelLeftOpen, Search, Wrench, X } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { ChevronRight, PanelLeftOpen, Search, Wrench, X, Zap } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import { getToolById, toolAcceptsMime, fileInputTools } from '../../lib/toolsRegistry'
+import { startDropRun } from '../../lib/tool-drop-run'
+import { useGlobalDrag } from '../../hooks/useGlobalDrag'
 import StudioToolsHeader from './StudioToolsHeader'
 import HeroBand from '../../components/HeroBand'
 import ZoneHeader from '../../components/ZoneHeader'
@@ -44,6 +47,34 @@ function countItems(sections: NavSection[]): number {
   return sections.reduce((sum, section) => sum + section.items.length, 0)
 }
 
+/**
+ * Capability sub-grouping for the flat TOOLS section — groups the destinations
+ * by what they *do* rather than one long list. Unmapped items (e.g. the hub
+ * itself) fall into "More".
+ */
+const CAP_GROUPS: { id: string; title: string }[] = [
+  { id: 'audio',   title: 'Audio & Music' },
+  { id: 'media',   title: 'Media' },
+  { id: 'design',  title: 'Design & Export' },
+  { id: 'utility', title: 'Utility' },
+  { id: 'more',    title: 'More' },
+]
+const HUB_GROUP: Record<string, string> = {
+  'tools-key-finder': 'audio', 'tools-chord-detector': 'audio', 'tools-note-detector-2': 'audio',
+  'tools-stem-splitter': 'audio', 'tools-sample-slicer': 'audio', 'tools-tempo-tap': 'audio',
+  'tools-metronome-export': 'audio',
+  'tools-youtube-downloader': 'media',
+  'tools-app-icon': 'design', 'tools-device-mockup': 'design',
+  'tools-phonetics-inspector': 'utility', 'tools-session-timer': 'utility', 'tools-arrangement-pad': 'utility',
+}
+const hubGroupOf = (id: string): string => HUB_GROUP[id] ?? 'more'
+
+function groupToolsByCapability(items: NavItem[]): { id: string; title: string; items: NavItem[] }[] {
+  return CAP_GROUPS
+    .map(g => ({ ...g, items: items.filter(it => hubGroupOf(it.id) === g.id) }))
+    .filter(g => g.items.length > 0)
+}
+
 function ToolRow({
   item,
   sectionTitle,
@@ -51,6 +82,8 @@ function ToolRow({
   toneIndex,
   onSidebar,
   onRestore,
+  dragging,
+  dragMime,
 }: {
   item: NavItem
   sectionTitle: string
@@ -60,8 +93,35 @@ function ToolRow({
   onSidebar: boolean
   /** Put a removed tool back on the sidebar (the no-drag path). */
   onRestore: (id: string) => void
+  /** True while an OS file is being dragged over the window. */
+  dragging: boolean
+  /** Mime of the dragged file (for drop-target eligibility). */
+  dragMime: string
 }) {
   const Icon = item.icon
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [over, setOver] = useState(false)
+
+  // Map this nav item back to its tool def (undefined for zones/non-tools).
+  const tool = getToolById(item.id)
+  const accepts = tool?.accepts
+  const eligible = dragging && !!tool && toolAcceptsMime(tool, dragMime || 'application/octet-stream')
+
+  const isFileDrag = (e: React.DragEvent) => Array.from(e.dataTransfer.types).includes('Files')
+
+  const onFileDrop = (e: React.DragEvent) => {
+    if (!tool || !accepts || !isFileDrag(e)) return // ignore the tile→sidebar nav drag
+    e.preventDefault(); e.stopPropagation(); setOver(false)
+    const f = e.dataTransfer.files?.[0]
+    if (f && toolAcceptsMime(tool, f.type || 'application/octet-stream')) void startDropRun(tool, f)
+  }
+  const onPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]
+    if (f && tool) void startDropRun(tool, f)
+    e.target.value = ''
+  }
+  const acceptAttr = accepts?.[0] === 'image/' ? 'image/*' : accepts?.[0] === 'audio/' ? 'audio/*' : undefined
+
   const tones = [
     TONE_DARK.red,
     TONE_DARK.violet,
@@ -73,7 +133,13 @@ function ToolRow({
   const tone = tones[toneIndex % tones.length]
 
   return (
-    <div className="relative">
+    <div
+      className="relative"
+      onDragOver={e => { if (accepts && isFileDrag(e)) { e.preventDefault(); setOver(true) } }}
+      onDragLeave={() => setOver(false)}
+      onDrop={onFileDrop}
+      style={eligible || over ? { outline: '2px solid var(--accent)', outlineOffset: 2, borderRadius: 14 } : undefined}
+    >
       <button
         type="button"
         draggable
@@ -116,7 +182,7 @@ function ToolRow({
             className="mono block truncate text-[10px] uppercase tracking-wide"
             style={{ color: onSidebar ? 'var(--text-4)' : 'var(--accent)' }}
           >
-            {onSidebar ? `${sectionTitle} · ${item.id}` : 'Not on sidebar · drag to add'}
+            {eligible ? 'Drop file to run' : onSidebar ? `${sectionTitle} · ${item.id}` : 'Not on sidebar · drag to add'}
           </span>
         </span>
         {item.badge != null && (
@@ -129,6 +195,34 @@ function ToolRow({
         )}
         <ChevronRight className="size-4 shrink-0 transition group-hover:translate-x-0.5" style={{ color: 'var(--text-4)' }} aria-hidden />
       </button>
+
+      {tool?.quickActions && tool.quickActions.length > 0 && (
+        <div className="mt-1.5 flex flex-wrap items-center gap-1.5 pl-1">
+          {tool.quickActions.map(qa => (
+            <button
+              key={qa.id}
+              type="button"
+              onClick={e => {
+                e.stopPropagation()
+                if (qa.id === 'upload') fileInputRef.current?.click()
+                else onNavigate(item.id)
+              }}
+              className="rounded-md px-2 py-1 text-[11px] font-medium transition"
+              style={{ background: 'var(--bg-hover)', color: 'var(--text-2)', border: '1px solid var(--border)' }}
+            >
+              {qa.label}
+            </button>
+          ))}
+          {accepts && (
+            <span className="mono text-[10px] uppercase tracking-wide" style={{ color: 'var(--text-4)' }}>or drop a file</span>
+          )}
+        </div>
+      )}
+
+      {accepts && (
+        <input ref={fileInputRef} type="file" hidden accept={acceptAttr} onChange={onPick} />
+      )}
+
       {!onSidebar && (
         <button
           type="button"
@@ -152,12 +246,16 @@ function NavSectionCard({
   onNavigate,
   isOnSidebar,
   onRestore,
+  dragging,
+  dragMime,
 }: {
   section: NavSection
   sectionIndex: number
   onNavigate: (routeId: string) => void
   isOnSidebar: (sectionId: string, itemId: string) => boolean
   onRestore: (id: string) => void
+  dragging: boolean
+  dragMime: string
 }) {
   return (
     <section
@@ -184,19 +282,48 @@ function NavSectionCard({
           {section.items.length}
         </span>
       </div>
-      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-        {section.items.map((item, itemIndex) => (
-          <ToolRow
-            key={item.id}
-            item={item}
-            sectionTitle={section.title}
-            onNavigate={onNavigate}
-            toneIndex={sectionIndex + itemIndex}
-            onSidebar={isOnSidebar(section.id, item.id)}
-            onRestore={onRestore}
-          />
-        ))}
-      </div>
+      {section.id === 'tools' ? (
+        <div className="space-y-4">
+          {groupToolsByCapability(section.items).map((g, gi) => (
+            <div key={g.id}>
+              <div className="mb-2 mono text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--text-4)' }}>
+                {g.title}
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                {g.items.map((item, itemIndex) => (
+                  <ToolRow
+                    key={item.id}
+                    item={item}
+                    sectionTitle={section.title}
+                    onNavigate={onNavigate}
+                    toneIndex={gi * 3 + itemIndex}
+                    onSidebar={isOnSidebar(section.id, item.id)}
+                    onRestore={onRestore}
+                    dragging={dragging}
+                    dragMime={dragMime}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+          {section.items.map((item, itemIndex) => (
+            <ToolRow
+              key={item.id}
+              item={item}
+              sectionTitle={section.title}
+              onNavigate={onNavigate}
+              toneIndex={sectionIndex + itemIndex}
+              onSidebar={isOnSidebar(section.id, item.id)}
+              onRestore={onRestore}
+              dragging={dragging}
+              dragMime={dragMime}
+            />
+          ))}
+        </div>
+      )}
     </section>
   )
 }
@@ -206,6 +333,7 @@ export default function ToolsHubZone({ onNavigate }: ToolsHubZoneProps) {
   const [query, setQuery]   = useState('')
   const [isSearchFocused, setIsSearchFocused] = useState(false)
   const { allToolsSections, allToolsItemCount } = useSidebarNavModel(layout)
+  const { dragging, mime: dragMime } = useGlobalDrag()
 
   useEffect(() => {
     const refreshLayout = () => setLayout(loadSidebarNavLayout())
@@ -222,6 +350,14 @@ export default function ToolsHubZone({ onNavigate }: ToolsHubZoneProps) {
     [allToolsSections, query],
   )
   const filteredCount = useMemo(() => countItems(sections), [sections])
+
+  // Fast-lane: the drop-capable tools, pinned at the top for quick drag-and-drop.
+  const dropTools = useMemo<NavItem[]>(() => {
+    const q = query.trim().toLowerCase()
+    return fileInputTools()
+      .map(t => ({ id: t.id, label: t.label, icon: t.icon, badge: t.badge }))
+      .filter(it => !q || `${it.label} ${it.id}`.toLowerCase().includes(q))
+  }, [query])
 
   const isOnSidebar = useCallback(
     (sectionId: string, itemId: string) => isNavItemOnSidebar(layout, sectionId, itemId),
@@ -343,22 +479,43 @@ export default function ToolsHubZone({ onNavigate }: ToolsHubZoneProps) {
             )}
           </div>
 
-          {sections.length === 0 ? (
-            <div
-              className="rounded-2xl py-16 text-center"
-              style={{ border: '1px dashed var(--border-strong)' }}
-            >
-              <Search className="mx-auto mb-3 size-7" style={{ color: 'var(--text-4)' }} strokeWidth={1.5} aria-hidden />
-              <div className="mb-1 text-sm font-medium" style={{ color: 'var(--text-2)' }}>
-                No destinations match &quot;{query}&quot;
-              </div>
-              <div className="text-xs" style={{ color: 'var(--text-3)' }}>
-                Try a section name, tool name, custom zone, or route ID.
-              </div>
-            </div>
-          ) : (
-            <div className="grid gap-[var(--grid-gap)]">
-              {sections.map((section, sectionIndex) => (
+          <div className="grid gap-[var(--grid-gap)]">
+            {/* Fast-lane: drop-ready tools pinned at the top */}
+            {dropTools.length > 0 && (
+              <section
+                className="rounded-2xl p-4"
+                style={{
+                  border:     '1px solid color-mix(in oklab, var(--accent) 40%, var(--border))',
+                  background: 'color-mix(in oklab, var(--accent) 6%, var(--bg-muted))',
+                }}
+              >
+                <div className="mb-3 flex items-center gap-2">
+                  <Zap className="size-4" style={{ color: 'var(--accent)' }} strokeWidth={2} aria-hidden />
+                  <h2 className="mono text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--accent)' }}>
+                    Drop-ready tools
+                  </h2>
+                  <span className="text-xs" style={{ color: 'var(--text-4)' }}>drag a file onto any of these to run it</span>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                  {dropTools.map((item, i) => (
+                    <ToolRow
+                      key={item.id}
+                      item={item}
+                      sectionTitle="Drop-ready"
+                      onNavigate={onNavigate}
+                      toneIndex={i}
+                      onSidebar
+                      onRestore={() => {}}
+                      dragging={dragging}
+                      dragMime={dragMime}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {sections.length > 0 ? (
+              sections.map((section, sectionIndex) => (
                 <NavSectionCard
                   key={section.id}
                   section={section}
@@ -366,10 +523,25 @@ export default function ToolsHubZone({ onNavigate }: ToolsHubZoneProps) {
                   onNavigate={onNavigate}
                   isOnSidebar={isOnSidebar}
                   onRestore={restoreToSidebar}
+                  dragging={dragging}
+                  dragMime={dragMime}
                 />
-              ))}
-            </div>
-          )}
+              ))
+            ) : dropTools.length === 0 ? (
+              <div
+                className="rounded-2xl py-16 text-center"
+                style={{ border: '1px dashed var(--border-strong)' }}
+              >
+                <Search className="mx-auto mb-3 size-7" style={{ color: 'var(--text-4)' }} strokeWidth={1.5} aria-hidden />
+                <div className="mb-1 text-sm font-medium" style={{ color: 'var(--text-2)' }}>
+                  No destinations match &quot;{query}&quot;
+                </div>
+                <div className="text-xs" style={{ color: 'var(--text-3)' }}>
+                  Try a section name, tool name, custom zone, or route ID.
+                </div>
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
     </div>

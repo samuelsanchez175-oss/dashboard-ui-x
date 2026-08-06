@@ -1,5 +1,7 @@
 /** Encode mono Float32 PCM (-1…1) as a little-endian WAV (PCM 16) blob. */
 
+import { dispatchFileDownload } from '../components/files-dock/files-store'
+
 function floatToInt16(samples: Float32Array): Int16Array {
   const out = new Int16Array(samples.length)
   for (let i = 0; i < samples.length; i++) {
@@ -53,7 +55,12 @@ export function encodeMonoPcm16Wav(samples: Float32Array, sampleRate: number): B
   return new Blob([buffer], { type: 'audio/wav' })
 }
 
-export function triggerDownload(blob: Blob, filename: string): void {
+export function triggerDownload(
+  blob: Blob,
+  filename: string,
+  /** When provided, the file is also saved to the dashboard gallery, tagged. */
+  meta?: { sourceTool?: string; outputType?: string; tags?: string[] },
+): void {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
@@ -63,4 +70,11 @@ export function triggerDownload(blob: Blob, filename: string): void {
   a.click()
   a.remove()
   URL.revokeObjectURL(url)
+
+  if (meta) {
+    dispatchFileDownload({
+      blob, name: filename,
+      sourceTool: meta.sourceTool, outputType: meta.outputType, tags: meta.tags,
+    })
+  }
 }

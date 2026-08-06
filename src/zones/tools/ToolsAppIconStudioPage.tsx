@@ -1,4 +1,5 @@
 import { ArrowLeft, Check, Copy, Crosshair, Download, ImageUp, Loader2, Sparkles } from 'lucide-react'
+import { dispatchFileDownload } from '../../components/files-dock/files-store'
 import {
   useCallback,
   useEffect,
@@ -230,6 +231,7 @@ export default function ToolsAppIconStudioPage({ onNavigate }: ToolsAppIconStudi
         a.href = URL.createObjectURL(blob)
         a.click()
         URL.revokeObjectURL(a.href)
+        dispatchFileDownload({ blob, name: `${base}-1024.png`, sourceTool: 'tools-app-icon', outputType: 'app-icon', tags: ['image', 'png'] })
       },
       'image/png',
     )

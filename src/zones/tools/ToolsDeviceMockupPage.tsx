@@ -1,4 +1,5 @@
 import { ArrowLeft, Crosshair, Download, ImageUp } from 'lucide-react'
+import { dispatchFileDownload } from '../../components/files-dock/files-store'
 import {
   useCallback,
   useEffect,
@@ -307,6 +308,7 @@ export default function ToolsDeviceMockupPage({ onNavigate }: ToolsDeviceMockupP
       a.href = URL.createObjectURL(blob)
       a.click()
       URL.revokeObjectURL(a.href)
+      dispatchFileDownload({ blob, name: `${base}-iphone17.png`, sourceTool: 'tools-device-mockup', outputType: 'mockup', tags: ['image', 'png'] })
     }, 'image/png')
   }, [fileName, img])
 

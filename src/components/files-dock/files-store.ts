@@ -21,7 +21,8 @@ import { isDockLaneTabId, LANES } from './dock-lanes'
 
 const DB_NAME = 'dashboard-files-dock-v1'
 const STORE   = 'files'
-const MAX_FILES = 24
+/** Gallery retains a deep history — raised from the old 24-file dock cap. */
+const MAX_FILES = 120
 
 export const FILE_EVENT = 'dashboard:file-downloaded' as const
 
@@ -50,6 +51,12 @@ export type StoredFile = {
   source?:   string
   /** Optional dock lane id (`downloads`, `analysis`, …) — see `LANES` / `dock.pinTab`. */
   lane?:     string
+  /** Tool that produced/processed this file — a `ToolDef.id` (e.g. `tools-key-finder`). */
+  sourceTool?: string
+  /** Kind of output for gallery grouping (e.g. `stems`, `yt-download`, `chords`, `key-analysis`). */
+  outputType?: string
+  /** Free-form tags surfaced as chips in the gallery. */
+  tags?:     string[]
 }
 
 const SERIAL_KEY = 'dashboard-files-dock-serial-v1'
@@ -80,6 +87,12 @@ export type FileEventDetail = {
    * When omitted, lane matching uses `source` heuristics until callers pass `lane`.
    */
   lane?:   string
+  /** Tool id that produced this file (`ToolDef.id`). Populates the gallery's tool chip. */
+  sourceTool?: string
+  /** Output kind for gallery grouping (`stems`, `yt-download`, `chords`, …). */
+  outputType?: string
+  /** Free-form gallery tags. */
+  tags?:   string[]
 }
 
 /* ── IDB plumbing ────────────────────────────────────────────────────────── */
@@ -216,6 +229,9 @@ export async function addDownloadedFile(opts: FileEventDetail): Promise<StoredFi
     serial:  nextSerial(),
     source:  opts.source,
     ...(opts.lane ? { lane: opts.lane } : {}),
+    ...(opts.sourceTool ? { sourceTool: opts.sourceTool } : {}),
+    ...(opts.outputType ? { outputType: opts.outputType } : {}),
+    ...(opts.tags && opts.tags.length ? { tags: opts.tags } : {}),
   }
   await txPut(row)
 

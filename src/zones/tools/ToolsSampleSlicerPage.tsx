@@ -95,7 +95,8 @@ export default function ToolsSampleSlicerPage({ onNavigate }: ToolsSampleSlicerP
   const downloadAllStems = useCallback(async () => {
     if (!stems || stems.length === 0) return
     const zip = await zipStore(stems.map(s => ({ name: s.fileName, blob: s.blob })))
-    triggerDownload(zip, `${fileName || 'sample'} - stems.zip`)
+    triggerDownload(zip, `${fileName || 'sample'} - stems.zip`,
+      { sourceTool: 'tools-sample-slicer', outputType: 'sample', tags: ['sample', 'slices-zip'] })
   }, [stems, fileName])
 
   const peaks = useMemo(() => {
@@ -195,7 +196,8 @@ export default function ToolsSampleSlicerPage({ onNavigate }: ToolsSampleSlicerP
     }
 
     const blob = encodeMonoPcm16Wav(out, buffer.sampleRate)
-    triggerDownload(blob, `${fileName || 'slice'}_trim.wav`)
+    triggerDownload(blob, `${fileName || 'slice'}_trim.wav`,
+      { sourceTool: 'tools-sample-slicer', outputType: 'sample', tags: ['sample', 'trim'] })
   }, [buffer, fileName])
 
   const onPointerDown = (e: ReactPointerEvent<HTMLCanvasElement>) => {

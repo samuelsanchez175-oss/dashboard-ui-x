@@ -200,6 +200,9 @@ export default function ToolsYoutubePage({ onNavigate }: ToolsYoutubePageProps) 
           name: safeName,
           source: 'YouTube grab',
           lane: 'downloads',
+          sourceTool: 'tools-youtube-downloader',
+          outputType: 'yt-download',
+          tags: ['youtube', 'mp3'],
         })
 
         // Newest clip becomes active; the dock subscription refreshes history,

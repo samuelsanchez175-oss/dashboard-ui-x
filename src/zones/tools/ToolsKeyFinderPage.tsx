@@ -151,8 +151,11 @@ export default function ToolsKeyFinderPage({ onNavigate }: ToolsKeyFinderPagePro
           scale: m.scale, source: m.source, analyzedAt: m.analyzedAt,
         }))
       }
-      // Surface in the global Files Dock so the user can re-open / delete it.
-      dispatchFileDownload({ blob: file, name: file.name, source: 'Key finder' })
+      // Surface in the gallery so the user can re-open / delete it.
+      dispatchFileDownload({
+        blob: file, name: file.name, source: 'Key finder',
+        sourceTool: 'tools-key-finder', outputType: 'key-analysis', lane: 'analysis',
+      })
     } catch { setError('Could not decode that file. Try WAV or MP3.')
     } finally { setBusy(false) }
 

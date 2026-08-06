@@ -4,6 +4,8 @@ import Sidebar, { DEFAULT_ACTIVE_ID } from './components/sidebar'
 import MainContent from './components/MainContent'
 import TweaksPanel from './components/TweaksPanel'
 import FilesDock from './components/files-dock/FilesDock'
+import GalleryFab from './components/gallery/GalleryFab'
+import GalleryDrawer from './components/gallery/GalleryDrawer'
 import ShortcutOverlay from './components/ui/ShortcutOverlay'
 import { BffConfigProvider } from './context/BffConfigContext'
 import { DiagnosticsProvider } from './context/DiagnosticsContext'
@@ -155,6 +157,14 @@ function App() {
                    * is intentionally NOT deleted so a future feature can
                    * pick it back up without rebuilding from scratch. */}
                   {SHOW_FILES_DOCK && <FilesDock />}
+
+                  {/* Gallery replaces the old FilesDock tray (2026-07-06): a
+                   * floating + button bottom-right opens a filterable drawer of
+                   * every produced/processed file, tagged by tool + output type.
+                   * Reads the same `files-store`; the FilesDock component above
+                   * is kept (flag-gated) but superseded by this. */}
+                  <GalleryFab />
+                  <GalleryDrawer />
                   <ShortcutOverlay open={overlayOpen} onClose={closeOverlay} />
                 </div>
               </UiChromeProvider>

@@ -17,6 +17,7 @@ import { ArrowLeft, Download, Loader2, Upload } from 'lucide-react'
 import tonejsMidi from '@tonejs/midi'
 
 import { gradeAnalysis, GRADE_COLOR, type QualityGrade } from './chord-detector-self-grade'
+import { dispatchFileDownload } from '../../components/files-dock/files-store'
 
 const { Midi } = tonejsMidi
 
@@ -401,6 +402,7 @@ export default function ToolsNoteDetector2Page({ onNavigate }: ToolsNoteDetector
           setMidi(parseMidiBytes(buf))
           const blob = new Blob([buf], { type: 'audio/midi' })
           setDownloadUrl(URL.createObjectURL(blob))
+          dispatchFileDownload({ blob, name: `note-detector-${task_id}.mid`, sourceTool: 'tools-note-detector-2', outputType: 'midi', tags: ['midi', 'stems'] })
           setPhase('done')
           setStage(null)
           setWallMs(Date.now() - t0)
