@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f8a4c">
+<title>CDL One Stop — Terms of Service</title>
+<meta name="description" content="Terms of Service for CDL One Stop, the CDL knowledge test prep app by Harmony Stack. Covers your license to use the app, purchases, accounts, acceptable use, disclaimers, and how to contact us.">
+<link rel="canonical" href="https://harmony-stack-productions.vercel.app/cdl-terms">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== THEME VARIABLES ===== */
+:root{--accent:#1f8a4c;--accent-deep:#14622f;--accent-soft:#e7f3ea;--gold:#e3b24a;--ink:#15281c;--ink-soft:#4a5b50;--paper:#f6f4ec;--paper-2:#eef1e8;--card:#ffffff;--border:#dde2d3}
+
+/* ===== SHARED_CSS ===== */
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--ink);background:var(--paper);line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:0 clamp(18px,4vw,40px)}
+a{color:inherit}
+.app-nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px clamp(16px,4vw,40px);background:rgba(255,255,255,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.app-nav-brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--ink);font-weight:700}
+.app-nav-brand img{width:34px;height:34px;border-radius:9px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.app-nav-brand span{font-size:15px;letter-spacing:-.01em}
+.app-nav-links{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.app-nav-links a,.app-nav-links span{text-decoration:none;color:var(--ink-soft);font-size:13.5px;font-weight:500;padding:8px 14px;border-radius:999px;transition:background .15s,color .15s;white-space:nowrap}
+.app-nav-links a:hover{background:var(--accent-soft);color:var(--accent-deep)}
+.app-nav-links a.is-active{background:var(--accent);color:#fff}
+.app-nav-links a.nav-store{border:1.5px solid var(--accent);color:var(--accent-deep)}
+.app-nav-links a.nav-store:hover{background:var(--accent);color:#fff}
+.app-footer{margin-top:84px;padding:48px clamp(16px,4vw,40px);background:var(--ink);color:rgba(255,255,255,.82);text-align:center}
+.app-footer-brand{display:inline-flex;align-items:center;gap:10px;font-weight:700;color:#fff;margin-bottom:8px}
+.app-footer-brand img{width:28px;height:28px;border-radius:7px}
+.app-footer a{color:#fff;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.32)}
+.app-footer-links{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin:16px 0 10px;font-size:14px}
+.app-footer-fine{font-size:12px;opacity:.55;margin-top:12px;line-height:1.7}
+
+/* ===== PAGE-SPECIFIC CSS ===== */
+main{padding-top:clamp(34px,6vw,60px)}
+
+/* header */
+.legal-head{text-align:center;max-width:660px;margin:0 auto;padding-bottom:clamp(26px,4.5vw,40px)}
+.legal-icon{width:76px;height:76px;border-radius:19px;box-shadow:0 12px 30px rgba(20,98,47,.22);display:block;margin:0 auto 20px}
+.legal-head h1{font-size:clamp(27px,5.4vw,40px);line-height:1.15;letter-spacing:-.02em;font-weight:700}
+.legal-head h1 .accent{color:var(--accent)}
+.legal-head p{margin-top:14px;font-size:clamp(15px,2.4vw,17px);color:var(--ink-soft)}
+.legal-stamp{display:inline-flex;align-items:center;gap:8px;margin-top:16px;font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-deep);background:var(--accent-soft);padding:7px 14px;border-radius:999px}
+.legal-stamp .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none}
+
+/* summary card */
+.summary{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:clamp(22px,3.6vw,32px);box-shadow:0 14px 40px rgba(20,40,28,.07)}
+.summary h2{font-size:clamp(18px,3vw,22px);font-weight:700;letter-spacing:-.01em;margin-bottom:6px}
+.summary p.sub{color:var(--ink-soft);font-size:14.5px;margin-bottom:16px}
+.summary ul{list-style:none;display:grid;gap:11px}
+@media(min-width:760px){.summary ul{grid-template-columns:1fr 1fr;gap:11px 26px}}
+.summary li{display:flex;gap:11px;align-items:flex-start;font-size:15px;color:var(--ink-soft)}
+.summary li svg{width:19px;height:19px;color:var(--accent);flex:none;margin-top:2px}
+.summary li b{color:var(--ink);font-weight:600}
+
+/* table of contents */
+.toc{margin-top:clamp(24px,4vw,36px);background:var(--paper-2);border:1px solid var(--border);border-radius:18px;padding:clamp(18px,3vw,26px)}
+.toc h2{font-size:12px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--accent-deep);margin-bottom:12px}
+.toc ol{list-style:none;counter-reset:toc;display:grid;gap:8px}
+@media(min-width:700px){.toc ol{grid-template-columns:1fr 1fr;gap:8px 24px}}
+.toc li{counter-increment:toc;font-size:14.5px}
+.toc li a{text-decoration:none;color:var(--ink-soft);display:flex;gap:9px}
+.toc li a::before{content:counter(toc) ".";color:var(--accent);font-weight:600;flex:none;min-width:19px}
+.toc li a:hover{color:var(--accent-deep)}
+
+/* legal body */
+.legal-doc{margin-top:clamp(30px,5vw,48px);counter-reset:sec}
+.legal-sec{scroll-margin-top:84px}
+.legal-sec+.legal-sec{margin-top:clamp(28px,4vw,40px);padding-top:clamp(26px,4vw,36px);border-top:1px solid var(--border)}
+.legal-sec h2{counter-increment:sec;font-size:clamp(18px,2.9vw,22px);font-weight:700;letter-spacing:-.01em;display:flex;gap:12px;align-items:baseline}
+.legal-sec h2::before{content:counter(sec);font-size:13px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:999px;min-width:28px;height:28px;display:inline-grid;place-items:center;flex:none;transform:translateY(-1px)}
+.legal-sec p,.legal-sec li{color:var(--ink-soft);font-size:15.5px;line-height:1.7}
+.legal-sec p{margin-top:12px}
+.legal-sec ul{margin:12px 0 0;padding-left:20px;display:grid;gap:8px}
+.legal-sec li::marker{color:var(--accent)}
+.legal-sec a{color:var(--accent-deep);font-weight:500;border-bottom:1px solid var(--border)}
+.legal-sec strong{color:var(--ink);font-weight:600}
+.callout{margin-top:14px;background:var(--accent-soft);border:1px solid rgba(31,138,76,.22);border-radius:14px;padding:16px 18px}
+.callout p{margin:0;color:var(--accent-deep);font-size:14.5px;line-height:1.65}
+.callout p+p{margin-top:8px}
+
+/* contact close */
+.closing{margin-top:clamp(34px,5vw,52px);text-align:center;background:linear-gradient(160deg,var(--accent-deep),var(--accent));color:#fff;border-radius:24px;padding:clamp(32px,5vw,52px) clamp(22px,4vw,40px);box-shadow:0 18px 44px rgba(20,98,47,.26)}
+.closing h2{font-size:clamp(21px,3.6vw,28px);font-weight:700;letter-spacing:-.01em;color:#fff}
+.closing p{margin:12px auto 22px;max-width:520px;color:rgba(255,255,255,.9);font-size:15.5px}
+.btn-mail{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:var(--accent-deep);text-decoration:none;font-weight:600;font-size:15.5px;padding:15px 26px;border-radius:14px;box-shadow:0 8px 20px rgba(0,0,0,.18);transition:transform .15s,box-shadow .15s,background .15s;white-space:nowrap}
+.btn-mail:hover{background:var(--paper);transform:translateY(-2px)}
+.btn-mail svg{width:19px;height:19px;flex:none}
+</style>
+</head>
+<body>
+
+<nav class="app-nav" aria-label="CDL One Stop pages">
+  <a class="app-nav-brand" href="cdl-marketing.html"><img src="portfolio-screenshots/cdl-icon.png" alt=""><span>CDL One Stop</span></a>
+  <div class="app-nav-links"><a href="cdl-marketing.html">Marketing</a><a href="cdl-support.html">Support</a><a href="cdl-terms.html" class="is-active">Terms</a><a href="cdl-privacy.html">Privacy</a><a href="https://harmony-stack-productions.vercel.app" target="_blank" rel="noopener">Landing page ↗</a><a class="nav-store" href="https://apps.apple.com/us/app/cdl-one-stop-nj/id6782784591" target="_blank" rel="noopener">App Store ↗</a></div>
+</nav>
+
+<main class="wrap">
+
+  <!-- HEADER -->
+  <header class="legal-head">
+    <img class="legal-icon" src="portfolio-screenshots/cdl-icon.png" alt="CDL One Stop app icon">
+    <h1>CDL One Stop <span class="accent">— Terms of Service</span></h1>
+    <p>The agreement between you and Harmony Stack for using the CDL One Stop app. Plain language where we can, precise where we have to be.</p>
+    <span class="legal-stamp"><span class="dot"></span>Effective August 3, 2026</span>
+  </header>
+
+  <!-- PLAIN-LANGUAGE SUMMARY -->
+  <section class="summary" aria-labelledby="summary-heading">
+    <h2 id="summary-heading">The short version</h2>
+    <p class="sub">A quick summary for convenience. The numbered terms below are the ones that actually govern.</p>
+    <ul>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span><b>It's a study aid.</b> CDL One Stop helps you prepare — it is not the official exam and does not issue licenses.</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span><b>Your state's rules win.</b> Always confirm requirements with your state licensing agency and the official CDL handbook.</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span><b>One purchase, through Apple.</b> Billing, receipts, and refunds are handled by the App Store.</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span><b>Your progress is yours.</b> Study data stays on your device unless you sign in to sync it.</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span><b>Personal use only.</b> Don't copy, resell, or republish the question banks or study content.</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span><b>Real people answer.</b> Questions about any of this go to <a href="mailto:harmonyStack@gmail.com?subject=CDL%20One%20Stop%20Terms%20Question" style="color:var(--accent-deep);font-weight:600">harmonyStack@gmail.com</a>.</span></li>
+    </ul>
+  </section>
+
+  <!-- TABLE OF CONTENTS -->
+  <nav class="toc" aria-label="Sections of these terms">
+    <h2>On this page</h2>
+    <ol>
+      <li><a href="#acceptance">Acceptance of these terms</a></li>
+      <li><a href="#service">What CDL One Stop is</a></li>
+      <li><a href="#study-aid">Study aid — not official or legal advice</a></li>
+      <li><a href="#license">Your license to use the app</a></li>
+      <li><a href="#purchases">Purchases, pricing, and refunds</a></li>
+      <li><a href="#accounts">Accounts and sign-in</a></li>
+      <li><a href="#acceptable-use">Acceptable use</a></li>
+      <li><a href="#content">Our content and your feedback</a></li>
+      <li><a href="#third-party">Apple, Game Center, and other services</a></li>
+      <li><a href="#privacy">Privacy</a></li>
+      <li><a href="#availability">Availability and changes to the app</a></li>
+      <li><a href="#warranty">Disclaimer of warranties</a></li>
+      <li><a href="#liability">Limitation of liability</a></li>
+      <li><a href="#termination">Termination</a></li>
+      <li><a href="#changes">Changes to these terms</a></li>
+      <li><a href="#law">Governing law and disputes</a></li>
+      <li><a href="#contact">How to reach us</a></li>
+    </ol>
+  </nav>
+
+  <!-- TERMS BODY -->
+  <div class="legal-doc">
+
+    <section class="legal-sec" id="acceptance">
+      <h2>Acceptance of these terms</h2>
+      <p>These Terms of Service ("Terms") are an agreement between you and <strong>Harmony Stack</strong> ("Harmony Stack", "we", "us"), the developer of the <strong>CDL One Stop</strong> mobile application (the "App").</p>
+      <p>By downloading, installing, or using the App, you agree to these Terms. If you do not agree, please do not use the App and delete it from your device.</p>
+      <p>If you are under 13 years old, you may not use the App. If you are between 13 and the age of majority where you live, you may use the App only with the involvement of a parent or legal guardian who agrees to these Terms.</p>
+    </section>
+
+    <section class="legal-sec" id="service">
+      <h2>What CDL One Stop is</h2>
+      <p>CDL One Stop is a commercial driver's license study app. It provides practice questions, explanations, pre-trip inspection material, reference articles, progress tracking, readiness scoring, streaks, achievements, and study reminders covering all 50 states and the District of Columbia across Class A, B, and C.</p>
+      <p>We work to keep the study material accurate and current, but rules, question banks, fees, and testing procedures change and vary by state. We do not warrant that every item in the App matches your state's current exam.</p>
+    </section>
+
+    <section class="legal-sec" id="study-aid">
+      <h2>Study aid — not official or legal advice</h2>
+      <p>The App is an independent study tool. It is <strong>not affiliated with, endorsed by, or sponsored by</strong> the Federal Motor Carrier Safety Administration (FMCSA), any state Department of Motor Vehicles or licensing agency, any testing vendor, or any employer.</p>
+      <p>Practice questions in the App are not actual exam questions, and passing practice in the App does not guarantee that you will pass any official CDL knowledge test, skills test, or medical or endorsement requirement.</p>
+      <div class="callout">
+        <p><strong>Always verify with the official source.</strong> Your state's CDL handbook and licensing agency are the authority on what is tested and what is required. Nothing in the App is legal, medical, employment, or safety-compliance advice.</p>
+        <p>Never rely on the App while operating a vehicle. Use it only when it is safe and legal to do so.</p>
+      </div>
+    </section>
+
+    <section class="legal-sec" id="license">
+      <h2>Your license to use the app</h2>
+      <p>Subject to these Terms, we grant you a personal, limited, non-exclusive, non-transferable, revocable license to install and use the App on Apple-branded devices you own or control, for your own non-commercial study.</p>
+      <p>Your use is also governed by Apple's <a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/" target="_blank" rel="noopener">Licensed Application End User License Agreement</a>. Where these Terms and Apple's standard EULA conflict, these Terms control as between you and Harmony Stack, except where Apple's terms are required to control.</p>
+      <p>We reserve all rights not expressly granted to you.</p>
+    </section>
+
+    <section class="legal-sec" id="purchases">
+      <h2>Purchases, pricing, and refunds</h2>
+      <p>CDL One Stop is sold as a <strong>one-time purchase through the Apple App Store</strong>. There is no subscription and no recurring charge.</p>
+      <ul>
+        <li>Apple processes the payment, issues the receipt, and applies the price shown in your storefront, including any tax.</li>
+        <li><strong>Refunds are handled by Apple</strong>, not by us. Request one at <a href="https://reportaproblem.apple.com" target="_blank" rel="noopener">reportaproblem.apple.com</a>. We can't issue, approve, or reverse App Store refunds.</li>
+        <li>Your purchase is tied to your Apple Account and can be restored on your devices through the App Store.</li>
+        <li>We may change the price or the packaging of the App at any time. Changes are not retroactive to purchases already made.</li>
+      </ul>
+    </section>
+
+    <section class="legal-sec" id="accounts">
+      <h2>Accounts and sign-in</h2>
+      <p>You can use most of the App without an account. If you choose to sign in — with Sign in with Apple, with an email address, or as a guest — you agree to provide accurate information and to keep your credentials secure. You are responsible for activity that happens under your account.</p>
+      <p>Signing in lets us sync progress across your devices and support features such as leaderboards and achievements. You may ask us to delete your account and associated cloud data at any time by emailing <a href="mailto:harmonyStack@gmail.com?subject=CDL%20One%20Stop%20Account%20Deletion">harmonyStack@gmail.com</a>.</p>
+      <p>We may suspend or close an account that is used to break these Terms, to abuse other users, or to interfere with the App.</p>
+    </section>
+
+    <section class="legal-sec" id="acceptable-use">
+      <h2>Acceptable use</h2>
+      <p>You agree not to:</p>
+      <ul>
+        <li>Copy, scrape, export, resell, sublicense, or republish the App's questions, explanations, illustrations, or other study content;</li>
+        <li>Use the App or its content to build, train, or supply a competing product, question bank, or dataset;</li>
+        <li>Reverse engineer, decompile, or attempt to extract the App's source code or content files, except where that restriction is prohibited by law;</li>
+        <li>Interfere with, overload, or attempt to gain unauthorized access to the App, our servers, or another user's account;</li>
+        <li>Falsify scores, streaks, achievements, or leaderboard standings, or use automated tools to do so;</li>
+        <li>Use the App for any unlawful purpose, or to misrepresent your qualifications to an employer or licensing agency.</li>
+      </ul>
+    </section>
+
+    <section class="legal-sec" id="content">
+      <h2>Our content and your feedback</h2>
+      <p>The App, its design, text, illustrations, audio, question banks, explanations, and the CDL One Stop and Harmony Stack names and logos are owned by Harmony Stack or its licensors and are protected by copyright, trademark, and other laws. Underlying regulatory material sourced from public government publications remains in the public domain; our selection, wording, arrangement, and explanations do not.</p>
+      <p>If you send us feedback, bug reports, corrections, or feature ideas, you grant us a perpetual, worldwide, royalty-free license to use them to improve the App, without obligation or compensation to you. Please don't send us anything you consider confidential.</p>
+    </section>
+
+    <section class="legal-sec" id="third-party">
+      <h2>Apple, Game Center, and other services</h2>
+      <p>These Terms are between you and Harmony Stack only — not with Apple. <strong>Apple is not responsible for the App or its content</strong>, and has no obligation to provide maintenance or support for it. If the App fails to conform to any applicable warranty, you may notify Apple, and Apple may refund the purchase price; to the maximum extent permitted by law, Apple has no other warranty obligation with respect to the App.</p>
+      <p>Apple and its subsidiaries are third-party beneficiaries of these Terms and may enforce them against you.</p>
+      <p>The App uses third-party services to work, including Apple services (App Store, Sign in with Apple, Game Center, push notifications) and our hosting and authentication provider for accounts and sync. Their own terms apply to their services, and features that depend on them may be unavailable if those services are.</p>
+      <p>Links to state licensing agencies and other outside sites are provided for convenience. We don't control that content and aren't responsible for it.</p>
+    </section>
+
+    <section class="legal-sec" id="privacy">
+      <h2>Privacy</h2>
+      <p>We don't sell your personal information and we don't use third-party tracking or advertising in the App. Your study progress — streaks, levels, key dates, and missed questions — is kept on your device unless you sign in to sync it.</p>
+      <p>Our <a href="cdl-privacy.html">Privacy Policy</a> explains exactly what the App keeps on your device, the little an optional account stores, how calendar and notification permissions are used, and how to have anything deleted. It is part of these Terms.</p>
+      <p>If you email us for support, we use your message only to help you and reply. Any privacy question can go to <a href="mailto:harmonyStack@gmail.com?subject=CDL%20One%20Stop%20Privacy%20Question">harmonyStack@gmail.com</a>.</p>
+    </section>
+
+    <section class="legal-sec" id="availability">
+      <h2>Availability and changes to the app</h2>
+      <p>We may update, change, or remove features, question banks, and study content; require a supported iOS version; or stop offering or supporting the App entirely. We'll try to avoid surprises for anyone actively studying, but we don't guarantee that any particular feature or piece of content will remain available.</p>
+      <p>The App may be unavailable during maintenance, outages, or events outside our control.</p>
+    </section>
+
+    <section class="legal-sec" id="warranty">
+      <h2>Disclaimer of warranties</h2>
+      <p>The App and its content are provided <strong>"as is" and "as available," without warranties of any kind</strong>, express or implied, including implied warranties of merchantability, fitness for a particular purpose, accuracy, and non-infringement, to the fullest extent permitted by law.</p>
+      <p>We do not warrant that the App will be uninterrupted, error-free, or secure; that its content is complete, current, or matches your state's exam; or that using it will result in passing any test or obtaining any license, permit, endorsement, or job.</p>
+      <p>Some jurisdictions do not allow the exclusion of certain warranties, so parts of this section may not apply to you.</p>
+    </section>
+
+    <section class="legal-sec" id="liability">
+      <h2>Limitation of liability</h2>
+      <p>To the fullest extent permitted by law, Harmony Stack will not be liable for any indirect, incidental, special, consequential, exemplary, or punitive damages, or for lost profits, lost data, lost opportunities, failed exams, testing or licensing fees, or lost wages, arising out of or relating to your use of the App — even if we've been advised such damages are possible.</p>
+      <p>Our total liability for all claims relating to the App is limited to the greater of the amount you paid for the App in the twelve months before the claim, or ten U.S. dollars ($10).</p>
+      <p>Some jurisdictions do not allow limits on incidental or consequential damages, so parts of this section may not apply to you. Nothing here limits liability that cannot be limited by law.</p>
+    </section>
+
+    <section class="legal-sec" id="termination">
+      <h2>Termination</h2>
+      <p>You may end this agreement at any time by deleting the App from your devices. We may suspend or terminate your license and any account if you break these Terms or use the App in a way that harms other users or us.</p>
+      <p>Sections that by their nature should survive — content ownership, acceptable use, disclaimers, limitation of liability, and governing law — survive termination.</p>
+    </section>
+
+    <section class="legal-sec" id="changes">
+      <h2>Changes to these terms</h2>
+      <p>We may update these Terms as the App evolves or as the law requires. When we do, we'll change the effective date at the top of this page and post the updated Terms here. Material changes will also be noted in the App or in a release note where practical.</p>
+      <p>Continuing to use the App after an update means you accept the revised Terms.</p>
+    </section>
+
+    <section class="legal-sec" id="law">
+      <h2>Governing law and disputes</h2>
+      <p>These Terms are governed by the laws of the United States and of the state in which Harmony Stack is based, without regard to conflict-of-law rules. The United Nations Convention on Contracts for the International Sale of Goods does not apply.</p>
+      <p>You and Harmony Stack agree to try to resolve any dispute informally first — email us and give us 30 days to work it out. Any dispute that can't be resolved that way will be brought in the state or federal courts located where Harmony Stack is based, and you and Harmony Stack consent to the jurisdiction of those courts. Either party may still seek relief in small-claims court where eligible.</p>
+      <p>Claims must be brought individually, not as a class or representative action. If any part of these Terms is found unenforceable, the rest stays in effect.</p>
+    </section>
+
+    <section class="legal-sec" id="contact">
+      <h2>How to reach us</h2>
+      <p>Questions about these Terms, a correction to a question in the App, an account deletion request, or anything else — email <a href="mailto:harmonyStack@gmail.com?subject=CDL%20One%20Stop%20Terms%20Question">harmonyStack@gmail.com</a>. We typically reply within 1–2 business days.</p>
+      <p>Harmony Stack — developer of CDL One Stop, available on the <a href="https://apps.apple.com/us/app/cdl-one-stop-nj/id6782784591" target="_blank" rel="noopener">Apple App Store</a>.</p>
+    </section>
+
+  </div>
+
+  <!-- CLOSING CTA -->
+  <section class="closing" aria-labelledby="closing-heading">
+    <h2 id="closing-heading">Something here unclear?</h2>
+    <p>We'd rather explain it than have you guess. Ask us anything about these Terms and a real person will answer.</p>
+    <a class="btn-mail" href="mailto:harmonyStack@gmail.com?subject=CDL%20One%20Stop%20Terms%20Question">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-10 6L2 7"></path></svg>
+      Email harmonyStack@gmail.com
+    </a>
+  </section>
+
+</main>
+
+<footer class="app-footer">
+  <div class="app-footer-brand"><img src="portfolio-screenshots/cdl-icon.png" alt="">CDL One Stop</div>
+  <div class="app-footer-links"><a href="cdl-marketing.html">Home</a><a href="cdl-support.html">Support</a><a href="cdl-terms.html">Terms</a><a href="cdl-privacy.html">Privacy</a><a href="https://apps.apple.com/us/app/cdl-one-stop-nj/id6782784591" target="_blank" rel="noopener">App Store</a><a href="mailto:harmonyStack@gmail.com">Contact</a><a href="harmony-stack-services.html">Harmony Stack</a></div>
+  <div class="app-footer-fine">CDL One Stop is an iOS app built by Harmony Stack.<br>Support: <a href="mailto:harmonyStack@gmail.com">harmonyStack@gmail.com</a> • © 2026 Harmony Stack. All rights reserved.</div>
+</footer>
+
+
+<!-- Vercel Web Analytics (static HTML — works when deployed on Vercel) -->
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+
+</body>
+</html>

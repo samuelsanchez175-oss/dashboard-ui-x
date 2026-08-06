@@ -15,6 +15,8 @@ const NON_TOOL_TITLES: Record<string, string> = {
   'harmony-portfolio': 'Harmony portfolio',
   'harmony-services': 'Harmony services',
   'harmony-todos': 'Harmony todos',
+  'harmony-cdl': 'CDL One Stop',
+  'harmony-penwork': 'Penwork Studio',
   'mixing': 'Mixing',
   'mixing-audio-grab': 'Audio grab',
   'polymarket-bot': 'Bot Cockpit',

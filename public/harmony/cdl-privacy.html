@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f8a4c">
+<title>CDL One Stop — Privacy Policy</title>
+<meta name="description" content="Privacy Policy for CDL One Stop, the CDL knowledge test prep app by Harmony Stack. What stays on your device, what an optional account stores, calendar and notification permissions, and how to delete your data.">
+<link rel="canonical" href="https://harmony-stack-productions.vercel.app/cdl-privacy">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== THEME VARIABLES ===== */
+:root{--accent:#1f8a4c;--accent-deep:#14622f;--accent-soft:#e7f3ea;--gold:#e3b24a;--ink:#15281c;--ink-soft:#4a5b50;--paper:#f6f4ec;--paper-2:#eef1e8;--card:#ffffff;--border:#dde2d3}
+
+/* ===== SHARED_CSS ===== */
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--ink);background:var(--paper);line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:0 clamp(18px,4vw,40px)}
+a{color:inherit}
+.app-nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px clamp(16px,4vw,40px);background:rgba(255,255,255,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.app-nav-brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--ink);font-weight:700}
+.app-nav-brand img{width:34px;height:34px;border-radius:9px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.app-nav-brand span{font-size:15px;letter-spacing:-.01em}
+.app-nav-links{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.app-nav-links a,.app-nav-links span{text-decoration:none;color:var(--ink-soft);font-size:13.5px;font-weight:500;padding:8px 14px;border-radius:999px;transition:background .15s,color .15s;white-space:nowrap}
+.app-nav-links a:hover{background:var(--accent-soft);color:var(--accent-deep)}
+.app-nav-links a.is-active{background:var(--accent);color:#fff}
+.app-nav-links a.nav-store{border:1.5px solid var(--accent);color:var(--accent-deep)}
+.app-nav-links a.nav-store:hover{background:var(--accent);color:#fff}
+.app-footer{margin-top:84px;padding:48px clamp(16px,4vw,40px);background:var(--ink);color:rgba(255,255,255,.82);text-align:center}
+.app-footer-brand{display:inline-flex;align-items:center;gap:10px;font-weight:700;color:#fff;margin-bottom:8px}
+.app-footer-brand img{width:28px;height:28px;border-radius:7px}
+.app-footer a{color:#fff;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.32)}
+.app-footer-links{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin:16px 0 10px;font-size:14px}
+.app-footer-fine{font-size:12px;opacity:.55;margin-top:12px;line-height:1.7}
+
+/* ===== PAGE-SPECIFIC CSS ===== */
+main{padding-top:clamp(34px,6vw,60px)}
+.legal-head{text-align:center;max-width:680px;margin:0 auto;padding-bottom:clamp(26px,4.5vw,40px)}
+.legal-icon{width:78px;height:78px;border-radius:19px;box-shadow:0 12px 30px rgba(20,98,47,.22);display:block;margin:0 auto 20px}
+.legal-eyebrow{display:inline-block;font-size:12.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-deep);background:var(--accent-soft);padding:6px 15px;border-radius:999px;margin-bottom:16px}
+.legal-head h1{font-size:clamp(27px,5.2vw,42px);line-height:1.14;letter-spacing:-.02em;font-weight:700}
+.legal-head h1 .accent{color:var(--accent)}
+.legal-head p{margin-top:13px;font-size:clamp(15px,2.2vw,17px);color:var(--ink-soft)}
+.legal-stamp{display:inline-flex;align-items:center;gap:8px;margin-top:16px;font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-deep);background:var(--accent-soft);padding:7px 14px;border-radius:999px}
+.legal-stamp .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none}
+
+/* promises */
+.promises{display:grid;gap:13px}
+@media(min-width:760px){.promises{grid-template-columns:repeat(3,1fr)}}
+.promise{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:clamp(18px,3vw,24px);box-shadow:0 12px 32px rgba(20,40,28,.06)}
+.promise .ico{width:40px;height:40px;border-radius:12px;background:var(--accent-soft);color:var(--accent-deep);display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px}
+.promise .ico svg{width:20px;height:20px}
+.promise h3{font-size:16px;font-weight:700;letter-spacing:-.01em;margin-bottom:6px}
+.promise p{color:var(--ink-soft);font-size:14.5px;line-height:1.6}
+
+/* toc */
+.toc{margin-top:clamp(24px,4vw,36px);background:var(--paper-2);border:1px solid var(--border);border-radius:18px;padding:clamp(18px,3vw,26px)}
+.toc h2{font-size:12px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--accent-deep);margin-bottom:12px}
+.toc ol{list-style:none;counter-reset:toc;display:grid;gap:8px}
+@media(min-width:700px){.toc ol{grid-template-columns:1fr 1fr;gap:8px 24px}}
+.toc li{counter-increment:toc;font-size:14.5px}
+.toc li a{text-decoration:none;color:var(--ink-soft);display:flex;gap:9px}
+.toc li a::before{content:counter(toc) ".";color:var(--accent);font-weight:600;flex:none;min-width:19px}
+.toc li a:hover{color:var(--accent-deep)}
+
+/* legal body */
+.legal-doc{margin-top:clamp(30px,5vw,48px);counter-reset:sec}
+.legal-sec{scroll-margin-top:84px}
+.legal-sec+.legal-sec{margin-top:clamp(28px,4vw,40px);padding-top:clamp(26px,4vw,36px);border-top:1px solid var(--border)}
+.legal-sec h2{counter-increment:sec;font-size:clamp(18px,2.9vw,22px);font-weight:700;letter-spacing:-.01em;display:flex;gap:12px;align-items:baseline}
+.legal-sec h2::before{content:counter(sec);font-size:13px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:999px;min-width:28px;height:28px;display:inline-grid;place-items:center;flex:none;transform:translateY(-1px)}
+.legal-sec h3{margin-top:20px;font-size:16px;font-weight:700;color:var(--ink)}
+.legal-sec p,.legal-sec li{color:var(--ink-soft);font-size:15.5px;line-height:1.7}
+.legal-sec p{margin-top:12px}
+.legal-sec ul{margin:12px 0 0;padding-left:20px;display:grid;gap:8px}
+.legal-sec li::marker{color:var(--accent)}
+.legal-sec a{color:var(--accent-deep);font-weight:500;border-bottom:1px solid var(--border)}
+.legal-sec strong{color:var(--ink);font-weight:600}
+.callout{margin-top:14px;background:var(--accent-soft);border:1px solid rgba(31,138,76,.22);border-radius:14px;padding:16px 18px}
+.callout p{margin:0;color:var(--accent-deep);font-size:14.5px;line-height:1.65}
+.callout p+p{margin-top:8px}
+
+/* data table */
+.table-scroll{margin-top:16px;overflow-x:auto;border:1px solid var(--border);border-radius:16px;background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:620px;font-size:14.5px}
+th,td{text-align:left;padding:13px 16px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--ink-soft);line-height:1.55}
+th{background:var(--paper-2);color:var(--ink);font-weight:600;font-size:13px;letter-spacing:.02em;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+td strong{color:var(--ink);font-weight:600}
+
+/* closing */
+.closing{margin-top:clamp(34px,5vw,52px);text-align:center;background:linear-gradient(160deg,var(--accent-deep),var(--accent));color:#fff;border-radius:24px;padding:clamp(32px,5vw,52px) clamp(22px,4vw,40px);box-shadow:0 18px 44px rgba(20,98,47,.26)}
+.closing h2{font-size:clamp(21px,3.6vw,28px);font-weight:700;letter-spacing:-.01em;color:#fff}
+.closing p{margin:12px auto 22px;max-width:520px;color:rgba(255,255,255,.9);font-size:15.5px}
+.btn-mail{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:var(--accent-deep);text-decoration:none;font-weight:600;font-size:15.5px;padding:15px 26px;border-radius:14px;box-shadow:0 8px 20px rgba(0,0,0,.18);transition:transform .15s,box-shadow .15s,background .15s;white-space:nowrap}
+.btn-mail:hover{background:var(--paper);transform:translateY(-2px)}
+.btn-mail svg{width:19px;height:19px;flex:none}
+</style>
+</head>
+<body>
+
+<nav class="app-nav" aria-label="CDL One Stop pages">
+  <a class="app-nav-brand" href="cdl-marketing.html"><img src="portfolio-screenshots/cdl-icon.png" alt=""><span>CDL One Stop</span></a>
+  <div class="app-nav-links"><a href="cdl-marketing.html">Marketing</a><a href="cdl-support.html">Support</a><a href="cdl-terms.html">Terms</a><a href="cdl-privacy.html" class="is-active">Privacy</a><a href="https://harmony-stack-productions.vercel.app" target="_blank" rel="noopener">Landing page ↗</a><a class="nav-store" href="https://apps.apple.com/us/app/cdl-one-stop-nj/id6782784591" target="_blank" rel="noopener">App Store ↗</a></div>
+</nav>
+
+<main class="wrap">
+
+  <!-- HEADER -->
+  <header class="legal-head">
+    <img class="legal-icon" src="portfolio-screenshots/cdl-icon.png" alt="CDL One Stop app icon">
+    <span class="legal-eyebrow">Legal</span>
+    <h1>CDL One Stop — <span class="accent">Privacy Policy</span></h1>
+    <p>What the app keeps on your device, the little an optional account stores, and how to have any of it deleted.</p>
+    <span class="legal-stamp"><span class="dot"></span>Effective August 3, 2026</span>
+  </header>
+
+  <!-- PROMISES -->
+  <section class="promises" aria-label="Privacy at a glance">
+    <div class="promise">
+      <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></span>
+      <h3>Your studying stays local</h3>
+      <p>Streaks, scores, levels, key dates, and missed questions live on your device. We don't hold a copy.</p>
+    </div>
+    <div class="promise">
+      <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"></path><circle cx="12" cy="8" r="4"></circle></svg></span>
+      <h3>An account is optional</h3>
+      <p>Study as a guest with no sign-up at all. If you do sign in, it's an email address and nothing more.</p>
+    </div>
+    <div class="promise">
+      <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></span>
+      <h3>No ads, no tracking, no sale</h3>
+      <p>No advertising, no third-party analytics, no cross-app tracking, and we never sell your personal information.</p>
+    </div>
+  </section>
+
+  <!-- TABLE OF CONTENTS -->
+  <nav class="toc" aria-label="Sections of this policy">
+    <h2>On this page</h2>
+    <ol>
+      <li><a href="#who">Who this policy covers</a></li>
+      <li><a href="#on-device">What stays on your device</a></li>
+      <li><a href="#collect">What we collect and why</a></li>
+      <li><a href="#account">Accounts and sign-in</a></li>
+      <li><a href="#gamecenter">Game Center, leaderboards, and achievements</a></li>
+      <li><a href="#calendar">Calendar access for test dates</a></li>
+      <li><a href="#notifications">Notifications and reminders</a></li>
+      <li><a href="#motion">Motion and device sensors</a></li>
+      <li><a href="#purchase">Your App Store purchase</a></li>
+      <li><a href="#links">Links to state agencies</a></li>
+      <li><a href="#not-collect">What we don't do</a></li>
+      <li><a href="#sharing">Who we share data with</a></li>
+      <li><a href="#retention">How long we keep data</a></li>
+      <li><a href="#delete">Deleting your data</a></li>
+      <li><a href="#rights">Your privacy rights</a></li>
+      <li><a href="#transfers">International transfers</a></li>
+      <li><a href="#children">Children</a></li>
+      <li><a href="#security">Security</a></li>
+      <li><a href="#changes">Changes to this policy</a></li>
+      <li><a href="#contact">How to reach us</a></li>
+    </ol>
+  </nav>
+
+  <!-- BODY -->
+  <div class="legal-doc">
+
+    <section class="legal-sec" id="who">
+      <h2>Who this policy covers</h2>
+      <p>This Privacy Policy explains how <strong>Harmony Stack</strong> ("we", "us") handles information in the <strong>CDL One Stop</strong> iOS app (the "App") and on the CDL One Stop pages of this website. It works alongside our <a href="cdl-terms.html">Terms of Service</a>.</p>
+      <p>Harmony Stack is the controller of the personal information described here. If you don't agree with this policy, please don't use the App.</p>
+    </section>
+
+    <section class="legal-sec" id="on-device">
+      <h2>What stays on your device</h2>
+      <p>CDL One Stop is built to work offline and local-first. The following is stored in the App's own storage on your iPhone or iPad and is <strong>not transmitted to us</strong>:</p>
+      <ul>
+        <li>Your answers, scores, and which questions you've missed;</li>
+        <li>Readiness percentages, mastery levels, streaks, and daily-goal progress;</li>
+        <li>Your selected state, license class, and endorsements;</li>
+        <li>Key dates such as your permit or exam date, and any countdowns built from them;</li>
+        <li>Achievements and badges earned in the App;</li>
+        <li>Language choice, sound and notification settings, and other preferences.</li>
+      </ul>
+      <p>Your device backup (iCloud Backup or a computer backup) may include this data. That backup is controlled by you and Apple, not by us.</p>
+    </section>
+
+    <section class="legal-sec" id="collect">
+      <h2>What we collect and why</h2>
+      <p>Here is everything that leaves your device, in one place.</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Data</th><th>When</th><th>Who receives it</th><th>Why</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Email address and an account identifier</strong></td>
+              <td>Only if you create an account or sign in</td>
+              <td>Our authentication provider (Supabase)</td>
+              <td>To sign you in and recognize your account</td>
+            </tr>
+            <tr>
+              <td><strong>Sign in with Apple identifier</strong> — and your email, or Apple's private relay address if you chose to hide it</td>
+              <td>Only if you sign in with Apple</td>
+              <td>Apple, then our authentication provider</td>
+              <td>To create and match your account without a password</td>
+            </tr>
+            <tr>
+              <td><strong>Game Center player ID, scores, and achievements</strong></td>
+              <td>Only if you're signed in to Game Center and use leaderboards</td>
+              <td>Apple</td>
+              <td>To rank you and record achievements</td>
+            </tr>
+            <tr>
+              <td><strong>Purchase status</strong></td>
+              <td>When you buy the App</td>
+              <td>Apple (we receive status only)</td>
+              <td>To unlock the App and restore it on your devices</td>
+            </tr>
+            <tr>
+              <td><strong>Support emails</strong> — your address and whatever you write</td>
+              <td>Only if you email us</td>
+              <td>Us, via our email provider</td>
+              <td>To answer you and fix the problem</td>
+            </tr>
+            <tr>
+              <td><strong>Crash and performance diagnostics</strong></td>
+              <td>Only if you opted in through iOS Settings</td>
+              <td>Apple, then us in aggregated form</td>
+              <td>To find and fix crashes</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>We don't ask for your name, phone number, contacts, location, photos, microphone, camera, or health data, and the App doesn't read them. <strong>Your quiz answers and study progress are not in this table</strong> — they never leave your device.</p>
+    </section>
+
+    <section class="legal-sec" id="account">
+      <h2>Accounts and sign-in</h2>
+      <p>An account is optional. You can use the App fully as a <strong>guest</strong> — no email, no sign-up, nothing sent anywhere.</p>
+      <p>If you'd rather sign in, you can use <strong>Sign in with Apple</strong> or an <strong>email address</strong>. We store only what's needed to authenticate you: an account identifier and, where you provide it, your email address. If you use Apple's "Hide My Email," we only ever see the private relay address Apple generates.</p>
+      <p>We don't store your password — authentication is handled by our provider. We don't send marketing email, and signing in doesn't upload your study history.</p>
+    </section>
+
+    <section class="legal-sec" id="gamecenter">
+      <h2>Game Center, leaderboards, and achievements</h2>
+      <p>If you're signed in to Game Center on your device, the App can submit scores and achievements to Apple's Game Center service. That's an Apple feature governed by <a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener">Apple's privacy policy</a> — your Game Center nickname is what other players see, not your email or real name.</p>
+      <p>Don't want it? Sign out of Game Center, or turn it off in iOS Settings. The rest of the App works exactly the same.</p>
+    </section>
+
+    <section class="legal-sec" id="calendar">
+      <h2>Calendar access for test dates</h2>
+      <p>The App can add your permit or exam date to your calendar so the countdown shows up alongside the rest of your week. iOS asks for <strong>calendar permission</strong> the first time, and you can decline or revoke it later in iOS Settings → Privacy &amp; Security → Calendars.</p>
+      <p>We use that permission only to create or update the event you asked for. <strong>We don't read your other events</strong>, and nothing from your calendar is sent to us.</p>
+    </section>
+
+    <section class="legal-sec" id="notifications">
+      <h2>Notifications and reminders</h2>
+      <p>If you allow notifications, study reminders and streak nudges are scheduled <strong>locally on your device</strong>. Their content isn't sent to our servers, and we don't use notifications for advertising.</p>
+      <p>Turn them off any time in iOS Settings → Notifications, or in the App's settings.</p>
+    </section>
+
+    <section class="legal-sec" id="motion">
+      <h2>Motion and device sensors</h2>
+      <p>Some badges and cards use your device's motion sensor for a subtle shine-and-tilt effect. That reading is used for the animation on screen in the moment and is <strong>never recorded, stored, or transmitted</strong>. It tells us nothing about where you are or what you're doing.</p>
+    </section>
+
+    <section class="legal-sec" id="purchase">
+      <h2>Your App Store purchase</h2>
+      <p>CDL One Stop is a one-time purchase through the Apple App Store. <strong>Apple processes the payment</strong> — we never see or receive your card number, billing address, or Apple Account credentials. We receive only what's needed to unlock the App and let you restore it on your devices.</p>
+      <p>Refunds and purchase history are handled in your Apple Account, at <a href="https://reportaproblem.apple.com" target="_blank" rel="noopener">reportaproblem.apple.com</a>.</p>
+    </section>
+
+    <section class="legal-sec" id="links">
+      <h2>Links to state agencies</h2>
+      <p>The App links out to official state licensing pages — your DMV, MVC, DPS, or equivalent — so you can confirm rules, fees, and test dates at the source. Those sites are outside our control and have their own privacy policies.</p>
+      <p>We don't tell them you came from the App, and we don't receive anything back from them.</p>
+    </section>
+
+    <section class="legal-sec" id="not-collect">
+      <h2>What we don't do</h2>
+      <ul>
+        <li>We don't <strong>sell or share</strong> your personal information, in the ordinary sense or as those terms are defined under California law;</li>
+        <li>We don't show ads and include no advertising SDKs;</li>
+        <li>We don't include third-party analytics or attribution SDKs, and we don't track you across other apps or websites — so the App doesn't need to ask for tracking permission;</li>
+        <li>We don't buy personal information from data brokers or enrich your profile from outside sources;</li>
+        <li>We don't report your practice scores, readiness, or study habits to any employer, school, insurer, or licensing agency;</li>
+        <li>We don't make automated decisions that produce legal or similarly significant effects about you.</li>
+      </ul>
+      <div class="callout">
+        <p>Practicing badly in the App has no effect on your real record. Nobody but you sees your scores unless you choose to post one to a Game Center leaderboard.</p>
+      </div>
+    </section>
+
+    <section class="legal-sec" id="sharing">
+      <h2>Who we share data with</h2>
+      <p>We share the limited data described above only with service providers who process it on our behalf, under contract, for the purposes we specify:</p>
+      <ul>
+        <li><strong>Apple</strong> — App Store distribution and purchases, Sign in with Apple, Game Center, and opt-in crash diagnostics;</li>
+        <li><strong>Supabase</strong> — authentication for optional accounts;</li>
+        <li><strong>Our email provider</strong> — to receive and answer support messages.</li>
+      </ul>
+      <p>We may also disclose information if legally required, to enforce our Terms, or to protect the rights and safety of our users or the public. If Harmony Stack is ever acquired or merged, data may transfer as part of that transaction, subject to this policy.</p>
+    </section>
+
+    <section class="legal-sec" id="retention">
+      <h2>How long we keep data</h2>
+      <ul>
+        <li><strong>On-device study data</strong> — kept until you delete it or remove the App;</li>
+        <li><strong>Account records</strong> — kept while the account exists, then deleted on request;</li>
+        <li><strong>Purchase status</strong> — kept by Apple; we keep only what's needed to honor your purchase and meet tax and accounting rules;</li>
+        <li><strong>Support emails</strong> — kept as long as needed to resolve the issue and keep a reasonable support history.</li>
+      </ul>
+    </section>
+
+    <section class="legal-sec" id="delete">
+      <h2>Deleting your data</h2>
+      <p><strong>On your device:</strong> reset progress in the App's settings, or delete the App to remove its local data entirely. Deleting the App permanently removes your streaks, scores, and key dates — there's no copy on our side to restore.</p>
+      <p><strong>Your account:</strong> email <a href="mailto:harmonyStack@gmail.com?subject=CDL%20One%20Stop%20Account%20Deletion">harmonyStack@gmail.com</a> from your account address and ask us to delete it. We'll delete the account and associated records and confirm when it's done.</p>
+      <p><strong>Game Center:</strong> leaderboard entries and achievements are held by Apple — manage or reset them through your Apple Account and Game Center settings.</p>
+      <p><strong>Calendar events:</strong> delete them in your calendar app, and revoke calendar access in iOS Settings if you'd like.</p>
+    </section>
+
+    <section class="legal-sec" id="rights">
+      <h2>Your privacy rights</h2>
+      <p>Depending on where you live, you may have the right to access, correct, delete, or export your personal information, to object to or restrict certain processing, and to withdraw consent. Because almost everything the App creates stays on your device, you already control it directly — for anything we hold, email us and we'll act on your request.</p>
+      <h3>If you're in the EEA or UK</h3>
+      <p>We process personal information to perform our contract with you (providing the App and your account), on legitimate interests (keeping the App working, secure, and free of abuse), and on consent where iOS asks for it (calendar access, notifications). You may lodge a complaint with your local supervisory authority.</p>
+      <h3>If you're in California</h3>
+      <p>We do not sell or share personal information, and we don't process it for cross-context behavioral advertising. We won't discriminate against you for exercising any privacy right.</p>
+      <p>We answer verified requests within the time the applicable law allows — normally within 30 days. We may need to confirm your identity, usually by asking you to write from the email address on the account.</p>
+    </section>
+
+    <section class="legal-sec" id="transfers">
+      <h2>International transfers</h2>
+      <p>Harmony Stack is based in the United States, and our providers process data on servers in the United States and other countries. If you use the App from outside the United States, the limited data described here is transferred there.</p>
+      <p>Where required, transfers rely on appropriate safeguards such as the European Commission's Standard Contractual Clauses through our agreements with those providers.</p>
+    </section>
+
+    <section class="legal-sec" id="children">
+      <h2>Children</h2>
+      <p>CDL One Stop is built for adults preparing for a commercial driver's license. It is not directed to children under 13, and we don't knowingly collect personal information from them. If you believe a child has provided us information, email us and we'll delete it.</p>
+    </section>
+
+    <section class="legal-sec" id="security">
+      <h2>Security</h2>
+      <p>Sign-in requests use encrypted connections (HTTPS/TLS). Account data sits with a managed provider with its own access controls, and we keep access to it limited to what's needed to run the service. Study data never leaves your device, so it's protected by your device passcode and encryption.</p>
+      <p>No system is perfectly secure. Keep your device passcode-protected and updated, and let us know right away if you think your account has been compromised.</p>
+    </section>
+
+    <section class="legal-sec" id="changes">
+      <h2>Changes to this policy</h2>
+      <p>We'll update this policy as the App changes or as the law requires. The effective date at the top always reflects the current version, and we'll note material changes in the App or in a release note where practical.</p>
+      <p>Continuing to use the App after an update means you accept the revised policy.</p>
+    </section>
+
+    <section class="legal-sec" id="contact">
+      <h2>How to reach us</h2>
+      <p>Privacy questions, access or deletion requests, or anything unclear here — email <a href="mailto:harmonyStack@gmail.com?subject=CDL%20One%20Stop%20Privacy%20Question">harmonyStack@gmail.com</a>. We typically reply within 1–2 business days.</p>
+      <p>Harmony Stack — developer of CDL One Stop, available on the <a href="https://apps.apple.com/us/app/cdl-one-stop-nj/id6782784591" target="_blank" rel="noopener">Apple App Store</a>.</p>
+    </section>
+
+  </div>
+
+  <!-- CLOSING CTA -->
+  <section class="closing" aria-labelledby="closing-heading">
+    <h2 id="closing-heading">Want something deleted?</h2>
+    <p>Ask and it's done — no forms, no runaround. Email us and a real person handles it.</p>
+    <a class="btn-mail" href="mailto:harmonyStack@gmail.com?subject=CDL%20One%20Stop%20Privacy%20Request">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-10 6L2 7"></path></svg>
+      Email harmonyStack@gmail.com
+    </a>
+  </section>
+
+</main>
+
+<footer class="app-footer">
+  <div class="app-footer-brand"><img src="portfolio-screenshots/cdl-icon.png" alt="">CDL One Stop</div>
+  <div class="app-footer-links"><a href="cdl-marketing.html">Home</a><a href="cdl-support.html">Support</a><a href="cdl-terms.html">Terms</a><a href="cdl-privacy.html">Privacy</a><a href="https://apps.apple.com/us/app/cdl-one-stop-nj/id6782784591" target="_blank" rel="noopener">App Store</a><a href="mailto:harmonyStack@gmail.com">Contact</a><a href="harmony-stack-services.html">Harmony Stack</a></div>
+  <div class="app-footer-fine">CDL One Stop is an iOS app built by Harmony Stack.<br>Support: <a href="mailto:harmonyStack@gmail.com">harmonyStack@gmail.com</a> • © 2026 Harmony Stack. All rights reserved.</div>
+</footer>
+
+
+<!-- Vercel Web Analytics (static HTML — works when deployed on Vercel) -->
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+
+</body>
+</html>

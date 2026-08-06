@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fff7f3">
+<title>Penwork Studio — Terms of Service</title>
+<meta name="description" content="Terms of Service for Penwork Studio, the songwriting and lyric studio for iOS by Harmony Stack. Covers your license, subscriptions and refunds, AI features, ownership of your lyrics, acceptable use, and disclaimers.">
+<link rel="canonical" href="index.html/penwork-terms">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== THEME VARIABLES ===== */
+:root{--accent:#ff7059;--accent-deep:#e6553d;--accent-soft:#fff0eb;--gold:#ff7059;--ink:#2a2320;--ink-soft:#6b5f59;--paper:#fff7f3;--paper-2:#fdeee7;--card:#ffffff;--border:#f3ddd3}
+
+/* ===== SHARED_CSS ===== */
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--ink);background:var(--paper);line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:0 clamp(18px,4vw,40px)}
+a{color:inherit}
+.app-nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px clamp(16px,4vw,40px);background:rgba(255,255,255,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.app-nav-brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--ink);font-weight:700}
+.app-nav-brand img{width:34px;height:34px;border-radius:9px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.app-nav-brand span{font-size:15px;letter-spacing:-.01em}
+.app-nav-links{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.app-nav-links a,.app-nav-links span{text-decoration:none;color:var(--ink-soft);font-size:13.5px;font-weight:500;padding:8px 14px;border-radius:999px;transition:background .15s,color .15s;white-space:nowrap}
+.app-nav-links a:hover{background:var(--accent-soft);color:var(--accent-deep)}
+.app-nav-links a.is-active{background:var(--accent);color:#fff}
+.app-nav-links a.nav-store{border:1.5px solid var(--accent);color:var(--accent-deep)}
+.app-nav-links a.nav-store:hover{background:var(--accent);color:#fff}
+.app-footer{margin-top:84px;padding:48px clamp(16px,4vw,40px);background:var(--ink);color:rgba(255,255,255,.82);text-align:center}
+.app-footer-brand{display:inline-flex;align-items:center;gap:10px;font-weight:700;color:#fff;margin-bottom:8px}
+.app-footer-brand img{width:28px;height:28px;border-radius:7px}
+.app-footer a{color:#fff;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.32)}
+.app-footer-links{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin:16px 0 10px;font-size:14px}
+.app-footer-fine{font-size:12px;opacity:.55;margin-top:12px;line-height:1.7}
+
+/* ===== PAGE-SPECIFIC CSS ===== */
+main{padding-top:clamp(34px,6vw,60px)}
+.legal-head{text-align:center;max-width:660px;margin:0 auto;padding-bottom:clamp(26px,4.5vw,40px)}
+.legal-icon{width:78px;height:78px;border-radius:19px;box-shadow:0 12px 30px rgba(230,85,61,.28);display:block;margin:0 auto 20px}
+.legal-eyebrow{display:inline-block;font-size:12.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-deep);background:var(--accent-soft);padding:6px 15px;border-radius:999px;margin-bottom:16px}
+.legal-head h1{font-size:clamp(27px,5.2vw,42px);line-height:1.14;letter-spacing:-.02em;font-weight:700}
+.legal-head h1 .accent{color:var(--accent-deep)}
+.legal-head p{margin-top:13px;font-size:clamp(15px,2.2vw,17px);color:var(--ink-soft)}
+.legal-stamp{display:inline-flex;align-items:center;gap:8px;margin-top:16px;font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-deep);background:var(--accent-soft);padding:7px 14px;border-radius:999px}
+.legal-stamp .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none}
+
+.summary{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:clamp(22px,3.6vw,32px);box-shadow:0 16px 40px rgba(42,35,32,.07)}
+.summary h2{font-size:clamp(18px,3vw,22px);font-weight:700;letter-spacing:-.01em;margin-bottom:6px}
+.summary p.sub{color:var(--ink-soft);font-size:14.5px;margin-bottom:16px}
+.summary ul{list-style:none;display:grid;gap:11px}
+@media(min-width:760px){.summary ul{grid-template-columns:1fr 1fr;gap:11px 26px}}
+.summary li{display:flex;gap:11px;align-items:flex-start;font-size:15px;color:var(--ink-soft)}
+.summary li svg{width:19px;height:19px;color:var(--accent-deep);flex:none;margin-top:2px}
+.summary li b{color:var(--ink);font-weight:600}
+.summary a{color:var(--accent-deep);font-weight:600;border-bottom:1px solid rgba(230,85,61,.4);text-decoration:none}
+
+.toc{margin-top:clamp(24px,4vw,36px);background:var(--paper-2);border:1px solid var(--border);border-radius:18px;padding:clamp(18px,3vw,26px)}
+.toc h2{font-size:12.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-deep);margin-bottom:12px}
+.toc ol{list-style:none;counter-reset:toc;display:grid;gap:8px}
+@media(min-width:700px){.toc ol{grid-template-columns:1fr 1fr;gap:8px 24px}}
+.toc li{counter-increment:toc;font-size:14.5px}
+.toc li a{text-decoration:none;color:var(--ink-soft);display:flex;gap:9px}
+.toc li a::before{content:counter(toc) ".";color:var(--accent-deep);font-weight:600;flex:none;min-width:19px}
+.toc li a:hover{color:var(--accent-deep)}
+
+.legal-doc{margin-top:clamp(30px,5vw,48px);counter-reset:sec}
+.legal-sec{scroll-margin-top:84px}
+.legal-sec+.legal-sec{margin-top:clamp(28px,4vw,40px);padding-top:clamp(26px,4vw,36px);border-top:1px solid var(--border)}
+.legal-sec h2{counter-increment:sec;font-size:clamp(18px,2.9vw,23px);font-weight:700;letter-spacing:-.01em;display:flex;gap:12px;align-items:baseline}
+.legal-sec h2::before{content:counter(sec);font-size:13px;font-weight:600;color:var(--accent-deep);background:var(--accent-soft);border-radius:999px;min-width:28px;height:28px;display:inline-grid;place-items:center;flex:none;transform:translateY(-1px)}
+.legal-sec p,.legal-sec li{color:var(--ink-soft);font-size:15.5px;line-height:1.7}
+.legal-sec p{margin-top:12px}
+.legal-sec ul{margin:12px 0 0;padding-left:20px;display:grid;gap:8px}
+.legal-sec li::marker{color:var(--accent)}
+.legal-sec a{color:var(--accent-deep);font-weight:600;border-bottom:1px solid rgba(230,85,61,.4);text-decoration:none}
+.legal-sec strong{color:var(--ink);font-weight:600}
+.callout{margin-top:14px;background:var(--accent-soft);border:1px solid rgba(230,85,61,.25);border-radius:14px;padding:16px 18px}
+.callout p{margin:0;color:var(--accent-deep);font-size:14.5px;line-height:1.65}
+.callout p+p{margin-top:8px}
+
+.closing{margin-top:clamp(44px,6vw,68px);background:linear-gradient(135deg,var(--paper-2),var(--accent-soft));border:1px solid var(--border);border-radius:24px;padding:clamp(30px,5vw,48px);text-align:center}
+.closing h2{font-size:clamp(22px,3.4vw,30px);letter-spacing:-.02em;margin-bottom:10px}
+.closing p{color:var(--ink-soft);font-size:15.5px;max-width:500px;margin:0 auto 22px}
+.btn-mail{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600;font-size:16px;padding:15px 30px;border-radius:999px;box-shadow:0 10px 26px rgba(230,85,61,.32);transition:transform .15s,box-shadow .15s,background .15s}
+.btn-mail:hover{background:var(--accent-deep);transform:translateY(-2px);box-shadow:0 14px 32px rgba(230,85,61,.4)}
+.btn-mail svg{width:19px;height:19px}
+</style>
+</head>
+<body>
+<nav class="app-nav" aria-label="Penwork Studio pages">
+  <a class="app-nav-brand" href="penwork-marketing.html"><img src="portfolio-screenshots/penwork-icon.png" alt=""><span>Penwork Studio</span></a>
+  <div class="app-nav-links">
+    <a href="penwork-marketing.html">Home</a>
+    <a href="penwork-support.html">Support</a>
+    <a href="penwork-terms.html" class="is-active">Terms</a>
+    <a href="penwork-privacy.html">Privacy</a>
+    <a href="index.html">Harmony Stack ↗</a>
+    <a class="nav-store" href="https://apps.apple.com/us/app/penwork-studio/id6757620114" target="_blank" rel="noopener">App Store ↗</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <!-- HEADER -->
+  <header class="legal-head">
+    <img class="legal-icon" src="portfolio-screenshots/penwork-icon.png" alt="Penwork Studio app icon">
+    <span class="legal-eyebrow">Legal</span>
+    <h1>Penwork Studio — <span class="accent">Terms of Service</span></h1>
+    <p>The agreement between you and Harmony Stack for using Penwork Studio. Plain language where we can, precise where we have to be.</p>
+    <span class="legal-stamp"><span class="dot"></span>Effective August 3, 2026</span>
+  </header>
+
+  <!-- PLAIN-LANGUAGE SUMMARY -->
+  <section class="summary" aria-labelledby="summary-heading">
+    <h2 id="summary-heading">The short version</h2>
+    <p class="sub">A quick summary for convenience. The numbered terms below are the ones that actually govern.</p>
+    <ul>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span><b>Your lyrics are yours.</b> We claim no ownership of anything you write in the app.</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span><b>AI runs on your own key.</b> Add an API key and requests go from your device straight to that provider, billed to you.</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span><b>Free to download.</b> Paid plans, where offered, are billed by Apple and cancel in your Apple Account settings.</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span><b>Songs live on your device.</b> Back your device up — deleting the app can delete your catalog.</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span><b>Write your own work.</b> Don't use the app to infringe someone else's song or to generate unlawful content.</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span><b>Privacy is separate.</b> How we handle data is in the <a href="penwork-privacy.html">Privacy Policy</a>.</span></li>
+    </ul>
+  </section>
+
+  <!-- TABLE OF CONTENTS -->
+  <nav class="toc" aria-label="Sections of these terms">
+    <h2>On this page</h2>
+    <ol>
+      <li><a href="#acceptance">Acceptance of these terms</a></li>
+      <li><a href="#service">What Penwork Studio is</a></li>
+      <li><a href="#license">Your license to use the app</a></li>
+      <li><a href="#your-content">Your songs and your content</a></li>
+      <li><a href="#ai">AI features and generated output</a></li>
+      <li><a href="#storage">Storage, backup, and loss of work</a></li>
+      <li><a href="#purchases">Free version, paid plans, and refunds</a></li>
+      <li><a href="#accounts">Accounts and sign-in</a></li>
+      <li><a href="#keys">Your own API keys</a></li>
+      <li><a href="#acceptable-use">Acceptable use</a></li>
+      <li><a href="#our-content">Our content and your feedback</a></li>
+      <li><a href="#third-party">Apple and other services</a></li>
+      <li><a href="#privacy">Privacy</a></li>
+      <li><a href="#availability">Availability and changes to the app</a></li>
+      <li><a href="#warranty">Disclaimer of warranties</a></li>
+      <li><a href="#liability">Limitation of liability</a></li>
+      <li><a href="#termination">Termination</a></li>
+      <li><a href="#changes">Changes to these terms</a></li>
+      <li><a href="#law">Governing law and disputes</a></li>
+      <li><a href="#contact">How to reach us</a></li>
+    </ol>
+  </nav>
+
+  <!-- TERMS BODY -->
+  <div class="legal-doc">
+
+    <section class="legal-sec" id="acceptance">
+      <h2>Acceptance of these terms</h2>
+      <p>These Terms of Service ("Terms") are an agreement between you and <strong>Harmony Stack</strong> ("Harmony Stack", "we", "us"), the developer of the <strong>Penwork Studio</strong> mobile application (the "App").</p>
+      <p>By downloading, installing, or using the App, you agree to these Terms. If you do not agree, please do not use the App and delete it from your device.</p>
+      <p>If you are under 13 years old, you may not use the App. If you are between 13 and the age of majority where you live, you may use the App only with the involvement of a parent or legal guardian who agrees to these Terms.</p>
+    </section>
+
+    <section class="legal-sec" id="service">
+      <h2>What Penwork Studio is</h2>
+      <p>Penwork Studio is a songwriting and lyric studio for iOS. It provides a distraction-free editor, a catalog with folders and search, song tagging for BPM, key, and scale, syllable and flow tools, voice capture and transcription, and AI-assisted writing features such as line suggestions.</p>
+      <p>Some features are offered as optional add-ons or paid plans, and features may be added, changed, or removed as the App develops.</p>
+    </section>
+
+    <section class="legal-sec" id="license">
+      <h2>Your license to use the app</h2>
+      <p>Subject to these Terms, we grant you a personal, limited, non-exclusive, non-transferable, revocable license to install and use the App on Apple-branded devices you own or control.</p>
+      <p>Your use is also governed by Apple's <a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/" target="_blank" rel="noopener">Licensed Application End User License Agreement</a>. Where these Terms and Apple's standard EULA conflict, these Terms control as between you and Harmony Stack, except where Apple's terms are required to control.</p>
+      <p>We reserve all rights not expressly granted to you.</p>
+    </section>
+
+    <section class="legal-sec" id="your-content">
+      <h2>Your songs and your content</h2>
+      <p><strong>You own your work.</strong> Lyrics, titles, notes, recordings, and any other content you create or import ("Your Content") remain yours. Harmony Stack claims no ownership of Your Content and does not acquire any rights in your songs, compositions, or recordings.</p>
+      <p>You grant us only the narrow, revocable permission needed to operate the App for you — for example, storing Your Content on your device, and transmitting the specific content you submit to a feature so that feature can return a result. We do not use Your Content to train AI models, and we do not sell it, publish it, or share it for advertising.</p>
+      <p>You are responsible for Your Content, including having the rights to any material you import, sample, quote, or build on.</p>
+    </section>
+
+    <section class="legal-sec" id="ai">
+      <h2>AI features and generated output</h2>
+      <p>AI-assisted features — line suggestions, transcription, summaries, and similar tools — are <strong>bring-your-own-key</strong>. They become available once you add your own API key from an AI provider, and the App then sends the content you submit for that feature (the lyrics, prompt, direction, or audio you provide) <strong>directly from your device to that provider</strong> using your key. Requests don't pass through Harmony Stack.</p>
+      <ul>
+        <li><strong>Your account, your bill, their terms.</strong> Usage is charged to you by the provider, and your agreement with them governs how they handle what you send. Harmony Stack isn't a party to it and isn't responsible for their charges, limits, outages, or content policies.</li>
+        <li><strong>Output is a starting point, not a guarantee.</strong> AI output can be inaccurate, generic, derivative of common phrasing, or unsuitable. Review anything you keep.</li>
+        <li><strong>Check before you release.</strong> AI-assisted lines may resemble existing works. You are responsible for clearing and confirming the originality of anything you publish, register, perform, or sell.</li>
+        <li><strong>Ownership and protectability vary.</strong> Copyright treatment of AI-assisted material differs by country, and purely machine-generated material may not be protectable everywhere. As between you and us, you keep whatever rights you have in the result.</li>
+        <li><strong>Don't submit what you can't share.</strong> Avoid sending confidential material, other people's unreleased work, or sensitive personal information through AI features.</li>
+        <li><strong>Availability can change.</strong> AI features depend on outside providers and may be rate-limited, changed, or discontinued.</li>
+      </ul>
+      <div class="callout">
+        <p>What each AI feature sends, and to whom, is described in the <a href="penwork-privacy.html#ai">Privacy Policy</a>.</p>
+      </div>
+    </section>
+
+    <section class="legal-sec" id="storage">
+      <h2>Storage, backup, and loss of work</h2>
+      <p>Your songs are stored on your device. Deleting the App, resetting or losing your device, or a device failure can permanently delete your catalog.</p>
+      <p><strong>Keep your device backed up and export work that matters to you.</strong> Except where a feature explicitly syncs data to an account, we do not hold a copy of your catalog and cannot recover it for you.</p>
+    </section>
+
+    <section class="legal-sec" id="purchases">
+      <h2>Free version, paid plans, and refunds</h2>
+      <p>Penwork Studio is free to download from the Apple App Store. Some features may be offered as optional paid upgrades or as <strong>auto-renewing subscriptions</strong> sold through the App Store.</p>
+      <ul>
+        <li>Prices, plan lengths, and what each plan includes are shown in the App before you buy, in your local currency including any tax.</li>
+        <li>If you buy a subscription, payment is charged to your Apple Account at confirmation. <strong>It renews automatically</strong> at the then-current price unless you cancel at least 24 hours before the end of the current period; your account is charged for renewal within 24 hours before the period ends.</li>
+        <li><strong>Manage or cancel</strong> any time in your device's Settings → your Apple Account → Subscriptions. Cancelling stops the next renewal; it does not refund the current period.</li>
+        <li>If a free trial is offered, any unused portion is forfeited when you buy a subscription that covers the same features.</li>
+        <li><strong>Refunds are handled by Apple</strong>, not by us. Request one at <a href="https://reportaproblem.apple.com" target="_blank" rel="noopener">reportaproblem.apple.com</a>. We can't issue, approve, or reverse App Store charges.</li>
+        <li>We may change prices or what a plan includes going forward. Changes don't apply retroactively to a period you've already paid for.</li>
+      </ul>
+    </section>
+
+    <section class="legal-sec" id="accounts">
+      <h2>Accounts and sign-in</h2>
+      <p>You can use the App's core writing tools without an account. If you create one, you agree to give accurate information and keep your credentials secure, and you are responsible for activity under your account.</p>
+      <p>You may ask us to delete your account and any associated data at any time by emailing <a href="mailto:harmonystack@gmail.com?subject=Penwork%20Studio%20Account%20Deletion">harmonystack@gmail.com</a>. We may suspend or close an account used to break these Terms or to interfere with the App.</p>
+    </section>
+
+    <section class="legal-sec" id="keys">
+      <h2>Your own API keys</h2>
+      <p>AI features require your own third-party API key. The key is stored in your device's Keychain, is never transmitted to Harmony Stack, and is used only to make requests you start from the App. Remove it and those features switch back off.</p>
+      <p>You are responsible for keeping that key secure, for complying with that provider's terms and usage policies, and for <strong>any charges the provider bills you</strong>. Harmony Stack is not responsible for third-party API costs, rate limits, quota exhaustion, or account suspensions — including charges caused by heavy use, a shared device, or a key you exposed.</p>
+    </section>
+
+    <section class="legal-sec" id="acceptable-use">
+      <h2>Acceptable use</h2>
+      <p>You agree not to:</p>
+      <ul>
+        <li>Use the App to create or distribute material that infringes someone else's copyright, trademark, or other rights;</li>
+        <li>Generate or store content that is unlawful, that harasses or defames a real person, that sexualizes minors, or that promotes violence against others;</li>
+        <li>Reverse engineer, decompile, or attempt to extract the App's source code, prompts, or datasets, except where that restriction is prohibited by law;</li>
+        <li>Resell, sublicense, or provide the App's paid features to third parties as a service of your own;</li>
+        <li>Use the App or its features to build or train a competing product or model;</li>
+        <li>Interfere with the App, abuse or automate AI features, evade usage limits, or attempt unauthorized access to our systems or another user's account.</li>
+      </ul>
+    </section>
+
+    <section class="legal-sec" id="our-content">
+      <h2>Our content and your feedback</h2>
+      <p>The App, its design, interface, prompts, sample content, rhyme and syllable data, and the Penwork Studio and Harmony Stack names and logos are owned by Harmony Stack or its licensors and are protected by copyright, trademark, and other laws. This does not affect your ownership of Your Content.</p>
+      <p>If you send us feedback, bug reports, or feature ideas, you grant us a perpetual, worldwide, royalty-free license to use them to improve the App, without obligation or compensation to you. Please don't send us anything you consider confidential — including unreleased lyrics you don't want us to see.</p>
+    </section>
+
+    <section class="legal-sec" id="third-party">
+      <h2>Apple and other services</h2>
+      <p>These Terms are between you and Harmony Stack only — not with Apple. <strong>Apple is not responsible for the App or its content</strong>, and has no obligation to provide maintenance or support for it. If the App fails to conform to any applicable warranty, you may notify Apple, and Apple may refund the purchase price; to the maximum extent permitted by law, Apple has no other warranty obligation with respect to the App.</p>
+      <p>Apple and its subsidiaries are third-party beneficiaries of these Terms and may enforce them against you.</p>
+      <p>The App relies on third-party services to work — Apple services (App Store, in-app purchases, speech recognition, notifications), our hosting and account provider, and any AI provider whose key you add. Their own terms apply to their services, and features that depend on them may be unavailable when those services are.</p>
+    </section>
+
+    <section class="legal-sec" id="privacy">
+      <h2>Privacy</h2>
+      <p>Our <a href="penwork-privacy.html">Privacy Policy</a> explains what the App collects, what leaves your device, which providers process it, and how to delete your data. It is part of these Terms.</p>
+      <p>We don't sell your personal information, and the App contains no advertising and no third-party tracking.</p>
+    </section>
+
+    <section class="legal-sec" id="availability">
+      <h2>Availability and changes to the app</h2>
+      <p>We may update, change, or remove features; require a supported iOS version; or stop offering or supporting the App entirely. We don't guarantee that any particular feature will remain available, and the App may be unavailable during maintenance, outages, or events outside our control.</p>
+      <p>If we discontinue a paid feature you've already paid for, you may request a pro-rated remedy through Apple as described above.</p>
+    </section>
+
+    <section class="legal-sec" id="warranty">
+      <h2>Disclaimer of warranties</h2>
+      <p>The App and its output are provided <strong>"as is" and "as available," without warranties of any kind</strong>, express or implied, including implied warranties of merchantability, fitness for a particular purpose, accuracy, and non-infringement, to the fullest extent permitted by law.</p>
+      <p>We do not warrant that the App will be uninterrupted, error-free, or secure; that AI output will be accurate, original, or suitable for any purpose; or that your work will be preserved, recoverable, commercially successful, or protectable.</p>
+      <p>Some jurisdictions do not allow the exclusion of certain warranties, so parts of this section may not apply to you.</p>
+    </section>
+
+    <section class="legal-sec" id="liability">
+      <h2>Limitation of liability</h2>
+      <p>To the fullest extent permitted by law, Harmony Stack will not be liable for any indirect, incidental, special, consequential, exemplary, or punitive damages, or for lost profits, lost royalties, lost or corrupted work, missed opportunities, or third-party API charges, arising out of or relating to your use of the App — even if we've been advised such damages are possible.</p>
+      <p>Our total liability for all claims relating to the App is limited to the greater of the amount you paid us or Apple for the App in the twelve months before the claim, or ten U.S. dollars ($10).</p>
+      <p>Some jurisdictions do not allow limits on incidental or consequential damages, so parts of this section may not apply to you. Nothing here limits liability that cannot be limited by law.</p>
+    </section>
+
+    <section class="legal-sec" id="termination">
+      <h2>Termination</h2>
+      <p>You may end this agreement at any time by deleting the App from your devices. We may suspend or terminate your license and any account if you break these Terms or use the App in a way that harms other users, our providers, or us.</p>
+      <p>Sections that by their nature should survive — your ownership of Your Content, our content rights, acceptable use, disclaimers, limitation of liability, and governing law — survive termination.</p>
+    </section>
+
+    <section class="legal-sec" id="changes">
+      <h2>Changes to these terms</h2>
+      <p>We may update these Terms as the App evolves or as the law requires. When we do, we'll change the effective date at the top of this page and post the updated Terms here. Material changes will also be noted in the App or in a release note where practical.</p>
+      <p>Continuing to use the App after an update means you accept the revised Terms.</p>
+    </section>
+
+    <section class="legal-sec" id="law">
+      <h2>Governing law and disputes</h2>
+      <p>These Terms are governed by the laws of the United States and of the state in which Harmony Stack is based, without regard to conflict-of-law rules. The United Nations Convention on Contracts for the International Sale of Goods does not apply.</p>
+      <p>You and Harmony Stack agree to try to resolve any dispute informally first — email us and give us 30 days to work it out. Any dispute that can't be resolved that way will be brought in the state or federal courts located where Harmony Stack is based, and you and Harmony Stack consent to the jurisdiction of those courts. Either party may still seek relief in small-claims court where eligible.</p>
+      <p>Claims must be brought individually, not as a class or representative action. If any part of these Terms is found unenforceable, the rest stays in effect.</p>
+    </section>
+
+    <section class="legal-sec" id="contact">
+      <h2>How to reach us</h2>
+      <p>Questions about these Terms, a bug, a billing problem, or an account deletion request — email <a href="mailto:harmonystack@gmail.com?subject=Penwork%20Studio%20Terms%20Question">harmonystack@gmail.com</a>. We typically reply within 1–2 business days.</p>
+      <p>Harmony Stack — developer of Penwork Studio, available on the <a href="https://apps.apple.com/us/app/penwork-studio/id6757620114" target="_blank" rel="noopener">Apple App Store</a>.</p>
+    </section>
+
+  </div>
+
+  <!-- CLOSING CTA -->
+  <section class="closing" aria-labelledby="closing-heading">
+    <h2 id="closing-heading">Something here unclear?</h2>
+    <p>We'd rather explain it than have you guess. Ask us anything about these Terms and a real person will answer.</p>
+    <a class="btn-mail" href="mailto:harmonystack@gmail.com?subject=Penwork%20Studio%20Terms%20Question">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="3"></rect><path d="m3 6 9 6 9-6"></path></svg>
+      harmonystack@gmail.com
+    </a>
+  </section>
+
+</main>
+
+
+<div class="hs-studio-band" style="margin:48px 0 0;padding:28px 20px;text-align:center;background:linear-gradient(165deg,#f07828,#c43a08);color:#fff8f2">
+  <span style="display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;background:linear-gradient(165deg,#f07828,#c43a08);color:#fff;padding:3px 8px;border-radius:999px;margin-bottom:10px;border:1px solid rgba(255,255,255,.35)">Studio</span>
+  <p style="margin:0 0 6px;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.9">A Harmony Stack product</p>
+  <p style="margin:0 auto 16px;max-width:420px;font-size:16px;font-weight:600;line-height:1.4">Need a website, Shopify store, or app built the same way?</p>
+  <a href="index.html" style="display:inline-flex;align-items:center;gap:8px;background:#b8ff00;color:#1a1520;text-decoration:none;font-weight:700;padding:12px 18px;border-radius:999px">Hire Harmony Stack →</a>
+</div>
+
+<footer class="app-footer">
+  <div class="app-footer-brand"><img src="portfolio-screenshots/penwork-icon.png" alt="">Penwork Studio</div>
+  <div class="app-footer-links">
+    <a href="penwork-marketing.html">Home</a>
+    <a href="penwork-support.html">Support</a>
+    <a href="penwork-terms.html">Terms</a>
+    <a href="penwork-privacy.html">Privacy</a>
+    <a href="https://apps.apple.com/us/app/penwork-studio/id6757620114" target="_blank" rel="noopener">App Store</a>
+    <a href="mailto:harmonystack@gmail.com">harmonystack@gmail.com</a>
+    <a href="mailto:samuelsanchez175@gmail.com">samuelsanchez175@gmail.com</a>
+    <a href="tel:+12017457995">(201) 745-7995</a>
+    <a href="index.html">Harmony Stack</a>
+  </div>
+  <div class="app-footer-fine">Penwork Studio is a <strong style="opacity:1">Harmony Stack</strong> product.<br>Support: <a href="mailto:harmonystack@gmail.com">harmonystack@gmail.com</a> · © 2026 Harmony Stack. All rights reserved.</div>
+</footer>
+
+<!-- Vercel Web Analytics (static HTML — works when deployed on Vercel) -->
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+
+</body>
+</html>

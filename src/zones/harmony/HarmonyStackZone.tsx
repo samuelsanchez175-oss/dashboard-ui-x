@@ -728,15 +728,16 @@ function ProjectsTab() {
 }
 
 /* ── Portfolio tab ──────────────────────────────────────────────────────────── */
-const HARMONY_SERVICES_SHEET_URL = `${import.meta.env.BASE_URL}harmony/harmony-stack-services.html`
+/** Latest public Harmony Stack site (synced from harmony-stack-productions). */
+const HARMONY_PORTFOLIO_URL = `${import.meta.env.BASE_URL}harmony/index.html`
 
 function PortfolioTab() {
   return (
     <div className="fade-in m-0 flex min-h-0 min-w-0 flex-1 flex-col p-0">
       <div className="m-0 flex min-h-0 min-w-0 w-full flex-1 flex-col p-0">
         <iframe
-          title="Harmony Stack — web design services, pricing, and portfolio"
-          src={HARMONY_SERVICES_SHEET_URL}
+          title="Harmony Stack — portfolio, packages, and products"
+          src={HARMONY_PORTFOLIO_URL}
           className="m-0 block min-h-0 min-w-0 h-full w-full flex-1 border-0 bg-[var(--bg-canvas)] p-0 align-top"
         />
       </div>

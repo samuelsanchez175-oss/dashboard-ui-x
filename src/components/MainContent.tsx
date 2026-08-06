@@ -14,6 +14,7 @@ import ToolsStemSplitterPage from '../zones/tools/ToolsStemSplitterPage'
 import ToolsAppIconStudioPage from '../zones/tools/ToolsAppIconStudioPage'
 import ToolsDeviceMockupPage from '../zones/tools/ToolsDeviceMockupPage'
 import HarmonyStackZone from '../zones/harmony/HarmonyStackZone'
+import HarmonyHtmlFrame from '../zones/harmony/HarmonyHtmlFrame'
 import CpwZone from '../zones/cpw/CpwZone'
 import { parseWebDesignerBookmarkNavId } from '../lib/web-designer-bookmarks'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
@@ -131,6 +132,22 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
               : activeRouteId === 'harmony-portfolio' ? 'portfolio'
               : 'services'
           }
+        />
+      )
+      break
+    case 'harmony-cdl':
+      body = (
+        <HarmonyHtmlFrame
+          file="cdl-marketing.html"
+          title="CDL One Stop — CDL practice app marketing"
+        />
+      )
+      break
+    case 'harmony-penwork':
+      body = (
+        <HarmonyHtmlFrame
+          file="penwork-marketing.html"
+          title="Penwork Studio — songwriting app marketing"
         />
       )
       break
