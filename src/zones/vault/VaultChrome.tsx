@@ -106,6 +106,20 @@ export function VaultPage({
   )
 }
 
+/** Pull leading emoji(s) from a vault folder path so cards can show a big lane icon. */
+export function splitFolderEmoji(folder: string): { emoji: string; label: string } {
+  const top = (folder || '').split('/')[0]?.trim() || ''
+  if (!top) return { emoji: '📄', label: '(root)' }
+  // Extended pictographics + presentation selectors / ZWJ sequences
+  const m = top.match(
+    /^((?:\p{Extended_Pictographic}|\p{Emoji_Presentation}|\uFE0F|\u200D|\p{Emoji_Modifier})+)\s*(.*)$/u,
+  )
+  if (m?.[1]) {
+    return { emoji: m[1].trim(), label: (m[2] || top).trim() || top }
+  }
+  return { emoji: '📁', label: top }
+}
+
 export function NoteCard({
   name,
   folder,
@@ -121,6 +135,10 @@ export function NoteCard({
   onOpen: () => void
   meta?: string
 }) {
+  const { emoji, label } = splitFolderEmoji(folder)
+  // Deeper path after top segment (e.g. Handoffs/sub)
+  const rest = folder.includes('/') ? folder.split('/').slice(1).join(' / ') : ''
+
   return (
     <button
       type="button"
@@ -128,27 +146,57 @@ export function NoteCard({
       className="w-full rounded-lg border p-3 text-left transition-colors hover:brightness-110"
       style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <div className={`${TYPOGRAPHY.sectionTitle} truncate`} style={{ color: 'var(--text-1)' }}>
-            {name}
+      <div className="flex items-start gap-3">
+        {/* Lane emoji — large, next to card body so vault folders scan easily */}
+        <span
+          className="grid size-11 shrink-0 place-items-center rounded-lg text-[1.35rem] leading-none"
+          style={{
+            background: 'var(--bg-hover)',
+            border: '1px solid var(--border-soft)',
+          }}
+          aria-hidden
+        >
+          {emoji}
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <div className={`${TYPOGRAPHY.sectionTitle} truncate`} style={{ color: 'var(--text-1)' }}>
+                {name}
+              </div>
+              <div
+                className="mt-0.5 truncate text-[11px] font-medium"
+                style={{ color: 'var(--text-3)' }}
+              >
+                <span style={{ color: 'var(--text-2)' }}>{label}</span>
+                {rest ? (
+                  <span className="mono text-[10px]" style={{ color: 'var(--text-4)' }}>
+                    {' '}
+                    / {rest}
+                  </span>
+                ) : null}
+                {meta ? (
+                  <span className="mono text-[10px]" style={{ color: 'var(--text-4)' }}>
+                    {' '}
+                    · {meta}
+                  </span>
+                ) : null}
+              </div>
+            </div>
+            {mtime != null && (
+              <span className="shrink-0 mono text-[10px]" style={{ color: 'var(--text-4)' }}>
+                {formatVaultDate(mtime)}
+              </span>
+            )}
           </div>
-          <div className="mono mt-0.5 truncate text-[10px] uppercase tracking-wide" style={{ color: 'var(--text-4)' }}>
-            {folder || '(root)'}
-            {meta ? ` · ${meta}` : ''}
-          </div>
+          {snippet && (
+            <p className="mt-2 line-clamp-2 text-[12px] leading-relaxed" style={{ color: 'var(--text-3)' }}>
+              {snippet}
+            </p>
+          )}
         </div>
-        {mtime != null && (
-          <span className="shrink-0 mono text-[10px]" style={{ color: 'var(--text-4)' }}>
-            {formatVaultDate(mtime)}
-          </span>
-        )}
       </div>
-      {snippet && (
-        <p className="mt-2 line-clamp-2 text-[12px] leading-relaxed" style={{ color: 'var(--text-3)' }}>
-          {snippet}
-        </p>
-      )}
     </button>
   )
 }
