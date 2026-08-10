@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Concept · Synthwave / Cybermorphism · Samuel x Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    /* ═══════════════════════════════════════════════════════════════════
+       SYNTHWAVE / CYBERMORPHISM CONCEPT
+       Demo only — does not affect the production dashboard.
+       ═══════════════════════════════════════════════════════════════════ */
+    :root {
+      --void:        #07010f;
+      --deep:        #0d0221;
+      --panel:       rgba(18, 8, 40, 0.72);
+      --panel-solid: #120828;
+      --panel-soft:  rgba(28, 12, 56, 0.55);
+      --chrome:      linear-gradient(145deg, rgba(255,255,255,0.14), rgba(255,255,255,0.02) 40%, rgba(0,0,0,0.25));
+      --border:      rgba(255, 0, 170, 0.28);
+      --border-cyan: rgba(0, 240, 255, 0.35);
+      --border-soft: rgba(157, 78, 221, 0.18);
+
+      --hot:         #ff2bd6;
+      --hot-2:       #ff6ec7;
+      --cyan:        #00f0ff;
+      --cyan-2:      #5ce1ff;
+      --violet:      #9d4edd;
+      --amber:       #ffb703;
+      --lime:        #39ff14;
+      --sun:         #ff5e00;
+
+      --text-1:      #f8f0ff;
+      --text-2:      #c9b4e8;
+      --text-3:      #8b74ad;
+      --text-4:      #5c4a78;
+
+      --glow-hot:    0 0 20px rgba(255, 43, 214, 0.45), 0 0 48px rgba(255, 43, 214, 0.18);
+      --glow-cyan:   0 0 18px rgba(0, 240, 255, 0.4), 0 0 40px rgba(0, 240, 255, 0.15);
+      --glow-card:   0 0 0 1px rgba(255, 0, 170, 0.2),
+                     0 8px 32px rgba(0, 0, 0, 0.55),
+                     inset 0 1px 0 rgba(255, 255, 255, 0.08),
+                     inset 0 -1px 0 rgba(255, 0, 170, 0.08);
+
+      --font-display: 'Orbitron', system-ui, sans-serif;
+      --font-ui:      'Rajdhani', system-ui, sans-serif;
+      --font-mono:    'Share Tech Mono', ui-monospace, monospace;
+
+      --sidebar-w: 268px;
+      --radius: 14px;
+      --radius-sm: 10px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--void);
+      color: var(--text-1);
+      font-family: var(--font-ui);
+      font-size: 16px;
+      letter-spacing: 0.01em;
+      overflow: hidden;
+    }
+
+    /* ── Ambient world ─────────────────────────────────────────────── */
+    .world {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% 110%, rgba(255, 43, 214, 0.22), transparent 55%),
+        radial-gradient(ellipse 60% 40% at 85% 10%, rgba(0, 240, 255, 0.12), transparent 50%),
+        radial-gradient(ellipse 50% 40% at 10% 20%, rgba(157, 78, 221, 0.18), transparent 50%),
+        linear-gradient(180deg, #0a0118 0%, #12022a 45%, #1a0538 100%);
+    }
+    .world::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0, 240, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 43, 214, 0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: linear-gradient(180deg, transparent 0%, black 30%, black 70%, transparent 100%);
+      opacity: 0.7;
+    }
+    .world::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      height: 42%;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          transparent 0,
+          transparent 48px,
+          rgba(255, 43, 214, 0.07) 48px,
+          rgba(255, 43, 214, 0.07) 49px
+        ),
+        linear-gradient(0deg, rgba(255, 43, 214, 0.15), transparent 70%),
+        linear-gradient(
+          to top,
+          transparent 0%,
+          transparent 49%,
+          rgba(0, 240, 255, 0.25) 50%,
+          transparent 51%
+        );
+      transform: perspective(400px) rotateX(58deg);
+      transform-origin: bottom center;
+      opacity: 0.55;
+    }
+    .sun {
+      position: absolute;
+      left: 50%;
+      bottom: 28%;
+      width: 180px;
+      height: 180px;
+      margin-left: -90px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #ffee88 0%, #ff5e00 40%, #ff2bd6 100%);
+      box-shadow: 0 0 60px 20px rgba(255, 94, 0, 0.35), 0 0 120px 40px rgba(255, 43, 214, 0.2);
+      opacity: 0.35;
+      filter: blur(1px);
+    }
+    .sun::after {
+      content: '';
+      position: absolute;
+      inset: 42% 0 0;
+      background: repeating-linear-gradient(
+        180deg,
+        transparent 0 6px,
+        rgba(7, 1, 15, 0.55) 6px 10px
+      );
+    }
+    .scanlines {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.07) 2px,
+        rgba(0, 0, 0, 0.07) 4px
+      );
+      mix-blend-mode: multiply;
+      opacity: 0.35;
+    }
+    .noise {
+      position: fixed;
+      inset: 0;
+      z-index: 49;
+      pointer-events: none;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* ── Demo banner ───────────────────────────────────────────────── */
+    .demo-banner {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 16px;
+      background: linear-gradient(90deg, rgba(255, 43, 214, 0.2), rgba(0, 240, 255, 0.15), rgba(255, 43, 214, 0.2));
+      border-bottom: 1px solid rgba(0, 240, 255, 0.35);
+      backdrop-filter: blur(12px);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--cyan);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .demo-banner strong { color: var(--hot-2); font-weight: 700; }
+    .demo-banner a {
+      color: var(--void);
+      background: linear-gradient(90deg, var(--cyan), var(--hot-2));
+      padding: 6px 14px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 700;
+      font-family: var(--font-ui);
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      box-shadow: var(--glow-cyan);
+      white-space: nowrap;
+    }
+    .demo-banner a:hover { filter: brightness(1.1); }
+    .demo-banner .meta { opacity: 0.85; }
+    @media (max-width: 720px) {
+      .demo-banner .meta { display: none; }
+    }
+
+    /* ── App shell ─────────────────────────────────────────────────── */
+    .app {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      height: 100vh;
+      padding-top: 40px;
+    }
+
+    /* ── Sidebar ───────────────────────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.06), transparent 30%),
+        linear-gradient(165deg, rgba(28, 8, 55, 0.92), rgba(10, 2, 24, 0.96));
+      border-right: 1px solid var(--border);
+      box-shadow:
+        inset -1px 0 0 rgba(0, 240, 255, 0.08),
+        8px 0 40px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(20px) saturate(1.3);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 20px 18px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 14px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--hot), var(--violet) 55%, var(--cyan));
+      box-shadow: var(--glow-hot), inset 0 1px 0 rgba(255,255,255,0.35);
+      position: relative;
+    }
+    .brand-mark::after {
+      content: '';
+      position: absolute;
+      inset: 1px;
+      border-radius: 9px;
+      border: 1px solid rgba(255,255,255,0.2);
+      pointer-events: none;
+    }
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+    .brand-text .name {
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      background: linear-gradient(90deg, var(--text-1), var(--cyan-2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .brand-text .tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--hot-2);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+
+    .nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 10px 20px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--violet) transparent;
+    }
+    .nav-section {
+      margin-bottom: 16px;
+    }
+    .nav-section-title {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      color: var(--text-4);
+      padding: 4px 10px 8px;
+      text-transform: uppercase;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      color: var(--text-2);
+      font-size: 14.5px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+      margin-bottom: 2px;
+      position: relative;
+    }
+    .nav-item svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      opacity: 0.75;
+    }
+    .nav-item:hover {
+      background: rgba(255, 43, 214, 0.08);
+      color: var(--text-1);
+      border-color: rgba(255, 43, 214, 0.15);
+    }
+    .nav-item.active {
+      background:
+        linear-gradient(90deg, rgba(255, 43, 214, 0.22), rgba(0, 240, 255, 0.08));
+      color: var(--text-1);
+      border-color: rgba(255, 43, 214, 0.45);
+      box-shadow:
+        0 0 20px rgba(255, 43, 214, 0.2),
+        inset 0 0 20px rgba(255, 43, 214, 0.06);
+    }
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 20%;
+      bottom: 20%;
+      width: 3px;
+      border-radius: 0 3px 3px 0;
+      background: linear-gradient(180deg, var(--cyan), var(--hot));
+      box-shadow: 0 0 10px var(--hot);
+    }
+    .nav-item.active svg {
+      opacity: 1;
+      color: var(--cyan);
+      filter: drop-shadow(0 0 4px rgba(0, 240, 255, 0.7));
+    }
+    .badge {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(0, 240, 255, 0.12);
+      border: 1px solid rgba(0, 240, 255, 0.35);
+      color: var(--cyan);
+      box-shadow: 0 0 8px rgba(0, 240, 255, 0.2);
+    }
+    .badge.hot {
+      background: rgba(255, 43, 214, 0.15);
+      border-color: rgba(255, 43, 214, 0.45);
+      color: var(--hot-2);
+      box-shadow: 0 0 8px rgba(255, 43, 214, 0.25);
+    }
+
+    .profile {
+      padding: 14px;
+      border-top: 1px solid var(--border-soft);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--violet), var(--hot));
+      box-shadow: 0 0 12px rgba(255, 43, 214, 0.4);
+      display: grid;
+      place-items: center;
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .profile .who { font-weight: 700; font-size: 14px; }
+    .profile .status {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--lime);
+      letter-spacing: 0.08em;
+      text-shadow: 0 0 8px rgba(57, 255, 20, 0.5);
+    }
+
+    /* ── Main ──────────────────────────────────────────────────────── */
+    .main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .main-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px 32px 48px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--violet) transparent;
+    }
+    .main-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ────────────────────────────────────────────────────── */
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      color: var(--cyan);
+      text-transform: uppercase;
+      text-shadow: 0 0 12px rgba(0, 240, 255, 0.5);
+      margin-bottom: 8px;
+    }
+    .page-title {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      margin: 0 0 8px;
+      background: linear-gradient(90deg, #fff 10%, var(--hot-2) 50%, var(--cyan) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 0 20px rgba(255, 43, 214, 0.35));
+    }
+    .page-desc {
+      margin: 0;
+      color: var(--text-3);
+      font-size: 15px;
+      font-weight: 500;
+      max-width: 48ch;
+      line-height: 1.45;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-ui);
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 10px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      border: 1px solid rgba(0, 240, 255, 0.4);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.1), transparent),
+        linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(255, 43, 214, 0.12));
+      color: var(--cyan);
+      box-shadow: var(--glow-card), 0 0 16px rgba(0, 240, 255, 0.15);
+      transition: all 0.15s ease;
+    }
+    .btn:hover {
+      border-color: var(--cyan);
+      color: #fff;
+      box-shadow: var(--glow-cyan);
+      transform: translateY(-1px);
+    }
+    .btn.primary {
+      border-color: rgba(255, 43, 214, 0.55);
+      background: linear-gradient(135deg, rgba(255, 43, 214, 0.55), rgba(157, 78, 221, 0.65));
+      color: #fff;
+      box-shadow: var(--glow-hot);
+    }
+    .btn.primary:hover {
+      filter: brightness(1.12);
+    }
+    .btn svg { width: 14px; height: 14px; }
+
+    /* ── Cybermorph cards ──────────────────────────────────────────── */
+    .glass {
+      position: relative;
+      border-radius: var(--radius);
+      background:
+        linear-gradient(145deg, rgba(255,255,255,0.09) 0%, transparent 40%),
+        linear-gradient(180deg, rgba(40, 16, 72, 0.65), rgba(14, 4, 32, 0.75));
+      border: 1px solid var(--border);
+      box-shadow: var(--glow-card);
+      backdrop-filter: blur(16px) saturate(1.4);
+      overflow: hidden;
+    }
+    .glass::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), var(--cyan), transparent);
+      opacity: 0.7;
+    }
+    .glass::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      box-shadow: inset 0 0 40px rgba(157, 78, 221, 0.08);
+    }
+    .glass:hover {
+      border-color: rgba(0, 240, 255, 0.4);
+      box-shadow:
+        0 0 0 1px rgba(0, 240, 255, 0.2),
+        0 12px 40px rgba(0, 0, 0, 0.5),
+        0 0 30px rgba(0, 240, 255, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    /* Stats */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 900px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .sidebar { display: none; }
+      .main-scroll { padding: 20px 16px 40px; }
+    }
+    .stat {
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .stat-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      border: 1px solid;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.15);
+    }
+    .stat-icon svg { width: 18px; height: 18px; }
+    .stat-icon.orange {
+      color: var(--amber);
+      border-color: rgba(255, 183, 3, 0.4);
+      background: radial-gradient(circle at 30% 30%, rgba(255,183,3,0.25), rgba(255,94,0,0.08));
+      box-shadow: 0 0 16px rgba(255, 183, 3, 0.25), inset 0 1px 0 rgba(255,255,255,0.15);
+    }
+    .stat-icon.cyan {
+      color: var(--cyan);
+      border-color: rgba(0, 240, 255, 0.4);
+      background: radial-gradient(circle at 30% 30%, rgba(0,240,255,0.22), rgba(0,100,200,0.08));
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.25), inset 0 1px 0 rgba(255,255,255,0.15);
+    }
+    .stat-icon.lime {
+      color: var(--lime);
+      border-color: rgba(57, 255, 20, 0.35);
+      background: radial-gradient(circle at 30% 30%, rgba(57,255,20,0.18), rgba(0,80,40,0.1));
+      box-shadow: 0 0 16px rgba(57, 255, 20, 0.2), inset 0 1px 0 rgba(255,255,255,0.15);
+    }
+    .stat-icon.pink {
+      color: var(--hot-2);
+      border-color: rgba(255, 43, 214, 0.4);
+      background: radial-gradient(circle at 30% 30%, rgba(255,43,214,0.22), rgba(100,0,80,0.1));
+      box-shadow: 0 0 16px rgba(255, 43, 214, 0.25), inset 0 1px 0 rgba(255,255,255,0.15);
+    }
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--text-1);
+      text-shadow: 0 0 16px rgba(255, 255, 255, 0.15);
+    }
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-top: 2px;
+    }
+
+    /* Cards grid */
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 960px) {
+      .grid-3 { grid-template-columns: 1fr; }
+    }
+    .card {
+      padding: 18px 18px 16px;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+    }
+    .card-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .card-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-soft);
+    }
+    .card-icon svg { width: 14px; height: 14px; }
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-2);
+    }
+    .card-link {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--cyan);
+      cursor: pointer;
+      text-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+      letter-spacing: 0.06em;
+    }
+    .card-link:hover { color: var(--hot-2); }
+
+    .metric-lg {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      background: linear-gradient(90deg, var(--lime), var(--cyan));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 0 12px rgba(57, 255, 20, 0.3));
+      line-height: 1;
+    }
+    .metric-sub {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-2);
+    }
+    .metric-sub span:last-child {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-4);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .divider {
+      height: 1px;
+      margin: 14px 0;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text-2);
+    }
+    .row .val {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-1);
+      letter-spacing: 0.04em;
+    }
+    .muted { color: var(--text-4); font-size: 12px; }
+    .body-text {
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: var(--text-3);
+      font-weight: 500;
+    }
+    .plan-item {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      padding: 4px 0;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-2);
+    }
+    .plan-dot {
+      width: 6px;
+      height: 6px;
+      margin-top: 6px;
+      border-radius: 50%;
+      background: var(--hot);
+      box-shadow: 0 0 8px var(--hot);
+      flex-shrink: 0;
+    }
+    .link-row {
+      margin-top: auto;
+      padding-top: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--hot-2);
+      letter-spacing: 0.04em;
+      text-shadow: 0 0 10px rgba(255, 43, 214, 0.4);
+      cursor: pointer;
+    }
+    .link-row:hover { color: var(--cyan); }
+
+    /* Tool tiles */
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-4);
+      margin: 8px 0 12px;
+    }
+    .tiles {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 900px) {
+      .tiles { grid-template-columns: repeat(2, 1fr); }
+    }
+    .tile {
+      padding: 16px;
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .tile:hover { transform: translateY(-2px); border-color: rgba(0, 240, 255, 0.5); }
+    .tile-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 12px;
+      border: 1px solid;
+    }
+    .tile-icon svg { width: 16px; height: 16px; }
+    .tile h3 {
+      margin: 0 0 4px;
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--text-1);
+    }
+    .tile p {
+      margin: 0;
+      font-size: 12.5px;
+      color: var(--text-3);
+      font-weight: 500;
+      line-height: 1.35;
+    }
+
+    /* Intensity switcher (concept modes) */
+    .modes {
+      display: flex;
+      gap: 6px;
+      background: rgba(0,0,0,0.3);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--border-soft);
+    }
+    .modes button {
+      border: none;
+      background: transparent;
+      color: var(--text-3);
+      font-family: var(--font-ui);
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 7px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .modes button.on {
+      background: linear-gradient(135deg, rgba(255,43,214,0.4), rgba(0,240,255,0.25));
+      color: #fff;
+      box-shadow: 0 0 12px rgba(255, 43, 214, 0.3);
+    }
+
+    /* Progress bar cyber */
+    .bar {
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      overflow: hidden;
+      border: 1px solid var(--border-soft);
+      margin-top: 6px;
+    }
+    .bar > i {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--hot), var(--violet), var(--cyan));
+      box-shadow: 0 0 10px rgba(255, 43, 214, 0.6);
+    }
+
+    /* Floating HUD chip */
+    .hud-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(57, 255, 20, 0.4);
+      color: var(--lime);
+      background: rgba(57, 255, 20, 0.08);
+      box-shadow: 0 0 12px rgba(57, 255, 20, 0.15);
+    }
+    .hud-chip .pulse {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--lime);
+      box-shadow: 0 0 8px var(--lime);
+      animation: pulse 1.6s ease infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.85); }
+    }
+
+    /* Intensity variants */
+    body.intensity-soft .scanlines { opacity: 0.12; }
+    body.intensity-soft .world::after { opacity: 0.25; }
+    body.intensity-soft .sun { opacity: 0.15; }
+    body.intensity-max .scanlines { opacity: 0.5; }
+    body.intensity-max .world::after { opacity: 0.75; }
+    body.intensity-max .sun { opacity: 0.5; }
+    body.intensity-max .glass {
+      border-color: rgba(255, 43, 214, 0.45);
+      box-shadow:
+        0 0 0 1px rgba(0, 240, 255, 0.25),
+        0 0 40px rgba(255, 43, 214, 0.2),
+        0 8px 32px rgba(0,0,0,0.55),
+        inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="world" aria-hidden="true">
+    <div class="sun"></div>
+  </div>
+  <div class="noise" aria-hidden="true"></div>
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <div class="demo-banner">
+    <div>
+      <strong>CONCEPT DEMO</strong>
+      <span class="meta"> · Synthwave / Cybermorphism · not wired into production</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="modes" id="intensityModes" title="Atmosphere intensity">
+        <button type="button" data-i="soft">Soft</button>
+        <button type="button" data-i="mid" class="on">Mid</button>
+        <button type="button" data-i="max">Max</button>
+      </div>
+      <a href="/">← Back to live dashboard</a>
+    </div>
+  </div>
+
+  <div class="app">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">S</div>
+        <div class="brand-text">
+          <span class="name">Samuel x Dashboard</span>
+          <span class="tag">Neon Grid // v.next</span>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Daily Brief</div>
+          <div class="nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            Overview
+          </div>
+          <div class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+            Daily Brief
+          </div>
+          <div class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+            Command Center
+          </div>
+          <div class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"/></svg>
+            Cost
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Production</div>
+          <div class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/></svg>
+            Agent Farm
+            <span class="badge hot">8</span>
+          </div>
+          <div class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            Piano / MIDI
+          </div>
+          <div class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 4V2M15 16v-2M8 9h2M20 9h2M17.8 11.8 19 13M17.8 6.2 19 5M3 21l9-9M12.2 6.2 11 5"/></svg>
+            Rhyme Studio
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Tools</div>
+          <div class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            All tools
+            <span class="badge">14</span>
+          </div>
+          <div class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            Chord Detector
+          </div>
+          <div class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            Note Detector
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Harmony Stack</div>
+          <div class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+            Live site
+          </div>
+          <div class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Client projects
+          </div>
+        </div>
+      </nav>
+
+      <div class="profile">
+        <div class="avatar">SX</div>
+        <div>
+          <div class="who">Studio mode</div>
+          <div class="status">● SYSTEMS ONLINE</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <div class="main-scroll">
+        <div class="main-inner">
+
+          <header class="page-header">
+            <div>
+              <div class="eyebrow">Samuel x Dashboard // Neon Grid</div>
+              <h1 class="page-title">Overview</h1>
+              <p class="page-desc">
+                Real-time snapshot of your AI development work — spend, projects, and today's plan.
+                Reskinned as a cybermorph glass cockpit.
+              </p>
+              <div style="margin-top:14px">
+                <span class="hud-chip"><span class="pulse"></span> Live concept · token overlay only</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+              <button class="btn" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-6.22-8.56"/><path d="M21 3v6h-6"/></svg>
+                Refresh
+              </button>
+              <button class="btn primary" type="button" onclick="location.href='/'">
+                Keep current UI
+              </button>
+            </div>
+          </header>
+
+          <!-- Headline stats -->
+          <div class="stats">
+            <div class="glass stat">
+              <div class="stat-icon orange">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1110.34 18"/><path d="M7 6h1v4"/><path d="M16.71 13.88l.7.71-2.82 2.82"/></svg>
+              </div>
+              <div>
+                <div class="stat-value">$248.40</div>
+                <div class="stat-label">This month · AI spend</div>
+              </div>
+            </div>
+            <div class="glass stat">
+              <div class="stat-icon cyan">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              </div>
+              <div>
+                <div class="stat-value">12.4K</div>
+                <div class="stat-label">This month · calls</div>
+              </div>
+            </div>
+            <div class="glass stat">
+              <div class="stat-icon lime">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              </div>
+              <div>
+                <div class="stat-value">186</div>
+                <div class="stat-label">This month · sessions</div>
+              </div>
+            </div>
+            <div class="glass stat">
+              <div class="stat-icon pink">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+              </div>
+              <div>
+                <div class="stat-value">72%</div>
+                <div class="stat-label">One-shot rate</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main cards -->
+          <div class="grid-3">
+            <section class="glass card">
+              <div class="card-head">
+                <div class="card-icon" style="color:var(--amber);border-color:rgba(255,183,3,0.35)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+                </div>
+                <div class="card-title">Today's Brief</div>
+              </div>
+              <div style="font-size:14px;font-weight:700;color:var(--text-1);margin-bottom:6px">
+                dashboard-ui-x
+                <span class="muted"> · Aug 9</span>
+              </div>
+              <p class="body-text">
+                Push the synthwave concept, tighten Agent Farm density, and ship the chord-detector
+                export polish before the weekly handoff.
+              </p>
+              <div class="divider"></div>
+              <div class="muted" style="margin-bottom:6px;font-family:var(--font-mono);letter-spacing:0.12em;text-transform:uppercase;font-size:10px">Plan</div>
+              <div class="plan-item"><span class="plan-dot"></span> Review concept demo with intensity modes</div>
+              <div class="plan-item"><span class="plan-dot"></span> Map tokens → CSS vars if greenlit</div>
+              <div class="plan-item"><span class="plan-dot"></span> Keep production theme until sign-off</div>
+              <div class="link-row">Open full brief →</div>
+            </section>
+
+            <section class="glass card">
+              <div class="card-head">
+                <div class="card-icon" style="color:var(--sun);border-color:rgba(255,94,0,0.4)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"/></svg>
+                </div>
+                <div class="card-title">AI Spend</div>
+                <span class="card-link">Details →</span>
+              </div>
+              <div class="metric-lg">$12.80</div>
+              <div class="metric-sub">
+                <span style="color:var(--text-1)">$248.40</span>
+                <span>this month</span>
+              </div>
+              <div class="divider"></div>
+              <div class="muted" style="margin-bottom:6px;font-family:var(--font-mono);letter-spacing:0.12em;text-transform:uppercase;font-size:10px">Top projects</div>
+              <div class="row"><span>dashboard-ui-x</span><span class="val">$94.20</span></div>
+              <div class="bar"><i style="width:78%"></i></div>
+              <div class="row" style="margin-top:8px"><span>Agent Farm</span><span class="val">$61.10</span></div>
+              <div class="bar"><i style="width:52%"></i></div>
+              <div class="row" style="margin-top:8px"><span>Chord Detector</span><span class="val">$38.40</span></div>
+              <div class="bar"><i style="width:34%"></i></div>
+              <div class="muted" style="margin-top:12px">Snapshot · sample data for concept</div>
+            </section>
+
+            <section class="glass card">
+              <div class="card-head">
+                <div class="card-icon" style="color:var(--violet);border-color:rgba(157,78,221,0.45)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+                </div>
+                <div class="card-title">Command Center</div>
+                <span class="card-link">Open →</span>
+              </div>
+              <div class="row" style="padding:8px 0">
+                <span style="display:flex;align-items:center;gap:8px">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-4)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                  Last refreshed 2h ago
+                </span>
+              </div>
+              <div class="row" style="padding:8px 0">
+                <span style="display:flex;align-items:center;gap:8px">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-4)" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                  11 active projects tracked
+                </span>
+              </div>
+              <div class="divider"></div>
+              <div class="muted" style="margin-bottom:8px;font-family:var(--font-mono);letter-spacing:0.12em;text-transform:uppercase;font-size:10px">Signal stack</div>
+              <div class="row"><span>Harmony Stack</span><span class="val" style="color:var(--lime)">ONLINE</span></div>
+              <div class="row"><span>Polymarket bot</span><span class="val" style="color:var(--cyan)">IDLE</span></div>
+              <div class="row"><span>Tesla fleet</span><span class="val" style="color:var(--amber)">MOCK</span></div>
+              <div class="link-row">View project handoff →</div>
+            </section>
+          </div>
+
+          <!-- Tool tiles -->
+          <div class="section-label">// Jump · Studio tools</div>
+          <div class="tiles">
+            <div class="glass tile">
+              <div class="tile-icon" style="color:var(--hot-2);border-color:rgba(255,43,214,0.4);background:rgba(255,43,214,0.1)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/></svg>
+              </div>
+              <h3>Agent Farm</h3>
+              <p>Dense run cockpit with neon status rails</p>
+            </div>
+            <div class="glass tile">
+              <div class="tile-icon" style="color:var(--cyan);border-color:rgba(0,240,255,0.4);background:rgba(0,240,255,0.1)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              </div>
+              <h3>Chord Detector</h3>
+              <p>Glass panels + waveform chrome</p>
+            </div>
+            <div class="glass tile">
+              <div class="tile-icon" style="color:var(--lime);border-color:rgba(57,255,20,0.35);background:rgba(57,255,20,0.08)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 4V2M15 16v-2M8 9h2M20 9h2M17.8 11.8 19 13M17.8 6.2 19 5M3 21l9-9M12.2 6.2 11 5"/></svg>
+              </div>
+              <h3>Rhyme Studio</h3>
+              <p>Magenta accent lanes for bars</p>
+            </div>
+            <div class="glass tile">
+              <div class="tile-icon" style="color:var(--amber);border-color:rgba(255,183,3,0.4);background:rgba(255,183,3,0.1)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-6"/></svg>
+              </div>
+              <h3>Cost</h3>
+              <p>Spend telemetry with sun-strip charts</p>
+            </div>
+          </div>
+
+          <!-- Design notes -->
+          <div class="glass" style="margin-top:20px;padding:18px 20px">
+            <div class="card-title" style="margin-bottom:10px;color:var(--cyan)">Concept notes · what would change if greenlit</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 24px">
+              <div class="body-text">
+                <strong style="color:var(--text-1)">Tokens only (safe path)</strong><br/>
+                Map this palette onto existing CSS vars in <code style="color:var(--hot-2)">index.css</code> + a new
+                <code style="color:var(--hot-2)">data-theme="synthwave"</code>. Structure / components stay the same.
+              </div>
+              <div class="body-text">
+                <strong style="color:var(--text-1)">Chrome extras (optional)</strong><br/>
+                Orbitron headings, glass card recipe, horizon grid, scanlines, neon active rail on sidebar items.
+              </div>
+              <div class="body-text">
+                <strong style="color:var(--text-1)">Keep</strong><br/>
+                Zone layout, nav model, density modes, accent picker — just re-skinned.
+              </div>
+              <div class="body-text">
+                <strong style="color:var(--text-1)">Watch</strong><br/>
+                Contrast on long-form text, chart readability, and Playwright visual baselines if promoted.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Intensity modes for the concept atmosphere
+    const body = document.body;
+    const buttons = document.querySelectorAll('#intensityModes button');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        buttons.forEach(b => b.classList.remove('on'));
+        btn.classList.add('on');
+        body.classList.remove('intensity-soft', 'intensity-max');
+        const i = btn.dataset.i;
+        if (i === 'soft') body.classList.add('intensity-soft');
+        if (i === 'max') body.classList.add('intensity-max');
+      });
+    });
+
+    // Nav active toggle (visual only)
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        item.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

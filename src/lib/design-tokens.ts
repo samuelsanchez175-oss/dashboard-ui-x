@@ -34,12 +34,12 @@ export const TYPOGRAPHY = {
  * `narrow` keeps a reading-width cap (forms / single-input tools).
  */
 export const CONTAINERS = {
-  /** Hubs / dashboards that show a grid of tiles. Fluid — fills available width. */
-  hub:    'mx-auto w-full px-4 sm:px-6 lg:px-8 xl:px-12',
-  /** Default page width for content-heavy leaf zones. Fluid. */
-  page:   'mx-auto w-full px-4 sm:px-6 lg:px-8 xl:px-12',
+  /** Hubs / dashboards that show a grid of tiles. Fluid — tracks density slider. */
+  hub:    'mx-auto w-full px-[var(--space-page-x)]',
+  /** Default page width for content-heavy leaf zones. Fluid — tracks density slider. */
+  page:   'mx-auto w-full px-[var(--space-page-x)]',
   /** Narrower reading width — for forms / single-input tools. Capped at ~768px. */
-  narrow: 'mx-auto w-full max-w-3xl px-4 sm:px-6 lg:px-8',
+  narrow: 'mx-auto w-full max-w-3xl px-[var(--space-page-x)]',
 } as const
 
 /* ─── Background + card recipes (theme-aware via CSS vars) ─────────── */
@@ -110,12 +110,20 @@ export const BUTTON_VARIANTS: Record<ButtonVariant, { className: string; style?:
   },
 } as const
 
-/* ─── Spacing / sizing helpers ─────────────────────────────────────── */
+/* ─── Spacing / sizing helpers ───────────────────────────────────────
+ * Prefer CSS density tokens (set live by ThemeContext density slider):
+ *   --pad-card, --pad-row, --grid-gap, --space-section, --space-page-*
+ * Tailwind class strings below are fallbacks; density-stack/grid classes
+ * in index.css track the slider.
+ */
 export const SPACING = {
-  /** Default vertical rhythm between page sections. */
-  pageStack: 'space-y-8',
-  /** Card body padding. */
-  cardPad: 'p-5',
+  /** Default vertical rhythm between page sections (density-aware). */
+  pageStack: 'density-stack',
+  /** Card body padding via token. */
+  cardPad: 'p-[var(--pad-card)]',
   /** Top spacing under the global RouteStatusBar (which is `absolute top-3`). */
   topGutter: 'pt-12',
+  /** Gap utility that tracks the density slider. */
+  gridGap: 'gap-[var(--grid-gap)]',
+  sectionGap: 'gap-[var(--space-section)]',
 } as const

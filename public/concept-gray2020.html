@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Concept · GRAY2020 · Samuel x Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ═══════════════════════════════════════════════════════════════════
+       GRAY2020 CONCEPT — instrument-panel language on the Overview shell
+       Demo only. Skill: ~/.claude/skills/gray2020
+       ═══════════════════════════════════════════════════════════════════ */
+    :root {
+      --bg:          #0A0A0C;
+      --surface:     #121214;
+      --line:        #2C2C30;
+      --text-main:   #EAEAEA;
+      --text-muted:  #707075;
+      --amber:       #F5A623;
+      --amber-glow:  rgba(245, 166, 35, 0.15);
+
+      --font-mono: 'DM Mono', ui-monospace, monospace;
+      --font-sans: 'Sora', system-ui, sans-serif;
+      --sidebar-w: 248px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--bg);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 400;
+      overflow: hidden;
+    }
+
+    /* ── Demo banner ───────────────────────────────────────────────── */
+    .demo-banner {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0;
+      height: 36px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .demo-banner .left {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      height: 100%;
+    }
+    .demo-banner .tag {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      padding: 0 14px;
+      border-right: 1px solid var(--line);
+      color: var(--amber);
+    }
+    .demo-banner .meta {
+      padding: 0 14px;
+      color: var(--text-muted);
+    }
+    .demo-banner a {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      padding: 0 16px;
+      border-left: 1px solid var(--line);
+      color: var(--text-main);
+      text-decoration: none;
+      letter-spacing: 0.14em;
+      transition: color 0.2s ease, background 0.2s ease;
+    }
+    .demo-banner a:hover {
+      color: var(--amber);
+      background: var(--line);
+    }
+    .demo-banner .links {
+      display: flex;
+      height: 100%;
+    }
+    @media (max-width: 720px) {
+      .demo-banner .meta { display: none; }
+    }
+
+    /* ── App shell ─────────────────────────────────────────────────── */
+    .app {
+      display: flex;
+      height: 100vh;
+      padding-top: 36px;
+    }
+
+    /* ── Sidebar (instrument rack column) ──────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      border-right: 1px solid var(--line);
+    }
+    .brand {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 1px;
+      background: var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .brand-mark {
+      width: 48px;
+      background: var(--surface);
+      display: grid;
+      place-items: center;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      color: var(--amber);
+    }
+    .brand-text {
+      background: var(--surface);
+      padding: 14px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+    }
+    .brand-text .name {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-main);
+    }
+    .brand-text .tag {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .nav {
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--line) transparent;
+    }
+    .nav-section {
+      border-bottom: 1px solid var(--line);
+    }
+    .nav-section-title {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 12px 14px 6px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-left: 2px solid transparent;
+      transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+    }
+    .nav-item:hover {
+      color: var(--text-main);
+      background: rgba(44, 44, 48, 0.35);
+    }
+    .nav-item.active {
+      color: var(--amber);
+      border-left-color: var(--amber);
+      background: var(--amber-glow);
+    }
+    .nav-item .port {
+      width: 1.2rem;
+      height: 1.2rem;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 0.55rem;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      font-family: var(--font-mono);
+    }
+    .nav-item.active .port {
+      border-color: var(--amber);
+      color: var(--amber);
+    }
+    .badge {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      padding: 2px 7px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--text-muted);
+    }
+    .badge.live {
+      border-color: var(--amber);
+      color: var(--amber);
+    }
+
+    .profile {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1px;
+      background: var(--line);
+      border-top: 1px solid var(--line);
+    }
+    .profile-main {
+      background: var(--surface);
+      padding: 12px 14px;
+    }
+    .profile-main .who {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-main);
+    }
+    .profile-main .status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--amber);
+    }
+    .live-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--amber);
+      box-shadow: 0 0 8px var(--amber);
+      animation: livePulse 1.6s ease infinite;
+    }
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+    .profile-port {
+      background: var(--surface);
+      width: 40px;
+      display: grid;
+      place-items: center;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+    }
+
+    /* ── Main ──────────────────────────────────────────────────────── */
+    .main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg);
+    }
+    .main-scroll {
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--line) transparent;
+    }
+    .main-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 24px 24px 48px;
+    }
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
+      .main-inner { padding: 16px 12px 40px; }
+    }
+
+    /* ── Module frame (gap-as-divider) ──────────────────────────────── */
+    .module {
+      display: grid;
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+    }
+    .module > * {
+      background: var(--surface);
+    }
+
+    /* Header strip */
+    .hdr {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 1px;
+      background: var(--line);
+      margin-bottom: 1px;
+    }
+    .hdr > * { background: var(--surface); }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      min-height: 44px;
+      padding: 0 14px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-main);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+      white-space: nowrap;
+    }
+    .pill:hover { background: var(--line); }
+    .pill.active {
+      color: var(--amber);
+    }
+    .pill-box {
+      border-right: none;
+      display: flex;
+      align-items: center;
+    }
+    .pill-box .pill {
+      border: 1px solid transparent;
+      border-radius: 999px;
+      margin: 8px 10px;
+      min-height: 28px;
+      height: auto;
+      padding: 6px 12px;
+      border-color: var(--line);
+    }
+    .pill-box .pill.active {
+      border-color: var(--amber);
+      color: var(--amber);
+    }
+    .nameplate {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 0 16px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-main);
+    }
+    .nameplate .unit {
+      color: var(--text-muted);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+    }
+
+    /* Hero band */
+    .hero-band {
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 1px;
+      background: var(--line);
+    }
+    .hero-band > * { background: var(--surface); }
+    .side-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 0;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+    }
+    .hero-body {
+      padding: 28px 28px 24px;
+    }
+    .hero-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .hero-readout {
+      font-family: var(--font-mono);
+      font-size: clamp(3.2rem, 10vw, 5.5rem);
+      font-weight: 400;
+      line-height: 1;
+      letter-spacing: -0.05em;
+      color: var(--text-main);
+    }
+    .hero-readout .dec {
+      font-size: 0.4em;
+      color: var(--text-muted);
+      letter-spacing: 0;
+    }
+    .hero-readout.flash {
+      color: var(--amber);
+      text-shadow: 0 0 24px var(--amber-glow);
+      transition: color 0.1s ease, text-shadow 0.1s ease;
+    }
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px 28px;
+      margin-top: 16px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .hero-meta strong {
+      color: var(--text-main);
+      font-weight: 400;
+      margin-left: 8px;
+    }
+
+    /* Stats 2×2 via gap-divider */
+    .stats-block {
+      display: grid;
+      gap: 1px;
+      background: var(--line);
+    }
+    .stats-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      background: var(--surface);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .stats-head .live {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--amber);
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--line);
+    }
+    .stat-cell {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 18px;
+      background: var(--surface);
+      gap: 12px;
+    }
+    .stat-cell .label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .stat-cell .value {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      letter-spacing: 0;
+      color: var(--text-main);
+      text-align: right;
+      white-space: nowrap;
+    }
+    .stat-cell .value.hi { color: var(--amber); }
+
+    /* Three-panel section (brief / spend / cc) */
+    .triple {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+    }
+    .triple > * { background: var(--surface); min-height: 240px; }
+    @media (max-width: 860px) {
+      .triple { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr; }
+    }
+    .panel {
+      display: flex;
+      flex-direction: column;
+    }
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .panel-head a {
+      color: var(--text-muted);
+      text-decoration: none;
+      letter-spacing: 0.12em;
+      transition: color 0.2s ease;
+    }
+    .panel-head a:hover { color: var(--amber); }
+    .panel-body {
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .panel-title {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+    .panel-body p {
+      margin: 0 0 12px;
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: var(--text-muted);
+      font-family: var(--font-sans);
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 6px 0;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid transparent;
+    }
+    .row .k { color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; font-size: 10px; }
+    .row .v { color: var(--text-main); }
+    .row .v.hi { color: var(--amber); }
+    .plan {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .plan li {
+      display: flex;
+      gap: 10px;
+      padding: 5px 0;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      color: var(--text-main);
+    }
+    .plan li::before {
+      content: '';
+      width: 4px;
+      height: 4px;
+      margin-top: 5px;
+      border-radius: 50%;
+      background: var(--line);
+      flex-shrink: 0;
+    }
+    .plan li:first-child::before {
+      background: var(--amber);
+      box-shadow: 0 0 6px var(--amber);
+    }
+    .metric-lg {
+      font-family: var(--font-mono);
+      font-size: 2.4rem;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+    .metric-lg .dec {
+      font-size: 0.45em;
+      color: var(--text-muted);
+    }
+    .metric-sub {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    /* Tool tiles as instrument slots */
+    .section-gap { height: 16px; }
+    .tiles-wrap {
+      display: grid;
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+    }
+    .tiles-head {
+      background: var(--surface);
+      padding: 12px 16px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+    .tiles {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--line);
+    }
+    .tiles > * { background: var(--surface); }
+    @media (max-width: 860px) {
+      .tiles { grid-template-columns: 1fr 1fr; }
+    }
+    .tile {
+      padding: 18px 16px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .tile:hover { background: #161618; }
+    .tile:hover .tile-id { color: var(--amber); border-color: var(--amber); }
+    .tile-id {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      transition: color 0.2s ease, border-color 0.2s ease;
+    }
+    .tile h3 {
+      margin: 0 0 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-main);
+    }
+    .tile p {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Control bar */
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+      margin-top: 16px;
+    }
+    .controls button {
+      background: var(--surface);
+      border: none;
+      padding: 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: color 0.2s ease, background 0.2s ease;
+    }
+    .controls button:hover {
+      background: #161618;
+      color: var(--amber);
+    }
+    .controls button:active {
+      transform: scale(0.99);
+    }
+    .ico-play {
+      width: 0;
+      height: 0;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+      border-left: 8px solid currentColor;
+    }
+    .ico-stop {
+      width: 9px;
+      height: 9px;
+      background: currentColor;
+    }
+
+    /* Notes */
+    .notes {
+      margin-top: 16px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      padding: 16px 18px;
+    }
+    .notes h4 {
+      margin: 0 0 10px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--amber);
+      font-weight: 400;
+    }
+    .notes-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 24px;
+    }
+    @media (max-width: 700px) {
+      .notes-grid { grid-template-columns: 1fr; }
+    }
+    .notes-grid div {
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--text-muted);
+    }
+    .notes-grid strong {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-main);
+      font-weight: 400;
+      margin-bottom: 4px;
+    }
+    .notes code {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--amber);
+    }
+
+    /* Stack spacing between modules */
+    .stack { display: flex; flex-direction: column; gap: 16px; }
+  </style>
+</head>
+<body>
+  <div class="demo-banner">
+    <div class="left">
+      <span class="tag">GRAY2020</span>
+      <span class="meta">Concept · skill gray2020 · not production</span>
+    </div>
+    <div class="links">
+      <a href="/concept-synthwave.html">Synthwave concept</a>
+      <a href="/">← Live dashboard</a>
+    </div>
+  </div>
+
+  <div class="app">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">SX</div>
+        <div class="brand-text">
+          <span class="name">Samuel x</span>
+          <span class="tag">Instrument rack</span>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Daily Brief</div>
+          <div class="nav-item active"><span class="port">1</span> Overview</div>
+          <div class="nav-item"><span class="port">2</span> Daily Brief</div>
+          <div class="nav-item"><span class="port">3</span> Command Ctr</div>
+          <div class="nav-item"><span class="port">4</span> Cost</div>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Production</div>
+          <div class="nav-item">
+            <span class="port">5</span> Agent Farm
+            <span class="badge live">08</span>
+          </div>
+          <div class="nav-item"><span class="port">6</span> Piano / Midi</div>
+          <div class="nav-item"><span class="port">7</span> Rhyme Studio</div>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Tools</div>
+          <div class="nav-item">
+            <span class="port">8</span> All Tools
+            <span class="badge">14</span>
+          </div>
+          <div class="nav-item"><span class="port">9</span> Chord Det</div>
+          <div class="nav-item"><span class="port">A</span> Note Det</div>
+          <div class="nav-item"><span class="port">B</span> Tempo Tap</div>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Harmony</div>
+          <div class="nav-item"><span class="port">C</span> Live Site</div>
+          <div class="nav-item"><span class="port">D</span> Clients</div>
+        </div>
+      </nav>
+
+      <div class="profile">
+        <div class="profile-main">
+          <div class="who">Studio bus</div>
+          <div class="status"><span class="live-dot"></span> Systems live</div>
+        </div>
+        <div class="profile-port">I/O</div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <div class="main-scroll">
+        <div class="main-inner stack">
+
+          <!-- Module header -->
+          <div class="module">
+            <div class="hdr">
+              <div class="pill-box">
+                <button class="pill active" type="button">UTIL.00</button>
+              </div>
+              <div class="nameplate">
+                <span>OVERVIEW_MON</span>
+                <span class="unit">// SX.DASH</span>
+              </div>
+              <div class="pill-box" style="justify-content:flex-end">
+                <button class="pill" type="button" id="refreshPill">Refresh</button>
+              </div>
+            </div>
+
+            <!-- Hero readout = monthly AI spend (primary telemetry) -->
+            <div class="hero-band">
+              <div class="side-label">Monitoring</div>
+              <div class="hero-body">
+                <div class="hero-eyebrow">This month · AI spend</div>
+                <div class="hero-readout" id="heroReadout" aria-live="polite" aria-label="Monthly AI spend 248 dollars 40 cents">
+                  248<span class="dec">.40</span>
+                </div>
+                <div class="hero-meta">
+                  <span>Unit<strong>USD</strong></span>
+                  <span>Today<strong>012.80</strong></span>
+                  <span>Sessions<strong>0186</strong></span>
+                  <span>One-shot<strong>072%</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats 2×2 -->
+            <div class="stats-block">
+              <div class="stats-head">
+                <span>Statistics</span>
+                <span class="live"><span class="live-dot"></span> Live</span>
+              </div>
+              <div class="stats-grid">
+                <div class="stat-cell">
+                  <span class="label">Calls</span>
+                  <span class="value">12.4K</span>
+                </div>
+                <div class="stat-cell">
+                  <span class="label">Sessions</span>
+                  <span class="value">0186</span>
+                </div>
+                <div class="stat-cell">
+                  <span class="label">One-shot</span>
+                  <span class="value hi">072%</span>
+                </div>
+                <div class="stat-cell">
+                  <span class="label">Projects</span>
+                  <span class="value">0011</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Triple panels -->
+          <div class="triple">
+            <section class="panel">
+              <div class="panel-head">
+                <span>Brief_today</span>
+                <a href="#">Open →</a>
+              </div>
+              <div class="panel-body">
+                <div class="panel-title">dashboard-ui-x</div>
+                <p>Push concept skins, tighten Agent Farm density, ship chord-detector export polish before weekly handoff.</p>
+                <div class="row" style="margin-bottom:8px">
+                  <span class="k">Date</span>
+                  <span class="v">2026-08-09</span>
+                </div>
+                <ul class="plan">
+                  <li>Review GRAY2020 + Synthwave demos</li>
+                  <li>Map tokens if greenlit</li>
+                  <li>Hold production theme</li>
+                </ul>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <span>Ai_spend</span>
+                <a href="#">Details →</a>
+              </div>
+              <div class="panel-body">
+                <div class="metric-lg">012<span class="dec">.80</span></div>
+                <div class="metric-sub">Today · USD</div>
+                <div class="row"><span class="k">Month</span><span class="v hi">248.40</span></div>
+                <div class="row"><span class="k">Dashboard-ui-x</span><span class="v">094.20</span></div>
+                <div class="row"><span class="k">Agent farm</span><span class="v">061.10</span></div>
+                <div class="row"><span class="k">Chord det</span><span class="v">038.40</span></div>
+                <div class="row" style="margin-top:auto;padding-top:12px">
+                  <span class="k">Snapshot</span>
+                  <span class="v" style="color:var(--text-muted)">Sample</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <span>Cmd_center</span>
+                <a href="#">Open →</a>
+              </div>
+              <div class="panel-body">
+                <div class="row"><span class="k">Refreshed</span><span class="v">002h ago</span></div>
+                <div class="row"><span class="k">Tracked</span><span class="v">0011 proj</span></div>
+                <div class="row" style="margin-top:12px"><span class="k">Harmony</span><span class="v hi">Online</span></div>
+                <div class="row"><span class="k">Poly bot</span><span class="v">Idle</span></div>
+                <div class="row"><span class="k">Tesla</span><span class="v">Mock</span></div>
+                <div class="row" style="margin-top:auto;padding-top:12px">
+                  <span class="k">Bus</span>
+                  <span class="v hi">Armed</span>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- Jump tiles -->
+          <div class="tiles-wrap">
+            <div class="tiles-head">
+              <span>Jump · Studio bus</span>
+              <span>Slots 01–04</span>
+            </div>
+            <div class="tiles">
+              <div class="tile">
+                <div class="tile-id">01</div>
+                <h3>Agent_farm</h3>
+                <p>Run density · 08 armed</p>
+              </div>
+              <div class="tile">
+                <div class="tile-id">02</div>
+                <h3>Chord_det</h3>
+                <p>Util.06 · analysis</p>
+              </div>
+              <div class="tile">
+                <div class="tile-id">03</div>
+                <h3>Rhyme_std</h3>
+                <p>Vocals bus</p>
+              </div>
+              <div class="tile">
+                <div class="tile-id">04</div>
+                <h3>Cost_mon</h3>
+                <p>Spend telemetry</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Control bar -->
+          <div class="controls">
+            <button type="button" id="btnRefresh">
+              <span class="ico-play"></span>
+              Refresh snapshot
+            </button>
+            <button type="button" onclick="location.href='/'">
+              <span class="ico-stop"></span>
+              Keep current ui
+            </button>
+          </div>
+
+          <!-- Concept notes -->
+          <div class="notes">
+            <h4>Concept notes · GRAY2020 on a multi-zone dashboard</h4>
+            <div class="notes-grid">
+              <div>
+                <strong>What this is</strong>
+                Your saved skill <code>gray2020</code> — lab-instrument language (hairline grids, amber only, mono numerals, port markers). Reference: Tempo Tap.
+              </div>
+              <div>
+                <strong>Fit warning</strong>
+                Skill is built for single-metric utilities. Overview is multi-card — this demo stretches the language to the shell so you can judge the feel.
+              </div>
+              <div>
+                <strong>Best greenlight path</strong>
+                Apply full GRAY2020 to tools (Tempo, Session, Chord, Cost meters). Keep app chrome token-based; optional dark denser cockpit for Agent Farm.
+              </div>
+              <div>
+                <strong>Vs Synthwave</strong>
+                No gradients, no cyan, no glass glow. Depth = 1px <code>--line</code> gaps only. Accent = amber alone.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Nav active (visual only)
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        item.classList.add('active');
+      });
+    });
+
+    // Mechanical 100ms amber flash on refresh (GRAY2020 motion)
+    function flashHero() {
+      const el = document.getElementById('heroReadout');
+      el.classList.add('flash');
+      setTimeout(() => el.classList.remove('flash'), 100);
+    }
+    document.getElementById('refreshPill').addEventListener('click', flashHero);
+    document.getElementById('btnRefresh').addEventListener('click', flashHero);
+  </script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type PointerEvent as ReactPointerEvent } from 'react'
-import { Moon, Plus, Sun, X } from 'lucide-react'
-import { useTheme } from '../../context/ThemeContext'
+import { Gauge, Moon, Plus, Sun, X } from 'lucide-react'
+import { useTheme, type Theme } from '../../context/ThemeContext'
 import SidebarBrand from './SidebarBrand'
 import NavSectionGroup from './NavSectionGroup'
 import ProfileWidget from './ProfileWidget'
@@ -243,7 +243,21 @@ export default function Sidebar({ onRouteChange, activeRouteId, mobileOpen, onMo
     dragRef.current = null
   }, [])
 
-  const isDark = theme === 'dark'
+  const cycleTheme = useCallback(() => {
+    const order: Theme[] = ['light', 'dark', 'gray2020']
+    const next = order[(order.indexOf(theme) + 1) % order.length] ?? 'dark'
+    setTheme(next)
+  }, [theme, setTheme])
+
+  const themeTitle =
+    theme === 'gray2020' ? 'Theme: GRAY2020 (click for light)'
+    : theme === 'dark'   ? 'Theme: dark (click for GRAY2020)'
+    :                      'Theme: light (click for dark)'
+
+  const ThemeIcon =
+    theme === 'gray2020' ? Gauge
+    : theme === 'dark'   ? Sun
+    :                      Moon
 
   const renderSection = (section: NavSection, i: number, offSidebar: boolean) => (
     <NavSectionGroup
@@ -454,18 +468,19 @@ export default function Sidebar({ onRouteChange, activeRouteId, mobileOpen, onMo
 
         <button
           type="button"
-          onClick={() => setTheme(isDark ? 'light' : 'dark')}
+          onClick={cycleTheme}
           className="flex items-center justify-center rounded-lg p-2 transition-all"
           style={{
-            background: 'var(--bg-hover)',
-            color:      'var(--text-3)',
+            background: theme === 'gray2020' ? 'var(--accent-soft)' : 'var(--bg-hover)',
+            color:      theme === 'gray2020' ? 'var(--accent-fg)'   : 'var(--text-3)',
             border:     '1px solid var(--border)',
           }}
-          title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-          onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-1)')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-3)')}
+          title={themeTitle}
+          aria-label={themeTitle}
+          onMouseEnter={e => (e.currentTarget.style.color = theme === 'gray2020' ? 'var(--accent-fg)' : 'var(--text-1)')}
+          onMouseLeave={e => (e.currentTarget.style.color = theme === 'gray2020' ? 'var(--accent-fg)' : 'var(--text-3)')}
         >
-          {isDark ? <Sun size={13} /> : <Moon size={13} />}
+          <ThemeIcon size={13} />
         </button>
       </div>
 

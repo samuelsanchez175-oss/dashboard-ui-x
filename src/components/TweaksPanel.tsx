@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { Check, SlidersHorizontal, X } from 'lucide-react'
-import { useTheme } from '../context/ThemeContext'
-import type { Accent, Density, Theme } from '../context/ThemeContext'
+import { densityLabel, useTheme } from '../context/ThemeContext'
+import type { Accent, Theme } from '../context/ThemeContext'
 
 const ACCENTS: { id: Accent; hex: string; label: string }[] = [
   { id: 'purple', hex: '#7c3aed', label: 'Purple' },
   { id: 'red',    hex: '#dc2626', label: 'Red'    },
   { id: 'blue',   hex: '#2563eb', label: 'Blue'   },
   { id: 'green',  hex: '#059669', label: 'Green'  },
+  { id: 'amber',  hex: '#F5A623', label: 'Amber'  },
 ]
 
 function SegControl<T extends string>({
@@ -102,53 +103,78 @@ export default function TweaksPanel() {
               </p>
               <SegControl<Theme>
                 value={theme}
-                options={[{ id: 'light', label: 'Light' }, { id: 'dark', label: 'Dark' }]}
+                options={[
+                  { id: 'light', label: 'Light' },
+                  { id: 'dark', label: 'Dark' },
+                  { id: 'gray2020', label: 'Gray' },
+                ]}
                 onChange={setTheme}
               />
+              {theme === 'gray2020' && (
+                <p
+                  className="mt-2 text-[10px] leading-snug"
+                  style={{ color: 'var(--text-3)', fontFamily: "'DM Mono', monospace", letterSpacing: '0.06em' }}
+                >
+                  GRAY2020 · instrument panel · amber only
+                </p>
+              )}
             </div>
 
-            {/* Accent */}
-            <div>
+            {/* Accent — locked on GRAY2020 */}
+            <div style={{ opacity: theme === 'gray2020' ? 0.45 : 1 }}>
               <p
                 className="text-[10px] font-semibold uppercase tracking-wider mb-2"
                 style={{ color: 'var(--text-4)', fontFamily: "'DM Mono', monospace" }}
               >
-                Accent
+                Accent{theme === 'gray2020' ? ' · locked' : ''}
               </p>
-              <div className="grid grid-cols-4 gap-2">
-                {ACCENTS.map(({ id, hex, label }) => (
-                  <button
-                    key={id}
-                    onClick={() => setAccent(id)}
-                    title={label}
-                    className="relative h-8 rounded-xl transition-all duration-150"
-                    style={{
-                      background: hex,
-                      outline: accent === id ? `2.5px solid ${hex}` : '2px solid transparent',
-                      outlineOffset: '2px',
-                      opacity: accent === id ? 1 : 0.45,
-                      transform: accent === id ? 'scale(1.05)' : 'scale(1)',
-                    }}
-                    onMouseEnter={e => { if (accent !== id) (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
-                    onMouseLeave={e => { if (accent !== id) (e.currentTarget as HTMLElement).style.opacity = '0.45' }}
-                  >
-                    {accent === id && (
-                      <Check
-                        size={12}
-                        strokeWidth={2.5}
-                        className="absolute inset-0 m-auto"
-                        style={{ color: '#fff', filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))' }}
-                      />
-                    )}
-                  </button>
-                ))}
+              <div className="grid grid-cols-5 gap-2">
+                {ACCENTS.map(({ id, hex, label }) => {
+                  const lockedOut = theme === 'gray2020' && id !== 'amber'
+                  const selected = theme === 'gray2020' ? id === 'amber' : accent === id
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => !lockedOut && setAccent(id)}
+                      title={lockedOut ? 'GRAY2020 uses amber only' : label}
+                      disabled={lockedOut}
+                      className="relative h-8 rounded-xl transition-all duration-150 disabled:cursor-not-allowed"
+                      style={{
+                        background: hex,
+                        outline: selected ? `2.5px solid ${hex}` : '2px solid transparent',
+                        outlineOffset: '2px',
+                        opacity: selected ? 1 : lockedOut ? 0.25 : 0.45,
+                        transform: selected ? 'scale(1.05)' : 'scale(1)',
+                      }}
+                      onMouseEnter={e => {
+                        if (!selected && !lockedOut) (e.currentTarget as HTMLElement).style.opacity = '0.7'
+                      }}
+                      onMouseLeave={e => {
+                        if (!selected && !lockedOut) (e.currentTarget as HTMLElement).style.opacity = '0.45'
+                      }}
+                    >
+                      {selected && (
+                        <Check
+                          size={12}
+                          strokeWidth={2.5}
+                          className="absolute inset-0 m-auto"
+                          style={{ color: '#fff', filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))' }}
+                        />
+                      )}
+                    </button>
+                  )
+                })}
               </div>
-              <div className="grid grid-cols-4 gap-2 mt-1.5">
+              <div className="grid grid-cols-5 gap-2 mt-1.5">
                 {ACCENTS.map(({ id, label }) => (
                   <p
                     key={id}
                     className="text-center text-[9px]"
-                    style={{ color: accent === id ? 'var(--text-2)' : 'var(--text-4)' }}
+                    style={{
+                      color: (theme === 'gray2020' ? id === 'amber' : accent === id)
+                        ? 'var(--text-2)'
+                        : 'var(--text-4)',
+                    }}
                   >
                     {label}
                   </p>
@@ -156,19 +182,62 @@ export default function TweaksPanel() {
               </div>
             </div>
 
-            {/* Density */}
+            {/* Density — live 0–100 slider (spacing + rem scale) */}
             <div>
-              <p
-                className="text-[10px] font-semibold uppercase tracking-wider mb-2"
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <p
+                  className="text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ color: 'var(--text-4)', fontFamily: "'DM Mono', monospace" }}
+                >
+                  Density
+                </p>
+                <span
+                  className="text-[10px] tabular-nums"
+                  style={{ color: 'var(--accent-fg)', fontFamily: "'DM Mono', monospace" }}
+                >
+                  {densityLabel(density)} · {density}
+                </span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={1}
+                value={density}
+                onChange={e => setDensity(Number(e.target.value))}
+                aria-label={`UI density ${density}, ${densityLabel(density)}`}
+                className="density-slider w-full"
+              />
+              <div
+                className="mt-1.5 flex justify-between text-[9px] uppercase tracking-wider"
                 style={{ color: 'var(--text-4)', fontFamily: "'DM Mono', monospace" }}
               >
-                Density
-              </p>
-              <SegControl<Density>
-                value={density}
-                options={[{ id: 'comfy', label: 'Comfy' }, { id: 'compact', label: 'Compact' }]}
-                onChange={setDensity}
-              />
+                <span>Compact</span>
+                <span>Roomy</span>
+              </div>
+              <div className="mt-2 grid grid-cols-3 gap-1">
+                {[
+                  { label: 'Compact', value: 15 },
+                  { label: 'Balanced', value: 55 },
+                  { label: 'Roomy', value: 90 },
+                ].map(preset => (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => setDensity(preset.value)}
+                    className="rounded-md py-1 text-[10px] font-medium transition-colors"
+                    style={{
+                      background: Math.abs(density - preset.value) <= 8 ? 'var(--accent-soft)' : 'var(--bg-muted)',
+                      color: Math.abs(density - preset.value) <= 8 ? 'var(--accent-fg)' : 'var(--text-3)',
+                      border: '1px solid var(--border)',
+                      fontFamily: "'DM Mono', monospace",
+                      letterSpacing: '0.04em',
+                    }}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>

@@ -1,8 +1,12 @@
+import { useEffect, useState } from 'react'
 import { resolveRouteTitle } from '../../lib/routeTitles'
 import { useUpdatesStore } from '../../lib/updatesStore'
 import SidebarUpdateBadge from './SidebarUpdateBadge'
 import UpdateDot from '../ui/UpdateDot'
 import type { NavItem } from './navigation'
+
+/** Orange highlight window — 10 seconds as requested. */
+const HIGHLIGHT_MS = 10_000
 
 interface NavItemButtonProps {
   item:               NavItem
@@ -28,6 +32,26 @@ export default function NavItemButton({
   const Icon = item.icon
   const displayLabel = resolveRouteTitle(item.id) || item.label
 
+  // Orange highlight: active for 10s after the item is marked updated.
+  const lastTouched = useUpdatesStore(s => s.entries[item.id]?.lastTouchedAt ?? 0)
+  const [highlight, setHighlight] = useState(false)
+
+  useEffect(() => {
+    if (!lastTouched || layoutEditMode) {
+      setHighlight(false)
+      return
+    }
+    const elapsed = Date.now() - lastTouched
+    if (elapsed >= HIGHLIGHT_MS) {
+      setHighlight(false)
+      return
+    }
+    setHighlight(true)
+    const remaining = HIGHLIGHT_MS - elapsed
+    const id = window.setTimeout(() => setHighlight(false), remaining)
+    return () => window.clearTimeout(id)
+  }, [lastTouched, layoutEditMode])
+
   return (
     <button
       type="button"
@@ -46,10 +70,12 @@ export default function NavItemButton({
       }}
       aria-current={isActive ? 'page' : undefined}
       className={
-        'nav-wiggle-target relative w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[13px] font-medium transition-all duration-150 text-left'
+        'nav-wiggle-target relative w-full flex items-center gap-2.5 rounded-lg text-[13px] font-medium transition-all duration-150 text-left'
         + (layoutEditMode ? '' : ' nav-item-animate')
+        + (highlight && !layoutEditMode ? ' nav-orange-highlight' : '')
       }
       style={{
+        padding: 'var(--nav-item-py) var(--nav-item-px)',
         animationDelay: `${animationDelayMs}ms`,
         background: isActive && !layoutEditMode ? 'var(--accent-soft)' : 'transparent',
         color:      isActive && !layoutEditMode ? 'var(--accent-fg)'   : 'var(--text-3)',
