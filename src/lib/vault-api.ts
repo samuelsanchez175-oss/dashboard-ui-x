@@ -107,6 +107,51 @@ export function vaultApi() {
       }),
     logs: (type: 'ingest' | 'brief' = 'ingest') =>
       getJson<{ ok: boolean; logs: string; path?: string }>(`/api/vault/logs?type=${type}`),
+    ragStatus: () =>
+      getJson<{
+        ok: boolean
+        exists: boolean
+        builtAt: string | null
+        chunkCount: number
+        vaultDir: string | null
+        grokBin: string
+      }>('/api/vault/rag/status'),
+    ragRebuild: () =>
+      getJson<{ ok: boolean; chunkCount: number; builtAt: string; vaultDir: string }>('/api/vault/rag/rebuild', {
+        method: 'POST',
+      }),
+    ragChat: (question: string, opts?: { rebuild?: boolean; k?: number }) =>
+      getJson<{
+        ok: boolean
+        answer?: string
+        sources?: { path: string; title: string; score: number; snippet: string }[]
+        error?: string
+        indexMeta?: { chunkCount: number; builtAt: string; vaultDir: string }
+      }>('/api/vault/rag/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, ...opts }),
+      }),
+    reachDraft: (body: { channel: string; project?: string; topic?: string }) =>
+      getJson<{
+        ok: boolean
+        draft?: string | null
+        error?: string
+        sources?: { path: string; title: string; score: number }[]
+      }>('/api/vault/rag/draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      }),
+    refreshSnapshots: (opts?: { noGrok?: boolean; skipIngest?: boolean }) =>
+      getJson<{ ok: boolean; stdout?: string; stderr?: string; error?: string }>(
+        '/api/vault/snapshots/refresh',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(opts ?? {}),
+        },
+      ),
   }
 }
 

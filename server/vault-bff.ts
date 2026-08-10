@@ -13,22 +13,17 @@ import path from 'node:path'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { exec } from 'node:child_process'
 import { promisify } from 'node:util'
+import { resolveVaultDir, vaultCandidates } from './vault-paths'
+import {
+  ragChat,
+  ragStatus,
+  reachDraft,
+  rebuildRagIndex,
+} from './vault-rag'
 
 const execAsync = promisify(exec)
 
-const CANDIDATE_VAULTS = [
-  process.env.VAULT_DIR,
-  '/Users/samuel/Pictures/OB CLAUDE vault',
-  '/Users/samuel/Documents/OB CLAUDE V1',
-  '/Users/samuel/dev/OB CLAUDE vault',
-].filter(Boolean) as string[]
-
-export function resolveVaultDir(): string {
-  for (const p of CANDIDATE_VAULTS) {
-    if (p && existsSync(p)) return p
-  }
-  return CANDIDATE_VAULTS[1] ?? '/Users/samuel/Pictures/OB CLAUDE vault'
-}
+export { resolveVaultDir }
 
 const SKIP_DIR = new Set([
   '.git',
@@ -189,6 +184,23 @@ async function runCmd(cmd: string) {
   }
 }
 
+async function readJsonBody(req: IncomingMessage): Promise<any> {
+  return new Promise((resolve, reject) => {
+    let body = ''
+    req.on('data', chunk => {
+      body += chunk
+    })
+    req.on('end', () => {
+      try {
+        resolve(body ? JSON.parse(body) : {})
+      } catch (e) {
+        reject(e)
+      }
+    })
+    req.on('error', err => reject(err))
+  })
+}
+
 /**
  * Handle /api/vault/* routes. Returns true if handled.
  */
@@ -233,7 +245,7 @@ export async function tryHandleVaultRoutes(
       ok: true,
       vaultDir,
       exists: vaultExists,
-      candidates: CANDIDATE_VAULTS,
+      candidates: vaultCandidates(),
       noteCount,
       handoffCount,
       lastIngest,
@@ -242,11 +254,89 @@ export async function tryHandleVaultRoutes(
     return true
   }
 
+  // ── RAG routes (work even if we need to build index) ───────────────────
+  // GET /api/vault/rag/status
+  if ((pathName === '/api/vault/rag/status' || pathName.startsWith('/api/vault/rag/status?')) && method === 'GET') {
+    // repoRoot is parent of server/ — passed via global or derive from cwd
+    const repoRoot = process.cwd()
+    jsonRes(res, 200, ragStatus(repoRoot))
+    return true
+  }
+
+  // POST /api/vault/rag/rebuild
+  if (pathName === '/api/vault/rag/rebuild' && method === 'POST') {
+    try {
+      const idx = await rebuildRagIndex(process.cwd())
+      jsonRes(res, 200, {
+        ok: true,
+        chunkCount: idx.chunkCount,
+        builtAt: idx.builtAt,
+        vaultDir: idx.vaultDir,
+      })
+    } catch (e: any) {
+      jsonRes(res, 500, { ok: false, error: e?.message || 'rebuild failed' })
+    }
+    return true
+  }
+
+  // POST /api/vault/rag/chat  { question, rebuild? }
+  if (pathName === '/api/vault/rag/chat' && method === 'POST') {
+    try {
+      const body = await readJsonBody(req)
+      const question = typeof body?.question === 'string' ? body.question : ''
+      const result = await ragChat(process.cwd(), question, {
+        rebuild: Boolean(body?.rebuild),
+        k: typeof body?.k === 'number' ? body.k : 8,
+      })
+      jsonRes(res, result.ok ? 200 : 500, result)
+    } catch (e: any) {
+      jsonRes(res, 500, { ok: false, error: e?.message || 'chat failed' })
+    }
+    return true
+  }
+
+  // POST /api/vault/rag/draft  { channel, project?, topic? }
+  if (pathName === '/api/vault/rag/draft' && method === 'POST') {
+    try {
+      const body = await readJsonBody(req)
+      const channel = (body?.channel || 'twitter') as 'twitter' | 'linkedin' | 'instagram' | 'seo' | 'thread'
+      const result = await reachDraft(process.cwd(), {
+        channel,
+        project: typeof body?.project === 'string' ? body.project : undefined,
+        topic: typeof body?.topic === 'string' ? body.topic : undefined,
+      })
+      jsonRes(res, result.ok ? 200 : 500, result)
+    } catch (e: any) {
+      jsonRes(res, 500, { ok: false, error: e?.message || 'draft failed' })
+    }
+    return true
+  }
+
+  // POST /api/vault/snapshots/refresh — full pipeline via script
+  if (pathName === '/api/vault/snapshots/refresh' && method === 'POST') {
+    try {
+      const body = await readJsonBody(req).catch(() => ({}))
+      const noGrok = Boolean(body?.noGrok)
+      const skipIngest = Boolean(body?.skipIngest)
+      const script = path.join(process.cwd(), 'scripts/refresh-vault-snapshots.mjs')
+      const flags = [noGrok ? '--no-grok' : '', skipIngest ? '--skip-ingest' : ''].filter(Boolean).join(' ')
+      const outcome = await runCmd(`node "${script}" ${flags}`.trim())
+      // also ensure RAG index
+      try {
+        await rebuildRagIndex(process.cwd())
+      } catch { /* */ }
+      jsonRes(res, outcome.ok ? 200 : 500, { ok: outcome.ok, ...outcome })
+    } catch (e: any) {
+      jsonRes(res, 500, { ok: false, error: e?.message || 'refresh failed' })
+    }
+    return true
+  }
+
   if (!vaultExists) {
     jsonRes(res, 503, {
       ok: false,
       error: 'VAULT_MISSING',
-      message: `Vault not found. Set VAULT_DIR. Tried: ${CANDIDATE_VAULTS.join(' · ')}`,
+      message: `Vault not found. Set VAULT_DIR. Tried: ${vaultCandidates().join(' · ')}`,
       vaultDir,
     })
     return true

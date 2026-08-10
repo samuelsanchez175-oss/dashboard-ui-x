@@ -43,6 +43,7 @@ const DiagnosticsZone = lazy(() => import('../zones/dev/DiagnosticsZone'))
 const NewZonePage = lazy(() => import('../zones/builder/NewZonePage'))
 const CustomZonePage = lazy(() => import('../zones/builder/CustomZonePage'))
 const VaultConsoleZone = lazy(() => import('../zones/vault/VaultConsoleZone'))
+const VaultRagZone = lazy(() => import('../zones/vault/VaultRagZone'))
 const VaultHandoffsZone = lazy(() => import('../zones/vault/VaultHandoffsZone'))
 const VaultStudyZone = lazy(() => import('../zones/vault/VaultStudyZone'))
 const VaultClippingsZone = lazy(() => import('../zones/vault/VaultClippingsZone'))
@@ -114,6 +115,9 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
       break
     case 'vault-console':
       body = <VaultConsoleZone />
+      break
+    case 'vault-rag':
+      body = <VaultRagZone />
       break
     case 'vault-handoffs':
       body = <VaultHandoffsZone />

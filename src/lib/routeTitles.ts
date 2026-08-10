@@ -24,6 +24,7 @@ const NON_TOOL_TITLES: Record<string, string> = {
   'tesla': 'Tesla Fleet',
   'tools-hub': 'Tools hub',
   'vault-console': 'Vault Console',
+  'vault-rag': 'Vault RAG Chat',
   'vault-handoffs': 'Handoff Resume',
   'vault-study': 'Project Study',
   'vault-clippings': 'Clipping Digest',

@@ -35,14 +35,17 @@ import {
   alertsMock,
   beatAnalysisMock,
   farmStatus,
-  marketResearchMock,
   revenueMock,
-  seoRecommendationsMock,
-  socialCalendarMock,
   supportQueueMock,
   usageStats,
 } from './mock-data'
 import { ENV_KEY_LOGO_URL, INTEGRATION_MARKETPLACE_URLS } from './integration-logos'
+import {
+  ReachResearchPanel,
+  ReachSEOPanel,
+  ReachSnapshotBar,
+  ReachSocialPanel,
+} from './ReachGrowthPanels'
 
 interface TabDef {
   id: BuiltinAgentFarmTabId
@@ -87,21 +90,15 @@ function OverviewPanel({ live, mockEnabled }: { live: AgentFarmLive; mockEnabled
 
   return (
     <div className="space-y-6">
+      <ReachSnapshotBar />
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold text-[var(--text-1)] tracking-tight">Reach Lab</h2>
           <p className="text-sm text-[var(--text-3)] mt-1">
-            Think tank for SEO, social reach, and engagement friction — drafts, calendars, and research
-            so posting is less painful.{' '}
-            {mockEnabled ? (
-              <>
-                Mock metrics below; live RSS / YouTube load from the dev BFF when keys are set.
-              </>
-            ) : (
-              <>
-                sample metrics are hidden; live RSS / YouTube still load from the dev BFF when keys are set.
-              </>
-            )}
+            Growth desk for SEO, social reach, and engagement — vault-grounded drafts via RAG + Grok.
+            Use <strong className="text-[var(--text-2)]">SEO</strong>, <strong className="text-[var(--text-2)]">Social</strong>, and{' '}
+            <strong className="text-[var(--text-2)]">Research</strong> tabs for real generators; RSS / YouTube stay live when keys are set.
+            {mockEnabled ? ' Mock metrics still available below for layout.' : ''}
           </p>
         </div>
         <div
@@ -502,122 +499,16 @@ function RevenuePanel({ mockEnabled }: { mockEnabled: boolean }) {
   )
 }
 
-function MarketResearchPanel({ mockEnabled }: { mockEnabled: boolean }) {
-  if (!mockEnabled) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-lg font-semibold text-[var(--text-1)] tracking-tight">Market research agent</h2>
-          <p className="text-sm text-[var(--text-3)] mt-1">Keyword and trend snapshots — replace with search APIs or LLM research.</p>
-        </div>
-        <AgentFarmMockOffPlaceholder />
-      </div>
-    )
-  }
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-[var(--text-1)] tracking-tight">Market research agent</h2>
-        <p className="text-sm text-[var(--text-3)] mt-1">Keyword and trend snapshots — replace with search APIs or LLM research.</p>
-      </div>
-      <Card className="overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-[var(--border-soft)] text-left text-xs uppercase tracking-wider text-[var(--text-4)]">
-              <th className="px-4 py-3 font-medium">Keyword</th>
-              <th className="px-4 py-3 font-medium">Volume</th>
-              <th className="px-4 py-3 font-medium">Trend</th>
-              <th className="px-4 py-3 font-medium">Intent</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[var(--border-soft)]">
-            {marketResearchMock.keywords.map(k => (
-              <tr key={k.term} className="hover:bg-[var(--bg-hover)]">
-                <td className="px-4 py-3 text-[var(--text-1)] font-medium">{k.term}</td>
-                <td className="px-4 py-3 text-[var(--text-3)]">{k.volume}</td>
-                <td className="px-4 py-3 text-emerald-400">{k.trend}</td>
-                <td className="px-4 py-3 text-[var(--text-3)]">{k.intent}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Card>
-    </div>
-  )
+function MarketResearchPanel(_props: { mockEnabled: boolean }) {
+  return <ReachResearchPanel />
 }
 
-function SEOPanel({ mockEnabled }: { mockEnabled: boolean }) {
-  if (!mockEnabled) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-lg font-semibold text-[var(--text-1)] tracking-tight">SEO agent</h2>
-          <p className="text-sm text-[var(--text-3)] mt-1">Recommendation backlog — wire Search Console / crawler later.</p>
-        </div>
-        <AgentFarmMockOffPlaceholder />
-      </div>
-    )
-  }
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-[var(--text-1)] tracking-tight">SEO agent</h2>
-        <p className="text-sm text-[var(--text-3)] mt-1">Recommendation backlog — wire Search Console / crawler later.</p>
-      </div>
-      <ul className="space-y-3">
-        {seoRecommendationsMock.map((r, i) => (
-          <Card key={i} className="p-4 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-[var(--text-1)] font-medium">{r.title}</p>
-            <div className="flex gap-2">
-              <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-fuchsia-500/15 text-fuchsia-200">
-                Impact: {r.impact}
-              </span>
-              <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-[var(--bg-card-soft)] text-[var(--text-3)]">
-                Effort: {r.effort}
-              </span>
-            </div>
-          </Card>
-        ))}
-      </ul>
-    </div>
-  )
+function SEOPanel(_props: { mockEnabled: boolean }) {
+  return <ReachSEOPanel />
 }
 
-function SocialPanel({ mockEnabled }: { mockEnabled: boolean }) {
-  if (!mockEnabled) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-lg font-semibold text-[var(--text-1)] tracking-tight">Social media manager</h2>
-          <p className="text-sm text-[var(--text-3)] mt-1">Queue / calendar placeholder — connect publisher APIs when ready.</p>
-        </div>
-        <AgentFarmMockOffPlaceholder />
-      </div>
-    )
-  }
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-[var(--text-1)] tracking-tight">Social media manager</h2>
-        <p className="text-sm text-[var(--text-3)] mt-1">Queue / calendar placeholder — connect publisher APIs when ready.</p>
-      </div>
-      <div className="grid gap-4 md:grid-cols-3">
-        {socialCalendarMock.map(day => (
-          <Card key={day.day} className="p-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--accent)]">{day.day}</p>
-            <ul className="mt-3 space-y-2">
-              {day.slots.map((s, i) => (
-                <li key={i} className="text-sm text-[var(--text-2)] flex gap-2">
-                  <span className="text-[var(--text-4)]">—</span>
-                  {s}
-                </li>
-              ))}
-            </ul>
-          </Card>
-        ))}
-      </div>
-    </div>
-  )
+function SocialPanel(_props: { mockEnabled: boolean }) {
+  return <ReachSocialPanel />
 }
 
 function AutomationsPanel() {

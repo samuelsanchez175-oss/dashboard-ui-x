@@ -75,12 +75,12 @@
     "name": "OB CLAUDE vault",
     "brief_file": "🌅 Daily Brief/Briefs/2026-07-13.md",
     "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%8C%85%20Daily%20Brief/Briefs/2026-07-13",
-    "generated_at": "2026-07-13T15:06:50",
+    "generated_at": "2026-08-09T23:26:07",
     "counts": {
       "briefs": 11,
-      "clippings": 145,
-      "tools": 34,
-      "handoffs": 146,
+      "clippings": 146,
+      "tools": 36,
+      "handoffs": 212,
       "tracks": 2
     },
     "recent_briefs": [
@@ -93,80 +93,80 @@
   },
   "ai_sessions": [
     {
-      "title": "2026-07-13-obsidian-vault-routine-6796f7-e029a80f",
+      "title": "2026-08-02-facebook-saves-obsidian-clippings-21d35b-57967fec",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
-      "updated": "2026-07-13",
-      "started_with": "Help me write a routine that will update my Obsidian repositories... well, Obsidian Vault called o b, Claude Vault with new tasks, updates on where the tasks are, what are complete",
-      "file": "🤝 Handoffs/2026-07-13-obsidian-vault-routine-6796f7-e029a80f.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-13-obsidian-vault-routine-6796f7-e029a80f",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-13-obsidian-vault-routine-6796f7-e029a80f.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+      "updated": "2026-08-02",
+      "started_with": "go through my facebook saves and go into clippings 026 to pull out new saved videos, please save them to my obsidian folder, format them like i have the rest of them formatted and ",
+      "file": "🤝 Handoffs/2026-08-02-facebook-saves-obsidian-clippings-21d35b-57967fec.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-08-02-facebook-saves-obsidian-clippings-21d35b-57967fec",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-08-02-facebook-saves-obsidian-clippings-21d35b-57967fec.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     },
     {
-      "title": "2026-07-13-obsidian-vault-audit-d61be1-7428ba4a",
+      "title": "2026-08-04-facebook-saves-obsidian-clippings-21d35b-b1c04c3e",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
-      "updated": "2026-07-13",
-      "started_with": "This session here was gonna be used to automate my my Obsidian note taking that I've been doing for all of my applications. I'm going into my o b, Claude, Bault in Obsidian, and I'",
-      "file": "🤝 Handoffs/2026-07-13-obsidian-vault-audit-d61be1-7428ba4a.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-13-obsidian-vault-audit-d61be1-7428ba4a",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-13-obsidian-vault-audit-d61be1-7428ba4a.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+      "updated": "2026-08-04",
+      "started_with": "what can you learn from this video Intro and What You Will Learn This is the definitive course for Claude and Facebook ads. Across our portfolio of over 100 brands, we use Claude o",
+      "file": "🤝 Handoffs/2026-08-04-facebook-saves-obsidian-clippings-21d35b-b1c04c3e.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-08-04-facebook-saves-obsidian-clippings-21d35b-b1c04c3e",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-08-04-facebook-saves-obsidian-clippings-21d35b-b1c04c3e.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     },
     {
-      "title": "2026-07-13-daily-brief-publisher-4f88e1-45dae61a",
+      "title": "2026-08-04-facebook-ads-generation-ea54b8-af2d4ea4",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
-      "updated": "2026-07-13",
-      "started_with": "Instead of handing this off onto a routine that is scheduled to do it over the cloud, I'm going to do this here as a session, and I'll pin this so I could run this as often as I ne",
-      "file": "🤝 Handoffs/2026-07-13-daily-brief-publisher-4f88e1-45dae61a.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-13-daily-brief-publisher-4f88e1-45dae61a",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-13-daily-brief-publisher-4f88e1-45dae61a.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+      "updated": "2026-08-04",
+      "started_with": "what can you learn from this video Intro Here's how you can use clot code to run Facebook ads and get a higher return on ad spend without ever putting your ad account at risk. So, ",
+      "file": "🤝 Handoffs/2026-08-04-facebook-ads-generation-ea54b8-af2d4ea4.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-08-04-facebook-ads-generation-ea54b8-af2d4ea4",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-08-04-facebook-ads-generation-ea54b8-af2d4ea4.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     },
     {
-      "title": "2026-07-13-codeburn-repo-setup-fa7d49-c88f1849",
+      "title": "2026-08-04-code-prompt-bank-templates-54aae7-ea9c1975",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
-      "updated": "2026-07-13",
-      "started_with": "gh repo clone getagentseal/codeburn",
-      "file": "🤝 Handoffs/2026-07-13-codeburn-repo-setup-fa7d49-c88f1849.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-13-codeburn-repo-setup-fa7d49-c88f1849",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-13-codeburn-repo-setup-fa7d49-c88f1849.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+      "updated": "2026-08-04",
+      "started_with": "from my clippings in my ob vault are their any clippings that are related to claude code prompt banks where i can find template, skills prompts in one place >?",
+      "file": "🤝 Handoffs/2026-08-04-code-prompt-bank-templates-54aae7-ea9c1975.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-08-04-code-prompt-bank-templates-54aae7-ea9c1975",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-08-04-code-prompt-bank-templates-54aae7-ea9c1975.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     },
     {
-      "title": "2026-07-13-caveman-repo-setup-0c81fa-fa92b3a8",
-      "source": "claude",
-      "project": "AI Toolkit",
-      "status": "open",
-      "updated": "2026-07-13",
-      "started_with": "gh repo clone JuliusBrussee/caveman",
-      "file": "🤝 Handoffs/2026-07-13-caveman-repo-setup-0c81fa-fa92b3a8.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-13-caveman-repo-setup-0c81fa-fa92b3a8",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-13-caveman-repo-setup-0c81fa-fa92b3a8.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
-    },
-    {
-      "title": "2026-07-13-ob-claude-vault-924cd4b9",
+      "title": "2026-07-24-carplay-video-playback-f6fd35-19c8e41a",
       "source": "claude",
       "project": "XJournal AI",
       "status": "open",
-      "updated": "2026-07-13",
-      "started_with": "<scheduled-task name=\"daily-brief-publish\" file=\"/Users/samuel/.claude/scheduled-tasks/daily-brief-publish/SKILL.md\"> This is an automated run of a scheduled task. The user is not ",
-      "file": "🤝 Handoffs/2026-07-13-ob-claude-vault-924cd4b9.md",
-      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-13-ob-claude-vault-924cd4b9",
-      "resume_prompt": "Read \"🤝 Handoffs/2026-07-13-ob-claude-vault-924cd4b9.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+      "updated": "2026-08-06",
+      "started_with": "hi",
+      "file": "🤝 Handoffs/2026-07-24-carplay-video-playback-f6fd35-19c8e41a.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-07-24-carplay-video-playback-f6fd35-19c8e41a",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-07-24-carplay-video-playback-f6fd35-19c8e41a.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
+    },
+    {
+      "title": "2026-06-29-amazing-newton-e995a1-2a5acf93",
+      "source": "claude",
+      "project": "XJournal AI",
+      "status": "open",
+      "updated": "2026-08-02",
+      "started_with": "Update the YouTube CarPlay app, rename it as well on Xcode, and within the app itself, name the app, YT OS 27 player. Then rebrand the app and let's free factor the layout and how ",
+      "file": "🤝 Handoffs/2026-06-29-amazing-newton-e995a1-2a5acf93.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A4%9D%20Handoffs/2026-06-29-amazing-newton-e995a1-2a5acf93",
+      "resume_prompt": "Read \"🤝 Handoffs/2026-06-29-amazing-newton-e995a1-2a5acf93.md\" in the OB CLAUDE vault (Documents/OB CLAUDE vault), then pick up exactly where that session left off."
     }
   ],
   "pipeline": {
-    "last_run": "2026-07-13 07:00:04",
+    "last_run": "2026-08-09 23:26:06",
     "last_status": "blocked",
     "model": "claude-sonnet-4-6",
     "next_run": "07:00 daily",
     "streak": 1,
     "chat_ingest": "every 2h",
-    "chat_ingest_last": "2026-07-13T14:30"
+    "chat_ingest_last": "2026-08-09T23:25"
   },
   "delta": {
     "vs_date": "2026-07-09",
@@ -194,7 +194,9 @@
     ],
     "counts_changed": {
       "briefs": 1,
-      "handoffs": 25
+      "clippings": 1,
+      "tools": 2,
+      "handoffs": 91
     }
   },
   "workflows": [
@@ -394,6 +396,18 @@
       ],
       "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/Atlas-GIC - Self-Improving AI Trading Agents.md",
       "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/Atlas-GIC%20-%20Self-Improving%20AI%20Trading%20Agents"
+    },
+    {
+      "name": "Automotive CAD & Part Geometry",
+      "activation_tools": [],
+      "used_with": [
+        "00_Toolkit_Index",
+        "3D Model Generation",
+        "AI Toolkit → Alamo Car Parts — 3D, CAD & Engine Bay"
+      ],
+      "steps": [],
+      "file": "🧰 AI Toolkit/Automotive CAD & Part Geometry.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Automotive%20CAD%20%26%20Part%20Geometry"
     },
     {
       "name": "Blockade Labs Skybox AI - 360 Scene Generator",
@@ -658,6 +672,18 @@
       ],
       "file": "🧰 AI Toolkit/Imported AI Clippings/3D & Animation/Claude Code - Figma to Web 3D Workflow.md",
       "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/3D%20%26%20Animation/Claude%20Code%20-%20Figma%20to%20Web%203D%20Workflow"
+    },
+    {
+      "name": "Claude Code Prompt Bank",
+      "activation_tools": [],
+      "used_with": [],
+      "steps": [
+        "Step",
+        "Step",
+        "Verify"
+      ],
+      "file": "🧰 AI Toolkit/02_Claude Code Prompt Bank.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/02_Claude%20Code%20Prompt%20Bank"
     },
     {
       "name": "Claude Cookbooks - Front-End Design Patterns",
@@ -1843,6 +1869,20 @@
       ],
       "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/NVIDIA API Catalog - Free Hosted AI Model Endpoints.md",
       "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/NVIDIA%20API%20Catalog%20-%20Free%20Hosted%20AI%20Model%20Endpoints"
+    },
+    {
+      "name": "Obsidian + Claude Code - Custom Thinking Tool Commands",
+      "activation_tools": [
+        "Claude Code",
+        "Obsidian CLI"
+      ],
+      "used_with": [
+        "Obsidian",
+        "Claude Code"
+      ],
+      "steps": [],
+      "file": "🧰 AI Toolkit/Imported AI Clippings/Coding & Dev/Obsidian + Claude Code - Custom Thinking Tool Commands.md",
+      "obsidian_uri": "obsidian://open?vault=OB%20CLAUDE%20vault&file=%F0%9F%A7%B0%20AI%20Toolkit/Imported%20AI%20Clippings/Coding%20%26%20Dev/Obsidian%20%2B%20Claude%20Code%20-%20Custom%20Thinking%20Tool%20Commands"
     },
     {
       "name": "Obsidian - Knowledge Base Management",

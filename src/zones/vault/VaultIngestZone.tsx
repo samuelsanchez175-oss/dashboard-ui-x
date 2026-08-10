@@ -76,6 +76,27 @@ export default function VaultIngestZone() {
     }
   }
 
+  const runFullRefresh = async () => {
+    setBusy('full')
+    setMsg(null)
+    setErr(null)
+    try {
+      const r = await vaultApi().refreshSnapshots({})
+      setMsg(
+        r.ok
+          ? 'Full snapshot refresh finished (ingest → brief → command center → RAG → Grok pulse).'
+          : `Refresh finished with issues: ${r.error || r.stderr || 'see logs'}`,
+      )
+      await refresh()
+      await loadLogs()
+      await loadThemes()
+    } catch (e: any) {
+      setErr(e?.message || 'Full refresh failed')
+    } finally {
+      setBusy(null)
+    }
+  }
+
   return (
     <VaultPage
       title="Ingest Health"
@@ -139,6 +160,16 @@ export default function VaultIngestZone() {
             >
               <RefreshCw className="size-3.5" />
               {busy === 'brief' ? 'Running…' : 'Run daily brief'}
+            </button>
+            <button
+              type="button"
+              disabled={!!busy}
+              onClick={() => void runFullRefresh()}
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[12px] font-medium text-white disabled:opacity-50"
+              style={{ background: 'var(--accent)' }}
+            >
+              <RefreshCw className={`size-3.5 ${busy === 'full' ? 'animate-spin' : ''}`} />
+              {busy === 'full' ? 'Refreshing all…' : 'Full snapshot refresh'}
             </button>
           </div>
           {msg && (

@@ -15,6 +15,7 @@ import {
   HeartPulse,
   KeyRound,
   LayoutGrid,
+  MessageSquare,
   Mic2,
   Music2,
   Paintbrush,
@@ -66,6 +67,7 @@ export const NAV_SECTIONS: NavSection[] = [
     title: 'VAULT · BRAIN',
     items: [
       { id: 'vault-console', label: 'Vault Console', icon: Brain },
+      { id: 'vault-rag', label: 'RAG Chat', icon: MessageSquare },
       { id: 'vault-handoffs', label: 'Handoff Resume', icon: ClipboardList },
       { id: 'vault-study', label: 'Project Study', icon: BookOpen },
       { id: 'vault-clippings', label: 'Clipping Digest', icon: Scissors },

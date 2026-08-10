@@ -16,6 +16,7 @@
     "test:visual": "playwright test",
     "refresh:codeburn": "node scripts/refresh-codeburn.mjs",
     "refresh:command-center": "node scripts/refresh-command-center.mjs",
+    "refresh:vault-snapshots": "node scripts/refresh-vault-snapshots.mjs",
     "verify:localhost": "node scripts/verify-localhost.mjs",
     "verify:live": "VERIFY_REQUIRE_DEV=1 node scripts/verify-localhost.mjs"
   },

@@ -37,6 +37,9 @@ playwright-report/
 # Scratch / local tooling output (e.g. scripts/chord-detector-tune.mjs)
 tmp/
 
+# Vault RAG chunk index (regenerated via POST /api/vault/rag/rebuild)
+.cache/
+
 # Tesla virtual key — generated server-side, contains private key
 .tesla-virtual-key.json
 
