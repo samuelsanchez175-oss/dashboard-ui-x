@@ -82,7 +82,7 @@ export const TOOLS_REGISTRY: ToolDef[] = [
     longLabel:   'Key & STEM',
     icon:        Radio,
     category:    'audio',
-    description: 'Find key, BPM, and scale, and split into downloadable stems — in one drop.',
+    description: 'Find key, BPM, and scale, plus a brightness/body EQ split (not ML isolation).',
     family:      'detection',
     dock: {
       pinTab: 'analysis',
@@ -170,8 +170,8 @@ export const TOOLS_REGISTRY: ToolDef[] = [
     label:       'Stem splitter',
     icon:        Columns2,
     category:    'audio',
-    description: 'Crossover “brightness vs body” split — not ML isolation.',
-    badge:       'Beta',
+    description: 'EQ crossover: brightness vs body. Not Demucs / ML stem isolation.',
+    badge:       'EQ',
     family:      'detection',
   },
   {

@@ -5,7 +5,7 @@ const TOOL_TITLES = Object.fromEntries(
 ) as Record<string, string>
 
 const NON_TOOL_TITLES: Record<string, string> = {
-  'agent-farm': 'Agent farm',
+  'agent-farm': 'Reach Lab',
   'codeburn': 'Cost',
   'command-center': 'Project Command Center',
   'cpw-projects': 'All projects',
@@ -17,15 +17,21 @@ const NON_TOOL_TITLES: Record<string, string> = {
   'harmony-todos': 'Harmony client projects',
   'harmony-cdl': 'CDL One Stop',
   'harmony-penwork': 'Penwork Studio',
-  'mixing': 'Mixing',
   'mixing-audio-grab': 'Audio grab',
   'polymarket-bot': 'Bot Cockpit',
   'pulse': 'Pulse digest',
   'rhyme-studio': 'Rhyme studio',
   'tesla': 'Tesla Fleet',
   'tools-hub': 'Tools hub',
+  'vault-console': 'Vault Console',
+  'vault-handoffs': 'Handoff Resume',
+  'vault-study': 'Project Study',
+  'vault-clippings': 'Clipping Digest',
+  'vault-media': 'Media Library',
+  'vault-lyrics': 'Lyric Study',
+  'vault-ingest': 'Ingest Health',
   'vocals': 'Vocals',
-  'web-designer': 'Web designer',
+  'web-designer': 'Reference browser',
   'zone-builder': 'Zone builder',
 }
 

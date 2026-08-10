@@ -4,6 +4,7 @@ import Sidebar, { DEFAULT_ACTIVE_ID } from './components/sidebar'
 import MainContent from './components/MainContent'
 import TweaksPanel from './components/TweaksPanel'
 import FilesDock from './components/files-dock/FilesDock'
+import StudioArtifactsTray from './components/StudioArtifactsTray'
 import ShortcutOverlay from './components/ui/ShortcutOverlay'
 import { BffConfigProvider } from './context/BffConfigContext'
 import { DiagnosticsProvider } from './context/DiagnosticsContext'
@@ -20,12 +21,8 @@ import { RECENT_EDITS } from './lib/recentEdits'
 import { seedUpdates, useUpdatesStore } from './lib/updatesStore'
 
 /**
- * Feature flag — keeps the floating files dock hidden until we've defined a
- * real use case for it. The component + downloads-lane store under
- * `src/components/files-dock/` is intentionally kept around (and still
- * imported above so unused-import lints stay quiet) so this can flip back
- * to `true` and re-enable the whole thing in one line. See render site in
- * `App()` below.
+ * Legacy floating Files Dock — replaced by StudioArtifactsTray (compact
+ * Send-to tray). Keep the flag false; store + dock code remain for data.
  */
 const SHOW_FILES_DOCK = false
 
@@ -48,6 +45,7 @@ const SESSION_TOUCHED_ZONE_SEED = [
 function App() {
   const [activeRouteId, setActiveRouteId] = useState<string>(DEFAULT_ACTIVE_ID)
   const [sidebarOpen, setSidebarOpen]     = useState(false)
+  const [artifactsOpen, setArtifactsOpen] = useState(false)
   const { overlayOpen, closeOverlay }     = useGlobalShortcutOverlay()
 
   useEffect(() => {
@@ -147,14 +145,22 @@ function App() {
                   </div>
 
                   <TweaksPanel />
-                  {/* FilesDock disabled per user request (2026-05-18). The
-                   * dock + downloads / analysis lanes felt like noise without
-                   * a real use case driving them yet. Flip
-                   * `SHOW_FILES_DOCK` back to `true` to re-enable; the whole
-                   * component + its store under `src/components/files-dock/`
-                   * is intentionally NOT deleted so a future feature can
-                   * pick it back up without rebuilding from scratch. */}
                   {SHOW_FILES_DOCK && <FilesDock />}
+                  <StudioArtifactsTray open={artifactsOpen} onClose={() => setArtifactsOpen(false)} />
+                  {/* Floating studio artifacts control */}
+                  <button
+                    type="button"
+                    onClick={() => setArtifactsOpen(v => !v)}
+                    className="fixed bottom-4 left-4 z-[8400] rounded-xl px-3 py-2 text-[12px] font-medium shadow-md transition-colors sm:left-auto sm:right-28"
+                    style={{
+                      background: artifactsOpen ? 'var(--accent)' : 'var(--bg-card)',
+                      color: artifactsOpen ? '#fff' : 'var(--text-2)',
+                      border: `1px solid ${artifactsOpen ? 'transparent' : 'var(--border)'}`,
+                    }}
+                    title="Recent tool outputs — send across tools"
+                  >
+                    Artifacts
+                  </button>
                   <ShortcutOverlay open={overlayOpen} onClose={closeOverlay} />
                 </div>
               </UiChromeProvider>

@@ -1,5 +1,4 @@
 import { lazy, Suspense, useEffect, type ReactNode } from 'react'
-import MixingZone from '../zones/mixing/MixingZone'
 import MixingAudioGrabPage from '../zones/mixing/MixingAudioGrabPage'
 import ToolsHubZone from '../zones/tools/ToolsHubZone'
 import ToolsYoutubePage from '../zones/tools/ToolsYoutubePage'
@@ -43,6 +42,13 @@ const DevSettings = lazy(() => import('../zones/dev/DevSettings'))
 const DiagnosticsZone = lazy(() => import('../zones/dev/DiagnosticsZone'))
 const NewZonePage = lazy(() => import('../zones/builder/NewZonePage'))
 const CustomZonePage = lazy(() => import('../zones/builder/CustomZonePage'))
+const VaultConsoleZone = lazy(() => import('../zones/vault/VaultConsoleZone'))
+const VaultHandoffsZone = lazy(() => import('../zones/vault/VaultHandoffsZone'))
+const VaultStudyZone = lazy(() => import('../zones/vault/VaultStudyZone'))
+const VaultClippingsZone = lazy(() => import('../zones/vault/VaultClippingsZone'))
+const VaultMediaZone = lazy(() => import('../zones/vault/VaultMediaZone'))
+const VaultLyricsZone = lazy(() => import('../zones/vault/VaultLyricsZone'))
+const VaultIngestZone = lazy(() => import('../zones/vault/VaultIngestZone'))
 
 interface MainContentProps {
   activeRouteId: string
@@ -106,6 +112,27 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
     case 'tools-device-mockup':
       body = <ToolsDeviceMockupPage onNavigate={onNavigate} />
       break
+    case 'vault-console':
+      body = <VaultConsoleZone />
+      break
+    case 'vault-handoffs':
+      body = <VaultHandoffsZone />
+      break
+    case 'vault-study':
+      body = <VaultStudyZone />
+      break
+    case 'vault-clippings':
+      body = <VaultClippingsZone />
+      break
+    case 'vault-media':
+      body = <VaultMediaZone onNavigate={onNavigate} />
+      break
+    case 'vault-lyrics':
+      body = <VaultLyricsZone onNavigate={onNavigate} />
+      break
+    case 'vault-ingest':
+      body = <VaultIngestZone />
+      break
     case 'agent-farm':
       body = <AgentFarm />
       break
@@ -116,7 +143,8 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
       body = <VocalsZone />
       break
     case 'mixing':
-      body = <MixingZone />
+      // Mix board removed — redirect to audio grab
+      body = <MixingAudioGrabPage />
       break
     case 'mixing-audio-grab':
       body = <MixingAudioGrabPage />

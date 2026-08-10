@@ -240,7 +240,7 @@ export default function ToolsKeyFinderPage({ onNavigate }: ToolsKeyFinderPagePro
             eyebrow="ANALYSIS"
             title="Key & STEM"
             icon={Radio}
-            description="Drop a file once — it finds the key, BPM, and scale, and splits it into downloadable stems. All in your browser."
+            description="Drop a file once — key, BPM, and scale in-browser, plus a brightness/body EQ split (not ML stem isolation)."
             className="mb-8"
           />
 

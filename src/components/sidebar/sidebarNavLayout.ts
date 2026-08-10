@@ -60,12 +60,20 @@ const NEW_SECTION_AFTER: Record<string, string> = {
   cost: 'brief', // "AI SPEND" lives directly under DAILY BRIEF
 }
 
+/** Sections that should pin to the front of a saved layout when first introduced. */
+const NEW_SECTION_PREPEND: string[] = ['vault']
+
 function insertNewSectionsAfterNeighbors(layout: SidebarNavLayoutPersist): SidebarNavLayoutPersist {
   // sectionOrder === null means "use source order", which already positions new
   // sections correctly — nothing to migrate.
   if (!layout.sectionOrder) return layout
   const order = [...layout.sectionOrder]
   let changed = false
+  for (const id of NEW_SECTION_PREPEND) {
+    if (order.includes(id)) continue
+    order.unshift(id)
+    changed = true
+  }
   for (const [id, after] of Object.entries(NEW_SECTION_AFTER)) {
     if (order.includes(id)) continue
     const idx = order.indexOf(after)

@@ -5,19 +5,24 @@
  */
 
 import fs from 'node:fs/promises'
+import { existsSync } from 'node:fs'
 import path from 'node:path'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
 import { handleMixingYoutubeAudioPost } from './mixing-youtube-audio'
 import { tryHandleTeslaFleetRoutes } from './tesla-fleet-bff'
 import { tryHandlePolymarketRoutes } from './polymarket-bff'
+import { getVaultDirForLegacy, tryHandleVaultRoutes } from './vault-bff'
 import { exec } from 'node:child_process'
 import { promisify } from 'node:util'
 
 type Next = () => void
 
 const execAsync = promisify(exec)
-const VAULT_DIR = process.env.VAULT_DIR || '/Users/samuel/dev/OB CLAUDE vault'
+/** Resolved at request time via getVaultDirForLegacy() so path moves stay live. */
+function vaultDir(): string {
+  return getVaultDirForLegacy()
+}
 
 async function readJsonBody(req: IncomingMessage): Promise<any> {
   return new Promise((resolve, reject) => {
@@ -327,6 +332,10 @@ export function attachDashboardBff(
       return
     }
 
+    if (await tryHandleVaultRoutes(req, res, pathName, method)) {
+      return
+    }
+
     if (pathName.startsWith('/api/mixing/')) {
       if (pathName === '/api/mixing/youtube-audio' && method === 'POST') {
         await handleMixingYoutubeAudioPost(req, res)
@@ -340,14 +349,111 @@ export function attachDashboardBff(
       return
     }
 
-    if (!pathName.startsWith('/api/digest/') && !pathName.startsWith('/api/local/')) {
+    if (!pathName.startsWith('/api/digest/') && !pathName.startsWith('/api/local/') && !pathName.startsWith('/api/command-center/') && !pathName.startsWith('/api/claude-sessions/') && !pathName.startsWith('/api/vault')) {
       next()
       return
     }
 
-    // POST /api/local/brief/generate
+    // POST /api/command-center/refresh — re-copy the latest handoff HTML+PDF
+    // from the vault into public/command-center/ so the dashboard updates without
+    // a full vault-routine run. Works on localhost (dev server) only.
+    if (pathName === '/api/command-center/refresh' && method === 'POST') {
+      // The handoff sheets live in the Pictures vault (the dev vault is a sparse
+      // partial copy without them). Allow override via COMMAND_CENTER_SRC env.
+      const srcDir = process.env.COMMAND_CENTER_SRC
+        || '/Users/samuel/Pictures/OB CLAUDE vault/📄 Handoff Sheets'
+      const cmd = `cd "${repoRoot}" && COMMAND_CENTER_SRC="${srcDir}" npm run refresh:command-center 2>&1`
+      const outcome = await runCommand(cmd)
+      jsonRes(res, outcome.ok ? 200 : 500, outcome)
+      return
+    }
+
+    // POST /api/claude-sessions/recent — scan ~/.claude/projects/ for the most
+    // recently modified JSONL files and extract session metadata (first user
+    // message, turn count, project dir, git branch). Dev-only (local filesystem).
+    if (pathName === '/api/claude-sessions/recent' && method === 'POST') {
+      try {
+        const claudeDir = path.join(process.env.HOME || '', '.claude', 'projects')
+        if (!existsSync(claudeDir)) {
+          jsonRes(res, 200, { ok: true, sessions: [] })
+          return
+        }
+        // Find the 20 most recently modified .jsonl files
+        const cmd = `find "${claudeDir}" -name "*.jsonl" -type f -mtime -7 -exec stat -f '%m %N' {} + 2>/dev/null | sort -rn | head -20`
+        const outcome = await runCommand(cmd)
+        if (!outcome.ok) {
+          jsonRes(res, 200, { ok: true, sessions: [] })
+          return
+        }
+        const lines = outcome.stdout.trim().split('\n').filter(Boolean)
+        const sessions: any[] = []
+        for (const line of lines) {
+          const [mtimeStr, filePath] = line.split(' ', 2)
+          if (!filePath) continue
+          const mtime = parseInt(mtimeStr) * 1000
+          if (isNaN(mtime)) continue
+          // Extract project label from the directory name
+          const dir = path.basename(path.dirname(filePath))
+          const label = dir
+            .replace(/^-Users-samuel-Desktop-CLAUDE-WORLD-?/, '')
+            .replace(/^-Users-samuel-dev-CLAUDE-WORLD-?/, '')
+            .replace(/^-Users-samuel-dev-?/, '')
+            .replace(/^-Users-samuel-Desktop-?/, '')
+            .replace(/^-Users-samuel-?/, '')
+            .replace(/--claude-worktrees-/g, ' → ')
+            .replace(/-/g, ' ')
+            .trim() || dir
+          // Try to read the first human message + turn count (read first ~50 lines)
+          const readCmd = `head -50 "${filePath}" 2>/dev/null`
+          const readOutcome = await runCommand(readCmd)
+          let firstMessage = ''
+          let turnCount = 0
+          let gitBranch: string | undefined
+          if (readOutcome.ok) {
+            for (const l of readOutcome.stdout.split('\n')) {
+              try {
+                const obj = JSON.parse(l)
+                if (obj.type === 'human' && !firstMessage) {
+                  const msg = obj.message
+                  const c = msg?.content
+                  if (typeof c === 'string' && c.trim().length > 5) {
+                    firstMessage = c.trim().slice(0, 300)
+                  } else if (Array.isArray(c)) {
+                    for (const item of c) {
+                      if (item?.type === 'text' && item.text?.trim().length > 5) {
+                        firstMessage = item.text.trim().slice(0, 300)
+                        break
+                      }
+                    }
+                  }
+                }
+                if (obj.type === 'human' || obj.type === 'assistant') {
+                  turnCount++
+                }
+                if (obj.gitBranch && !gitBranch) {
+                  gitBranch = obj.gitBranch
+                }
+              } catch { /* skip non-JSON lines */ }
+            }
+          }
+          sessions.push({
+            sessionId: path.basename(filePath, '.jsonl'),
+            projectDir: dir,
+            projectLabel: label,
+            firstMessage,
+            turnCount,
+            lastModified: new Date(mtime).toISOString(),
+            gitBranch,
+          })
+        }
+        jsonRes(res, 200, { ok: true, sessions })
+      } catch (err: any) {
+        jsonRes(res, 500, { ok: false, error: err?.message || 'scan failed' })
+      }
+      return
+    }
     if (pathName === '/api/local/brief/generate' && method === 'POST') {
-      const cmd = `bash "${VAULT_DIR}/⚙️ automation/daily-brief/run_brief.sh"`
+      const cmd = `bash "${vaultDir()}/⚙️ automation/daily-brief/run_brief.sh"`
       const outcome = await runCommand(cmd)
       jsonRes(res, outcome.ok ? 200 : 500, outcome)
       return
@@ -355,7 +461,7 @@ export function attachDashboardBff(
 
     // POST /api/local/chat-ingest/run
     if (pathName === '/api/local/chat-ingest/run' && method === 'POST') {
-      const cmd = `python3 "${VAULT_DIR}/⚙️ automation/chat-ingest/auto_ingest.py"`
+      const cmd = `python3 "${vaultDir()}/⚙️ automation/chat-ingest/auto_ingest.py"`
       const outcome = await runCommand(cmd)
       jsonRes(res, outcome.ok ? 200 : 500, outcome)
       return
@@ -363,7 +469,7 @@ export function attachDashboardBff(
 
     // POST /api/local/brief/build
     if (pathName === '/api/local/brief/build' && method === 'POST') {
-      const cmd = `python3 "${VAULT_DIR}/📊 dashboard-ui/build.py"`
+      const cmd = `python3 "${vaultDir()}/📊 dashboard-ui/build.py"`
       const outcome = await runCommand(cmd)
       jsonRes(res, outcome.ok ? 200 : 500, outcome)
       return
@@ -376,7 +482,7 @@ export function attachDashboardBff(
       const script = process.env.ANTHROPIC_API_KEY
         ? `${repoRoot}/scripts/build-projects-ai.mjs`
         : `${repoRoot}/scripts/build-projects.mjs`
-      const cmd = `VAULT_DIR="${VAULT_DIR}" node "${script}"`
+      const cmd = `VAULT_DIR="${vaultDir()}" node "${script}"`
       const outcome = await runCommand(cmd)
       jsonRes(res, outcome.ok ? 200 : 500, outcome)
       return
@@ -405,7 +511,7 @@ export function attachDashboardBff(
           }
           lines.push('')
         }
-        const dir = path.join(VAULT_DIR, '📊 dashboard-ui')
+        const dir = path.join(vaultDir(), '📊 dashboard-ui')
         await fs.mkdir(dir, { recursive: true })
         await fs.writeFile(path.join(dir, 'Project Tasks.md'), lines.join('\n'), 'utf-8')
         jsonRes(res, 200, { ok: true, count: projects.length })
@@ -419,7 +525,7 @@ export function attachDashboardBff(
     if (pathName === '/api/local/projects/sync' && method === 'POST') {
       const url = 'https://suyjphvmurihtpriovnv.supabase.co/rest/v1/checkoffs?select=task_id,done'
       const token = 'sb_publishable_aIiylimy7JjPz1Wkq5xXAg_AZoBnQSd'
-      const cmd = `CHECKOFF_STORE_URL="${url}" CHECKOFF_STORE_TOKEN="${token}" VAULT_DIR="${VAULT_DIR}" node "${repoRoot}/scripts/sync-checkoffs.mjs"`
+      const cmd = `CHECKOFF_STORE_URL="${url}" CHECKOFF_STORE_TOKEN="${token}" VAULT_DIR="${vaultDir()}" node "${repoRoot}/scripts/sync-checkoffs.mjs"`
       const outcome = await runCommand(cmd)
       jsonRes(res, outcome.ok ? 200 : 500, outcome)
       return
@@ -430,8 +536,8 @@ export function attachDashboardBff(
       const qs = new URL(req.url ?? '', 'http://localhost').searchParams
       const type = qs.get('type')
       const logFile = type === 'ingest'
-        ? path.join(VAULT_DIR, '⚙️ automation/chat-ingest/ingest.log')
-        : path.join(VAULT_DIR, '⚙️ automation/daily-brief/run.log')
+        ? path.join(vaultDir(), '⚙️ automation/chat-ingest/ingest.log')
+        : path.join(vaultDir(), '⚙️ automation/daily-brief/run.log')
       try {
         const content = await fs.readFile(logFile, 'utf-8')
         const lines = content.split('\n')
@@ -452,8 +558,8 @@ export function attachDashboardBff(
         return
       }
       const normalized = path.normalize(relPath).replace(/^(\.\.(\/|\\|$))+/, '')
-      const fullPath = path.resolve(VAULT_DIR, normalized)
-      if (!fullPath.startsWith(VAULT_DIR)) {
+      const fullPath = path.resolve(vaultDir(), normalized)
+      if (!fullPath.startsWith(vaultDir())) {
         jsonRes(res, 403, { ok: false, error: 'FORBIDDEN', message: 'Path traversal blocked.' })
         return
       }
@@ -480,7 +586,7 @@ export function attachDashboardBff(
 
         const dateStr = new Date().toISOString().slice(0, 10)
         const filename = `Handoff — ${project} (${dateStr}).md`
-        const fullPath = path.join(VAULT_DIR, '🤝 Handoffs', filename)
+        const fullPath = path.join(vaultDir(), '🤝 Handoffs', filename)
 
         // Generate frontmatter
         const frontmatter = [
@@ -518,8 +624,8 @@ export function attachDashboardBff(
         }
 
         const normalized = path.normalize(relPath).replace(/^(\.\.(\/|\\|$))+/, '')
-        const fullPath = path.resolve(VAULT_DIR, normalized)
-        if (!fullPath.startsWith(VAULT_DIR)) {
+        const fullPath = path.resolve(vaultDir(), normalized)
+        if (!fullPath.startsWith(vaultDir())) {
           jsonRes(res, 403, { ok: false, error: 'FORBIDDEN', message: 'Path traversal blocked.' })
           return
         }
@@ -529,8 +635,8 @@ export function attachDashboardBff(
         await fs.writeFile(fullPath, updatedContent, 'utf-8')
 
         // Trigger chat-ingest + build run to sync dashboard state
-        const ingestCmd = `python3 "${VAULT_DIR}/⚙️ automation/chat-ingest/auto_ingest.py"`
-        const buildCmd = `python3 "${VAULT_DIR}/📊 dashboard-ui/build.py"`
+        const ingestCmd = `python3 "${vaultDir()}/⚙️ automation/chat-ingest/auto_ingest.py"`
+        const buildCmd = `python3 "${vaultDir()}/📊 dashboard-ui/build.py"`
         const ingestOutcome = await runCommand(ingestCmd)
         const buildOutcome = await runCommand(buildCmd)
 
@@ -559,10 +665,10 @@ export function attachDashboardBff(
         let fullPath = ''
         if (relPath.endsWith('.md')) {
           const normalized = path.normalize(relPath).replace(/^(\.\.(\/|\\|$))+/, '')
-          fullPath = path.resolve(VAULT_DIR, normalized)
+          fullPath = path.resolve(vaultDir(), normalized)
         } else {
           const filename = `${relPath}.md`
-          const searchDir = path.join(VAULT_DIR, '🧰 AI Toolkit')
+          const searchDir = path.join(vaultDir(), '🧰 AI Toolkit')
           const found = await findFileRecursively(searchDir, filename)
           if (!found) {
             jsonRes(res, 404, { ok: false, error: 'FILE_NOT_FOUND', message: `Could not find tool file for name: ${relPath}` })
@@ -571,7 +677,7 @@ export function attachDashboardBff(
           fullPath = found
         }
 
-        if (!fullPath.startsWith(VAULT_DIR)) {
+        if (!fullPath.startsWith(vaultDir())) {
           jsonRes(res, 403, { ok: false, error: 'FORBIDDEN', message: 'Path traversal blocked.' })
           return
         }
@@ -584,7 +690,7 @@ export function attachDashboardBff(
         await fs.writeFile(fullPath, updatedContent, 'utf-8')
 
         // Trigger brief regeneration (which builds and pushes the snap automatically)
-        const briefCmd = `bash "${VAULT_DIR}/⚙️ automation/daily-brief/run_brief.sh"`
+        const briefCmd = `bash "${vaultDir()}/⚙️ automation/daily-brief/run_brief.sh"`
         const outcome = await runCommand(briefCmd)
 
         jsonRes(res, 200, {

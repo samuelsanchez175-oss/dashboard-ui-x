@@ -621,6 +621,24 @@ export default function DailyBriefZone() {
           }
         />
 
+        {data?.date && (() => {
+          const ageMs = Date.now() - new Date(data.date).getTime()
+          const days = Math.floor(ageMs / 86_400_000)
+          if (!Number.isFinite(days) || days < 3) return null
+          return (
+            <div
+              className="rounded-xl border px-4 py-3 text-sm"
+              style={{ borderColor: 'var(--warn)', background: 'var(--warn-soft)', color: 'var(--warn)' }}
+              role="status"
+            >
+              <strong>Stale snapshot.</strong> This brief is from {formatDate(data.date)}
+              {days > 0 ? ` (${days}d ago)` : ''}. Run{' '}
+              <span className="mono">Vault · Ingest Health → Run daily brief</span> or hit Refresh on localhost
+              to rebuild from the vault.
+            </div>
+          )
+        })()}
+
         {loading && !data ? <LoadingState label="Loading brief…" /> : null}
 
         {error && !data ? (

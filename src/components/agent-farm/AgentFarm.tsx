@@ -43,7 +43,6 @@ import {
   usageStats,
 } from './mock-data'
 import { ENV_KEY_LOGO_URL, INTEGRATION_MARKETPLACE_URLS } from './integration-logos'
-import ProductionOverviewSnapshot from '../../zones/production/ProductionOverviewSnapshot'
 
 interface TabDef {
   id: BuiltinAgentFarmTabId
@@ -88,15 +87,15 @@ function OverviewPanel({ live, mockEnabled }: { live: AgentFarmLive; mockEnabled
 
   return (
     <div className="space-y-6">
-      <ProductionOverviewSnapshot />
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-[var(--text-1)] tracking-tight">Farm status</h2>
+          <h2 className="text-lg font-semibold text-[var(--text-1)] tracking-tight">Reach Lab</h2>
           <p className="text-sm text-[var(--text-3)] mt-1">
-            Virtual employees running specialized workflows —{' '}
+            Think tank for SEO, social reach, and engagement friction — drafts, calendars, and research
+            so posting is less painful.{' '}
             {mockEnabled ? (
               <>
-                mock metrics below; live RSS / YouTube load from the dev BFF when keys are set.
+                Mock metrics below; live RSS / YouTube load from the dev BFF when keys are set.
               </>
             ) : (
               <>

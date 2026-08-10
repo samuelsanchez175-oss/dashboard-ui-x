@@ -1,19 +1,26 @@
 import {
+  Activity,
+  BookOpen,
+  Brain,
   Car,
   CheckSquare,
+  ClipboardList,
   Compass,
   Cpu,
+  Disc3,
   Flame,
+  FolderKanban,
   Globe,
   Headphones,
-  Music2,
-  FolderKanban,
+  HeartPulse,
   KeyRound,
   LayoutGrid,
+  Mic2,
+  Music2,
   Paintbrush,
   Piano,
   Rss,
-  SlidersHorizontal,
+  Scissors,
   Stethoscope,
   Sunrise,
   Truck,
@@ -55,6 +62,19 @@ const TOOLS_SECTION_ITEMS: NavItem[] = [
 
 export const NAV_SECTIONS: NavSection[] = [
   {
+    id:    'vault',
+    title: 'VAULT · BRAIN',
+    items: [
+      { id: 'vault-console', label: 'Vault Console', icon: Brain },
+      { id: 'vault-handoffs', label: 'Handoff Resume', icon: ClipboardList },
+      { id: 'vault-study', label: 'Project Study', icon: BookOpen },
+      { id: 'vault-clippings', label: 'Clipping Digest', icon: Scissors },
+      { id: 'vault-media', label: 'Media Library', icon: Disc3 },
+      { id: 'vault-lyrics', label: 'Lyric Study', icon: Mic2 },
+      { id: 'vault-ingest', label: 'Ingest Health', icon: HeartPulse },
+    ],
+  },
+  {
     id:    'brief',
     title: 'DAILY BRIEF',
     items: [
@@ -80,8 +100,8 @@ export const NAV_SECTIONS: NavSection[] = [
   },
   {
     id:    'production',
-    title: 'PRODUCTION',
-    items: [{ id: 'agent-farm', label: 'Agent Farm', icon: Cpu, badge: 8 }],
+    title: 'GROWTH',
+    items: [{ id: 'agent-farm', label: 'Reach Lab', icon: Activity }],
   },
   {
     id:    'vocals',
@@ -93,9 +113,8 @@ export const NAV_SECTIONS: NavSection[] = [
   },
   {
     id:    'mixing',
-    title: 'MIXING',
+    title: 'AUDIO IN',
     items: [
-      { id: 'mixing', label: 'Mix board', icon: SlidersHorizontal },
       { id: 'mixing-audio-grab', label: 'Audio grab', icon: Headphones },
     ],
   },
@@ -117,7 +136,7 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     id:    'web-designer-nav',
     title: 'WEB DESIGN',
-    items: [{ id: 'web-designer', label: 'Designer browser', icon: Paintbrush }],
+    items: [{ id: 'web-designer', label: 'Reference browser', icon: Paintbrush }],
   },
   {
     id:    'dev',
@@ -135,4 +154,4 @@ export const NAV_SECTIONS: NavSection[] = [
 ]
 
 /** Default selected route on first mount. */
-export const DEFAULT_ACTIVE_ID = 'agent-farm'
+export const DEFAULT_ACTIVE_ID = 'vault-console'
