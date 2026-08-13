@@ -14,6 +14,7 @@ import ToolsAppIconStudioPage from '../zones/tools/ToolsAppIconStudioPage'
 import ToolsDeviceMockupPage from '../zones/tools/ToolsDeviceMockupPage'
 import HarmonyStackZone from '../zones/harmony/HarmonyStackZone'
 import HarmonyHtmlFrame from '../zones/harmony/HarmonyHtmlFrame'
+import CdlOneStopZone from '../zones/harmony/CdlOneStopZone'
 import CpwZone from '../zones/cpw/CpwZone'
 import { parseWebDesignerBookmarkNavId } from '../lib/web-designer-bookmarks'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
@@ -164,12 +165,7 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
       )
       break
     case 'harmony-cdl':
-      body = (
-        <HarmonyHtmlFrame
-          file="cdl-marketing.html"
-          title="CDL One Stop — CDL practice app marketing"
-        />
-      )
+      body = <CdlOneStopZone />
       break
     case 'harmony-penwork':
       body = (
