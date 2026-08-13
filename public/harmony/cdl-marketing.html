@@ -37,14 +37,14 @@ img{max-width:100%;display:block}
 .nav-right{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap;margin-left:auto}
 .nav-link{display:inline-flex;align-items:center;text-decoration:none;font-weight:600;font-size:13px;color:var(--ink-soft);padding:8px 12px;border-radius:999px;border:1px solid transparent;transition:background .15s,color .15s,border-color .15s;white-space:nowrap}
 .nav-link:hover{background:var(--accent-soft);color:var(--accent-deep)}
-.nav-link--portfolio{border:1px solid var(--border);color:var(--ink);background:var(--card)}
-.nav-link--portfolio:hover{border-color:#c7d6c0;background:var(--accent-soft);color:var(--accent-deep)}
+.nav-link--portfolio,.nav-link--ads{border:1px solid var(--border);color:var(--ink);background:var(--card)}
+.nav-link--portfolio:hover,.nav-link--ads:hover{border-color:#c7d6c0;background:var(--accent-soft);color:var(--accent-deep)}
 .nav-cta{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600;font-size:13.5px;padding:9px 14px;border-radius:999px;box-shadow:0 8px 20px rgba(20,98,47,.2);transition:transform .15s,background .15s;white-space:nowrap}
 .nav-cta:hover{background:var(--accent-deep);transform:translateY(-1px)}
 @media(max-width:640px){
   .app-nav{padding:10px 12px;align-items:flex-start}
   .app-nav-brand span{font-size:13.5px}
-  .nav-right{gap:4px;max-width:min(100%,280px)}
+  .nav-right{gap:4px;max-width:min(100%,360px)}
   .nav-link{font-size:12px;padding:7px 9px}
   .nav-cta{font-size:12px;padding:8px 11px}
 }
@@ -270,6 +270,7 @@ img{max-width:100%;display:block}
   </a>
   <div class="nav-right">
     <a class="nav-link nav-link--portfolio" href="index.html">Harmony Stack ↗</a>
+    <a class="nav-link nav-link--ads" href="https://harmony-stack-productions.vercel.app/cdl-get" title="Facebook ads page — opens the App Store trigger URL">Facebook ads</a>
     <a class="nav-link" href="cdl-terms.html">Terms</a>
     <a class="nav-link" href="cdl-privacy.html">Privacy</a>
     <a class="nav-cta" href="https://apps.apple.com/us/app/cdl-one-stop-nj/id6782784591" target="_blank" rel="noopener">Get the app</a>
