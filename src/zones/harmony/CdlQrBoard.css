@@ -233,11 +233,16 @@
 
 .qr-scan-board .cdl-picker {
   display: flex;
+  box-sizing: border-box;
   width: 64px;
   height: 64px;
+  min-width: 64px;
+  max-width: 64px;
+  flex: 0 0 64px;
   align-items: center;
   justify-content: center;
   padding: 4px;
+  overflow: hidden;
   border-radius: 8px;
   border: 2px solid #cfc6b0;
   background: #fffdf8;
@@ -263,8 +268,19 @@
   font-size: 10px;
   cursor: pointer;
 }
+.qr-scan-board .cdl-shape-sketch {
+  display: grid;
+  grid-template-columns: 8px 8px 8px;
+  grid-template-rows: 8px 8px 8px;
+  gap: 2px;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+}
 .qr-scan-board .cdl-sketch-cell {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
+  min-width: 8px;
+  min-height: 8px;
   background: var(--forest);
 }

@@ -213,7 +213,7 @@ function ShapeSketch({ id }: { id: ShapeId }) {
     return ''
   }
   return (
-    <div className="grid grid-cols-3 gap-[2px]">
+    <div className="cdl-shape-sketch">
       {Array.from({ length: 9 }, (_, i) => (
         <div key={i} className={`cdl-sketch-cell ${cell(i % 3)}`} />
       ))}
