@@ -78,6 +78,10 @@
 .qr-scan-board .hint { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
 .qr-scan-board .actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
 .qr-scan-board .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   font-family: Outfit, sans-serif;
   font-weight: 700;
   font-size: 13px;
@@ -249,9 +253,34 @@
   color: var(--ink);
   cursor: pointer;
 }
-.qr-scan-board .cdl-picker.is-on {
+.qr-scan-board .cdl-picker.is-on,
+.qr-scan-board .cdl-picker-upload.is-on {
   border-color: var(--gold);
   box-shadow: 0 0 0 1px var(--gold);
+}
+.qr-scan-board .cdl-rest-stage {
+  position: relative;
+  width: min(220px, 100%);
+  height: 250px;
+  margin: 0 auto 8px;
+}
+.qr-scan-board .cdl-rest-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.qr-scan-board .cdl-rest-qr {
+  position: absolute;
+  left: 28%;
+  top: 30%;
+  width: 44%;
+  padding: 0;
+}
+.qr-scan-board .cdl-rest-qr canvas {
+  width: 100% !important;
+  height: auto !important;
 }
 .qr-scan-board .cdl-picker-upload {
   display: flex;

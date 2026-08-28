@@ -106,8 +106,13 @@ export function QrScanBoard({ brand }: { brand: QrBoardBrand }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- poll scan board
     void load()
     const id = window.setInterval(() => void load(), 4000)
-    return () => window.clearInterval(id)
-  }, [load])
+    const onRefresh = () => { void load() }
+    window.addEventListener(`qr-board-refresh-${brand.id}`, onRefresh)
+    return () => {
+      window.clearInterval(id)
+      window.removeEventListener(`qr-board-refresh-${brand.id}`, onRefresh)
+    }
+  }, [brand.id, load])
 
   useEffect(() => {
     if (!mapEl.current || mapRef.current) return

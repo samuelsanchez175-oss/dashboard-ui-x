@@ -1,27 +1,25 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react'
-import { Upload } from 'lucide-react'
-import QRCodeStyling, { type CornerDotType, type CornerSquareType, type DotType, type Options } from 'qr-code-styling'
+import { RefreshCw, RotateCcw, Upload } from 'lucide-react'
+import QRCodeStyling, { type Options } from 'qr-code-styling'
 
 import { safeHttpUrl } from './cdl-qr-shared'
 import { CDL_QR_BRAND, type QrBoardBrand } from './qr-board-config'
-
-type FrameId =
-  | 'none'
-  | 'pill'
-  | 'bar'
-  | 'caption'
-  | 'balloon'
-  | 'pointer'
-  | 'ribbon'
-  | 'torn'
-  | 'bag'
-  | 'box'
-  | 'phone'
-  | 'arrow'
-
-type LogoId = 'none' | 'truck' | 'globe' | 'scan'
-type ShapeId = DotType
-type CornerId = 'extra-rounded' | 'square' | 'dot' | 'rounded' | 'classy' | 'leaf'
+import {
+  CORNER_OPTIONS,
+  FRAME_OPTIONS,
+  FrameSketch,
+  RESTAURANT_IDS,
+  RESTAURANT_OPTIONS,
+  RestaurantChrome,
+  SHAPE_OPTIONS,
+  ShapeSketch,
+  CornerSketch,
+  liveFrameClass,
+  type CornerId,
+  type FrameId,
+  type LogoId,
+  type ShapeId,
+} from './qr-design-options'
 
 type Style = {
   frame: FrameId
@@ -56,6 +54,12 @@ const SCAN_MARK =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path d="M8 20V8h12M44 8h12v12M56 44v12H44M20 56H8V44" fill="none" stroke="#111" stroke-width="6" stroke-linecap="square"/><text x="32" y="38" text-anchor="middle" font-size="11" font-family="sans-serif" font-weight="700">SCAN ME</text></svg>',
   )
 
+const SCAN_TEXT =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><text x="32" y="28" text-anchor="middle" font-size="14" font-family="sans-serif" font-weight="800">SCAN</text><text x="32" y="48" text-anchor="middle" font-size="14" font-family="sans-serif" font-weight="800">ME</text></svg>',
+  )
+
 const DEFAULT_STYLE: Style = {
   frame: 'pill',
   frameColor: '#1F3F2A',
@@ -64,41 +68,8 @@ const DEFAULT_STYLE: Style = {
   shape: 'rounded',
   fg: '#1F3F2A',
   bg: '#F5F1E8',
-  corner: 'extra-rounded',
+  corner: 'eye-round',
 }
-
-const FRAMES: { id: FrameId; label: string }[] = [
-  { id: 'none', label: 'No frame' },
-  { id: 'pill', label: 'Pill' },
-  { id: 'bar', label: 'Bar' },
-  { id: 'caption', label: 'Caption' },
-  { id: 'balloon', label: 'Balloon' },
-  { id: 'pointer', label: 'Pointer' },
-  { id: 'ribbon', label: 'Ribbon' },
-  { id: 'torn', label: 'Torn' },
-  { id: 'bag', label: 'Bag' },
-  { id: 'box', label: 'Box' },
-  { id: 'phone', label: 'Phone' },
-  { id: 'arrow', label: 'Arrow' },
-]
-
-const SHAPES: { id: ShapeId; label: string }[] = [
-  { id: 'square', label: 'Square' },
-  { id: 'dots', label: 'Dots' },
-  { id: 'rounded', label: 'Rounded' },
-  { id: 'extra-rounded', label: 'Soft' },
-  { id: 'classy', label: 'Classy' },
-  { id: 'classy-rounded', label: 'Classy round' },
-]
-
-const CORNERS: { id: CornerId; label: string; square: CornerSquareType; dot: CornerDotType }[] = [
-  { id: 'extra-rounded', label: 'Round eye', square: 'extra-rounded', dot: 'dot' },
-  { id: 'square', label: 'Square', square: 'square', dot: 'square' },
-  { id: 'dot', label: 'Dot', square: 'dot', dot: 'dot' },
-  { id: 'rounded', label: 'Rounded', square: 'rounded', dot: 'rounded' },
-  { id: 'classy', label: 'Classy', square: 'classy', dot: 'classy' },
-  { id: 'leaf', label: 'Leaf', square: 'classy-rounded', dot: 'classy-rounded' },
-]
 
 function brandDefaults(brand: QrBoardBrand): Style {
   return {
@@ -115,7 +86,11 @@ function loadStyle(brand: QrBoardBrand): Style {
   try {
     const raw = localStorage.getItem(brand.styleStorage)
     if (!raw) return base
-    return { ...base, ...(JSON.parse(raw) as Partial<Style>) }
+    const next = { ...base, ...(JSON.parse(raw) as Partial<Style>) }
+    const frames = [...FRAME_OPTIONS, ...RESTAURANT_OPTIONS]
+    if (!frames.some(f => f.id === next.frame)) next.frame = base.frame
+    if (!CORNER_OPTIONS.some(c => c.id === next.corner)) next.corner = base.corner
+    return next
   } catch {
     return base
   }
@@ -142,14 +117,16 @@ function trackingLink(brand: QrBoardBrand, destination: string): string {
 
 function logoSrc(brand: QrBoardBrand, logo: LogoId, upload: string | null): string | undefined {
   if (logo === 'none') return undefined
+  if (upload) return upload
   if (logo === 'truck') return brand.logoSrc
   if (logo === 'globe') return GLOBE
-  if (logo === 'scan') return upload || SCAN_MARK
-  return upload || undefined
+  if (logo === 'scan') return SCAN_MARK
+  if (logo === 'scanText') return SCAN_TEXT
+  return undefined
 }
 
 function cornerPair(id: CornerId) {
-  return CORNERS.find(c => c.id === id) ?? CORNERS[0]!
+  return CORNER_OPTIONS.find(c => c.id === id) ?? CORNER_OPTIONS[0]!
 }
 
 function Picker({
@@ -175,59 +152,6 @@ function Picker({
   )
 }
 
-function FrameSketch({ id, color }: { id: FrameId; color: string }) {
-  const c = color
-  if (id === 'none') {
-    return <span className="text-[18px] leading-none" style={{ color: '#8a9488' }}>⊘</span>
-  }
-  return (
-    <div className="relative h-12 w-10">
-      <div className="absolute inset-x-1 top-1 h-7 border" style={{ borderColor: c }} />
-      {id === 'pill' || id === 'bar' || id === 'caption' || id === 'pointer' ? (
-        <div
-          className={id === 'pill' ? 'absolute bottom-0 left-1/2 h-2 w-7 -translate-x-1/2 rounded-full' : 'absolute bottom-0 left-1 right-1 h-2'}
-          style={{ background: c }}
-        />
-      ) : null}
-      {id === 'balloon' ? (
-        <div className="absolute left-1/2 top-0 h-2 w-6 -translate-x-1/2 rounded-sm" style={{ background: c }} />
-      ) : null}
-      {id === 'bag' ? (
-        <div className="absolute left-2 right-2 top-0 h-2 rounded-t-full border-t-2" style={{ borderColor: c }} />
-      ) : null}
-      {id === 'phone' ? (
-        <div className="absolute inset-0 rounded-md border-2" style={{ borderColor: c }} />
-      ) : null}
-      {id === 'ribbon' || id === 'torn' ? (
-        <div className="absolute bottom-0 left-0 right-0 h-2" style={{ background: c }} />
-      ) : null}
-    </div>
-  )
-}
-
-function ShapeSketch({ id }: { id: ShapeId }) {
-  const cell = (r: number) => {
-    if (id === 'dots') return 'rounded-full'
-    if (id === 'rounded' || id === 'extra-rounded') return 'rounded-[3px]'
-    if (id === 'classy' || id === 'classy-rounded') return r === 0 ? 'rounded-tl-md' : 'rounded-br-md'
-    return ''
-  }
-  return (
-    <div className="cdl-shape-sketch">
-      {Array.from({ length: 9 }, (_, i) => (
-        <div key={i} className={`cdl-sketch-cell ${cell(i % 3)}`} />
-      ))}
-    </div>
-  )
-}
-
-function liveFrameClass(frame: FrameId): string {
-  if (frame === 'phone') return 'rounded-[28px] border-[10px] p-2'
-  if (frame === 'box' || frame === 'bag') return 'rounded-md border-[6px] p-2'
-  if (frame === 'torn') return 'rounded-t-md border-[4px] border-b-0 p-2'
-  return 'p-1'
-}
-
 type StyleCtx = {
   style: Style
   patch: (p: Partial<Style>) => void
@@ -236,6 +160,9 @@ type StyleCtx = {
   destinationUrl: string
   setDestinationUrl: (v: string) => void
   trackUrl: string
+  resetDesign: () => void
+  refreshBoard: () => void
+  qrEpoch: number
 }
 
 const StyleContext = createContext<StyleCtx | null>(null)
@@ -251,12 +178,16 @@ export function CdlQrStyleProvider({ children }: { children: ReactNode }) {
   const [style, setStyle] = useState<Style>(() => loadStyle(brand))
   const [upload, setUpload] = useState<string | null>(null)
   const [destinationUrl, setDestState] = useState(() => loadDest(brand))
+  const [qrEpoch, setQrEpoch] = useState(0)
+  function persistStyle(next: Style) {
+    try {
+      localStorage.setItem(brand.styleStorage, JSON.stringify(next))
+    } catch { /* ignore */ }
+  }
   function patch(p: Partial<Style>) {
     setStyle(s => {
       const next = { ...s, ...p }
-      try {
-        localStorage.setItem(brand.styleStorage, JSON.stringify(next))
-      } catch { /* ignore */ }
+      persistStyle(next)
       return next
     })
   }
@@ -266,12 +197,44 @@ export function CdlQrStyleProvider({ children }: { children: ReactNode }) {
       localStorage.setItem(brand.destStorage, v)
     } catch { /* ignore */ }
   }
+  function resetDesign() {
+    const next = brandDefaults(brand)
+    setStyle(next)
+    persistStyle(next)
+    setUpload(null)
+    setDestinationUrl(brand.defaultDest)
+    setQrEpoch(n => n + 1)
+  }
+  function refreshBoard() {
+    setQrEpoch(n => n + 1)
+    window.dispatchEvent(new Event(`qr-board-refresh-${brand.id}`))
+  }
   const trackUrl = useMemo(() => trackingLink(brand, destinationUrl), [brand, destinationUrl])
   const value = useMemo(
-    () => ({ style, patch, upload, setUpload, destinationUrl, setDestinationUrl, trackUrl }),
-    [style, upload, destinationUrl, trackUrl],
+    () => ({
+      style,
+      patch,
+      upload,
+      setUpload,
+      destinationUrl,
+      setDestinationUrl,
+      trackUrl,
+      resetDesign,
+      refreshBoard,
+      qrEpoch,
+    }),
+    [style, upload, destinationUrl, trackUrl, qrEpoch],
   )
   return <StyleContext.Provider value={value}>{children}</StyleContext.Provider>
+}
+
+function labelKind(frame: FrameId): 'pill' | 'bar' | 'text' | 'script' | 'pointer' | 'none' {
+  if (frame === 'none' || frame === 'phone' || frame === 'balloon' || RESTAURANT_IDS.has(frame)) return 'none'
+  if (frame === 'pill') return 'pill'
+  if (frame === 'caption') return 'text'
+  if (frame === 'script' || frame === 'arrow') return 'script'
+  if (frame === 'pointer') return 'pointer'
+  return 'bar'
 }
 
 function FramedQr({
@@ -281,62 +244,67 @@ function FramedQr({
   host: RefObject<HTMLDivElement | null>
   style: Style
 }) {
+  const restaurant = RESTAURANT_IDS.has(style.frame)
+  const kind = labelKind(style.frame)
   return (
-    <div
-      className={`mx-auto flex w-fit flex-col items-center ${liveFrameClass(style.frame)}`}
-      style={
-        style.frame === 'none'
-          ? undefined
-          : { borderColor: style.frameColor, background: style.bg }
-      }
-    >
-      {style.frame === 'balloon' ? (
-        <div
-          className="mb-1 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"
-          style={{ background: style.frameColor }}
-        >
-          {style.frameText}
-        </div>
-      ) : null}
-      {style.frame === 'bag' ? (
-        <div className="mb-1 h-3 w-16 rounded-t-full border-2 border-b-0" style={{ borderColor: style.frameColor }} />
-      ) : null}
-      <div ref={host} className="overflow-hidden rounded-sm" />
-      {style.frame !== 'none' && style.frame !== 'balloon' && style.frame !== 'phone' ? (
-        <div
-          className={
-            style.frame === 'pill'
-              ? 'mt-1 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white'
-              : style.frame === 'caption' || style.frame === 'arrow'
-                ? 'mt-1 text-[11px] font-semibold uppercase tracking-wide'
-                : 'mt-0 w-full px-2 py-1 text-center text-[10px] font-bold uppercase tracking-wide text-white'
-          }
-          style={
-            style.frame === 'caption' || style.frame === 'arrow'
-              ? { color: style.frameColor }
-              : { background: style.frameColor }
-          }
-        >
-          {style.frame === 'pointer' ? (
-            <span className="relative">
-              {style.frameText}
-              <span
-                className="absolute left-1/2 top-full h-0 w-0 -translate-x-1/2 border-x-8 border-t-8 border-x-transparent"
-                style={{ borderTopColor: style.frameColor }}
-              />
-            </span>
-          ) : (
-            style.frameText
-          )}
-        </div>
-      ) : null}
+    <div className={restaurant ? 'cdl-rest-stage' : undefined}>
+      {restaurant ? <RestaurantChrome id={style.frame} color={style.frameColor} /> : null}
+      <div
+        className={`mx-auto flex w-fit flex-col items-center ${liveFrameClass(style.frame)}`}
+        style={
+          style.frame === 'none' || restaurant
+            ? undefined
+            : { borderColor: style.frameColor, background: style.bg }
+        }
+      >
+        {style.frame === 'balloon' ? (
+          <div
+            className="mb-1 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"
+            style={{ background: style.frameColor }}
+          >
+            {style.frameText}
+          </div>
+        ) : null}
+        {style.frame === 'bag' || style.frame === 'gift' ? (
+          <div className="mb-1 h-3 w-16 rounded-t-full border-2 border-b-0" style={{ borderColor: style.frameColor }} />
+        ) : null}
+        <div ref={host} className="overflow-hidden rounded-sm" />
+        {kind !== 'none' ? (
+          <div
+            className={
+              kind === 'pill'
+                ? 'mt-1 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white'
+                : kind === 'text' || kind === 'script'
+                  ? 'mt-1 text-[11px] font-semibold tracking-wide'
+                  : 'mt-0 w-full px-2 py-1 text-center text-[10px] font-bold uppercase tracking-wide text-white'
+            }
+            style={
+              kind === 'text' || kind === 'script'
+                ? { color: style.frameColor, fontStyle: kind === 'script' ? 'italic' : undefined }
+                : { background: style.frameColor }
+            }
+          >
+            {kind === 'pointer' ? (
+              <span className="relative">
+                {style.frameText}
+                <span
+                  className="absolute left-1/2 top-full h-0 w-0 -translate-x-1/2 border-x-8 border-t-8 border-x-transparent"
+                  style={{ borderTopColor: style.frameColor }}
+                />
+              </span>
+            ) : (
+              style.frameText
+            )}
+          </div>
+        ) : null}
+      </div>
     </div>
   )
 }
 
 function useQrEngine(trackUrl: string, size = 280) {
   const brand = useQrBrand()
-  const { style, upload } = useStyle()
+  const { style, upload, qrEpoch } = useStyle()
   const host = useRef<HTMLDivElement>(null)
   const qr = useRef<QRCodeStyling | null>(null)
   const [busy, setBusy] = useState(false)
@@ -364,6 +332,16 @@ function useQrEngine(trackUrl: string, size = 280) {
       cornersDotOptions: { type: corner.dot, color: style.fg },
     }
   }, [brand, style, trackUrl, upload, size])
+
+  useEffect(() => {
+    if (qrEpoch === 0) return
+    if (!host.current) return
+    host.current.innerHTML = ''
+    qr.current = new QRCodeStyling(options)
+    qr.current.append(host.current)
+    // Refresh remounts the canvas; options effect keeps later tweaks in sync.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [qrEpoch])
 
   useEffect(() => {
     if (!host.current) return
@@ -422,11 +400,11 @@ function useQrEngine(trackUrl: string, size = 280) {
         ctx.fill()
         ctx.fillStyle = '#fff'
         ctx.fillText(label, cx, by + 8)
-      } else if (style.frame === 'bar' || style.frame === 'pointer' || style.frame === 'ribbon' || style.frame === 'box') {
+      } else if (style.frame === 'bar' || style.frame === 'pointer' || style.frame === 'ribbon' || style.frame === 'box' || style.frame === 'tag' || style.frame === 'chevron' || style.frame === 'gift') {
         ctx.fillRect(x, y + qrSize - 8, qrSize, 72)
         ctx.fillStyle = '#fff'
         ctx.fillText(label, cx, y + qrSize + 40)
-      } else if (style.frame === 'caption' || style.frame === 'arrow' || style.frame === 'torn' || style.frame === 'bag') {
+      } else if (style.frame === 'caption' || style.frame === 'arrow' || style.frame === 'brush' || style.frame === 'bag' || style.frame === 'script' || style.frame === 'polaroid') {
         ctx.fillText(label, cx, by + 8)
       } else if (style.frame === 'balloon') {
         roundRect(ctx, cx - 140, 16, 280, 48, 8)
@@ -450,7 +428,7 @@ function useQrEngine(trackUrl: string, size = 280) {
 
 export function CdlQrPreview() {
   const brand = useQrBrand()
-  const { trackUrl } = useStyle()
+  const { trackUrl, resetDesign, refreshBoard } = useStyle()
   const { host, style, busy, downloadPng } = useQrEngine(trackUrl, 280)
   return (
     <>
@@ -463,6 +441,14 @@ export function CdlQrPreview() {
             </button>
             <a className="btn" href={trackUrl || `${brand.apiPrefix}/go`}>Test scan</a>
           </div>
+          <div className="actions" style={{ marginTop: 8 }}>
+            <button type="button" className="btn" onClick={resetDesign}>
+              <RotateCcw size={14} /> Reset
+            </button>
+            <button type="button" className="btn" onClick={refreshBoard}>
+              <RefreshCw size={14} /> Refresh
+            </button>
+          </div>
           <p className="hint" style={{ marginTop: 14 }}>Tracking link</p>
           <p className="link">{trackUrl || '…'}</p>
     </>
@@ -471,7 +457,10 @@ export function CdlQrPreview() {
 
 export function CdlQrCustomize() {
   const brand = useQrBrand()
-  const { style, patch, upload, setUpload, destinationUrl, setDestinationUrl, trackUrl } = useStyle()
+  const {
+    style, patch, upload, setUpload, destinationUrl, setDestinationUrl, trackUrl,
+    resetDesign, refreshBoard,
+  } = useStyle()
   const live = useQrEngine(trackUrl, 220)
   return (
         <div className="customize-grid">
@@ -485,8 +474,24 @@ export function CdlQrCustomize() {
               </button>
               <a className="btn" href={trackUrl || `${brand.apiPrefix}/go`}>Test scan</a>
             </div>
+            <div className="actions" style={{ marginTop: 8 }}>
+              <button type="button" className="btn" onClick={resetDesign}>
+                <RotateCcw size={14} /> Reset
+              </button>
+              <button type="button" className="btn" onClick={refreshBoard}>
+                <RefreshCw size={14} /> Refresh
+              </button>
+            </div>
           </aside>
         <div className="flex min-w-0 flex-col gap-5">
+          <div className="actions" style={{ justifyContent: 'flex-start' }}>
+            <button type="button" className="btn" onClick={resetDesign}>
+              <RotateCcw size={14} /> Reset
+            </button>
+            <button type="button" className="btn" onClick={refreshBoard}>
+              <RefreshCw size={14} /> Refresh
+            </button>
+          </div>
           <label className="cdl-field">
             Destination URL
             <input
@@ -506,7 +511,7 @@ export function CdlQrCustomize() {
           <fieldset>
             <legend className="cdl-legend">Frames</legend>
             <div className="flex flex-wrap gap-2">
-              {FRAMES.map(f => (
+              {FRAME_OPTIONS.map(f => (
                 <Picker key={f.id} title={f.label} selected={style.frame === f.id} onSelect={() => patch({ frame: f.id })}>
                   <FrameSketch id={f.id} color={style.frameColor} />
                 </Picker>
@@ -533,21 +538,35 @@ export function CdlQrCustomize() {
           </fieldset>
 
           <fieldset>
+            <legend className="cdl-legend">Restaurants & Bars</legend>
+            <div className="flex flex-wrap gap-2">
+              {RESTAURANT_OPTIONS.map(f => (
+                <Picker key={f.id} title={f.label} selected={style.frame === f.id} onSelect={() => patch({ frame: f.id })}>
+                  <FrameSketch id={f.id} color={style.frameColor} />
+                </Picker>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset>
             <legend className="cdl-legend">Logos</legend>
             <div className="flex flex-wrap gap-2">
-              <Picker title="No logo" selected={style.logo === 'none'} onSelect={() => patch({ logo: 'none' })}>
+              <Picker title="No logo" selected={style.logo === 'none' && !upload} onSelect={() => { setUpload(null); patch({ logo: 'none' }) }}>
                 <span style={{ color: '#8a9488' }}>⊘</span>
               </Picker>
-              <Picker title={brand.logoLabel} selected={style.logo === 'truck'} onSelect={() => patch({ logo: 'truck' })}>
+              <Picker title={brand.logoLabel} selected={style.logo === 'truck' && !upload} onSelect={() => { setUpload(null); patch({ logo: 'truck' }) }}>
                 <img src={brand.logoSrc} alt="" className="h-10 w-10 rounded-full object-cover" />
               </Picker>
-              <Picker title="Globe" selected={style.logo === 'globe'} onSelect={() => patch({ logo: 'globe' })}>
+              <Picker title="Globe" selected={style.logo === 'globe' && !upload} onSelect={() => { setUpload(null); patch({ logo: 'globe' }) }}>
                 <img src={GLOBE} alt="" className="h-8 w-8" />
               </Picker>
               <Picker title="Scan me mark" selected={style.logo === 'scan' && !upload} onSelect={() => { setUpload(null); patch({ logo: 'scan' }) }}>
-                <span className="text-[9px] font-bold leading-tight" style={{ color: '#1a1f1a' }}>SCAN<br />ME</span>
+                <img src={SCAN_MARK} alt="" className="h-10 w-10" />
               </Picker>
-              <label className="cdl-picker-upload">
+              <Picker title="Scan me type" selected={style.logo === 'scanText' && !upload} onSelect={() => { setUpload(null); patch({ logo: 'scanText' }) }}>
+                <span className="text-[9px] font-extrabold leading-tight" style={{ color: '#1a1f1a' }}>SCAN<br />ME</span>
+              </Picker>
+              <label className={upload ? 'cdl-picker-upload is-on' : 'cdl-picker-upload'}>
                 <Upload size={14} />
                 Upload
                 <input
@@ -560,7 +579,7 @@ export function CdlQrCustomize() {
                     const reader = new FileReader()
                     reader.onload = () => {
                       setUpload(String(reader.result))
-                      patch({ logo: 'scan' })
+                      patch({ logo: 'truck' })
                     }
                     reader.readAsDataURL(file)
                   }}
@@ -572,7 +591,7 @@ export function CdlQrCustomize() {
           <fieldset>
             <legend className="cdl-legend">Shapes</legend>
             <div className="flex flex-wrap gap-2">
-              {SHAPES.map(s => (
+              {SHAPE_OPTIONS.map(s => (
                 <Picker key={s.id} title={s.label} selected={style.shape === s.id} onSelect={() => patch({ shape: s.id })}>
                   <ShapeSketch id={s.id} />
                 </Picker>
@@ -601,26 +620,9 @@ export function CdlQrCustomize() {
           <fieldset>
             <legend className="cdl-legend">Corners</legend>
             <div className="flex flex-wrap gap-2">
-              {CORNERS.map(c => (
+              {CORNER_OPTIONS.map(c => (
                 <Picker key={c.id} title={c.label} selected={style.corner === c.id} onSelect={() => patch({ corner: c.id })}>
-                  <div
-                    className="h-8 w-8 border-4"
-                    style={{
-                      borderColor: '#1f3f2a',
-                      borderRadius:
-                        c.id === 'square' ? '2px'
-                          : c.id === 'dot' ? '999px'
-                            : '8px',
-                    }}
-                  >
-                    <div
-                      className="m-[3px] h-[10px] w-[10px]"
-                      style={{
-                        background: '#1f3f2a',
-                        borderRadius: c.id === 'square' ? '1px' : '999px',
-                      }}
-                    />
-                  </div>
+                  <CornerSketch spec={c} />
                 </Picker>
               ))}
             </div>
