@@ -128,11 +128,7 @@ function Picker({
       type="button"
       title={title}
       onClick={onSelect}
-      className="flex h-16 w-16 items-center justify-center rounded-lg border-2 bg-[var(--bg-card)] p-1"
-      style={{
-        borderColor: selected ? 'var(--accent)' : 'var(--border)',
-        boxShadow: selected ? '0 0 0 1px var(--accent)' : 'none',
-      }}
+      className={selected ? 'cdl-picker is-on' : 'cdl-picker'}
     >
       {children}
     </button>
@@ -142,7 +138,7 @@ function Picker({
 function FrameSketch({ id, color }: { id: FrameId; color: string }) {
   const c = color
   if (id === 'none') {
-    return <span className="text-[18px] leading-none" style={{ color: 'var(--text-4)' }}>⊘</span>
+    return <span className="text-[18px] leading-none" style={{ color: '#8a9488' }}>⊘</span>
   }
   return (
     <div className="relative h-12 w-10">
@@ -179,7 +175,7 @@ function ShapeSketch({ id }: { id: ShapeId }) {
   return (
     <div className="grid grid-cols-3 gap-[2px]">
       {Array.from({ length: 9 }, (_, i) => (
-        <div key={i} className={`h-2.5 w-2.5 bg-[var(--text-1)] ${cell(i % 3)}`} />
+        <div key={i} className={`cdl-sketch-cell ${cell(i % 3)}`} />
       ))}
     </div>
   )
@@ -423,8 +419,6 @@ export function CdlQrCustomize() {
                   type="color"
                   value={style.frameColor}
                   onChange={e => patch({ frameColor: e.target.value })}
-                  className="mt-1 h-9 w-full cursor-pointer rounded border bg-transparent"
-                  style={{ borderColor: 'var(--border)' }}
                 />
               </label>
               <label className="cdl-field">
@@ -433,8 +427,6 @@ export function CdlQrCustomize() {
                   type="text"
                   value={style.frameText}
                   onChange={e => patch({ frameText: e.target.value.slice(0, 18) })}
-                  className="mt-1 w-full rounded-lg border px-3 py-2 text-[13px]"
-                  style={{ borderColor: 'var(--border)', background: 'var(--bg-muted)', color: 'var(--text-1)' }}
                 />
               </label>
             </div>
@@ -444,7 +436,7 @@ export function CdlQrCustomize() {
             <legend className="cdl-legend">Logos</legend>
             <div className="flex flex-wrap gap-2">
               <Picker title="No logo" selected={style.logo === 'none'} onSelect={() => patch({ logo: 'none' })}>
-                <span style={{ color: 'var(--text-4)' }}>⊘</span>
+                <span style={{ color: '#8a9488' }}>⊘</span>
               </Picker>
               <Picker title="CDL truck" selected={style.logo === 'truck'} onSelect={() => patch({ logo: 'truck' })}>
                 <img src={TRUCK} alt="" className="h-10 w-10 rounded-full object-cover" />
@@ -453,9 +445,9 @@ export function CdlQrCustomize() {
                 <img src={GLOBE} alt="" className="h-8 w-8" />
               </Picker>
               <Picker title="Scan me mark" selected={style.logo === 'scan' && !upload} onSelect={() => { setUpload(null); patch({ logo: 'scan' }) }}>
-                <span className="text-[9px] font-bold leading-tight">SCAN<br />ME</span>
+                <span className="text-[9px] font-bold leading-tight" style={{ color: '#1a1f1a' }}>SCAN<br />ME</span>
               </Picker>
-              <label className="flex h-16 w-16 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed text-[10px]" style={{ borderColor: 'var(--border)', color: 'var(--text-3)' }}>
+              <label className="cdl-picker-upload">
                 <Upload size={14} />
                 Upload
                 <input
@@ -493,8 +485,6 @@ export function CdlQrCustomize() {
                   type="color"
                   value={style.fg}
                   onChange={e => patch({ fg: e.target.value })}
-                  className="mt-1 h-9 w-full cursor-pointer rounded border bg-transparent"
-                  style={{ borderColor: 'var(--border)' }}
                 />
               </label>
               <label className="cdl-field">
@@ -503,8 +493,6 @@ export function CdlQrCustomize() {
                   type="color"
                   value={style.bg}
                   onChange={e => patch({ bg: e.target.value })}
-                  className="mt-1 h-9 w-full cursor-pointer rounded border bg-transparent"
-                  style={{ borderColor: 'var(--border)' }}
                 />
               </label>
             </div>
@@ -518,7 +506,7 @@ export function CdlQrCustomize() {
                   <div
                     className="h-8 w-8 border-4"
                     style={{
-                      borderColor: 'var(--text-1)',
+                      borderColor: '#1f3f2a',
                       borderRadius:
                         c.id === 'square' ? '2px'
                           : c.id === 'dot' ? '999px'
@@ -528,7 +516,7 @@ export function CdlQrCustomize() {
                     <div
                       className="m-[3px] h-[10px] w-[10px]"
                       style={{
-                        background: 'var(--text-1)',
+                        background: '#1f3f2a',
                         borderRadius: c.id === 'square' ? '1px' : '999px',
                       }}
                     />
