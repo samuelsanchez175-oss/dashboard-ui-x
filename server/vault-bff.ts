@@ -52,15 +52,6 @@ function jsonRes(res: ServerResponse, status: number, payload: unknown) {
   res.end(body)
 }
 
-function pathnameOnly(url: string | undefined): string {
-  if (!url) return '/'
-  try {
-    return new URL(url, 'http://localhost').pathname
-  } catch {
-    return '/'
-  }
-}
-
 function safeResolveUnderVault(vaultDir: string, relPath: string): string | null {
   if (!relPath || relPath.includes('\0')) return null
   const normalized = path.normalize(relPath).replace(/^(\.\.(\/|\\|$))+/, '')
@@ -325,7 +316,7 @@ export async function tryHandleVaultRoutes(
       try {
         await rebuildRagIndex(process.cwd())
       } catch { /* */ }
-      jsonRes(res, outcome.ok ? 200 : 500, { ok: outcome.ok, ...outcome })
+      jsonRes(res, outcome.ok ? 200 : 500, { ...outcome })
     } catch (e: any) {
       jsonRes(res, 500, { ok: false, error: e?.message || 'refresh failed' })
     }
@@ -654,7 +645,7 @@ export async function tryHandleVaultRoutes(
       return true
     }
     const outcome = await runCmd(`python3 "${script}"`)
-    jsonRes(res, outcome.ok ? 200 : 500, { ok: outcome.ok, ...outcome, vaultDir })
+    jsonRes(res, outcome.ok ? 200 : 500, { ...outcome, vaultDir })
     return true
   }
 
@@ -666,7 +657,7 @@ export async function tryHandleVaultRoutes(
       return true
     }
     const outcome = await runCmd(`bash "${script}"`)
-    jsonRes(res, outcome.ok ? 200 : 500, { ok: outcome.ok, ...outcome, vaultDir })
+    jsonRes(res, outcome.ok ? 200 : 500, { ...outcome, vaultDir })
     return true
   }
 

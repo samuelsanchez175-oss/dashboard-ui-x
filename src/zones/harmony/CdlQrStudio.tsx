@@ -267,8 +267,9 @@ function useQrEngine(trackUrl: string) {
     if (!qr.current) return
     setBusy(true)
     try {
-      const blob = await qr.current.getRawData('png')
-      if (!blob) return
+      const raw = await qr.current.getRawData('png')
+      if (!raw) return
+      const blob = raw instanceof Blob ? raw : new Blob([raw as unknown as BlobPart])
       const url = URL.createObjectURL(blob)
       const img = await new Promise<HTMLImageElement>((resolve, reject) => {
         const el = new Image()
