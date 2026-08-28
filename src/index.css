@@ -417,12 +417,12 @@
 
 /* ── Animations ──────────────────────────────────────────────────────────── */
 @keyframes slideIn {
-  from { opacity: 0; transform: translateX(-6px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from { transform: translateX(-6px); }
+  to   { transform: translateX(0); }
 }
 @keyframes fadeDown {
-  from { opacity: 0; transform: translateY(-4px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { transform: translateY(-4px); }
+  to   { transform: translateY(0); }
 }
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }
@@ -442,12 +442,10 @@
 
 .nav-item-animate {
   animation: slideIn 0.22s ease forwards;
-  opacity: 0;
 }
 
 .section-fade {
   animation: fadeDown 0.2s ease forwards;
-  opacity: 0;
 }
 
 @keyframes nav-wiggle {
@@ -480,6 +478,14 @@
 }
 
 .nav-orange-highlight {
+  animation: navOrangeHighlight 10s ease-out forwards;
+  opacity: 1;
+}
+
+/* Highlight used to replace slideIn while leaving opacity: 0, which hid
+   sidebar labels for the full 10s window. Keep names visible. */
+.nav-item-animate.nav-orange-highlight {
+  opacity: 1;
   animation: navOrangeHighlight 10s ease-out forwards;
 }
 

@@ -43,24 +43,30 @@ const SESSION_TOUCHED_ZONE_SEED = [
   'harmony-penwork',
 ] as const
 
+/** Apply session badges before the first sidebar paint so highlight + enter
+ *  animations cannot hide tab names for the 10s highlight window. */
+let sessionUpdatesSeeded = false
+function seedSessionUpdatesOnce(): void {
+  if (sessionUpdatesSeeded) return
+  sessionUpdatesSeeded = true
+  const DAY_MS = 24 * 60 * 60 * 1000
+  const now = Date.now()
+  for (const [zoneId, iso] of Object.entries(RECENT_EDITS)) {
+    const touched = new Date(iso).getTime()
+    if (!Number.isFinite(touched)) continue
+    if (now - touched < DAY_MS) {
+      useUpdatesStore.getState().markUpdated(zoneId)
+    }
+  }
+  seedUpdates([...SESSION_TOUCHED_ZONE_SEED])
+}
+
 function App() {
+  seedSessionUpdatesOnce()
   const [activeRouteId, setActiveRouteId] = useState<string>(DEFAULT_ACTIVE_ID)
   const [sidebarOpen, setSidebarOpen]     = useState(false)
   const [artifactsOpen, setArtifactsOpen] = useState(false)
   const { overlayOpen, closeOverlay }     = useGlobalShortcutOverlay()
-
-  useEffect(() => {
-    const DAY_MS = 24 * 60 * 60 * 1000
-    const now = Date.now()
-    for (const [zoneId, iso] of Object.entries(RECENT_EDITS)) {
-      const touched = new Date(iso).getTime()
-      if (!Number.isFinite(touched)) continue
-      if (now - touched < DAY_MS) {
-        useUpdatesStore.getState().markUpdated(zoneId)
-      }
-    }
-    seedUpdates([...SESSION_TOUCHED_ZONE_SEED])
-  }, [])
 
   const handleRouteChange = useCallback((id: string) => {
     setActiveRouteId(id === 'production-overview' ? 'agent-farm' : id)
