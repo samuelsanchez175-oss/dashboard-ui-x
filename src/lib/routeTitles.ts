@@ -18,6 +18,7 @@ const NON_TOOL_TITLES: Record<string, string> = {
   'harmony-cdl': 'CDL One Stop',
   'harmony-cdl-qr': 'CDL QR code',
   'harmony-penwork': 'Penwork Studio',
+  'harmony-penwork-qr': 'Penwork QR code',
   'mixing-audio-grab': 'Audio grab',
   'polymarket-bot': 'Bot Cockpit',
   'pulse': 'Pulse digest',

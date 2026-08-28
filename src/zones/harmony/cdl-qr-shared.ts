@@ -2,6 +2,9 @@
 export const CDL_APP_STORE_URL =
   'https://apps.apple.com/us/app/cdl-test-prep-2027/id6782784591'
 
+export const PENWORK_APP_STORE_URL =
+  'https://apps.apple.com/us/app/penwork-studio/id6757620114'
+
 /** http(s) only. Adds https:// when the scheme is missing. */
 export function safeHttpUrl(raw: string | null | undefined): string | null {
   if (!raw || typeof raw !== 'string') return null

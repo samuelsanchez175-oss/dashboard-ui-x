@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
-import { CDL_APP_STORE_URL } from './cdl-qr-shared'
-import { CdlQrCustomize, CdlQrDestinationFoot, CdlQrPreview, CdlQrStyleProvider } from './CdlQrStudio'
+import { CdlQrCustomize, CdlQrDestinationFoot, CdlQrPreview, CdlQrStyleProvider, QrBrandProvider } from './CdlQrStudio'
+import { CDL_QR_BRAND, type QrBoardBrand } from './qr-board-config'
 import './CdlQrBoard.css'
 
 type Place = {
@@ -35,13 +35,15 @@ type Payload = {
   places: Place[]
 }
 
-const EMPTY: Payload = {
-  total: 0,
-  uniquePlaces: 0,
-  last: null,
-  destination: CDL_APP_STORE_URL,
-  recent: [],
-  places: [],
+function emptyPayload(dest: string): Payload {
+  return {
+    total: 0,
+    uniquePlaces: 0,
+    last: null,
+    destination: dest,
+    recent: [],
+    places: [],
+  }
 }
 
 function formatWhen(iso: string | null): string {
@@ -64,30 +66,30 @@ function whereLine(s: { city: string; region: string; country: string }): string
   return loc
 }
 
-function goldIcon() {
+function pinIcon(color: string, ring: string) {
   return L.divIcon({
     className: '',
-    html: '<div style="width:14px;height:14px;border-radius:50%;background:#e8c45c;border:2px solid #1f3f2a;box-shadow:0 0 0 3px rgba(232,196,92,.35)"></div>',
+    html: `<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid ${ring};box-shadow:0 0 0 3px ${color}59"></div>`,
     iconSize: [14, 14],
     iconAnchor: [7, 7],
   })
 }
 
-export default function CdlQrZone() {
-  const [data, setData] = useState<Payload>(EMPTY)
+export function QrScanBoard({ brand }: { brand: QrBoardBrand }) {
+  const [data, setData] = useState<Payload>(() => emptyPayload(brand.defaultDest))
   const mapEl = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   const layerRef = useRef<L.LayerGroup | null>(null)
 
   const load = useCallback(async () => {
     try {
-      const res = await fetch('/api/cdl-qr/scans', { cache: 'no-store' })
+      const res = await fetch(`${brand.apiPrefix}/scans`, { cache: 'no-store' })
       if (!res.ok) throw new Error(`scans ${res.status}`)
       setData((await res.json()) as Payload)
     } catch {
       /* keep last good payload */
     }
-  }, [])
+  }, [brand.apiPrefix])
 
   useEffect(() => {
     const id = 'cdl-scan-fonts'
@@ -101,6 +103,7 @@ export default function CdlQrZone() {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- poll scan board
     void load()
     const id = window.setInterval(() => void load(), 4000)
     return () => window.clearInterval(id)
@@ -130,22 +133,25 @@ export default function CdlQrZone() {
     const pts: [number, number][] = []
     for (const p of data.places) {
       if (p.lat == null || p.lon == null) continue
-      L.marker([p.lat, p.lon], { icon: goldIcon() })
+      L.marker([p.lat, p.lon], { icon: pinIcon(brand.frameColor, brand.fg) })
         .bindPopup(`<strong>${p.city}</strong><br>${p.region} ${p.country}<br>${p.count} scan${p.count === 1 ? '' : 's'}`)
         .addTo(layer)
       pts.push([p.lat, p.lon])
     }
     if (pts.length) map.fitBounds(pts, { padding: [28, 28], maxZoom: 6 })
-  }, [data.places])
+  }, [brand.fg, brand.frameColor, data.places])
+
+  const headline = brand.headline.split('\n')
 
   return (
+    <QrBrandProvider brand={brand}>
     <CdlQrStyleProvider>
-      <div className="cdl-scan-board flex min-h-0 flex-1 flex-col overflow-auto">
+      <div className={`qr-scan-board ${brand.themeClass} flex min-h-0 flex-1 flex-col overflow-auto`}>
         <div className="wrap">
           <header className="mast">
-            <p className="eyebrow">Harmony Stack · dispatch</p>
-            <h1>CDL TEST PREP 2027<br />SCAN BOARD</h1>
-            <p className="sub">Every time someone hits the QR, they bounce to the App Store and a pin drops here — city, device, time.</p>
+            <p className="eyebrow">{brand.eyebrow}</p>
+            <h1>{headline[0]}<br />{headline[1]}</h1>
+            <p className="sub">{brand.sub}</p>
           </header>
 
           <div className="grid">
@@ -221,5 +227,10 @@ export default function CdlQrZone() {
         </div>
       </div>
     </CdlQrStyleProvider>
+    </QrBrandProvider>
   )
+}
+
+export default function CdlQrZone() {
+  return <QrScanBoard brand={CDL_QR_BRAND} />
 }

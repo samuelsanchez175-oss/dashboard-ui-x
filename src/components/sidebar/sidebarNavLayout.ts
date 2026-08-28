@@ -66,6 +66,7 @@ const NEW_SECTION_PREPEND: string[] = ['vault']
 /** Newly-added items should land next to a neighbour in a saved item order. */
 const NEW_ITEM_AFTER: Record<string, string> = {
   'harmony-cdl-qr': 'harmony-cdl',
+  'harmony-penwork-qr': 'harmony-penwork',
 }
 
 function insertNewItemsAfterNeighbors(layout: SidebarNavLayoutPersist): SidebarNavLayoutPersist {

@@ -130,6 +130,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { id: 'harmony-cdl', label: 'CDL One Stop', icon: Truck },
       { id: 'harmony-cdl-qr', label: 'CDL QR code', icon: QrCode },
       { id: 'harmony-penwork', label: 'Penwork Studio', icon: Music2 },
+      { id: 'harmony-penwork-qr', label: 'Penwork QR code', icon: QrCode },
     ],
   },
   {

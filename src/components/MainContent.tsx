@@ -16,6 +16,7 @@ import HarmonyStackZone from '../zones/harmony/HarmonyStackZone'
 import HarmonyHtmlFrame from '../zones/harmony/HarmonyHtmlFrame'
 import CdlOneStopZone from '../zones/harmony/CdlOneStopZone'
 import CdlQrZone from '../zones/harmony/CdlQrZone'
+import PenworkQrZone from '../zones/harmony/PenworkQrZone'
 import CpwZone from '../zones/cpw/CpwZone'
 import { parseWebDesignerBookmarkNavId } from '../lib/web-designer-bookmarks'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
@@ -178,6 +179,9 @@ export default function MainContent({ activeRouteId, onNavigate }: MainContentPr
           title="Penwork Studio — songwriting app marketing"
         />
       )
+      break
+    case 'harmony-penwork-qr':
+      body = <PenworkQrZone />
       break
     case 'cpw-projects':
       body = <CpwZone />

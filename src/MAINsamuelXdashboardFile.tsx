@@ -41,6 +41,7 @@ const SESSION_TOUCHED_ZONE_SEED = [
   'harmony-cdl',
   'harmony-cdl-qr',
   'harmony-penwork',
+  'harmony-penwork-qr',
 ] as const
 
 /** Apply session badges before the first sidebar paint so highlight + enter

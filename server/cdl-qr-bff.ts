@@ -1,7 +1,8 @@
 /**
- * CDL TEST PREP 2027 QR scan board.
- * GET /api/cdl-qr/go   — log hit, 302 to App Store
- * GET /api/cdl-qr/scans — dashboard JSON
+ * Harmony QR scan boards (CDL + Penwork).
+ * GET  /api/{brand}-qr/go     — log hit, 302 to landing
+ * POST /api/{brand}-qr/consent
+ * GET  /api/{brand}-qr/scans
  */
 
 import { createHash } from 'node:crypto'
@@ -9,9 +10,16 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
-import { CDL_APP_STORE_URL, safeHttpUrl } from '../src/zones/harmony/cdl-qr-shared'
+import { CDL_APP_STORE_URL, PENWORK_APP_STORE_URL, safeHttpUrl } from '../src/zones/harmony/cdl-qr-shared'
 
-export { CDL_APP_STORE_URL }
+export { CDL_APP_STORE_URL, PENWORK_APP_STORE_URL }
+
+type TrackerCfg = {
+  prefix: string
+  defaultDest: string
+  storeFile: string
+  landingFile: string
+}
 
 function destFromRequest(req: IncomingMessage): string | null {
   try {
@@ -53,39 +61,6 @@ function pathnameOnly(url: string | undefined): string {
   } catch {
     return '/'
   }
-}
-
-function storePath(): string {
-  if (process.env.VERCEL) return '/tmp/cdl-qr-scans.json'
-  return path.join(process.cwd(), 'data', 'cdl-qr-scans.json')
-}
-
-function loadScans(): StoredScan[] {
-  const file = storePath()
-  try {
-    if (!existsSync(file)) return []
-    const parsed = JSON.parse(readFileSync(file, 'utf8')) as unknown
-    return Array.isArray(parsed) ? (parsed as StoredScan[]) : []
-  } catch {
-    return []
-  }
-}
-
-function saveScans(scans: StoredScan[]): void {
-  const file = storePath()
-  try {
-    mkdirSync(path.dirname(file), { recursive: true })
-    writeFileSync(file, JSON.stringify(scans, null, 2), 'utf8')
-  } catch {
-    /* /tmp or read-only — keep going; in-memory is already updated */
-  }
-}
-
-let memory: StoredScan[] | null = null
-
-function scans(): StoredScan[] {
-  if (!memory) memory = loadScans()
-  return memory
 }
 
 function clientIp(req: IncomingMessage): string {
@@ -169,7 +144,7 @@ async function reverseGeo(lat: number, lon: number): Promise<{ city: string; reg
     const url = `https://nominatim.openstreetmap.org/reverse?lat=${encodeURIComponent(String(lat))}&lon=${encodeURIComponent(String(lon))}&format=json`
     const res = await fetch(url, {
       signal: AbortSignal.timeout(2500),
-      headers: { 'User-Agent': 'CDL-QR-Tracker/1.0 (harmony-stack)' },
+      headers: { 'User-Agent': 'Harmony-QR-Tracker/1.0' },
     })
     const data = (await res.json()) as { address?: { city?: string; town?: string; village?: string; hamlet?: string; state?: string; country?: string } }
     const a = data.address
@@ -184,138 +159,199 @@ async function reverseGeo(lat: number, lon: number): Promise<{ city: string; reg
   }
 }
 
-function landingLocation(req: IncomingMessage, scanId: number): string {
-  const host = (req.headers.host ?? '').trim()
-  const fwdProto = req.headers['x-forwarded-proto']
-  const proto = typeof fwdProto === 'string'
-    ? fwdProto.split(',')[0]!.trim()
-    : host.startsWith('localhost') || host.startsWith('127.0.0.1')
-      ? 'http'
-      : 'https'
-  const dest = destFromRequest(req)
-  const extra = dest ? `&to=${encodeURIComponent(dest)}` : ''
-  return `${proto}://${host}/cdl-qr-landing.html?id=${scanId}${extra}`
-}
+function makeTracker(cfg: TrackerCfg) {
+  let memory: StoredScan[] | null = null
 
-function publicPayload(all: StoredScan[]) {
-  const recent: CdlQrScan[] = all
-    .slice()
-    .reverse()
-    .slice(0, 200)
-    .map(({ ipHash: _h, ...rest }) => ({
-      ...rest,
-      termsAccepted: rest.termsAccepted === true,
-      locationGranted: rest.locationGranted === true,
-      locationSource: rest.locationSource ?? 'ip',
-    }))
-  const placeMap = new Map<string, { city: string; region: string; country: string; lat: number | null; lon: number | null; count: number }>()
-  for (const s of all) {
-    const key = `${s.city}|${s.region}|${s.country}`
-    const cur = placeMap.get(key)
-    if (cur) cur.count += 1
-    else {
-      placeMap.set(key, {
-        city: s.city,
-        region: s.region,
-        country: s.country,
-        lat: s.lat,
-        lon: s.lon,
-        count: 1,
-      })
+  function storePath(): string {
+    if (process.env.VERCEL) return `/tmp/${cfg.storeFile}`
+    return path.join(process.cwd(), 'data', cfg.storeFile)
+  }
+
+  function loadScans(): StoredScan[] {
+    const file = storePath()
+    try {
+      if (!existsSync(file)) return []
+      const parsed = JSON.parse(readFileSync(file, 'utf8')) as unknown
+      return Array.isArray(parsed) ? (parsed as StoredScan[]) : []
+    } catch {
+      return []
     }
   }
-  const places = [...placeMap.values()].sort((a, b) => b.count - a.count)
-  return {
-    total: all.length,
-    uniquePlaces: placeMap.size,
-    last: all.at(-1)?.ts ?? null,
-    destination: CDL_APP_STORE_URL,
-    recent,
-    places,
+
+  function saveScans(rows: StoredScan[]): void {
+    const file = storePath()
+    try {
+      mkdirSync(path.dirname(file), { recursive: true })
+      writeFileSync(file, JSON.stringify(rows, null, 2), 'utf8')
+    } catch {
+      /* /tmp or read-only */
+    }
+  }
+
+  function scans(): StoredScan[] {
+    if (!memory) memory = loadScans()
+    return memory
+  }
+
+  function landingLocation(req: IncomingMessage, scanId: number): string {
+    const host = (req.headers.host ?? '').trim()
+    const fwdProto = req.headers['x-forwarded-proto']
+    const proto = typeof fwdProto === 'string'
+      ? fwdProto.split(',')[0]!.trim()
+      : host.startsWith('localhost') || host.startsWith('127.0.0.1')
+        ? 'http'
+        : 'https'
+    const dest = destFromRequest(req)
+    const extra = dest ? `&to=${encodeURIComponent(dest)}` : ''
+    return `${proto}://${host}${cfg.landingFile}?id=${scanId}${extra}`
+  }
+
+  function publicPayload(all: StoredScan[]) {
+    const recent: CdlQrScan[] = all
+      .slice()
+      .reverse()
+      .slice(0, 200)
+      .map(({ ipHash, ...rest }) => {
+        void ipHash
+        return {
+          ...rest,
+          termsAccepted: rest.termsAccepted === true,
+          locationGranted: rest.locationGranted === true,
+          locationSource: rest.locationSource ?? 'ip',
+        }
+      })
+    const placeMap = new Map<string, { city: string; region: string; country: string; lat: number | null; lon: number | null; count: number }>()
+    for (const s of all) {
+      const key = `${s.city}|${s.region}|${s.country}`
+      const cur = placeMap.get(key)
+      if (cur) cur.count += 1
+      else {
+        placeMap.set(key, {
+          city: s.city,
+          region: s.region,
+          country: s.country,
+          lat: s.lat,
+          lon: s.lon,
+          count: 1,
+        })
+      }
+    }
+    const places = [...placeMap.values()].sort((a, b) => b.count - a.count)
+    return {
+      total: all.length,
+      uniquePlaces: placeMap.size,
+      last: all.at(-1)?.ts ?? null,
+      destination: cfg.defaultDest,
+      recent,
+      places,
+    }
+  }
+
+  return async function handle(req: IncomingMessage, res: ServerResponse): Promise<boolean> {
+    const pathName = pathnameOnly(req.url)
+    if (!pathName.startsWith(cfg.prefix)) return false
+    const method = (req.method ?? 'GET').toUpperCase()
+    const go = `${cfg.prefix}/go`
+    const consent = `${cfg.prefix}/consent`
+    const list = `${cfg.prefix}/scans`
+
+    if (pathName === go && method === 'HEAD') {
+      const dest = destFromRequest(req)
+      const extra = dest ? `?to=${encodeURIComponent(dest)}` : ''
+      res.statusCode = 302
+      res.setHeader('Location', `${cfg.landingFile}${extra}`)
+      res.end()
+      return true
+    }
+
+    if (pathName === go && method === 'GET') {
+      const ip = clientIp(req)
+      const ua = String(req.headers['user-agent'] ?? '')
+      const geo = await lookupGeo(ip)
+      const rows = scans()
+      const row: StoredScan = {
+        id: (rows.at(-1)?.id ?? 0) + 1,
+        ts: new Date().toISOString(),
+        ...geo,
+        device: deviceFromUa(ua),
+        termsAccepted: false,
+        locationGranted: false,
+        locationSource: 'pending',
+        ipHash: ip ? createHash('sha256').update(ip).digest('hex').slice(0, 16) : undefined,
+      }
+      rows.push(row)
+      saveScans(rows)
+      res.statusCode = 302
+      res.setHeader('Location', landingLocation(req, row.id))
+      res.setHeader('Cache-Control', 'no-store')
+      res.end()
+      return true
+    }
+
+    if (pathName === consent && method === 'POST') {
+      let body: Record<string, unknown>
+      try {
+        body = await readJsonBody(req)
+      } catch {
+        jsonRes(res, 400, { ok: false, error: 'BAD_JSON' })
+        return true
+      }
+      const id = Number(body.id)
+      const rows = scans()
+      const row = rows.find(s => s.id === id)
+      if (!row || !Number.isFinite(id)) {
+        jsonRes(res, 404, { ok: false, error: 'UNKNOWN_SCAN' })
+        return true
+      }
+      row.termsAccepted = body.termsAccepted === true
+      const lat = typeof body.lat === 'number' ? body.lat : null
+      const lon = typeof body.lon === 'number' ? body.lon : null
+      const granted = body.locationGranted === true && lat != null && lon != null
+      row.locationGranted = granted
+      if (granted) {
+        row.lat = lat
+        row.lon = lon
+        row.locationSource = 'gps'
+        const named = await reverseGeo(lat, lon)
+        if (named) {
+          row.city = named.city
+          row.region = named.region
+          row.country = named.country
+        }
+      } else {
+        row.locationSource = 'denied'
+      }
+      saveScans(rows)
+      jsonRes(res, 200, { ok: true, store: cfg.defaultDest })
+      return true
+    }
+
+    if (pathName === list && method === 'GET') {
+      jsonRes(res, 200, publicPayload(scans()))
+      return true
+    }
+
+    jsonRes(res, 404, { ok: false, error: 'UNKNOWN_QR_ROUTE' })
+    return true
   }
 }
+
+const handleCdl = makeTracker({
+  prefix: '/api/cdl-qr',
+  defaultDest: CDL_APP_STORE_URL,
+  storeFile: 'cdl-qr-scans.json',
+  landingFile: '/cdl-qr-landing.html',
+})
+
+const handlePenwork = makeTracker({
+  prefix: '/api/penwork-qr',
+  defaultDest: PENWORK_APP_STORE_URL,
+  storeFile: 'penwork-qr-scans.json',
+  landingFile: '/penwork-qr-landing.html',
+})
 
 export async function tryHandleCdlQrRoutes(req: IncomingMessage, res: ServerResponse): Promise<boolean> {
-  const pathName = pathnameOnly(req.url)
-  if (!pathName.startsWith('/api/cdl-qr')) return false
-  const method = (req.method ?? 'GET').toUpperCase()
-
-  if (pathName === '/api/cdl-qr/go' && method === 'HEAD') {
-    const dest = destFromRequest(req)
-    const extra = dest ? `?to=${encodeURIComponent(dest)}` : ''
-    res.statusCode = 302
-    res.setHeader('Location', `/cdl-qr-landing.html${extra}`)
-    res.end()
-    return true
-  }
-
-  if (pathName === '/api/cdl-qr/go' && method === 'GET') {
-    const ip = clientIp(req)
-    const ua = String(req.headers['user-agent'] ?? '')
-    const geo = await lookupGeo(ip)
-    const list = scans()
-    const row: StoredScan = {
-      id: (list.at(-1)?.id ?? 0) + 1,
-      ts: new Date().toISOString(),
-      ...geo,
-      device: deviceFromUa(ua),
-      termsAccepted: false,
-      locationGranted: false,
-      locationSource: 'pending',
-      ipHash: ip ? createHash('sha256').update(ip).digest('hex').slice(0, 16) : undefined,
-    }
-    list.push(row)
-    saveScans(list)
-    res.statusCode = 302
-    res.setHeader('Location', landingLocation(req, row.id))
-    res.setHeader('Cache-Control', 'no-store')
-    res.end()
-    return true
-  }
-
-  if (pathName === '/api/cdl-qr/consent' && method === 'POST') {
-    let body: Record<string, unknown>
-    try {
-      body = await readJsonBody(req)
-    } catch {
-      jsonRes(res, 400, { ok: false, error: 'BAD_JSON' })
-      return true
-    }
-    const id = Number(body.id)
-    const list = scans()
-    const row = list.find(s => s.id === id)
-    if (!row || !Number.isFinite(id)) {
-      jsonRes(res, 404, { ok: false, error: 'UNKNOWN_SCAN' })
-      return true
-    }
-    row.termsAccepted = body.termsAccepted === true
-    const lat = typeof body.lat === 'number' ? body.lat : null
-    const lon = typeof body.lon === 'number' ? body.lon : null
-    const granted = body.locationGranted === true && lat != null && lon != null
-    row.locationGranted = granted
-    if (granted) {
-      row.lat = lat
-      row.lon = lon
-      row.locationSource = 'gps'
-      const named = await reverseGeo(lat, lon)
-      if (named) {
-        row.city = named.city
-        row.region = named.region
-        row.country = named.country
-      }
-    } else {
-      row.locationSource = 'denied'
-    }
-    saveScans(list)
-    jsonRes(res, 200, { ok: true, store: CDL_APP_STORE_URL })
-    return true
-  }
-
-  if (pathName === '/api/cdl-qr/scans' && method === 'GET') {
-    jsonRes(res, 200, publicPayload(scans()))
-    return true
-  }
-
-  jsonRes(res, 404, { ok: false, error: 'UNKNOWN_CDL_QR_ROUTE' })
-  return true
+  if (await handleCdl(req, res)) return true
+  if (await handlePenwork(req, res)) return true
+  return false
 }

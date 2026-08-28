@@ -2,7 +2,8 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState, type R
 import { Upload } from 'lucide-react'
 import QRCodeStyling, { type CornerDotType, type CornerSquareType, type DotType, type Options } from 'qr-code-styling'
 
-import { CDL_APP_STORE_URL, safeHttpUrl } from './cdl-qr-shared'
+import { safeHttpUrl } from './cdl-qr-shared'
+import { CDL_QR_BRAND, type QrBoardBrand } from './qr-board-config'
 
 type FrameId =
   | 'none'
@@ -33,9 +34,15 @@ type Style = {
   corner: CornerId
 }
 
-const STORAGE = 'cdl-qr-style-v1'
-const DEST_STORAGE = 'cdl-qr-dest-v1'
-const TRUCK = `${import.meta.env.BASE_URL}cdl-qr-truck.png`
+const BrandContext = createContext<QrBoardBrand>(CDL_QR_BRAND)
+
+function useQrBrand(): QrBoardBrand {
+  return useContext(BrandContext)
+}
+
+export function QrBrandProvider({ brand, children }: { brand: QrBoardBrand; children: ReactNode }) {
+  return <BrandContext.Provider value={brand}>{children}</BrandContext.Provider>
+}
 
 const GLOBE =
   'data:image/svg+xml;utf8,' +
@@ -93,38 +100,49 @@ const CORNERS: { id: CornerId; label: string; square: CornerSquareType; dot: Cor
   { id: 'leaf', label: 'Leaf', square: 'classy-rounded', dot: 'classy-rounded' },
 ]
 
-function loadStyle(): Style {
-  try {
-    const raw = localStorage.getItem(STORAGE)
-    if (!raw) return DEFAULT_STYLE
-    return { ...DEFAULT_STYLE, ...(JSON.parse(raw) as Partial<Style>) }
-  } catch {
-    return DEFAULT_STYLE
+function brandDefaults(brand: QrBoardBrand): Style {
+  return {
+    ...DEFAULT_STYLE,
+    frameColor: brand.frameColor,
+    fg: brand.fg,
+    bg: brand.bg,
+    frameText: brand.frameText,
   }
 }
 
-function loadDest(): string {
+function loadStyle(brand: QrBoardBrand): Style {
+  const base = brandDefaults(brand)
   try {
-    return safeHttpUrl(localStorage.getItem(DEST_STORAGE)) || CDL_APP_STORE_URL
+    const raw = localStorage.getItem(brand.styleStorage)
+    if (!raw) return base
+    return { ...base, ...(JSON.parse(raw) as Partial<Style>) }
   } catch {
-    return CDL_APP_STORE_URL
+    return base
   }
 }
 
-function trackingLink(destination: string): string {
+function loadDest(brand: QrBoardBrand): string {
+  try {
+    return safeHttpUrl(localStorage.getItem(brand.destStorage)) || brand.defaultDest
+  } catch {
+    return brand.defaultDest
+  }
+}
+
+function trackingLink(brand: QrBoardBrand, destination: string): string {
   if (typeof window === 'undefined') return ''
-  const base = `${window.location.origin}/api/cdl-qr/go`
+  const base = `${window.location.origin}${brand.apiPrefix}/go`
   const dest = safeHttpUrl(destination)
   if (!dest) return base
   const canon = dest.replace(/\/$/, '')
-  const store = CDL_APP_STORE_URL.replace(/\/$/, '')
+  const store = brand.defaultDest.replace(/\/$/, '')
   if (canon === store) return base
   return `${base}?to=${encodeURIComponent(dest)}`
 }
 
-function logoSrc(logo: LogoId, upload: string | null): string | undefined {
+function logoSrc(brand: QrBoardBrand, logo: LogoId, upload: string | null): string | undefined {
   if (logo === 'none') return undefined
-  if (logo === 'truck') return TRUCK
+  if (logo === 'truck') return brand.logoSrc
   if (logo === 'globe') return GLOBE
   if (logo === 'scan') return upload || SCAN_MARK
   return upload || undefined
@@ -229,14 +247,15 @@ function useStyle(): StyleCtx {
 }
 
 export function CdlQrStyleProvider({ children }: { children: ReactNode }) {
-  const [style, setStyle] = useState<Style>(loadStyle)
+  const brand = useQrBrand()
+  const [style, setStyle] = useState<Style>(() => loadStyle(brand))
   const [upload, setUpload] = useState<string | null>(null)
-  const [destinationUrl, setDestState] = useState(loadDest)
+  const [destinationUrl, setDestState] = useState(() => loadDest(brand))
   function patch(p: Partial<Style>) {
     setStyle(s => {
       const next = { ...s, ...p }
       try {
-        localStorage.setItem(STORAGE, JSON.stringify(next))
+        localStorage.setItem(brand.styleStorage, JSON.stringify(next))
       } catch { /* ignore */ }
       return next
     })
@@ -244,10 +263,10 @@ export function CdlQrStyleProvider({ children }: { children: ReactNode }) {
   function setDestinationUrl(v: string) {
     setDestState(v)
     try {
-      localStorage.setItem(DEST_STORAGE, v)
+      localStorage.setItem(brand.destStorage, v)
     } catch { /* ignore */ }
   }
-  const trackUrl = useMemo(() => trackingLink(destinationUrl), [destinationUrl])
+  const trackUrl = useMemo(() => trackingLink(brand, destinationUrl), [brand, destinationUrl])
   const value = useMemo(
     () => ({ style, patch, upload, setUpload, destinationUrl, setDestinationUrl, trackUrl }),
     [style, upload, destinationUrl, trackUrl],
@@ -316,6 +335,7 @@ function FramedQr({
 }
 
 function useQrEngine(trackUrl: string, size = 280) {
+  const brand = useQrBrand()
   const { style, upload } = useStyle()
   const host = useRef<HTMLDivElement>(null)
   const qr = useRef<QRCodeStyling | null>(null)
@@ -323,7 +343,7 @@ function useQrEngine(trackUrl: string, size = 280) {
 
   const options: Options = useMemo(() => {
     const corner = cornerPair(style.corner)
-    const image = logoSrc(style.logo, upload)
+    const image = logoSrc(brand, style.logo, upload)
     return {
       width: size,
       height: size,
@@ -343,7 +363,7 @@ function useQrEngine(trackUrl: string, size = 280) {
       cornersSquareOptions: { type: corner.square, color: style.fg },
       cornersDotOptions: { type: corner.dot, color: style.fg },
     }
-  }, [style, trackUrl, upload, size])
+  }, [brand, style, trackUrl, upload, size])
 
   useEffect(() => {
     if (!host.current) return
@@ -417,7 +437,7 @@ function useQrEngine(trackUrl: string, size = 280) {
       }
       const a = document.createElement('a')
       a.href = canvas.toDataURL('image/png')
-      a.download = 'cdl-test-prep-2027-qr.png'
+      a.download = brand.downloadName
       a.click()
       URL.revokeObjectURL(url)
     } finally {
@@ -429,18 +449,19 @@ function useQrEngine(trackUrl: string, size = 280) {
 }
 
 export function CdlQrPreview() {
+  const brand = useQrBrand()
   const { trackUrl } = useStyle()
   const { host, style, busy, downloadPng } = useQrEngine(trackUrl, 280)
   return (
     <>
           <FramedQr host={host} style={style} />
           <h2>Print this</h2>
-          <p className="hint">Truck sits in the quiet zone. Error correction is high so it still scans under tape and yard light.</p>
+          <p className="hint">{brand.printHint}</p>
           <div className="actions">
             <button type="button" className="btn gold" onClick={() => void downloadPng()} disabled={busy}>
               Download PNG
             </button>
-            <a className="btn" href={trackUrl || '/api/cdl-qr/go'}>Test scan</a>
+            <a className="btn" href={trackUrl || `${brand.apiPrefix}/go`}>Test scan</a>
           </div>
           <p className="hint" style={{ marginTop: 14 }}>Tracking link</p>
           <p className="link">{trackUrl || '…'}</p>
@@ -449,6 +470,7 @@ export function CdlQrPreview() {
 }
 
 export function CdlQrCustomize() {
+  const brand = useQrBrand()
   const { style, patch, upload, setUpload, destinationUrl, setDestinationUrl, trackUrl } = useStyle()
   const live = useQrEngine(trackUrl, 220)
   return (
@@ -461,7 +483,7 @@ export function CdlQrCustomize() {
               <button type="button" className="btn gold" onClick={() => void live.downloadPng()} disabled={live.busy}>
                 Download PNG
               </button>
-              <a className="btn" href={trackUrl || '/api/cdl-qr/go'}>Test scan</a>
+              <a className="btn" href={trackUrl || `${brand.apiPrefix}/go`}>Test scan</a>
             </div>
           </aside>
         <div className="flex min-w-0 flex-col gap-5">
@@ -470,10 +492,10 @@ export function CdlQrCustomize() {
             <input
               type="url"
               value={destinationUrl}
-              placeholder={CDL_APP_STORE_URL}
+              placeholder={brand.defaultDest}
               onChange={e => setDestinationUrl(e.target.value)}
               onBlur={() => {
-                const next = safeHttpUrl(destinationUrl) || CDL_APP_STORE_URL
+                const next = safeHttpUrl(destinationUrl) || brand.defaultDest
                 setDestinationUrl(next)
               }}
             />
@@ -516,8 +538,8 @@ export function CdlQrCustomize() {
               <Picker title="No logo" selected={style.logo === 'none'} onSelect={() => patch({ logo: 'none' })}>
                 <span style={{ color: '#8a9488' }}>⊘</span>
               </Picker>
-              <Picker title="CDL truck" selected={style.logo === 'truck'} onSelect={() => patch({ logo: 'truck' })}>
-                <img src={TRUCK} alt="" className="h-10 w-10 rounded-full object-cover" />
+              <Picker title={brand.logoLabel} selected={style.logo === 'truck'} onSelect={() => patch({ logo: 'truck' })}>
+                <img src={brand.logoSrc} alt="" className="h-10 w-10 rounded-full object-cover" />
               </Picker>
               <Picker title="Globe" selected={style.logo === 'globe'} onSelect={() => patch({ logo: 'globe' })}>
                 <img src={GLOBE} alt="" className="h-8 w-8" />
