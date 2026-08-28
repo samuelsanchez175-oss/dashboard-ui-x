@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Download, ExternalLink, QrCode, RefreshCw } from 'lucide-react'
-import QRCode from 'qrcode'
+import { QrCode, RefreshCw } from 'lucide-react'
 
 import { CONTAINERS, SURFACES, TYPOGRAPHY } from '../../lib/design-tokens'
 import { CDL_APP_STORE_URL } from './cdl-qr-shared'
+import CdlQrStudio from './CdlQrStudio'
 
 type Place = {
   city: string
@@ -21,6 +21,9 @@ type Scan = {
   region: string
   country: string
   device: string
+  termsAccepted?: boolean
+  locationGranted?: boolean
+  locationSource?: 'gps' | 'ip' | 'denied' | 'pending'
 }
 
 type Payload = {
@@ -49,7 +52,14 @@ function formatWhen(iso: string | null): string {
   if (!iso) return '—'
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return iso
-  return d.toLocaleString()
+  return d.toLocaleString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  })
 }
 
 function whereLine(s: { city: string; region: string; country: string }): string {
@@ -60,9 +70,7 @@ function whereLine(s: { city: string; region: string; country: string }): string
 
 export default function CdlQrZone() {
   const [data, setData] = useState<Payload>(EMPTY)
-  const [qrSrc, setQrSrc] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
 
   const track = useMemo(() => (typeof window === 'undefined' ? '' : trackingUrl()), [])
 
@@ -82,72 +90,6 @@ export default function CdlQrZone() {
     const id = window.setInterval(() => void load(), 4000)
     return () => window.clearInterval(id)
   }, [load])
-
-  useEffect(() => {
-    if (!track) return
-    let cancelled = false
-    void QRCode.toDataURL(track, {
-      errorCorrectionLevel: 'H',
-      margin: 2,
-      width: 720,
-      color: { dark: '#1F3F2A', light: '#F5F1E8' },
-    }).then(url => {
-      if (!cancelled) setQrSrc(url)
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [track])
-
-  async function downloadPng() {
-    if (!qrSrc) return
-    setBusy(true)
-    try {
-      const qr = await new Promise<HTMLImageElement>((resolve, reject) => {
-        const img = new Image()
-        img.onload = () => resolve(img)
-        img.onerror = () => reject(new Error('qr'))
-        img.src = qrSrc
-      })
-      const truck = await new Promise<HTMLImageElement>((resolve, reject) => {
-        const img = new Image()
-        img.onload = () => resolve(img)
-        img.onerror = () => reject(new Error('truck'))
-        img.src = `${import.meta.env.BASE_URL}cdl-qr-truck.png`
-      })
-      const size = 1120
-      const canvas = document.createElement('canvas')
-      canvas.width = size
-      canvas.height = size
-      const ctx = canvas.getContext('2d')
-      if (!ctx) return
-      ctx.fillStyle = '#F5F1E8'
-      ctx.fillRect(0, 0, size, size)
-      ctx.drawImage(qr, 0, 0, size, size)
-      const logo = Math.round(size * 0.28)
-      const x = (size - logo) / 2
-      const y = (size - logo) / 2
-      ctx.beginPath()
-      ctx.arc(size / 2, size / 2, logo / 2 + 8, 0, Math.PI * 2)
-      ctx.fillStyle = '#F5F1E8'
-      ctx.fill()
-      ctx.lineWidth = 6
-      ctx.strokeStyle = '#E8C45C'
-      ctx.stroke()
-      ctx.save()
-      ctx.beginPath()
-      ctx.arc(size / 2, size / 2, logo / 2, 0, Math.PI * 2)
-      ctx.clip()
-      ctx.drawImage(truck, x, y, logo, logo)
-      ctx.restore()
-      const a = document.createElement('a')
-      a.href = canvas.toDataURL('image/png')
-      a.download = 'cdl-test-prep-2027-qr.png'
-      a.click()
-    } finally {
-      setBusy(false)
-    }
-  }
 
   return (
     <div className="zone-canvas flex min-h-0 flex-1 flex-col overflow-auto" style={SURFACES.canvasStyle}>
@@ -187,55 +129,23 @@ export default function CdlQrZone() {
           </p>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,280px)_1fr]">
-          <section className="rounded-xl p-4" style={SURFACES.cardStyle}>
-            <div className="relative mx-auto w-full max-w-[240px]">
-              {qrSrc ? (
-                <img src={qrSrc} alt="CDL Test Prep 2027 QR code" className="h-auto w-full rounded-lg" />
-              ) : (
-                <div className="aspect-square rounded-lg" style={{ background: 'var(--bg-muted)' }} />
-              )}
-              <img
-                src={`${import.meta.env.BASE_URL}cdl-qr-truck.png`}
-                alt=""
-                className="pointer-events-none absolute left-1/2 top-1/2 h-[28%] w-[28%] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 object-cover"
-                style={{ borderColor: '#E8C45C', background: '#F5F1E8' }}
-              />
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => void downloadPng()}
-                disabled={busy || !qrSrc}
-                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-semibold text-white"
-                style={{ background: 'var(--accent)' }}
-              >
-                <Download size={14} />
-                Download PNG
-              </button>
-              <a
-                href="/api/cdl-qr/go"
-                className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-[13px] font-medium"
-                style={{ borderColor: 'var(--border)', color: 'var(--text-1)' }}
-              >
-                <ExternalLink size={14} />
-                Test scan
-              </a>
-            </div>
-            <p className="mono mt-3 break-all text-[11px]" style={SURFACES.textMuted}>
-              {track || '…'}
-            </p>
-          </section>
+        <CdlQrStudio trackUrl={track} />
 
+        <div className="grid gap-4 lg:grid-cols-[1fr]">
           <div className="flex flex-col gap-4">
             <div className="grid gap-3 sm:grid-cols-3">
               {[
-                { n: String(data.total), l: 'Scans' },
-                { n: String(data.uniquePlaces), l: 'Places' },
-                { n: formatWhen(data.last), l: 'Last hit' },
+                { n: String(data.total), l: 'Scans', compact: false },
+                { n: String(data.uniquePlaces), l: 'Places', compact: false },
+                { n: formatWhen(data.last), l: 'Last hit', compact: true },
               ].map(stat => (
                 <div key={stat.l} className="rounded-xl p-4" style={SURFACES.cardStyle}>
-                  <div className="text-[28px] font-semibold leading-tight tracking-tight" style={SURFACES.textPrimary}>
+                  <div
+                    className={stat.compact
+                      ? 'text-[17px] font-semibold leading-snug tracking-tight'
+                      : 'text-[28px] font-semibold leading-tight tracking-tight'}
+                    style={SURFACES.textPrimary}
+                  >
                     {stat.n}
                   </div>
                   <div className={`${TYPOGRAPHY.cardLabel} mt-1`} style={SURFACES.textMuted}>
@@ -277,12 +187,13 @@ export default function CdlQrZone() {
                   <th className={`${TYPOGRAPHY.cardLabel} px-4 py-2.5`} style={SURFACES.textMuted}>When</th>
                   <th className={`${TYPOGRAPHY.cardLabel} px-4 py-2.5`} style={SURFACES.textMuted}>Where</th>
                   <th className={`${TYPOGRAPHY.cardLabel} px-4 py-2.5`} style={SURFACES.textMuted}>Device</th>
+                  <th className={`${TYPOGRAPHY.cardLabel} px-4 py-2.5`} style={SURFACES.textMuted}>Consent</th>
                 </tr>
               </thead>
               <tbody>
                 {data.recent.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="px-4 py-6" style={SURFACES.textSecondary}>
+                    <td colSpan={4} className="px-4 py-6" style={SURFACES.textSecondary}>
                       No scans yet.
                     </td>
                   </tr>
@@ -292,6 +203,13 @@ export default function CdlQrZone() {
                       <td className="px-4 py-2.5" style={SURFACES.textPrimary}>{formatWhen(row.ts)}</td>
                       <td className="px-4 py-2.5" style={SURFACES.textPrimary}>{whereLine(row)}</td>
                       <td className="px-4 py-2.5" style={SURFACES.textSecondary}>{row.device}</td>
+                      <td className="px-4 py-2.5" style={SURFACES.textSecondary}>
+                        {row.termsAccepted
+                          ? row.locationGranted
+                            ? 'Terms + GPS'
+                            : 'Terms · city estimate'
+                          : 'Landing'}
+                      </td>
                     </tr>
                   ))
                 )}
