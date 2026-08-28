@@ -9,9 +9,17 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
-import { CDL_APP_STORE_URL } from '../src/zones/harmony/cdl-qr-shared'
+import { CDL_APP_STORE_URL, safeHttpUrl } from '../src/zones/harmony/cdl-qr-shared'
 
 export { CDL_APP_STORE_URL }
+
+function destFromRequest(req: IncomingMessage): string | null {
+  try {
+    return safeHttpUrl(new URL(req.url ?? '', 'http://localhost').searchParams.get('to'))
+  } catch {
+    return null
+  }
+}
 
 export type CdlQrScan = {
   id: number
@@ -184,7 +192,9 @@ function landingLocation(req: IncomingMessage, scanId: number): string {
     : host.startsWith('localhost') || host.startsWith('127.0.0.1')
       ? 'http'
       : 'https'
-  return `${proto}://${host}/cdl-qr-landing.html?id=${scanId}`
+  const dest = destFromRequest(req)
+  const extra = dest ? `&to=${encodeURIComponent(dest)}` : ''
+  return `${proto}://${host}/cdl-qr-landing.html?id=${scanId}${extra}`
 }
 
 function publicPayload(all: StoredScan[]) {
@@ -231,8 +241,10 @@ export async function tryHandleCdlQrRoutes(req: IncomingMessage, res: ServerResp
   const method = (req.method ?? 'GET').toUpperCase()
 
   if (pathName === '/api/cdl-qr/go' && method === 'HEAD') {
+    const dest = destFromRequest(req)
+    const extra = dest ? `?to=${encodeURIComponent(dest)}` : ''
     res.statusCode = 302
-    res.setHeader('Location', '/cdl-qr-landing.html')
+    res.setHeader('Location', `/cdl-qr-landing.html${extra}`)
     res.end()
     return true
   }

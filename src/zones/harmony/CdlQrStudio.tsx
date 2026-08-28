@@ -1,6 +1,8 @@
-import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react'
 import { Upload } from 'lucide-react'
 import QRCodeStyling, { type CornerDotType, type CornerSquareType, type DotType, type Options } from 'qr-code-styling'
+
+import { CDL_APP_STORE_URL, safeHttpUrl } from './cdl-qr-shared'
 
 type FrameId =
   | 'none'
@@ -32,6 +34,7 @@ type Style = {
 }
 
 const STORAGE = 'cdl-qr-style-v1'
+const DEST_STORAGE = 'cdl-qr-dest-v1'
 const TRUCK = `${import.meta.env.BASE_URL}cdl-qr-truck.png`
 
 const GLOBE =
@@ -98,6 +101,25 @@ function loadStyle(): Style {
   } catch {
     return DEFAULT_STYLE
   }
+}
+
+function loadDest(): string {
+  try {
+    return safeHttpUrl(localStorage.getItem(DEST_STORAGE)) || CDL_APP_STORE_URL
+  } catch {
+    return CDL_APP_STORE_URL
+  }
+}
+
+function trackingLink(destination: string): string {
+  if (typeof window === 'undefined') return ''
+  const base = `${window.location.origin}/api/cdl-qr/go`
+  const dest = safeHttpUrl(destination)
+  if (!dest) return base
+  const canon = dest.replace(/\/$/, '')
+  const store = CDL_APP_STORE_URL.replace(/\/$/, '')
+  if (canon === store) return base
+  return `${base}?to=${encodeURIComponent(dest)}`
 }
 
 function logoSrc(logo: LogoId, upload: string | null): string | undefined {
@@ -193,6 +215,9 @@ type StyleCtx = {
   patch: (p: Partial<Style>) => void
   upload: string | null
   setUpload: (v: string | null) => void
+  destinationUrl: string
+  setDestinationUrl: (v: string) => void
+  trackUrl: string
 }
 
 const StyleContext = createContext<StyleCtx | null>(null)
@@ -206,6 +231,7 @@ function useStyle(): StyleCtx {
 export function CdlQrStyleProvider({ children }: { children: ReactNode }) {
   const [style, setStyle] = useState<Style>(loadStyle)
   const [upload, setUpload] = useState<string | null>(null)
+  const [destinationUrl, setDestState] = useState(loadDest)
   function patch(p: Partial<Style>) {
     setStyle(s => {
       const next = { ...s, ...p }
@@ -215,11 +241,81 @@ export function CdlQrStyleProvider({ children }: { children: ReactNode }) {
       return next
     })
   }
-  const value = useMemo(() => ({ style, patch, upload, setUpload }), [style, upload])
+  function setDestinationUrl(v: string) {
+    setDestState(v)
+    try {
+      localStorage.setItem(DEST_STORAGE, v)
+    } catch { /* ignore */ }
+  }
+  const trackUrl = useMemo(() => trackingLink(destinationUrl), [destinationUrl])
+  const value = useMemo(
+    () => ({ style, patch, upload, setUpload, destinationUrl, setDestinationUrl, trackUrl }),
+    [style, upload, destinationUrl, trackUrl],
+  )
   return <StyleContext.Provider value={value}>{children}</StyleContext.Provider>
 }
 
-function useQrEngine(trackUrl: string) {
+function FramedQr({
+  host,
+  style,
+}: {
+  host: RefObject<HTMLDivElement | null>
+  style: Style
+}) {
+  return (
+    <div
+      className={`mx-auto flex w-fit flex-col items-center ${liveFrameClass(style.frame)}`}
+      style={
+        style.frame === 'none'
+          ? undefined
+          : { borderColor: style.frameColor, background: style.bg }
+      }
+    >
+      {style.frame === 'balloon' ? (
+        <div
+          className="mb-1 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"
+          style={{ background: style.frameColor }}
+        >
+          {style.frameText}
+        </div>
+      ) : null}
+      {style.frame === 'bag' ? (
+        <div className="mb-1 h-3 w-16 rounded-t-full border-2 border-b-0" style={{ borderColor: style.frameColor }} />
+      ) : null}
+      <div ref={host} className="overflow-hidden rounded-sm" />
+      {style.frame !== 'none' && style.frame !== 'balloon' && style.frame !== 'phone' ? (
+        <div
+          className={
+            style.frame === 'pill'
+              ? 'mt-1 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white'
+              : style.frame === 'caption' || style.frame === 'arrow'
+                ? 'mt-1 text-[11px] font-semibold uppercase tracking-wide'
+                : 'mt-0 w-full px-2 py-1 text-center text-[10px] font-bold uppercase tracking-wide text-white'
+          }
+          style={
+            style.frame === 'caption' || style.frame === 'arrow'
+              ? { color: style.frameColor }
+              : { background: style.frameColor }
+          }
+        >
+          {style.frame === 'pointer' ? (
+            <span className="relative">
+              {style.frameText}
+              <span
+                className="absolute left-1/2 top-full h-0 w-0 -translate-x-1/2 border-x-8 border-t-8 border-x-transparent"
+                style={{ borderTopColor: style.frameColor }}
+              />
+            </span>
+          ) : (
+            style.frameText
+          )}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+function useQrEngine(trackUrl: string, size = 280) {
   const { style, upload } = useStyle()
   const host = useRef<HTMLDivElement>(null)
   const qr = useRef<QRCodeStyling | null>(null)
@@ -229,8 +325,8 @@ function useQrEngine(trackUrl: string) {
     const corner = cornerPair(style.corner)
     const image = logoSrc(style.logo, upload)
     return {
-      width: 280,
-      height: 280,
+      width: size,
+      height: size,
       type: 'canvas',
       data: trackUrl || 'https://example.com',
       margin: 8,
@@ -247,7 +343,7 @@ function useQrEngine(trackUrl: string) {
       cornersSquareOptions: { type: corner.square, color: style.fg },
       cornersDotOptions: { type: corner.dot, color: style.fg },
     }
-  }, [style, trackUrl, upload])
+  }, [style, trackUrl, upload, size])
 
   useEffect(() => {
     if (!host.current) return
@@ -332,66 +428,19 @@ function useQrEngine(trackUrl: string) {
   return { host, style, busy, downloadPng }
 }
 
-export function CdlQrPreview({ trackUrl }: { trackUrl: string }) {
-  const { host, style, busy, downloadPng } = useQrEngine(trackUrl)
+export function CdlQrPreview() {
+  const { trackUrl } = useStyle()
+  const { host, style, busy, downloadPng } = useQrEngine(trackUrl, 280)
   return (
     <>
-          <div
-            className={`mx-auto flex w-fit flex-col items-center ${liveFrameClass(style.frame)}`}
-            style={
-              style.frame === 'none'
-                ? undefined
-                : { borderColor: style.frameColor, background: style.bg }
-            }
-          >
-            {style.frame === 'balloon' ? (
-              <div
-                className="mb-1 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"
-                style={{ background: style.frameColor }}
-              >
-                {style.frameText}
-              </div>
-            ) : null}
-            {style.frame === 'bag' ? (
-              <div className="mb-1 h-3 w-16 rounded-t-full border-2 border-b-0" style={{ borderColor: style.frameColor }} />
-            ) : null}
-            <div ref={host} className="overflow-hidden rounded-sm" />
-            {style.frame !== 'none' && style.frame !== 'balloon' && style.frame !== 'phone' ? (
-              <div
-                className={
-                  style.frame === 'pill'
-                    ? 'mt-1 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white'
-                    : style.frame === 'caption' || style.frame === 'arrow'
-                      ? 'mt-1 text-[11px] font-semibold uppercase tracking-wide'
-                      : 'mt-0 w-full px-2 py-1 text-center text-[10px] font-bold uppercase tracking-wide text-white'
-                }
-                style={
-                  style.frame === 'caption' || style.frame === 'arrow'
-                    ? { color: style.frameColor }
-                    : { background: style.frameColor }
-                }
-              >
-                {style.frame === 'pointer' ? (
-                  <span className="relative">
-                    {style.frameText}
-                    <span
-                      className="absolute left-1/2 top-full h-0 w-0 -translate-x-1/2 border-x-8 border-t-8 border-x-transparent"
-                      style={{ borderTopColor: style.frameColor }}
-                    />
-                  </span>
-                ) : (
-                  style.frameText
-                )}
-              </div>
-            ) : null}
-          </div>
+          <FramedQr host={host} style={style} />
           <h2>Print this</h2>
           <p className="hint">Truck sits in the quiet zone. Error correction is high so it still scans under tape and yard light.</p>
           <div className="actions">
             <button type="button" className="btn gold" onClick={() => void downloadPng()} disabled={busy}>
               Download PNG
             </button>
-            <a className="btn" href="/api/cdl-qr/go">Test scan</a>
+            <a className="btn" href={trackUrl || '/api/cdl-qr/go'}>Test scan</a>
           </div>
           <p className="hint" style={{ marginTop: 14 }}>Tracking link</p>
           <p className="link">{trackUrl || '…'}</p>
@@ -400,9 +449,38 @@ export function CdlQrPreview({ trackUrl }: { trackUrl: string }) {
 }
 
 export function CdlQrCustomize() {
-  const { style, patch, upload, setUpload } = useStyle()
+  const { style, patch, upload, setUpload, destinationUrl, setDestinationUrl, trackUrl } = useStyle()
+  const live = useQrEngine(trackUrl, 220)
   return (
+        <div className="customize-grid">
+          <aside className="customize-preview">
+            <p className="live-label">Live preview</p>
+            <FramedQr host={live.host} style={style} />
+            <p className="live-url">{trackUrl || '…'}</p>
+            <div className="actions" style={{ marginTop: 12 }}>
+              <button type="button" className="btn gold" onClick={() => void live.downloadPng()} disabled={live.busy}>
+                Download PNG
+              </button>
+              <a className="btn" href={trackUrl || '/api/cdl-qr/go'}>Test scan</a>
+            </div>
+          </aside>
         <div className="flex min-w-0 flex-col gap-5">
+          <label className="cdl-field">
+            Destination URL
+            <input
+              type="url"
+              value={destinationUrl}
+              placeholder={CDL_APP_STORE_URL}
+              onChange={e => setDestinationUrl(e.target.value)}
+              onBlur={() => {
+                const next = safeHttpUrl(destinationUrl) || CDL_APP_STORE_URL
+                setDestinationUrl(next)
+              }}
+            />
+          </label>
+          <p className="hint" style={{ margin: 0 }}>
+            Scans still hit the tracker first, then go to this URL. Change it to send people somewhere else.
+          </p>
           <fieldset>
             <legend className="cdl-legend">Frames</legend>
             <div className="flex flex-wrap gap-2">
@@ -526,6 +604,16 @@ export function CdlQrCustomize() {
             </div>
           </fieldset>
         </div>
+        </div>
+  )
+}
+
+export function CdlQrDestinationFoot({ fallback }: { fallback: string }) {
+  const { destinationUrl } = useStyle()
+  return (
+    <p className="foot">
+      Destination {destinationUrl || fallback} · Location is estimated from IP unless they Accept on the banner. Local scans show as this device.
+    </p>
   )
 }
 

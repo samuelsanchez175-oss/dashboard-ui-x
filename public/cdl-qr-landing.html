@@ -98,8 +98,21 @@
   </div>
 
   <script>
-    const STORE = "https://apps.apple.com/us/app/cdl-test-prep-2027/id6782784591";
-    const scanId = Number(new URLSearchParams(location.search).get("id") || "");
+    const DEFAULT_STORE = "https://apps.apple.com/us/app/cdl-test-prep-2027/id6782784591";
+    const params = new URLSearchParams(location.search);
+    const scanId = Number(params.get("id") || "");
+    function destFromQuery() {
+      const raw = params.get("to");
+      if (!raw) return DEFAULT_STORE;
+      try {
+        const u = new URL(raw);
+        if (u.protocol === "http:" || u.protocol === "https:") return u.toString();
+      } catch (_) { /* keep default */ }
+      return DEFAULT_STORE;
+    }
+    const STORE = destFromQuery();
+    const storeLink = document.getElementById("store");
+    if (storeLink) storeLink.setAttribute("href", STORE);
     const banner = document.getElementById("banner");
     const status = document.getElementById("status");
     let hopping = false;

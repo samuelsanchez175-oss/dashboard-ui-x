@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
 import { CDL_APP_STORE_URL } from './cdl-qr-shared'
-import { CdlQrCustomize, CdlQrPreview, CdlQrStyleProvider } from './CdlQrStudio'
+import { CdlQrCustomize, CdlQrDestinationFoot, CdlQrPreview, CdlQrStyleProvider } from './CdlQrStudio'
 import './CdlQrBoard.css'
 
 type Place = {
@@ -44,10 +44,6 @@ const EMPTY: Payload = {
   places: [],
 }
 
-function trackingUrl(): string {
-  return `${window.location.origin}/api/cdl-qr/go`
-}
-
 function formatWhen(iso: string | null): string {
   if (!iso) return '—'
   const d = new Date(iso)
@@ -79,7 +75,6 @@ function goldIcon() {
 
 export default function CdlQrZone() {
   const [data, setData] = useState<Payload>(EMPTY)
-  const track = useMemo(() => (typeof window === 'undefined' ? '' : trackingUrl()), [])
   const mapEl = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   const layerRef = useRef<L.LayerGroup | null>(null)
@@ -155,7 +150,7 @@ export default function CdlQrZone() {
 
           <div className="grid">
             <aside className="card qr-card">
-              <CdlQrPreview trackUrl={track} />
+              <CdlQrPreview />
             </aside>
             <section>
               <div className="stats">
@@ -222,9 +217,7 @@ export default function CdlQrZone() {
             </div>
           </div>
 
-          <p className="foot">
-            Destination {data.destination} · Location is estimated from IP unless they Accept on the banner. Local scans show as this device.
-          </p>
+          <CdlQrDestinationFoot fallback={data.destination} />
         </div>
       </div>
     </CdlQrStyleProvider>
