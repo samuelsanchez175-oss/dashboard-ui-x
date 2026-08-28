@@ -1,8 +1,6 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { Download, ExternalLink, Upload } from 'lucide-react'
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { Upload } from 'lucide-react'
 import QRCodeStyling, { type CornerDotType, type CornerSquareType, type DotType, type Options } from 'qr-code-styling'
-
-import { SURFACES, TYPOGRAPHY } from '../../lib/design-tokens'
 
 type FrameId =
   | 'none'
@@ -194,13 +192,24 @@ function liveFrameClass(frame: FrameId): string {
   return 'p-1'
 }
 
-export default function CdlQrStudio({ trackUrl }: { trackUrl: string }) {
-  const host = useRef<HTMLDivElement>(null)
-  const qr = useRef<QRCodeStyling | null>(null)
+type StyleCtx = {
+  style: Style
+  patch: (p: Partial<Style>) => void
+  upload: string | null
+  setUpload: (v: string | null) => void
+}
+
+const StyleContext = createContext<StyleCtx | null>(null)
+
+function useStyle(): StyleCtx {
+  const ctx = useContext(StyleContext)
+  if (!ctx) throw new Error('CdlQrStyleProvider required')
+  return ctx
+}
+
+export function CdlQrStyleProvider({ children }: { children: ReactNode }) {
   const [style, setStyle] = useState<Style>(loadStyle)
   const [upload, setUpload] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
-
   function patch(p: Partial<Style>) {
     setStyle(s => {
       const next = { ...s, ...p }
@@ -210,6 +219,15 @@ export default function CdlQrStudio({ trackUrl }: { trackUrl: string }) {
       return next
     })
   }
+  const value = useMemo(() => ({ style, patch, upload, setUpload }), [style, upload])
+  return <StyleContext.Provider value={value}>{children}</StyleContext.Provider>
+}
+
+function useQrEngine(trackUrl: string) {
+  const { style, upload } = useStyle()
+  const host = useRef<HTMLDivElement>(null)
+  const qr = useRef<QRCodeStyling | null>(null)
+  const [busy, setBusy] = useState(false)
 
   const options: Options = useMemo(() => {
     const corner = cornerPair(style.corner)
@@ -314,17 +332,13 @@ export default function CdlQrStudio({ trackUrl }: { trackUrl: string }) {
     }
   }
 
-  return (
-    <section className="rounded-xl p-4" style={SURFACES.cardStyle}>
-      <h2 className={TYPOGRAPHY.sectionTitle} style={SURFACES.textPrimary}>
-        Customize QR code
-      </h2>
-      <p className="mt-1 text-[13px]" style={SURFACES.textSecondary}>
-        Frames, module shapes, corners, colors, and logo — same knobs as QR Code Generator Pro. The scan URL stays this dashboard.
-      </p>
+  return { host, style, busy, downloadPng }
+}
 
-      <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,280px)_1fr]">
-        <div>
+export function CdlQrPreview({ trackUrl }: { trackUrl: string }) {
+  const { host, style, busy, downloadPng } = useQrEngine(trackUrl)
+  return (
+    <>
           <div
             className={`mx-auto flex w-fit flex-col items-center ${liveFrameClass(style.frame)}`}
             style={
@@ -374,34 +388,26 @@ export default function CdlQrStudio({ trackUrl }: { trackUrl: string }) {
               </div>
             ) : null}
           </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => void downloadPng()}
-              disabled={busy}
-              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-semibold text-white"
-              style={{ background: 'var(--accent)' }}
-            >
-              <Download size={14} />
+          <h2>Print this</h2>
+          <p className="hint">Truck sits in the quiet zone. Error correction is high so it still scans under tape and yard light.</p>
+          <div className="actions">
+            <button type="button" className="btn gold" onClick={() => void downloadPng()} disabled={busy}>
               Download PNG
             </button>
-            <a
-              href="/api/cdl-qr/go"
-              className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-[13px] font-medium"
-              style={{ borderColor: 'var(--border)', color: 'var(--text-1)' }}
-            >
-              <ExternalLink size={14} />
-              Test scan
-            </a>
+            <a className="btn" href="/api/cdl-qr/go">Test scan</a>
           </div>
-          <p className="mono mt-2 break-all text-[11px]" style={SURFACES.textMuted}>
-            {trackUrl || '…'}
-          </p>
-        </div>
+          <p className="hint" style={{ marginTop: 14 }}>Tracking link</p>
+          <p className="link">{trackUrl || '…'}</p>
+    </>
+  )
+}
 
+export function CdlQrCustomize() {
+  const { style, patch, upload, setUpload } = useStyle()
+  return (
         <div className="flex min-w-0 flex-col gap-5">
           <fieldset>
-            <legend className={`${TYPOGRAPHY.cardLabel} mb-2`} style={SURFACES.textMuted}>Frames</legend>
+            <legend className="cdl-legend">Frames</legend>
             <div className="flex flex-wrap gap-2">
               {FRAMES.map(f => (
                 <Picker key={f.id} title={f.label} selected={style.frame === f.id} onSelect={() => patch({ frame: f.id })}>
@@ -410,7 +416,7 @@ export default function CdlQrStudio({ trackUrl }: { trackUrl: string }) {
               ))}
             </div>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
-              <label className="text-[12px]" style={SURFACES.textSecondary}>
+              <label className="cdl-field">
                 Frame color
                 <input
                   type="color"
@@ -420,7 +426,7 @@ export default function CdlQrStudio({ trackUrl }: { trackUrl: string }) {
                   style={{ borderColor: 'var(--border)' }}
                 />
               </label>
-              <label className="text-[12px]" style={SURFACES.textSecondary}>
+              <label className="cdl-field">
                 Frame text
                 <input
                   type="text"
@@ -434,7 +440,7 @@ export default function CdlQrStudio({ trackUrl }: { trackUrl: string }) {
           </fieldset>
 
           <fieldset>
-            <legend className={`${TYPOGRAPHY.cardLabel} mb-2`} style={SURFACES.textMuted}>Logos</legend>
+            <legend className="cdl-legend">Logos</legend>
             <div className="flex flex-wrap gap-2">
               <Picker title="No logo" selected={style.logo === 'none'} onSelect={() => patch({ logo: 'none' })}>
                 <span style={{ color: 'var(--text-4)' }}>⊘</span>
@@ -471,7 +477,7 @@ export default function CdlQrStudio({ trackUrl }: { trackUrl: string }) {
           </fieldset>
 
           <fieldset>
-            <legend className={`${TYPOGRAPHY.cardLabel} mb-2`} style={SURFACES.textMuted}>Shapes</legend>
+            <legend className="cdl-legend">Shapes</legend>
             <div className="flex flex-wrap gap-2">
               {SHAPES.map(s => (
                 <Picker key={s.id} title={s.label} selected={style.shape === s.id} onSelect={() => patch({ shape: s.id })}>
@@ -480,7 +486,7 @@ export default function CdlQrStudio({ trackUrl }: { trackUrl: string }) {
               ))}
             </div>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
-              <label className="text-[12px]" style={SURFACES.textSecondary}>
+              <label className="cdl-field">
                 QR code color
                 <input
                   type="color"
@@ -490,7 +496,7 @@ export default function CdlQrStudio({ trackUrl }: { trackUrl: string }) {
                   style={{ borderColor: 'var(--border)' }}
                 />
               </label>
-              <label className="text-[12px]" style={SURFACES.textSecondary}>
+              <label className="cdl-field">
                 Background color
                 <input
                   type="color"
@@ -504,7 +510,7 @@ export default function CdlQrStudio({ trackUrl }: { trackUrl: string }) {
           </fieldset>
 
           <fieldset>
-            <legend className={`${TYPOGRAPHY.cardLabel} mb-2`} style={SURFACES.textMuted}>Corners</legend>
+            <legend className="cdl-legend">Corners</legend>
             <div className="flex flex-wrap gap-2">
               {CORNERS.map(c => (
                 <Picker key={c.id} title={c.label} selected={style.corner === c.id} onSelect={() => patch({ corner: c.id })}>
@@ -531,8 +537,6 @@ export default function CdlQrStudio({ trackUrl }: { trackUrl: string }) {
             </div>
           </fieldset>
         </div>
-      </div>
-    </section>
   )
 }
 

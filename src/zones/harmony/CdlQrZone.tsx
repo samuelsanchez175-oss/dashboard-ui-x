@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { QrCode, RefreshCw } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 
-import { CONTAINERS, SURFACES, TYPOGRAPHY } from '../../lib/design-tokens'
 import { CDL_APP_STORE_URL } from './cdl-qr-shared'
-import CdlQrStudio from './CdlQrStudio'
+import { CdlQrCustomize, CdlQrPreview, CdlQrStyleProvider } from './CdlQrStudio'
+import './CdlQrBoard.css'
 
 type Place = {
   city: string
@@ -23,7 +24,6 @@ type Scan = {
   device: string
   termsAccepted?: boolean
   locationGranted?: boolean
-  locationSource?: 'gps' | 'ip' | 'denied' | 'pending'
 }
 
 type Payload = {
@@ -68,20 +68,40 @@ function whereLine(s: { city: string; region: string; country: string }): string
   return loc
 }
 
+function goldIcon() {
+  return L.divIcon({
+    className: '',
+    html: '<div style="width:14px;height:14px;border-radius:50%;background:#e8c45c;border:2px solid #1f3f2a;box-shadow:0 0 0 3px rgba(232,196,92,.35)"></div>',
+    iconSize: [14, 14],
+    iconAnchor: [7, 7],
+  })
+}
+
 export default function CdlQrZone() {
   const [data, setData] = useState<Payload>(EMPTY)
-  const [error, setError] = useState<string | null>(null)
-
   const track = useMemo(() => (typeof window === 'undefined' ? '' : trackingUrl()), [])
+  const mapEl = useRef<HTMLDivElement>(null)
+  const mapRef = useRef<L.Map | null>(null)
+  const layerRef = useRef<L.LayerGroup | null>(null)
 
   const load = useCallback(async () => {
     try {
       const res = await fetch('/api/cdl-qr/scans', { cache: 'no-store' })
       if (!res.ok) throw new Error(`scans ${res.status}`)
       setData((await res.json()) as Payload)
-      setError(null)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load scans')
+    } catch {
+      /* keep last good payload */
+    }
+  }, [])
+
+  useEffect(() => {
+    const id = 'cdl-scan-fonts'
+    if (!document.getElementById(id)) {
+      const link = document.createElement('link')
+      link.id = id
+      link.rel = 'stylesheet'
+      link.href = 'https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Outfit:wght@400;500;700&display=swap'
+      document.head.appendChild(link)
     }
   }, [])
 
@@ -91,124 +111,102 @@ export default function CdlQrZone() {
     return () => window.clearInterval(id)
   }, [load])
 
+  useEffect(() => {
+    if (!mapEl.current || mapRef.current) return
+    const map = L.map(mapEl.current, { scrollWheelZoom: false }).setView([39.8, -98.5], 4)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap',
+    }).addTo(map)
+    layerRef.current = L.layerGroup().addTo(map)
+    mapRef.current = map
+    const t = window.setTimeout(() => map.invalidateSize(), 250)
+    return () => {
+      window.clearTimeout(t)
+      map.remove()
+      mapRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    const layer = layerRef.current
+    const map = mapRef.current
+    if (!layer || !map) return
+    layer.clearLayers()
+    const pts: [number, number][] = []
+    for (const p of data.places) {
+      if (p.lat == null || p.lon == null) continue
+      L.marker([p.lat, p.lon], { icon: goldIcon() })
+        .bindPopup(`<strong>${p.city}</strong><br>${p.region} ${p.country}<br>${p.count} scan${p.count === 1 ? '' : 's'}`)
+        .addTo(layer)
+      pts.push([p.lat, p.lon])
+    }
+    if (pts.length) map.fitBounds(pts, { padding: [28, 28], maxZoom: 6 })
+  }, [data.places])
+
   return (
-    <div className="zone-canvas flex min-h-0 flex-1 flex-col overflow-auto" style={SURFACES.canvasStyle}>
-      <header className="zone-topbar flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <div
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md"
-            style={{ background: 'var(--accent)', color: 'white' }}
-          >
-            <QrCode size={12} />
-          </div>
-          <span className="truncate text-[13px] font-semibold" style={{ color: 'var(--text-1)' }}>
-            CDL QR code
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={() => void load()}
-          className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[12px]"
-          style={{ color: 'var(--text-2)' }}
-        >
-          <RefreshCw size={12} />
-          Refresh
-        </button>
-      </header>
+    <CdlQrStyleProvider>
+      <div className="cdl-scan-board flex min-h-0 flex-1 flex-col overflow-auto">
+        <div className="wrap">
+          <header className="mast">
+            <p className="eyebrow">Harmony Stack · dispatch</p>
+            <h1>CDL TEST PREP 2027<br />SCAN BOARD</h1>
+            <p className="sub">Every time someone hits the QR, they bounce to the App Store and a pin drops here — city, device, time.</p>
+          </header>
 
-      <div className={`${CONTAINERS.page} zone-inner flex flex-col gap-4 py-5`}>
-        <div>
-          <p className={TYPOGRAPHY.eyebrow} style={SURFACES.textMuted}>
-            Harmony Stack · CDL One Stop
-          </p>
-          <h1 className={`${TYPOGRAPHY.pageTitle} mt-1`} style={SURFACES.textPrimary}>
-            Scan board
-          </h1>
-          <p className={`${TYPOGRAPHY.pageDescription} mt-1 max-w-2xl`} style={SURFACES.textSecondary}>
-            Print this QR. Each scan hits this dashboard, then the App Store. City is estimated from IP — not GPS.
-          </p>
-        </div>
-
-        <CdlQrStudio trackUrl={track} />
-
-        <div className="grid gap-4 lg:grid-cols-[1fr]">
-          <div className="flex flex-col gap-4">
-            <div className="grid gap-3 sm:grid-cols-3">
-              {[
-                { n: String(data.total), l: 'Scans', compact: false },
-                { n: String(data.uniquePlaces), l: 'Places', compact: false },
-                { n: formatWhen(data.last), l: 'Last hit', compact: true },
-              ].map(stat => (
-                <div key={stat.l} className="rounded-xl p-4" style={SURFACES.cardStyle}>
-                  <div
-                    className={stat.compact
-                      ? 'text-[17px] font-semibold leading-snug tracking-tight'
-                      : 'text-[28px] font-semibold leading-tight tracking-tight'}
-                    style={SURFACES.textPrimary}
-                  >
-                    {stat.n}
-                  </div>
-                  <div className={`${TYPOGRAPHY.cardLabel} mt-1`} style={SURFACES.textMuted}>
-                    {stat.l}
-                  </div>
+          <div className="grid">
+            <aside className="card qr-card">
+              <CdlQrPreview trackUrl={track} />
+            </aside>
+            <section>
+              <div className="stats">
+                <div className="card stat">
+                  <div className="n">{data.total}</div>
+                  <div className="l">Scans</div>
                 </div>
-              ))}
-            </div>
-
-            <section className="rounded-xl p-4" style={SURFACES.cardStyle}>
-              <h2 className={TYPOGRAPHY.sectionTitle} style={SURFACES.textPrimary}>
-                Places
-              </h2>
-              {data.places.length === 0 ? (
-                <p className="mt-2 text-[13px]" style={SURFACES.textSecondary}>
-                  No locations yet. Scan from your phone on this Wi-Fi, or tap Test scan.
-                </p>
-              ) : (
-                <ul className="mt-2 divide-y" style={{ borderColor: 'var(--border-soft)' }}>
-                  {data.places.map(p => (
-                    <li key={`${p.city}-${p.country}`} className="flex items-baseline justify-between gap-3 py-2 text-[13px]">
-                      <span style={SURFACES.textPrimary}>{whereLine(p)}</span>
-                      <span className="mono" style={SURFACES.textMuted}>
-                        {p.count}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+                <div className="card stat">
+                  <div className="n">{data.uniquePlaces}</div>
+                  <div className="l">Places</div>
+                </div>
+                <div className="card stat">
+                  <div className="n compact">{formatWhen(data.last)}</div>
+                  <div className="l">Last hit</div>
+                </div>
+              </div>
+              <div className="card map-card">
+                <div ref={mapEl} className="cdl-map" />
+              </div>
             </section>
           </div>
-        </div>
 
-        <section className="rounded-xl overflow-hidden" style={SURFACES.cardStyle}>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-[13px]">
+          <div className="card" style={{ marginTop: 18 }}>
+            <table>
               <thead>
-                <tr className="border-b" style={{ borderColor: 'var(--border)' }}>
-                  <th className={`${TYPOGRAPHY.cardLabel} px-4 py-2.5`} style={SURFACES.textMuted}>When</th>
-                  <th className={`${TYPOGRAPHY.cardLabel} px-4 py-2.5`} style={SURFACES.textMuted}>Where</th>
-                  <th className={`${TYPOGRAPHY.cardLabel} px-4 py-2.5`} style={SURFACES.textMuted}>Device</th>
-                  <th className={`${TYPOGRAPHY.cardLabel} px-4 py-2.5`} style={SURFACES.textMuted}>Consent</th>
+                <tr>
+                  <th>When</th>
+                  <th>Where</th>
+                  <th>Device</th>
+                  <th>Consent</th>
                 </tr>
               </thead>
               <tbody>
                 {data.recent.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-4 py-6" style={SURFACES.textSecondary}>
-                      No scans yet.
+                    <td className="empty" colSpan={4}>
+                      No scans yet. Open the QR on your phone (same Wi-Fi) or tap Test scan. First ping lands here.
                     </td>
                   </tr>
                 ) : (
                   data.recent.map(row => (
-                    <tr key={row.id} className="border-b last:border-0" style={{ borderColor: 'var(--border-soft)' }}>
-                      <td className="px-4 py-2.5" style={SURFACES.textPrimary}>{formatWhen(row.ts)}</td>
-                      <td className="px-4 py-2.5" style={SURFACES.textPrimary}>{whereLine(row)}</td>
-                      <td className="px-4 py-2.5" style={SURFACES.textSecondary}>{row.device}</td>
-                      <td className="px-4 py-2.5" style={SURFACES.textSecondary}>
+                    <tr key={row.id}>
+                      <td>{formatWhen(row.ts)}</td>
+                      <td>{whereLine(row)}</td>
+                      <td>{row.device}</td>
+                      <td>
                         {row.termsAccepted
                           ? row.locationGranted
-                            ? 'Terms + GPS'
-                            : 'Terms · city estimate'
-                          : 'Landing'}
+                            ? 'Accepted · GPS'
+                            : 'Declined / city estimate'
+                          : 'Skipped'}
                       </td>
                     </tr>
                   ))
@@ -216,14 +214,19 @@ export default function CdlQrZone() {
               </tbody>
             </table>
           </div>
-        </section>
 
-        {error ? (
-          <p className="text-[13px]" style={{ color: 'var(--bad)' }}>
-            {error}
+          <div className="card" style={{ marginTop: 18 }}>
+            <h2 className="customize-head">Customize QR code</h2>
+            <div className="customize-body">
+              <CdlQrCustomize />
+            </div>
+          </div>
+
+          <p className="foot">
+            Destination {data.destination} · Location is estimated from IP unless they Accept on the banner. Local scans show as this device.
           </p>
-        ) : null}
+        </div>
       </div>
-    </div>
+    </CdlQrStyleProvider>
   )
 }
