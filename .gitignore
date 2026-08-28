@@ -37,6 +37,9 @@ playwright-report/
 # Scratch / local tooling output (e.g. scripts/chord-detector-tune.mjs)
 tmp/
 
+# CDL QR scan log (local + Vercel /tmp)
+data/cdl-qr-scans.json
+
 # Vault RAG chunk index (regenerated via POST /api/vault/rag/rebuild)
 .cache/
 

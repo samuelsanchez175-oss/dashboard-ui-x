@@ -16,6 +16,7 @@ const NON_TOOL_TITLES: Record<string, string> = {
   'harmony-services': 'Harmony live site',
   'harmony-todos': 'Harmony client projects',
   'harmony-cdl': 'CDL One Stop',
+  'harmony-cdl-qr': 'CDL QR code',
   'harmony-penwork': 'Penwork Studio',
   'mixing-audio-grab': 'Audio grab',
   'polymarket-bot': 'Bot Cockpit',

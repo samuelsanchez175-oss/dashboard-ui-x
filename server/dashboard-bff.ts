@@ -12,6 +12,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import { handleMixingYoutubeAudioPost } from './mixing-youtube-audio'
 import { tryHandleTeslaFleetRoutes } from './tesla-fleet-bff'
 import { tryHandlePolymarketRoutes } from './polymarket-bff'
+import { tryHandleCdlQrRoutes } from './cdl-qr-bff'
 import { getVaultDirForLegacy, tryHandleVaultRoutes } from './vault-bff'
 import { exec } from 'node:child_process'
 import { promisify } from 'node:util'
@@ -329,6 +330,10 @@ export function attachDashboardBff(
     }
 
     if (tryHandlePolymarketRoutes(req, res)) {
+      return
+    }
+
+    if (await tryHandleCdlQrRoutes(req, res)) {
       return
     }
 

@@ -63,6 +63,28 @@ const NEW_SECTION_AFTER: Record<string, string> = {
 /** Sections that should pin to the front of a saved layout when first introduced. */
 const NEW_SECTION_PREPEND: string[] = ['vault']
 
+/** Newly-added items should land next to a neighbour in a saved item order. */
+const NEW_ITEM_AFTER: Record<string, string> = {
+  'harmony-cdl-qr': 'harmony-cdl',
+}
+
+function insertNewItemsAfterNeighbors(layout: SidebarNavLayoutPersist): SidebarNavLayoutPersist {
+  const itemsBySection: Record<string, string[]> = { ...layout.itemsBySection }
+  let changed = false
+  for (const [newId, afterId] of Object.entries(NEW_ITEM_AFTER)) {
+    for (const [sectionId, ids] of Object.entries(itemsBySection)) {
+      if (ids.includes(newId)) continue
+      const idx = ids.indexOf(afterId)
+      if (idx === -1) continue
+      const next = [...ids]
+      next.splice(idx + 1, 0, newId)
+      itemsBySection[sectionId] = next
+      changed = true
+    }
+  }
+  return changed ? { ...layout, itemsBySection } : layout
+}
+
 function insertNewSectionsAfterNeighbors(layout: SidebarNavLayoutPersist): SidebarNavLayoutPersist {
   // sectionOrder === null means "use source order", which already positions new
   // sections correctly — nothing to migrate.
@@ -96,7 +118,7 @@ function normalizeParsedLayout(parsed: Partial<SidebarNavLayoutPersist>): Sideba
       : {},
     collapsedSectionIds:   Array.isArray(parsed.collapsedSectionIds) ? parsed.collapsedSectionIds : [],
   }
-  return insertNewSectionsAfterNeighbors(migrateLegacyNavItemIds(base))
+  return insertNewItemsAfterNeighbors(insertNewSectionsAfterNeighbors(migrateLegacyNavItemIds(base)))
 }
 
 export function loadSidebarNavLayout(): SidebarNavLayoutPersist {

@@ -39,6 +39,7 @@ const SESSION_TOUCHED_ZONE_SEED = [
   'harmony-portfolio',
   'harmony-todos',
   'harmony-cdl',
+  'harmony-cdl-qr',
   'harmony-penwork',
 ] as const
 
