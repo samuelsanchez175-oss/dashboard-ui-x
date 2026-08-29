@@ -77,6 +77,7 @@ export const FRAME_OPTIONS: { id: FrameId; label: string }[] = [
 ]
 
 export const RESTAURANT_OPTIONS: { id: FrameId; label: string }[] = [
+  { id: 'none', label: 'No frame' },
   { id: 'laptop', label: 'Laptop' },
   { id: 'beer', label: 'Beer mug' },
   { id: 'coffee', label: 'Coffee' },
@@ -89,7 +90,9 @@ export const RESTAURANT_OPTIONS: { id: FrameId; label: string }[] = [
   { id: 'badge', label: 'Badge' },
 ]
 
-export const RESTAURANT_IDS = new Set<FrameId>(RESTAURANT_OPTIONS.map(o => o.id))
+export const RESTAURANT_IDS = new Set<FrameId>(
+  RESTAURANT_OPTIONS.map(o => o.id).filter((id): id is FrameId => id !== 'none'),
+)
 
 export const SHAPE_OPTIONS: { id: ShapeId; label: string }[] = [
   { id: 'square', label: 'Square' },
@@ -340,72 +343,90 @@ export function CornerSketch({ spec }: { spec: CornerSpec }) {
   )
 }
 
+/** QR window inside the 160×200 restaurant silhouette. */
+export const REST_SLOTS: Record<string, { x: number; y: number; w: number; h: number }> = {
+  laptop:   { x: 40, y: 28, w: 80, h: 72 },
+  beer:     { x: 46, y: 58, w: 52, h: 52 },
+  coffee:   { x: 45, y: 70, w: 54, h: 54 },
+  chef:     { x: 50, y: 70, w: 60, h: 60 },
+  scooter:  { x: 22, y: 30, w: 62, h: 54 },
+  cloche:   { x: 50, y: 82, w: 60, h: 50 },
+  cocktail: { x: 58, y: 32, w: 44, h: 44 },
+  takeout:  { x: 50, y: 70, w: 60, h: 60 },
+  menu:     { x: 50, y: 60, w: 60, h: 60 },
+  badge:    { x: 50, y: 68, w: 60, h: 60 },
+}
+
 export function RestaurantChrome({ id, color }: { id: FrameId; color: string }) {
   const c = color
+  const slot = REST_SLOTS[id]
   return (
-    <svg className="cdl-rest-svg" viewBox="0 0 160 180" fill="none" aria-hidden="true">
+    <svg className="cdl-rest-svg" viewBox="0 0 160 200" fill="none" aria-hidden="true">
+      {slot ? (
+        <rect x={slot.x} y={slot.y} width={slot.w} height={slot.h} fill="white" />
+      ) : null}
       {id === 'laptop' && (
         <>
-          <rect x="38" y="28" width="84" height="72" stroke={c} strokeWidth="6" />
-          <path d="M18 108 H142 L132 132 H28 Z" fill={c} />
+          <rect x="36" y="24" width="88" height="80" stroke={c} strokeWidth="6" />
+          <path d="M16 112 H144 L134 140 H26 Z" fill={c} />
         </>
       )}
       {id === 'beer' && (
         <>
-          <rect x="40" y="36" width="64" height="110" rx="8" stroke={c} strokeWidth="6" />
-          <path d="M104 52 H128 V110 H104" stroke={c} strokeWidth="6" />
+          <rect x="40" y="36" width="64" height="120" rx="8" stroke={c} strokeWidth="6" />
+          <path d="M104 54 H132 V118 H104" stroke={c} strokeWidth="6" />
         </>
       )}
       {id === 'coffee' && (
         <>
-          <path d="M36 56 H112 V130 C112 148 36 148 36 130 Z" stroke={c} strokeWidth="6" />
-          <path d="M112 72 H136 V112 H112" stroke={c} strokeWidth="6" />
-          <path d="M56 28 C56 44 72 44 72 28 M88 28 C88 44 104 44 104 28" stroke={c} strokeWidth="5" />
+          <path d="M36 54 H110 V138 C110 156 36 156 36 138 Z" stroke={c} strokeWidth="6" />
+          <path d="M110 70 H138 V118 H110" stroke={c} strokeWidth="6" />
+          <path d="M54 24 C54 42 70 42 70 24 M86 24 C86 42 102 42 102 24" stroke={c} strokeWidth="5" />
         </>
       )}
       {id === 'chef' && (
         <>
           <circle cx="80" cy="32" r="22" stroke={c} strokeWidth="6" />
-          <rect x="44" y="56" width="72" height="100" stroke={c} strokeWidth="6" />
+          <rect x="44" y="54" width="72" height="112" stroke={c} strokeWidth="6" />
         </>
       )}
       {id === 'scooter' && (
         <>
-          <rect x="18" y="28" width="70" height="60" stroke={c} strokeWidth="5" />
-          <circle cx="40" cy="154" r="14" stroke={c} strokeWidth="5" />
-          <circle cx="124" cy="154" r="14" stroke={c} strokeWidth="5" />
-          <path d="M50 92 L118 92 L128 140" stroke={c} strokeWidth="5" />
+          <rect x="18" y="26" width="70" height="62" stroke={c} strokeWidth="5" />
+          <circle cx="40" cy="168" r="16" stroke={c} strokeWidth="5" />
+          <circle cx="124" cy="168" r="16" stroke={c} strokeWidth="5" />
+          <path d="M50 92 L118 92 L130 154" stroke={c} strokeWidth="5" />
         </>
       )}
       {id === 'cloche' && (
         <>
-          <path d="M24 108 A56 56 0 0 1 136 108" stroke={c} strokeWidth="6" />
-          <rect x="18" y="108" width="124" height="14" fill={c} />
-          <circle cx="80" cy="44" r="8" fill={c} />
+          <path d="M24 120 A56 56 0 0 1 136 120" stroke={c} strokeWidth="6" />
+          <rect x="18" y="120" width="124" height="14" fill={c} />
+          <circle cx="80" cy="56" r="8" fill={c} />
         </>
       )}
       {id === 'cocktail' && (
         <>
-          <path d="M28 24 H132 L80 96 Z" stroke={c} strokeWidth="6" />
-          <path d="M80 96 V160 M52 160 H108" stroke={c} strokeWidth="6" />
+          <path d="M28 22 H132 L80 92 Z" stroke={c} strokeWidth="6" />
+          <path d="M80 92 V176 M50 176 H110" stroke={c} strokeWidth="6" />
         </>
       )}
       {id === 'takeout' && (
         <>
-          <path d="M32 56 H128 L118 164 H42 Z" stroke={c} strokeWidth="6" />
-          <path d="M32 56 L80 20 L128 56" stroke={c} strokeWidth="6" />
+          <path d="M34 54 H126 L116 176 H44 Z" stroke={c} strokeWidth="6" />
+          <path d="M34 54 L80 18 L126 54" stroke={c} strokeWidth="6" />
         </>
       )}
       {id === 'menu' && (
         <>
-          <rect x="40" y="16" width="80" height="148" stroke={c} strokeWidth="6" />
-          <path d="M40 36 Q80 20 120 36" stroke={c} strokeWidth="5" />
+          <rect x="42" y="20" width="76" height="160" stroke={c} strokeWidth="6" />
+          <path d="M42 40 Q80 22 118 40" stroke={c} strokeWidth="5" />
         </>
       )}
       {id === 'badge' && (
         <>
-          <rect x="40" y="36" width="80" height="120" rx="8" stroke={c} strokeWidth="6" />
-          <circle cx="80" cy="36" r="10" stroke={c} strokeWidth="5" />
+          <rect x="42" y="42" width="76" height="128" rx="8" stroke={c} strokeWidth="6" />
+          <circle cx="80" cy="42" r="11" stroke={c} strokeWidth="5" />
         </>
       )}
     </svg>

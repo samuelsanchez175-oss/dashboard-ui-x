@@ -10,11 +10,11 @@ import {
   FrameSketch,
   RESTAURANT_IDS,
   RESTAURANT_OPTIONS,
+  REST_SLOTS,
   RestaurantChrome,
   SHAPE_OPTIONS,
   ShapeSketch,
   CornerSketch,
-  liveFrameClass,
   type CornerId,
   type FrameId,
   type LogoId,
@@ -229,12 +229,44 @@ export function CdlQrStyleProvider({ children }: { children: ReactNode }) {
 }
 
 function labelKind(frame: FrameId): 'pill' | 'bar' | 'text' | 'script' | 'pointer' | 'none' {
-  if (frame === 'none' || frame === 'phone' || frame === 'balloon' || RESTAURANT_IDS.has(frame)) return 'none'
+  if (frame === 'none' || frame === 'phone' || frame === 'balloon' || frame === 'chevron' || RESTAURANT_IDS.has(frame)) return 'none'
   if (frame === 'pill') return 'pill'
   if (frame === 'caption') return 'text'
   if (frame === 'script' || frame === 'arrow') return 'script'
   if (frame === 'pointer') return 'pointer'
   return 'bar'
+}
+
+function FrameLabel({ kind, style }: { kind: ReturnType<typeof labelKind>; style: Style }) {
+  if (kind === 'none') return null
+  return (
+    <div
+      className={
+        kind === 'pill'
+          ? 'mt-1 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white'
+          : kind === 'text' || kind === 'script'
+            ? 'mt-1 text-[11px] font-semibold tracking-wide'
+            : 'mt-0 w-full px-2 py-1 text-center text-[10px] font-bold uppercase tracking-wide text-white'
+      }
+      style={
+        kind === 'text' || kind === 'script'
+          ? { color: style.frameColor, fontStyle: kind === 'script' ? 'italic' : undefined }
+          : { background: style.frameColor }
+      }
+    >
+      {kind === 'pointer' ? (
+        <span className="relative">
+          {style.frameText}
+          <span
+            className="absolute left-1/2 top-full h-0 w-0 -translate-x-1/2 border-x-8 border-t-8 border-x-transparent"
+            style={{ borderTopColor: style.frameColor }}
+          />
+        </span>
+      ) : (
+        style.frameText
+      )}
+    </div>
+  )
 }
 
 function FramedQr({
@@ -246,58 +278,60 @@ function FramedQr({
 }) {
   const restaurant = RESTAURANT_IDS.has(style.frame)
   const kind = labelKind(style.frame)
+  const slot = restaurant ? REST_SLOTS[style.frame] : null
+
+  if (restaurant && slot) {
+    return (
+      <div className="cdl-rest-stage">
+        <RestaurantChrome id={style.frame} color={style.frameColor} />
+        <div
+          className="cdl-rest-qr"
+          style={{
+            left: `${(slot.x / 160) * 100}%`,
+            top: `${(slot.y / 200) * 100}%`,
+            width: `${(slot.w / 160) * 100}%`,
+            height: `${(slot.h / 200) * 100}%`,
+          }}
+        >
+          <div ref={host} className="cdl-rest-host" />
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className={restaurant ? 'cdl-rest-stage' : undefined}>
-      {restaurant ? <RestaurantChrome id={style.frame} color={style.frameColor} /> : null}
+    <div className="qr-live mx-auto flex w-fit flex-col items-center">
+      {style.frame === 'balloon' ? (
+        <div
+          className="mb-1 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"
+          style={{ background: style.frameColor }}
+        >
+          {style.frameText}
+        </div>
+      ) : null}
+      {style.frame === 'bag' || style.frame === 'gift' ? (
+        <div className="mb-1 h-3 w-16 rounded-t-full border-2 border-b-0" style={{ borderColor: style.frameColor }} />
+      ) : null}
       <div
-        className={`mx-auto flex w-fit flex-col items-center ${liveFrameClass(style.frame)}`}
+        className={`qr-well qr-well-${style.frame}`}
         style={
-          style.frame === 'none' || restaurant
-            ? undefined
+          style.frame === 'none'
+            ? { background: style.bg }
             : { borderColor: style.frameColor, background: style.bg }
         }
       >
-        {style.frame === 'balloon' ? (
-          <div
-            className="mb-1 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"
-            style={{ background: style.frameColor }}
-          >
-            {style.frameText}
-          </div>
-        ) : null}
-        {style.frame === 'bag' || style.frame === 'gift' ? (
-          <div className="mb-1 h-3 w-16 rounded-t-full border-2 border-b-0" style={{ borderColor: style.frameColor }} />
-        ) : null}
-        <div ref={host} className="overflow-hidden rounded-sm" />
-        {kind !== 'none' ? (
-          <div
-            className={
-              kind === 'pill'
-                ? 'mt-1 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white'
-                : kind === 'text' || kind === 'script'
-                  ? 'mt-1 text-[11px] font-semibold tracking-wide'
-                  : 'mt-0 w-full px-2 py-1 text-center text-[10px] font-bold uppercase tracking-wide text-white'
-            }
-            style={
-              kind === 'text' || kind === 'script'
-                ? { color: style.frameColor, fontStyle: kind === 'script' ? 'italic' : undefined }
-                : { background: style.frameColor }
-            }
-          >
-            {kind === 'pointer' ? (
-              <span className="relative">
-                {style.frameText}
-                <span
-                  className="absolute left-1/2 top-full h-0 w-0 -translate-x-1/2 border-x-8 border-t-8 border-x-transparent"
-                  style={{ borderTopColor: style.frameColor }}
-                />
-              </span>
-            ) : (
-              style.frameText
-            )}
-          </div>
-        ) : null}
+        <div ref={host} className="leading-none" />
       </div>
+      {style.frame === 'chevron' ? (
+        <div
+          className="qr-chevron"
+          style={{ background: style.frameColor }}
+        >
+          {style.frameText}
+        </div>
+      ) : (
+        <FrameLabel kind={kind} style={style} />
+      )}
     </div>
   )
 }
@@ -345,7 +379,8 @@ function useQrEngine(trackUrl: string, size = 280) {
 
   useEffect(() => {
     if (!host.current) return
-    if (!qr.current) {
+    if (!qr.current || host.current.childElementCount === 0) {
+      host.current.innerHTML = ''
       qr.current = new QRCodeStyling(options)
       qr.current.append(host.current)
     } else {
