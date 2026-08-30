@@ -671,7 +671,7 @@ export function CdlQrDestinationFoot({ fallback }: { fallback: string }) {
   const { destinationUrl } = useStyle()
   return (
     <p className="foot">
-      Destination {destinationUrl || fallback} · Location is estimated from IP unless they Accept on the banner. Local scans show as this device.
+      Destination {destinationUrl || fallback} · Scan counts and locations are saved permanently. Location is estimated from IP unless they Accept on the banner. Local scans show as this device.
     </p>
   )
 }

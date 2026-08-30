@@ -31,6 +31,7 @@ type Payload = {
   uniquePlaces: number
   last: string | null
   destination: string
+  persistent?: boolean
   recent: Scan[]
   places: Place[]
 }

@@ -6,18 +6,17 @@
  */
 
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import path from 'node:path'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
 import { CDL_APP_STORE_URL, PENWORK_APP_STORE_URL, safeHttpUrl } from '../src/zones/harmony/cdl-qr-shared'
+import { appendScan, loadScans, updateScan, type QrScanBrand, type StoredScan } from './qr-scan-store'
 
 export { CDL_APP_STORE_URL, PENWORK_APP_STORE_URL }
 
 type TrackerCfg = {
+  brand: QrScanBrand
   prefix: string
   defaultDest: string
-  storeFile: string
   landingFile: string
 }
 
@@ -42,8 +41,6 @@ export type CdlQrScan = {
   locationGranted: boolean
   locationSource: 'gps' | 'ip' | 'denied' | 'pending'
 }
-
-type StoredScan = CdlQrScan & { ipHash?: string }
 
 function jsonRes(res: ServerResponse, status: number, payload: unknown) {
   const body = JSON.stringify(payload)
@@ -160,39 +157,6 @@ async function reverseGeo(lat: number, lon: number): Promise<{ city: string; reg
 }
 
 function makeTracker(cfg: TrackerCfg) {
-  let memory: StoredScan[] | null = null
-
-  function storePath(): string {
-    if (process.env.VERCEL) return `/tmp/${cfg.storeFile}`
-    return path.join(process.cwd(), 'data', cfg.storeFile)
-  }
-
-  function loadScans(): StoredScan[] {
-    const file = storePath()
-    try {
-      if (!existsSync(file)) return []
-      const parsed = JSON.parse(readFileSync(file, 'utf8')) as unknown
-      return Array.isArray(parsed) ? (parsed as StoredScan[]) : []
-    } catch {
-      return []
-    }
-  }
-
-  function saveScans(rows: StoredScan[]): void {
-    const file = storePath()
-    try {
-      mkdirSync(path.dirname(file), { recursive: true })
-      writeFileSync(file, JSON.stringify(rows, null, 2), 'utf8')
-    } catch {
-      /* /tmp or read-only */
-    }
-  }
-
-  function scans(): StoredScan[] {
-    if (!memory) memory = loadScans()
-    return memory
-  }
-
   function landingLocation(req: IncomingMessage, scanId: number): string {
     const host = (req.headers.host ?? '').trim()
     const fwdProto = req.headers['x-forwarded-proto']
@@ -242,6 +206,7 @@ function makeTracker(cfg: TrackerCfg) {
       uniquePlaces: placeMap.size,
       last: all.at(-1)?.ts ?? null,
       destination: cfg.defaultDest,
+      persistent: true,
       recent,
       places,
     }
@@ -268,7 +233,7 @@ function makeTracker(cfg: TrackerCfg) {
       const ip = clientIp(req)
       const ua = String(req.headers['user-agent'] ?? '')
       const geo = await lookupGeo(ip)
-      const rows = scans()
+      const rows = await loadScans(cfg.brand)
       const row: StoredScan = {
         id: (rows.at(-1)?.id ?? 0) + 1,
         ts: new Date().toISOString(),
@@ -279,8 +244,7 @@ function makeTracker(cfg: TrackerCfg) {
         locationSource: 'pending',
         ipHash: ip ? createHash('sha256').update(ip).digest('hex').slice(0, 16) : undefined,
       }
-      rows.push(row)
-      saveScans(rows)
+      await appendScan(cfg.brand, row)
       res.statusCode = 302
       res.setHeader('Location', landingLocation(req, row.id))
       res.setHeader('Cache-Control', 'no-store')
@@ -297,37 +261,41 @@ function makeTracker(cfg: TrackerCfg) {
         return true
       }
       const id = Number(body.id)
-      const rows = scans()
-      const row = rows.find(s => s.id === id)
-      if (!row || !Number.isFinite(id)) {
+      if (!Number.isFinite(id)) {
         jsonRes(res, 404, { ok: false, error: 'UNKNOWN_SCAN' })
         return true
       }
-      row.termsAccepted = body.termsAccepted === true
+      const patch: Partial<StoredScan> = {
+        termsAccepted: body.termsAccepted === true,
+      }
       const lat = typeof body.lat === 'number' ? body.lat : null
       const lon = typeof body.lon === 'number' ? body.lon : null
       const granted = body.locationGranted === true && lat != null && lon != null
-      row.locationGranted = granted
+      patch.locationGranted = granted
       if (granted) {
-        row.lat = lat
-        row.lon = lon
-        row.locationSource = 'gps'
+        patch.lat = lat
+        patch.lon = lon
+        patch.locationSource = 'gps'
         const named = await reverseGeo(lat, lon)
         if (named) {
-          row.city = named.city
-          row.region = named.region
-          row.country = named.country
+          patch.city = named.city
+          patch.region = named.region
+          patch.country = named.country
         }
       } else {
-        row.locationSource = 'denied'
+        patch.locationSource = 'denied'
       }
-      saveScans(rows)
+      const row = await updateScan(cfg.brand, id, patch)
+      if (!row) {
+        jsonRes(res, 404, { ok: false, error: 'UNKNOWN_SCAN' })
+        return true
+      }
       jsonRes(res, 200, { ok: true, store: cfg.defaultDest })
       return true
     }
 
     if (pathName === list && method === 'GET') {
-      jsonRes(res, 200, publicPayload(scans()))
+      jsonRes(res, 200, publicPayload(await loadScans(cfg.brand)))
       return true
     }
 
@@ -337,16 +305,16 @@ function makeTracker(cfg: TrackerCfg) {
 }
 
 const handleCdl = makeTracker({
+  brand: 'cdl',
   prefix: '/api/cdl-qr',
   defaultDest: CDL_APP_STORE_URL,
-  storeFile: 'cdl-qr-scans.json',
   landingFile: '/cdl-qr-landing.html',
 })
 
 const handlePenwork = makeTracker({
+  brand: 'penwork',
   prefix: '/api/penwork-qr',
   defaultDest: PENWORK_APP_STORE_URL,
-  storeFile: 'penwork-qr-scans.json',
   landingFile: '/penwork-qr-landing.html',
 })
 
