@@ -7,6 +7,8 @@ import { CDL_QR_BRAND, type QrBoardBrand } from './qr-board-config'
 import {
   CORNER_OPTIONS,
   FRAME_OPTIONS,
+  FRAME_SLOTS,
+  FrameChrome,
   FrameSketch,
   RESTAURANT_IDS,
   RESTAURANT_OPTIONS,
@@ -144,6 +146,8 @@ function Picker({
     <button
       type="button"
       title={title}
+      aria-label={title}
+      aria-pressed={selected}
       onClick={onSelect}
       className={selected ? 'cdl-picker is-on' : 'cdl-picker'}
     >
@@ -228,47 +232,6 @@ export function CdlQrStyleProvider({ children }: { children: ReactNode }) {
   return <StyleContext.Provider value={value}>{children}</StyleContext.Provider>
 }
 
-function labelKind(frame: FrameId): 'pill' | 'bar' | 'text' | 'script' | 'pointer' | 'none' {
-  if (frame === 'none' || frame === 'phone' || frame === 'balloon' || frame === 'chevron' || RESTAURANT_IDS.has(frame)) return 'none'
-  if (frame === 'pill') return 'pill'
-  if (frame === 'caption') return 'text'
-  if (frame === 'script' || frame === 'arrow') return 'script'
-  if (frame === 'pointer') return 'pointer'
-  return 'bar'
-}
-
-function FrameLabel({ kind, style }: { kind: ReturnType<typeof labelKind>; style: Style }) {
-  if (kind === 'none') return null
-  return (
-    <div
-      className={
-        kind === 'pill'
-          ? 'mt-1 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white'
-          : kind === 'text' || kind === 'script'
-            ? 'mt-1 text-[11px] font-semibold tracking-wide'
-            : 'mt-0 w-full px-2 py-1 text-center text-[10px] font-bold uppercase tracking-wide text-white'
-      }
-      style={
-        kind === 'text' || kind === 'script'
-          ? { color: style.frameColor, fontStyle: kind === 'script' ? 'italic' : undefined }
-          : { background: style.frameColor }
-      }
-    >
-      {kind === 'pointer' ? (
-        <span className="relative">
-          {style.frameText}
-          <span
-            className="absolute left-1/2 top-full h-0 w-0 -translate-x-1/2 border-x-8 border-t-8 border-x-transparent"
-            style={{ borderTopColor: style.frameColor }}
-          />
-        </span>
-      ) : (
-        style.frameText
-      )}
-    </div>
-  )
-}
-
 function FramedQr({
   host,
   style,
@@ -277,61 +240,37 @@ function FramedQr({
   style: Style
 }) {
   const restaurant = RESTAURANT_IDS.has(style.frame)
-  const kind = labelKind(style.frame)
-  const slot = restaurant ? REST_SLOTS[style.frame] : null
+  const slot = restaurant ? REST_SLOTS[style.frame] : FRAME_SLOTS[style.frame]
+  const vbW = restaurant ? 160 : 200
+  const vbH = restaurant ? 200 : 270
 
-  if (restaurant && slot) {
+  if (style.frame === 'none' || !slot) {
     return (
-      <div className="cdl-rest-stage">
-        <RestaurantChrome id={style.frame} color={style.frameColor} />
-        <div
-          className="cdl-rest-qr"
-          style={{
-            left: `${(slot.x / 160) * 100}%`,
-            top: `${(slot.y / 200) * 100}%`,
-            width: `${(slot.w / 160) * 100}%`,
-            height: `${(slot.h / 200) * 100}%`,
-          }}
-        >
-          <div ref={host} className="cdl-rest-host" />
-        </div>
+      <div className="qr-live mx-auto w-fit" data-frame="none">
+        <div ref={host} className="leading-none" />
       </div>
     )
   }
 
   return (
-    <div className="qr-live mx-auto flex w-fit flex-col items-center">
-      {style.frame === 'balloon' ? (
-        <div
-          className="mb-1 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"
-          style={{ background: style.frameColor }}
-        >
-          {style.frameText}
-        </div>
-      ) : null}
-      {style.frame === 'bag' || style.frame === 'gift' ? (
-        <div className="mb-1 h-3 w-16 rounded-t-full border-2 border-b-0" style={{ borderColor: style.frameColor }} />
-      ) : null}
+    <div
+      className={restaurant ? 'cdl-rest-stage' : 'cdl-frame-stage'}
+      data-frame={style.frame}
+    >
+      {restaurant
+        ? <RestaurantChrome id={style.frame} color={style.frameColor} />
+        : <FrameChrome id={style.frame} color={style.frameColor} text={style.frameText} />}
       <div
-        className={`qr-well qr-well-${style.frame}`}
-        style={
-          style.frame === 'none'
-            ? { background: style.bg }
-            : { borderColor: style.frameColor, background: style.bg }
-        }
+        className={restaurant ? 'cdl-rest-qr' : 'cdl-frame-qr'}
+        style={{
+          left: `${(slot.x / vbW) * 100}%`,
+          top: `${(slot.y / vbH) * 100}%`,
+          width: `${(slot.w / vbW) * 100}%`,
+          height: `${(slot.h / vbH) * 100}%`,
+        }}
       >
-        <div ref={host} className="leading-none" />
+        <div ref={host} className="cdl-rest-host" />
       </div>
-      {style.frame === 'chevron' ? (
-        <div
-          className="qr-chevron"
-          style={{ background: style.frameColor }}
-        >
-          {style.frameText}
-        </div>
-      ) : (
-        <FrameLabel kind={kind} style={style} />
-      )}
     </div>
   )
 }
@@ -386,73 +325,80 @@ function useQrEngine(trackUrl: string, size = 280) {
     } else {
       qr.current.update(options)
     }
-  }, [options])
+  }, [options, style.frame])
 
   async function downloadPng() {
-    if (!qr.current) return
+    if (!host.current) return
     setBusy(true)
     try {
-      const raw = await qr.current.getRawData('png')
-      if (!raw) return
-      const blob = raw instanceof Blob ? raw : new Blob([raw as unknown as BlobPart])
-      const url = URL.createObjectURL(blob)
-      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-        const el = new Image()
-        el.onload = () => resolve(el)
-        el.onerror = () => reject(new Error('png'))
-        el.src = url
-      })
-      const extra =
-        style.frame === 'none' ? 40
-          : style.frame === 'phone' ? 120
-            : 160
-      const qrSize = 900
-      const canvas = document.createElement('canvas')
-      canvas.width = qrSize + 80
-      canvas.height = qrSize + extra
-      const ctx = canvas.getContext('2d')
+      const qrCanvas = host.current.querySelector('canvas')
+      const stage = host.current.closest('.cdl-frame-stage, .cdl-rest-stage') as HTMLElement | null
+      const out = document.createElement('canvas')
+      const ctx = out.getContext('2d')
       if (!ctx) return
       ctx.fillStyle = '#ffffff'
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
-      const x = 40
-      const y = style.frame === 'balloon' ? 70 : 40
-      if (style.frame === 'phone') {
-        roundRect(ctx, 16, 16, canvas.width - 32, canvas.height - 32, 48)
-        ctx.strokeStyle = style.frameColor
-        ctx.lineWidth = 22
-        ctx.stroke()
+
+      const loadImg = (url: string) =>
+        new Promise<HTMLImageElement>((resolve, reject) => {
+          const el = new Image()
+          el.onload = () => resolve(el)
+          el.onerror = () => reject(new Error('png'))
+          el.src = url
+        })
+
+      if (!stage || !qrCanvas) {
+        const raw = await qr.current?.getRawData('png')
+        if (!raw) return
+        const blob = raw instanceof Blob ? raw : new Blob([raw as unknown as BlobPart])
+        const url = URL.createObjectURL(blob)
+        try {
+          const img = await loadImg(url)
+          const pad = 40
+          out.width = img.width + pad * 2
+          out.height = img.height + pad * 2
+          ctx.fillRect(0, 0, out.width, out.height)
+          ctx.drawImage(img, pad, pad)
+        } finally {
+          URL.revokeObjectURL(url)
+        }
+      } else {
+        const scale = 4
+        const rect = stage.getBoundingClientRect()
+        out.width = Math.max(1, Math.round(rect.width * scale))
+        out.height = Math.max(1, Math.round(rect.height * scale))
+        ctx.fillRect(0, 0, out.width, out.height)
+        const svgEl = stage.querySelector('svg')
+        if (svgEl) {
+          const clone = svgEl.cloneNode(true) as SVGElement
+          clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+          clone.setAttribute('width', String(out.width))
+          clone.setAttribute('height', String(out.height))
+          const xml = new XMLSerializer().serializeToString(clone)
+          const url = URL.createObjectURL(new Blob([xml], { type: 'image/svg+xml;charset=utf-8' }))
+          try {
+            const img = await loadImg(url)
+            ctx.drawImage(img, 0, 0, out.width, out.height)
+          } finally {
+            URL.revokeObjectURL(url)
+          }
+        }
+        const slotEl = host.current.closest('.cdl-frame-qr, .cdl-rest-qr') as HTMLElement | null
+        if (slotEl) {
+          const sr = slotEl.getBoundingClientRect()
+          ctx.drawImage(
+            qrCanvas,
+            (sr.left - rect.left) * scale,
+            (sr.top - rect.top) * scale,
+            sr.width * scale,
+            sr.height * scale,
+          )
+        }
       }
-      ctx.drawImage(img, x, y, qrSize, qrSize)
-      ctx.fillStyle = style.frameColor
-      ctx.font = 'bold 42px Outfit, sans-serif'
-      ctx.textAlign = 'center'
-      const label = style.frameText || 'SCAN ME'
-      const cx = canvas.width / 2
-      const by = y + qrSize + 56
-      if (style.frame === 'pill') {
-        const w = ctx.measureText(label).width + 64
-        roundRect(ctx, cx - w / 2, by - 40, w, 64, 32)
-        ctx.fill()
-        ctx.fillStyle = '#fff'
-        ctx.fillText(label, cx, by + 8)
-      } else if (style.frame === 'bar' || style.frame === 'pointer' || style.frame === 'ribbon' || style.frame === 'box' || style.frame === 'tag' || style.frame === 'chevron' || style.frame === 'gift') {
-        ctx.fillRect(x, y + qrSize - 8, qrSize, 72)
-        ctx.fillStyle = '#fff'
-        ctx.fillText(label, cx, y + qrSize + 40)
-      } else if (style.frame === 'caption' || style.frame === 'arrow' || style.frame === 'brush' || style.frame === 'bag' || style.frame === 'script' || style.frame === 'polaroid') {
-        ctx.fillText(label, cx, by + 8)
-      } else if (style.frame === 'balloon') {
-        roundRect(ctx, cx - 140, 16, 280, 48, 8)
-        ctx.fill()
-        ctx.fillStyle = '#fff'
-        ctx.font = 'bold 28px Outfit, sans-serif'
-        ctx.fillText(label, cx, 48)
-      }
+
       const a = document.createElement('a')
-      a.href = canvas.toDataURL('image/png')
+      a.href = out.toDataURL('image/png')
       a.download = brand.downloadName
       a.click()
-      URL.revokeObjectURL(url)
     } finally {
       setBusy(false)
     }
@@ -499,7 +445,7 @@ export function CdlQrCustomize() {
   const live = useQrEngine(trackUrl, 220)
   return (
         <div className="customize-grid">
-          <aside className="customize-preview">
+          <aside className="customize-preview" data-testid="qr-customize-preview">
             <p className="live-label">Live preview</p>
             <FramedQr host={live.host} style={style} />
             <p className="live-url">{trackUrl || '…'}</p>
@@ -676,13 +622,4 @@ export function CdlQrDestinationFoot({ fallback }: { fallback: string }) {
   )
 }
 
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
-  const radius = Math.min(r, w / 2, h / 2)
-  ctx.beginPath()
-  ctx.moveTo(x + radius, y)
-  ctx.arcTo(x + w, y, x + w, y + h, radius)
-  ctx.arcTo(x + w, y + h, x, y + h, radius)
-  ctx.arcTo(x, y + h, x, y, radius)
-  ctx.arcTo(x, y, x + w, y, radius)
-  ctx.closePath()
-}
+

@@ -261,59 +261,38 @@
 .qr-scan-board .qr-live {
   line-height: 1.2;
 }
-.qr-scan-board .qr-well {
-  display: inline-flex;
-  box-sizing: border-box;
-  line-height: 0;
+.qr-scan-board .cdl-frame-stage {
+  position: relative;
+  width: 220px;
+  height: 297px;
+  margin: 0 auto 8px;
 }
-.qr-scan-board .qr-well canvas {
-  display: block;
+.qr-scan-board .qr-card .cdl-frame-stage {
+  width: 280px;
+  height: 378px;
 }
-.qr-scan-board .qr-well-pill,
-.qr-scan-board .qr-well-bar,
-.qr-scan-board .qr-well-caption,
-.qr-scan-board .qr-well-tag,
-.qr-scan-board .qr-well-pointer,
-.qr-scan-board .qr-well-balloon,
-.qr-scan-board .qr-well-script,
-.qr-scan-board .qr-well-arrow,
-.qr-scan-board .qr-well-ribbon,
-.qr-scan-board .qr-well-chevron,
-.qr-scan-board .qr-well-brush,
-.qr-scan-board .qr-well-polaroid {
-  border: 3px solid;
-}
-.qr-scan-board .qr-well-box,
-.qr-scan-board .qr-well-gift,
-.qr-scan-board .qr-well-bag {
-  border: 6px solid;
-  padding: 4px;
-}
-.qr-scan-board .qr-well-phone {
-  border: 10px solid;
-  border-radius: 28px;
-  padding: 8px 8px 20px;
-}
-.qr-scan-board .qr-well-polaroid {
-  padding: 8px;
-  box-shadow:
-    -8px -8px 0 -5px var(--forest),
-    8px -8px 0 -5px var(--forest),
-    -8px 8px 0 -5px var(--forest),
-    8px 8px 0 -5px var(--forest);
-}
-.qr-scan-board .qr-well-chevron {
-  border-bottom: 0;
-}
-.qr-scan-board .qr-chevron {
+.qr-scan-board .cdl-frame-svg {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  padding: 8px 8px 14px;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-align: center;
-  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: visible;
+}
+.qr-scan-board .cdl-frame-qr {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+.qr-scan-board .cdl-frame-qr .cdl-rest-host,
+.qr-scan-board .cdl-frame-qr .cdl-rest-host canvas {
+  width: 100% !important;
+  height: 100% !important;
 }
 .qr-scan-board .cdl-rest-stage {
   position: relative;
