@@ -161,7 +161,7 @@ export function QrScanBoard({ brand }: { brand: QrBoardBrand }) {
           </header>
 
           <div className="grid">
-            <aside className="card qr-card">
+            <aside className="card qr-card" data-testid="qr-print-card">
               <CdlQrPreview />
             </aside>
             <section>
